@@ -1,0 +1,28 @@
+{
+  "name": "base-app",
+  "version": "0.0.1",
+  "private": true,
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_OPTIONS=\"-C react-server\" twofold"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "dependencies": {
+    "@twofold/framework": "0.0.2",
+    "react": "0.0.0-experimental-8039e6d0b-20231026",
+    "react-dom": "0.0.0-experimental-8039e6d0b-20231026",
+    "tailwindcss": "^3.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "prettier": "^3.2.4",
+    "prettier-plugin-tailwindcss": "^0.5.11"
+  }
+}

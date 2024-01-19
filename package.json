@@ -1,0 +1,15 @@
+{
+  "name": "twofold",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Ryan Toronto",
+  "license": "ISC",
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "typescript": "^5.2.2"
+  }
+}

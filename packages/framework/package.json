@@ -1,0 +1,67 @@
+{
+  "name": "@twofold/framework",
+  "version": "0.0.2",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon --exec \"pnpm run compile\" --watch src -e ts,tsx",
+    "compile": "pnpm node compile.js"
+  },
+  "bin": {
+    "twofold": "./dist/backend/bin.js"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    "./twofold-framework": "./src/components/twofold-framework.tsx",
+    "./link": "./src/components/link.tsx",
+    "./use-router": "./src/hooks/use-router.tsx",
+    "./cookies": "./src/http/cookies.ts"
+  },
+  "keywords": [],
+  "author": "Ryan Toronto",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "devDependencies": {
+    "@types/babel__core": "^7.20.5",
+    "@types/estree": "^1.0.5",
+    "@types/node": "^20.10.2",
+    "@types/react": "^18.2.41",
+    "@types/react-dom": "^18.2.17",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.2",
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "react": "0.0.0-experimental-8039e6d0b-20231026",
+    "react-dom": "0.0.0-experimental-8039e6d0b-20231026",
+    "tailwindcss": ">=3.3.3"
+  },
+  "dependencies": {
+    "@babel/core": "^7.23.5",
+    "@hattip/adapter-node": "^0.0.35",
+    "@hattip/compose": "^0.0.35",
+    "@hattip/cookie": "^0.0.35",
+    "@hattip/headers": "^0.0.35",
+    "@hattip/response": "^0.0.35",
+    "@hattip/router": "^0.0.35",
+    "@hattip/session": "^0.0.35",
+    "@types/cookie": "^0.5.2",
+    "acorn": "^8.10.0",
+    "acorn-walk": "^8.2.0",
+    "astring": "^1.8.6",
+    "autoprefixer": "^10.4.16",
+    "esbuild": "0.19.8",
+    "postcss": "^8.4.32",
+    "postcss-load-config": "^4.0.1",
+    "react-refresh": "^0.14.0",
+    "react-server-dom-webpack": "0.0.0-experimental-8039e6d0b-20231026",
+    "serialize-error": "^11.0.3",
+    "server-only": "^0.0.1",
+    "urlpattern-polyfill": "^9.0.0"
+  }
+}
