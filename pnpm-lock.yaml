@@ -18,7 +18,7 @@ importers:
   examples/base-app:
     dependencies:
       '@twofold/framework':
-        specifier: 0.0.2
+        specifier: ~0.0.2
         version: link:../../packages/framework
       react:
         specifier: 0.0.0-experimental-8039e6d0b-20231026

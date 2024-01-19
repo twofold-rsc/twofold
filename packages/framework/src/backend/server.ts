@@ -8,6 +8,11 @@ import {
   decodeReply,
   // @ts-ignore
 } from "react-server-dom-webpack/server.browser";
+// import {
+//   renderToReadableStream,
+//   decodeReply,
+//   // @ts-ignore
+// } from "react-server-dom-webpack/server.edge";
 import { asyncLocalStorage } from "./store.js";
 import { Build } from "./build.js";
 import { CookieSerializeOptions, cookie } from "@hattip/cookie";
@@ -51,10 +56,10 @@ export async function makeServer(build: Build) {
         secure: true,
       },
       store: new SignedCookieStore(
-        await SignedCookieStore.generateKeysFromSecrets([cookieSecret])
+        await SignedCookieStore.generateKeysFromSecrets([cookieSecret]),
       ),
       defaultSessionData: {},
-    })
+    }),
   );
 
   let reqId = 0;
@@ -76,7 +81,7 @@ export async function makeServer(build: Build) {
           set: (
             key: string,
             value: string,
-            options: CookieSerializeOptions
+            options: CookieSerializeOptions,
           ) => {
             ctx.setCookie(key, value, options);
           },
@@ -127,7 +132,7 @@ export async function makeServer(build: Build) {
           onError(err: unknown) {
             console.log("RSC STREAM ERROR");
           },
-        }
+        },
       );
 
       let { port1, port2 } = new MessageChannel();
@@ -157,29 +162,27 @@ export async function makeServer(build: Build) {
           pathname: url.pathname,
           port: port2,
         },
-        [port2]
+        [port2],
       );
 
       // put somewhere
       let reader = rscStream.getReader();
-      reader
-        .read()
-        .then(function processStream({
-          done,
-          value,
-        }: {
-          done: boolean;
-          value: Uint8Array;
-        }) {
-          if (value) {
-            port1.postMessage(value, [value.buffer]);
-          }
-          if (done) {
-            port1.postMessage("DONE");
-          } else {
-            return reader.read().then(processStream);
-          }
-        });
+      reader.read().then(function processStream({
+        done,
+        value,
+      }: {
+        done: boolean;
+        value: Uint8Array;
+      }) {
+        if (value) {
+          port1.postMessage(value, [value.buffer]);
+        }
+        if (done) {
+          port1.postMessage("DONE");
+        } else {
+          return reader.read().then(processStream);
+        }
+      });
 
       return new Response(htmlStream, {
         headers: { "Content-type": "text/html" },
@@ -261,7 +264,7 @@ export async function makeServer(build: Build) {
         serializedResult = JSON.stringify(actionResult);
       } catch {
         console.error(
-          "Action returned non-serializable result, cannot send to client"
+          "Action returned non-serializable result, cannot send to client",
         );
       }
     }
@@ -347,7 +350,7 @@ export async function makeServer(build: Build) {
     // crappy O(n) lookup, change this
     let keys = Object.keys(clientComponentModuleMap);
     let moduleKey = keys.find(
-      (key) => clientComponentModuleMap[key].browser === filePath
+      (key) => clientComponentModuleMap[key].browser === filePath,
     );
     let module = moduleKey ? clientComponentModuleMap[moduleKey] : null;
 

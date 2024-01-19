@@ -110,6 +110,22 @@ export default function Nav() {
                               </Link>
                             </NavigationMenu.Link>
                           </li>
+                          <li>
+                            <NavigationMenu.Link
+                              active={path === "/react/cache"}
+                              asChild
+                            >
+                              <Link href="/react/cache" className="block">
+                                <span className="font-medium text-gray-900">
+                                  cache
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  Dedupe data requests with React's cache
+                                  helper.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
                         </ul>
                       </NavigationMenu.Content>
                     </NavigationMenu.Item>

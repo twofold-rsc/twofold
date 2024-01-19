@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-export default function DevReloadPage() {
+export default function SuspensePage() {
   return (
     <div>
       <h1 className="text-4xl font-extrabold tracking-tighter">Suspense</h1>
