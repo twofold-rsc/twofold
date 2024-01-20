@@ -1,4 +1,11 @@
-import { use, useCallback, useEffect, useState, useTransition } from "react";
+import {
+  use,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useTransition,
+} from "react";
 import {
   encodeReply,
   createFromFetch,
@@ -9,6 +16,7 @@ import { RoutingContext } from "../shared/routing-context";
 import { MultipartStream } from "./multipart-stream";
 import { ErrorBoundary } from "./error-boundary";
 import { deserializeError } from "serialize-error";
+import { flushSync } from "react-dom";
 
 declare global {
   interface Window {
@@ -107,13 +115,24 @@ export function BrowserApp() {
 
 function Router() {
   let [path, setPath] = useState(initialPath);
+  let [navType, setNavType] = useState<string>();
   let [cache, setCache] = useState(initialCache);
   let [isPending, startTransition] = useTransition();
 
   let navigate = useCallback((path: string) => {
+    let url = new URL(path, window.location.href);
+
+    let pathname =
+      url.pathname.length > 1 && url.pathname.endsWith("/")
+        ? url.pathname.slice(0, -1)
+        : url.pathname;
+
+    let newPath = `${pathname}${url.search}${url.hash}`;
+
     startTransition(() => {
-      setPath(path);
-      window.history.pushState({}, "", path);
+      setPath(newPath);
+      setNavType("navigate");
+      window.history.pushState({}, "", newPath);
     });
   }, []);
 
@@ -123,9 +142,19 @@ function Router() {
     });
   }, []);
 
+  useLayoutEffect(() => {
+    if (navType === "navigate") {
+      document.documentElement.scrollTop = 0;
+    }
+  }, [navType, path]);
+
   useEffect(() => {
     function onPopState(_event: PopStateEvent) {
-      setPath(location.pathname);
+      startTransition(() => {
+        let path = `${location.pathname}${location.search}${location.hash}`;
+        setPath(path);
+        setNavType("pop");
+      });
     }
 
     window.addEventListener("popstate", onPopState);
@@ -175,7 +204,7 @@ function Router() {
       path,
       createFromFetch(p, {
         callServer,
-      })
+      }),
     );
   }
 

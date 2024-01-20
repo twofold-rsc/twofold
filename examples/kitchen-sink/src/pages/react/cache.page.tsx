@@ -8,7 +8,7 @@ export default async function CachePage() {
       <h1 className="text-4xl font-extrabold tracking-tighter">Cache</h1>
 
       <div className="mt-4">
-        <Suspense fallback={<div>Loading page...</div>}>
+        <Suspense fallback={<div>Loading component...</div>}>
           <WaterfallComponent />
         </Suspense>
       </div>

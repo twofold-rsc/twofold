@@ -405,6 +405,43 @@ export default function Nav() {
                               </Link>
                             </NavigationMenu.Link>
                           </li>
+                          <li>
+                            <NavigationMenu.Link
+                              active={path === "/routing/scroll-position"}
+                              asChild
+                            >
+                              <Link
+                                href="/routing/scroll-position"
+                                className="block"
+                              >
+                                <span className="font-medium text-gray-900">
+                                  Scroll position
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  Maintain scroll position as you navigate
+                                  around the app.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
+                          <li>
+                            <NavigationMenu.Link
+                              active={path === "/routing/path-normalization/"}
+                              asChild
+                            >
+                              <Link
+                                href="/routing/path-normalization/"
+                                className="block"
+                              >
+                                <span className="font-medium text-gray-900">
+                                  Path normalization
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  Remove trailing slashes from URLs.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
                         </ul>
                       </NavigationMenu.Content>
                     </NavigationMenu.Item>

@@ -8,11 +8,6 @@ import {
   decodeReply,
   // @ts-ignore
 } from "react-server-dom-webpack/server.browser";
-// import {
-//   renderToReadableStream,
-//   decodeReply,
-//   // @ts-ignore
-// } from "react-server-dom-webpack/server.edge";
 import { asyncLocalStorage } from "./store.js";
 import { Build } from "./build.js";
 import { CookieSerializeOptions, cookie } from "@hattip/cookie";

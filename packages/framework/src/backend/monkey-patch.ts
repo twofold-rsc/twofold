@@ -1,8 +1,4 @@
 // import { getSSRStore } from "./stores/ssr-store.js";
-// import { AsyncLocalStorage } from "async_hooks";
-
-// needed for server.edge
-// globalThis.AsyncLocalStorage = AsyncLocalStorage;
 
 type Resolvers = {
   moduleIdToPath: (moduleId: string) => string | undefined;

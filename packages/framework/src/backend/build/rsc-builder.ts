@@ -39,7 +39,7 @@ export class RSCBuilder {
       // i don't think we want this
       // packages: "external",
       // use this?
-      external: ["shiki"],
+      external: ["shiki", "react"],
       conditions: ["react-server", "module"],
       platform: "node",
       // Not needed but easier to debug?
@@ -123,7 +123,7 @@ export class RSCBuilder {
           setup(build) {
             let srcPath = fileURLToPath(frameworkSrcDir);
             let storePath = fileURLToPath(
-              new URL("../store.js", import.meta.url)
+              new URL("../store.js", import.meta.url),
             );
             build.onResolve({ filter: /backend\/store\.js$/ }, (args) => {
               if (args.importer.startsWith(srcPath)) {
@@ -396,7 +396,7 @@ class Layout {
   private addLayout(layout: Layout) {
     // can it go under a child of mine?
     let child = this.#children.find((possibleParent) =>
-      canGoUnder(layout, possibleParent)
+      canGoUnder(layout, possibleParent),
     );
 
     if (child) {
@@ -404,7 +404,7 @@ class Layout {
     } else if (canGoUnder(layout, this)) {
       // re-balance my children
       let [move, keep] = partition(this.#children, (child) =>
-        canGoUnder(layout, child)
+        canGoUnder(layout, child),
       );
       this.#children = keep;
 
@@ -422,7 +422,7 @@ class Layout {
     } else {
       // cant go under a child, cant go under me
       throw new Error(
-        `Could not add layout ${layout.rsc.path} to ${this.rsc.path}`
+        `Could not add layout ${layout.rsc.path} to ${this.rsc.path}`,
       );
     }
   }
@@ -430,7 +430,7 @@ class Layout {
   private addPage(page: Page) {
     let isMatch = page.rsc.path.startsWith(this.rsc.path);
     let matchingChild = this.#children.find((child) =>
-      page.rsc.path.startsWith(child.rsc.path)
+      page.rsc.path.startsWith(child.rsc.path),
     );
 
     if (matchingChild) {
@@ -440,7 +440,7 @@ class Layout {
       page.layout = this;
     } else {
       throw new Error(
-        `Could not add page ${page.rsc.path} to ${this.rsc.path}`
+        `Could not add page ${page.rsc.path} to ${this.rsc.path}`,
       );
     }
   }
@@ -448,7 +448,7 @@ class Layout {
 
 function canGoUnder(child: Layout, parent: Layout) {
   let alreadyHave = parent.children.some(
-    (current) => current.rsc.path === child.rsc.path
+    (current) => current.rsc.path === child.rsc.path,
   );
   let matchingPath =
     child.rsc.path.startsWith(parent.rsc.path) &&
@@ -467,7 +467,7 @@ function partition<T>(arr: T[], condition: (item: T) => boolean) {
       }
       return acc;
     },
-    [[], []]
+    [[], []],
   );
 }
 
@@ -551,7 +551,7 @@ class Page {
       let module = await layout.rsc.loadModule();
       if (!module.default) {
         throw new Error(
-          `Layout for ${layout.rsc.path}/ has no default export.`
+          `Layout for ${layout.rsc.path}/ has no default export.`,
         );
       }
       return module.default;

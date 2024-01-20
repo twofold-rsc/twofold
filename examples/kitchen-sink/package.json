@@ -14,8 +14,8 @@
   "dependencies": {
     "@radix-ui/react-navigation-menu": "^1.1.4",
     "@twofold/framework": "workspace:*",
-    "react": "0.0.0-experimental-8039e6d0b-20231026",
-    "react-dom": "0.0.0-experimental-8039e6d0b-20231026"
+    "react": "0.0.0-experimental-b30030471-20240117",
+    "react-dom": "0.0.0-experimental-b30030471-20240117"
   },
   "devDependencies": {
     "@types/node": "^20.10.2",

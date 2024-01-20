@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  LinkHTMLAttributes,
-  MouseEvent,
-  ReactNode,
-  forwardRef,
-  startTransition,
-} from "react";
+import { LinkHTMLAttributes, MouseEvent, ReactNode, forwardRef } from "react";
 import { useRouter } from "../hooks/use-router";
 
 type Props = {
@@ -30,15 +24,14 @@ let Link = forwardRef<HTMLAnchorElement, Props>(
 
           if (e.button === 0 && !e.ctrlKey && !e.metaKey) {
             e.preventDefault();
-            let url = new URL(href, window.location.href);
-            navigate(`${url.pathname}${url.search}${url.hash}`);
+            navigate(href);
           }
         }}
       >
         {children}
       </a>
     );
-  }
+  },
 );
 
 export default Link;

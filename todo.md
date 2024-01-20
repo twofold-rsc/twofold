@@ -8,8 +8,9 @@ title: Why client components run on the server
 
 kitchen sink
 
-- cache
-- scroll pos
+expire cache
+
+- keep copy for back button
 
 create-twofold-app
 
@@ -19,6 +20,7 @@ create-twofold-app
 Image gallery
 
 Get rid of SSR app
+Bundle react in RSC build, import that version for createElement
 Better actions
 Remove action store
 Worker for RSC
