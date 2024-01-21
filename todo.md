@@ -3,14 +3,7 @@
 Why you can't set cookies from React Server Components
 Precedence blocks rendering until styles load
 
-"use client" you don't know what this means
-title: Why client components run on the server
-
 kitchen sink
-
-expire cache
-
-- keep copy for back button
 
 create-twofold-app
 

@@ -16,7 +16,6 @@ import { RoutingContext } from "../shared/routing-context";
 import { MultipartStream } from "./multipart-stream";
 import { ErrorBoundary } from "./error-boundary";
 import { deserializeError } from "serialize-error";
-import { flushSync } from "react-dom";
 
 declare global {
   interface Window {
@@ -27,7 +26,7 @@ declare global {
 }
 
 let initialPath = `${location.pathname}${location.search}${location.hash}`;
-let initialCache = new Map();
+let initialCache = new Map<string, any>();
 
 async function callServer(id: string, args: any) {
   console.log("requesting action", id);
@@ -130,6 +129,11 @@ function Router() {
     let newPath = `${pathname}${url.search}${url.hash}`;
 
     startTransition(() => {
+      setCache((c) => {
+        let newCache = new Map(c);
+        newCache.delete(path);
+        return newCache;
+      });
       setPath(newPath);
       setNavType("navigate");
       window.history.pushState({}, "", newPath);
@@ -141,12 +145,6 @@ function Router() {
       setCache(new Map());
     });
   }, []);
-
-  useLayoutEffect(() => {
-    if (navType === "navigate") {
-      document.documentElement.scrollTop = 0;
-    }
-  }, [navType, path]);
 
   useEffect(() => {
     function onPopState(_event: PopStateEvent) {
@@ -163,19 +161,25 @@ function Router() {
     };
   }, []);
 
-  useEffect(() => {
-    let previous = bridge.update;
+  useLayoutEffect(() => {
+    if (navType === "navigate") {
+      document.documentElement.scrollTop = 0;
+    }
+  }, [navType, path]);
 
+  useEffect(() => {
     bridge.update = (path: string, lazy: any) => {
       startTransition(() => {
-        let map = new Map();
-        map.set(path, lazy);
-        setCache(map);
+        setCache((c) => {
+          let newCache = new Map(c);
+          newCache.set(path, lazy);
+          return newCache;
+        });
       });
     };
 
     return () => {
-      bridge.update = previous;
+      bridge.update = () => {};
     };
   }, []);
 
@@ -200,12 +204,11 @@ function Router() {
       return response;
     });
 
-    cache.set(
-      path,
-      createFromFetch(p, {
-        callServer,
-      }),
-    );
+    let lazyRoot = createFromFetch(p, {
+      callServer,
+    });
+
+    cache.set(path, lazyRoot);
   }
 
   let serverOutput = cache.get(path);
