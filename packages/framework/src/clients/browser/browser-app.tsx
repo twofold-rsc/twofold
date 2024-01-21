@@ -118,27 +118,27 @@ function Router() {
   let [cache, setCache] = useState(initialCache);
   let [isPending, startTransition] = useTransition();
 
-  let navigate = useCallback((path: string) => {
-    let url = new URL(path, window.location.href);
+  let navigate = useCallback(
+    (path: string) => {
+      let url = new URL(path, window.location.href);
 
-    let pathname =
-      url.pathname.length > 1 && url.pathname.endsWith("/")
-        ? url.pathname.slice(0, -1)
-        : url.pathname;
+      let pathname =
+        url.pathname.length > 1 && url.pathname.endsWith("/")
+          ? url.pathname.slice(0, -1)
+          : url.pathname;
 
-    let newPath = `${pathname}${url.search}${url.hash}`;
+      let newPath = `${pathname}${url.search}${url.hash}`;
+      let newCache = new Map(cache);
+      newCache.delete(path);
 
-    startTransition(() => {
-      setCache((c) => {
-        let newCache = new Map(c);
-        newCache.delete(path);
-        return newCache;
+      startTransition(() => {
+        setCache(newCache);
+        setPath(newPath);
+        setNavType("navigate");
       });
-      setPath(newPath);
-      setNavType("navigate");
-      window.history.pushState({}, "", newPath);
-    });
-  }, []);
+    },
+    [cache],
+  );
 
   let refresh = useCallback(() => {
     startTransition(() => {
@@ -163,6 +163,7 @@ function Router() {
 
   useLayoutEffect(() => {
     if (navType === "navigate") {
+      window.history.pushState({}, "", path);
       document.documentElement.scrollTop = 0;
     }
   }, [navType, path]);
