@@ -1,6 +1,6 @@
 {
   "name": "base-app",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "",
   "type": "module",
@@ -13,7 +13,7 @@
     "node": ">=20.9.0"
   },
   "dependencies": {
-    "@twofold/framework": "^0.0.2",
+    "@twofold/framework": "^0.0.3",
     "react": "0.0.0-experimental-b30030471-20240117",
     "react-dom": "0.0.0-experimental-b30030471-20240117",
     "tailwindcss": "^3.4.1"
