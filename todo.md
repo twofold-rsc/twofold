@@ -3,18 +3,19 @@
 Why you can't set cookies from React Server Components
 Precedence blocks rendering until styles load
 
-framework eslint
+eslint-plugin-twofold
+
+fixed versions
+publish
+
+eslint base app
 
 kitchen sink
 
-- eslint
 - action on page with blocking suspense
 - refresh a blocking suspense page
 
 create-twofold-app
-
-- copy over base app
-- npmrc for node options
 
 Image gallery
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export default function ClientComponent() {
   let [count, setCount] = useState(0);
+
   return (
     <div className="flex items-center space-x-4">
       <button

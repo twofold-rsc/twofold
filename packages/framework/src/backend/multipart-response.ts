@@ -17,7 +17,7 @@ export class MultipartResponse {
   }: {
     type: string;
     body: ReadableStream | string;
-    headers: HeadersInit;
+    headers: Headers | Record<string, string>;
   }) {
     let headersObject = new Headers(headers);
     headersObject.set("Content-Type", type);
@@ -89,7 +89,7 @@ export class MultipartResponse {
 
     let stringBody = this.stringBody;
     let streamHeaders = `--${this.#boundary}\n${headersToText(
-      this.#streamPart.headers
+      this.#streamPart.headers,
     )}\r\n\r\n`;
 
     let reader = this.#streamPart.body.getReader();

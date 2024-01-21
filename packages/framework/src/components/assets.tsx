@@ -18,6 +18,7 @@ export default function Assets() {
 function Stylesheet({ href }: { href: string }) {
   return (
     /* @ts-ignore */
+    // eslint-disable-next-line react/no-unknown-property
     <link rel="stylesheet" href={href} precedence="default" />
   );
 }

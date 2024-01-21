@@ -12,7 +12,7 @@ declare global {
 }
 
 export default function DevReload() {
-  let router = useRouter();
+  let { refresh } = useRouter();
 
   useEffect(() => {
     let eventSource = new EventSource("/__dev/reload");
@@ -22,24 +22,24 @@ export default function DevReload() {
       // console.log(reload);
 
       if (reload.type === "css") {
-        router.refresh();
+        refresh();
       } else if (reload.type === "rsc") {
-        router.refresh();
+        refresh();
       } else if (reload.type === "chunks") {
         let modules = reload.chunks.map((chunkId: string) =>
-          window.$Framework$reloadChunk(chunkId)
+          window.$Framework$reloadChunk(chunkId),
         );
         await Promise.all(modules);
         window.$RefreshRuntime$.performReactRefresh();
       } else if (reload.type === "unknown") {
-        router.refresh();
+        refresh();
       }
     };
 
     return () => {
       eventSource.close();
     };
-  }, []);
+  }, [refresh]);
 
   return null;
 }

@@ -1,4 +1,5 @@
 // this file shouldn't end up in prod builds
+/* eslint-disable */
 
 // @ts-ignore
 import RefreshRuntime from "react-refresh/runtime";
@@ -23,7 +24,7 @@ if (process.env.NODE_ENV !== "production") {
 
   window.$RefreshRuntime$.performReactRefresh = debounce(
     window.$RefreshRuntime$.performReactRefresh,
-    30
+    30,
   );
 
   // @ts-ignore
