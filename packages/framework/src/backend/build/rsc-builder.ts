@@ -32,6 +32,7 @@ export class RSCBuilder {
     this.#context = await context({
       bundle: true,
       format: "esm",
+      jsx: "automatic",
       logLevel: "error",
       entryPoints: ["./src/pages/**/*.page.tsx", "./src/pages/**/layout.tsx"],
       outdir: "./.twofold/rsc/",

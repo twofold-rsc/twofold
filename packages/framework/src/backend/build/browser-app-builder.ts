@@ -44,6 +44,7 @@ export class BrowserAppBuilder {
       let results = await build({
         bundle: true,
         format: "esm",
+        jsx: "automatic",
         logLevel: "error",
         entryPoints: [...this.clientEntryPoints, this.initializeBrowserPath],
         entryNames: "entries/[name]-[hash]",

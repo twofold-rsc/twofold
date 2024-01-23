@@ -483,6 +483,7 @@ class SSRAppBuilder {
       bundle: true,
       splitting: true,
       format: "esm",
+      jsx: "automatic",
       logLevel: "error",
       entryPoints: [...this.clientEntryPoints, this.srcAppPath],
       outdir: "./.twofold/ssr-app/",

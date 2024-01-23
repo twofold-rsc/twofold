@@ -17,6 +17,7 @@ export class ErrorPageBuilder {
     this.#context = await context({
       bundle: true,
       format: "esm",
+      jsx: "automatic",
       logLevel: "error",
       entryPoints: [this.appPath],
       entryNames: "entries/[name]-[hash]",
