@@ -2,11 +2,21 @@
   "name": "create-twofold-app",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "node compile.js",
+    "update-template": "node dist/update-template.js"
   },
   "keywords": [],
   "author": "Ryan Toronto",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.11.6",
+    "esbuild": "0.19.8"
+  }
 }

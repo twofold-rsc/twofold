@@ -1,4 +1,9 @@
-// setup compile
+// copy over base app into template
+
+// ignore certain files
+
+// remap certain files so they dont get ignored
+// .gitignore -> gitignore
 
 // ask for app name
 
