@@ -1,4 +1,11 @@
 // import { getSSRStore } from "./stores/ssr-store.js";
+import { AsyncLocalStorage as NodeAsyncLocalStorage } from "async_hooks";
+
+declare global {
+  var AsyncLocalStorage: typeof NodeAsyncLocalStorage;
+}
+
+globalThis.AsyncLocalStorage = NodeAsyncLocalStorage;
 
 type Resolvers = {
   moduleIdToPath: (moduleId: string) => string | undefined;

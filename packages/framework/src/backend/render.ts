@@ -16,7 +16,7 @@ export function componentsToTree<T extends {}>({
       componentsToTree({
         components: components.slice(1),
         props,
-      })
+      }),
     );
   }
 }

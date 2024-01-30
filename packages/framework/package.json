@@ -42,8 +42,8 @@
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
-    "react": "0.0.0-experimental-b30030471-20240117",
-    "react-dom": "0.0.0-experimental-b30030471-20240117",
+    "react": "18.3.0-canary-60a927d04-20240113",
+    "react-dom": "18.3.0-canary-60a927d04-20240113",
     "tailwindcss": ">=3.3.3"
   },
   "dependencies": {
@@ -64,7 +64,7 @@
     "postcss": "^8.4.32",
     "postcss-load-config": "^4.0.1",
     "react-refresh": "^0.14.0",
-    "react-server-dom-webpack": "0.0.0-experimental-b30030471-20240117",
+    "react-server-dom-webpack": "18.3.0-canary-60a927d04-20240113",
     "serialize-error": "^11.0.3",
     "server-only": "^0.0.1",
     "urlpattern-polyfill": "^9.0.0"

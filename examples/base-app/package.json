@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@twofold/framework": "^0.0.4",
-    "react": "0.0.0-experimental-b30030471-20240117",
-    "react-dom": "0.0.0-experimental-b30030471-20240117",
+    "react": "18.3.0-canary-60a927d04-20240113",
+    "react-dom": "18.3.0-canary-60a927d04-20240113",
     "tailwindcss": "^3.4.1"
   },
   "devDependencies": {

@@ -31,7 +31,7 @@ let appModule = await import(appPath);
 let SSRApp = appModule.SSRApp;
 
 parentPort.on("message", async ({ port, pathname }: RenderRequest) => {
-  console.log("worker rendering", pathname);
+  // console.log("worker rendering", pathname);
 
   let rscStream = new ReadableStream({
     start(controller) {

@@ -7,7 +7,7 @@ import {
   renderToReadableStream,
   decodeReply,
   // @ts-ignore
-} from "react-server-dom-webpack/server.browser";
+} from "react-server-dom-webpack/server.edge";
 import { asyncLocalStorage } from "./store.js";
 import { Build } from "./build.js";
 import { CookieSerializeOptions, cookie } from "@hattip/cookie";
@@ -108,8 +108,7 @@ export async function makeServer(build: Build) {
     let page = runtime.pageForUrl(url);
 
     if (page) {
-      console.log("handing:", ctx.request.method, url.pathname);
-
+      console.log("🟢 Serving", url.pathname);
       await page.runMiddleware(request);
 
       let assets = page.assets.map((asset) => `/_assets/styles/${asset}`);
