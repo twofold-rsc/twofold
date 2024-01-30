@@ -1,9 +1,4 @@
-// copy over base app into template
-
-// ignore certain files
-
-// remap certain files so they dont get ignored
-// .gitignore -> gitignore
+import prompts from "prompts";
 
 // ask for app name
 
@@ -18,3 +13,15 @@
 // edit app name in package.json
 
 // pnpm install
+
+async function main() {
+  let response = await prompts({
+    type: "text",
+    name: "appName",
+    message: "What is the name of your app?",
+  });
+
+  console.log(response.appName);
+}
+
+main();

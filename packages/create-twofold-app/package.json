@@ -8,6 +8,9 @@
   "files": [
     "dist"
   ],
+  "bin": {
+    "create-twofold-app": "./dist/index.js"
+  },
   "scripts": {
     "compile": "node compile.js",
     "update-template": "node dist/update-template.js"
@@ -17,6 +20,10 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.11.6",
+    "@types/prompts": "^2.4.9",
     "esbuild": "0.19.8"
+  },
+  "dependencies": {
+    "prompts": "^2.4.2"
   }
 }
