@@ -118,9 +118,14 @@ function Router() {
   let [cache, setCache] = useState(initialCache);
   let [isPending, startTransition] = useTransition();
 
+  // Whenever we are transitioning into a new route state we set how we
+  // initiated it here. We might be doing a client side nav, a refresh,
+  // a dev reload, or something else.
+  let [initiator, setInitiator] = useState<string>("initial-render");
+
   let navigate = useCallback(
-    (path: string) => {
-      let url = new URL(path, window.location.href);
+    (toPath: string) => {
+      let url = new URL(toPath, window.location.href);
 
       let pathname =
         url.pathname.length > 1 && url.pathname.endsWith("/")
@@ -129,12 +134,13 @@ function Router() {
 
       let newPath = `${pathname}${url.search}${url.hash}`;
       let newCache = new Map(cache);
-      newCache.delete(path);
+      newCache.delete(toPath);
 
       startTransition(() => {
         setCache(newCache);
         setPath(newPath);
         setNavType("navigate");
+        setInitiator("client-side-navigation");
       });
     },
     [cache],
@@ -142,6 +148,7 @@ function Router() {
 
   let refresh = useCallback(() => {
     startTransition(() => {
+      setInitiator("refresh");
       setCache(new Map());
     });
   }, []);
@@ -152,6 +159,7 @@ function Router() {
         let path = `${location.pathname}${location.search}${location.hash}`;
         setPath(path);
         setNavType("pop");
+        setInitiator("popstate");
       });
     }
 
@@ -190,6 +198,7 @@ function Router() {
     let p = fetch(`/__rsc?path=${encodedUrl}`, {
       headers: {
         Accept: "text/x-component",
+        "x-twofold-initiator": initiator,
       },
     }).then(async (response) => {
       if (!response.ok) {

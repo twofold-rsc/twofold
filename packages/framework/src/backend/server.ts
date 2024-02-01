@@ -192,11 +192,19 @@ export async function makeServer(build: Build) {
       throw new Error("404 - No path specified");
     }
 
-    let request = new Request(new URL(path, url), ctx.request);
+    let requestUrl = new URL(path, url);
+    let request = new Request(requestUrl, ctx.request);
     let page = runtime.pageForRequest(request);
 
     if (!page) {
       throw new Error("404 - Page not found");
+    }
+
+    let initiator = ctx.request.headers.get("x-twofold-initiator");
+    if (initiator === "refresh") {
+      console.log("🔵 Refreshing", requestUrl.pathname);
+    } else if (initiator === "client-side-navigation") {
+      console.log("🟢 Rendering", requestUrl.pathname);
     }
 
     await page.runMiddleware(request);

@@ -9,6 +9,7 @@ kitchen sink
 
 - action on page with blocking suspense
 - refresh a blocking suspense page
+- click link to page that suspends, then router.refresh before it loads
 
 create-twofold-app
 

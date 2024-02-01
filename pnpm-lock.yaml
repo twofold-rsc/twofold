@@ -18,14 +18,14 @@ importers:
   examples/base-app:
     dependencies:
       '@twofold/framework':
-        specifier: ^0.0.4
+        specifier: ^0.0.5
         version: link:../../packages/framework
       react:
-        specifier: 0.0.0-experimental-b30030471-20240117
-        version: 0.0.0-experimental-b30030471-20240117
+        specifier: 18.3.0-canary-60a927d04-20240113
+        version: 18.3.0-canary-60a927d04-20240113
       react-dom:
-        specifier: 0.0.0-experimental-b30030471-20240117
-        version: 0.0.0-experimental-b30030471-20240117(react@0.0.0-experimental-b30030471-20240117)
+        specifier: 18.3.0-canary-60a927d04-20240113
+        version: 18.3.0-canary-60a927d04-20240113(react@18.3.0-canary-60a927d04-20240113)
       tailwindcss:
         specifier: ^3.4.1
         version: 3.4.1
@@ -98,11 +98,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/framework
       react:
-        specifier: 0.0.0-experimental-8039e6d0b-20231026
-        version: 0.0.0-experimental-8039e6d0b-20231026
+        specifier: 18.3.0-canary-60a927d04-20240113
+        version: 18.3.0-canary-60a927d04-20240113
       react-dom:
-        specifier: 0.0.0-experimental-8039e6d0b-20231026
-        version: 0.0.0-experimental-8039e6d0b-20231026(react@0.0.0-experimental-8039e6d0b-20231026)
+        specifier: 18.3.0-canary-60a927d04-20240113
+        version: 18.3.0-canary-60a927d04-20240113(react@18.3.0-canary-60a927d04-20240113)
       shiki:
         specifier: ^0.14.7
         version: 0.14.7
@@ -4042,26 +4042,6 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
-  /react-dom@0.0.0-experimental-8039e6d0b-20231026(react@0.0.0-experimental-8039e6d0b-20231026):
-    resolution: {integrity: sha512-iPx0sB9xEkn5CU1JxzuG+OQfnmLblrfWQ4KOIy2uJXTTHTmNWMMNWSjgU/sPsJM5TYx+3sC1Ngtj0IImVW1Few==}
-    peerDependencies:
-      react: 0.0.0-experimental-8039e6d0b-20231026
-    dependencies:
-      loose-envify: 1.4.0
-      react: 0.0.0-experimental-8039e6d0b-20231026
-      scheduler: 0.0.0-experimental-8039e6d0b-20231026
-    dev: false
-
-  /react-dom@0.0.0-experimental-b30030471-20240117(react@0.0.0-experimental-b30030471-20240117):
-    resolution: {integrity: sha512-I/Uxfcgsz0SXKUC+JgPGjgdCabFvhOndxRGqoFj5TlbnbAefuMDPH/y/M3CsGucgPXJeFpk31P3jt+xs9atw1A==}
-    peerDependencies:
-      react: 0.0.0-experimental-b30030471-20240117
-    dependencies:
-      loose-envify: 1.4.0
-      react: 0.0.0-experimental-b30030471-20240117
-      scheduler: 0.0.0-experimental-b30030471-20240117
-    dev: false
-
   /react-dom@18.3.0-canary-60a927d04-20240113(react@18.3.0-canary-60a927d04-20240113):
     resolution: {integrity: sha512-l/weUXejD8QJwuRDKgZ4NWWtLL5fYxE+UHc+zwA4tmt+czbvIKMWCM39hshNG6CFNYSYF4hV3h6AtCkR9LiMxQ==}
     peerDependencies:
@@ -4094,20 +4074,6 @@ packages:
       react: 18.3.0-canary-60a927d04-20240113
       react-dom: 18.3.0-canary-60a927d04-20240113(react@18.3.0-canary-60a927d04-20240113)
       webpack: 5.89.0(esbuild@0.19.8)
-    dev: false
-
-  /react@0.0.0-experimental-8039e6d0b-20231026:
-    resolution: {integrity: sha512-9Rj/+2ggmZVbjTSZGNniMwA25gVCDb4xwVhdYaOyo6P94jE75sJZaWHJK2LFakBwcIC08per/dzWIni+oGB38w==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      loose-envify: 1.4.0
-    dev: false
-
-  /react@0.0.0-experimental-b30030471-20240117:
-    resolution: {integrity: sha512-wqAzmFr89iIKW1HveRTvZOplT+bpMFqeqJ2YbEUnvQxmDrbVY97fqCgFkayczLcT6+9hBaybGWNaQl3GmK773Q==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      loose-envify: 1.4.0
     dev: false
 
   /react@18.3.0-canary-60a927d04-20240113:
@@ -4267,18 +4233,6 @@ packages:
   /safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
     dev: true
-
-  /scheduler@0.0.0-experimental-8039e6d0b-20231026:
-    resolution: {integrity: sha512-psHROJE7IYl9WafGHFKW+/dpAHwxZGK6ssfMfd09BwMA9Jsx2buLrsmtq2UlDFTlrNdX00596v4IZ2RJV+OfVQ==}
-    dependencies:
-      loose-envify: 1.4.0
-    dev: false
-
-  /scheduler@0.0.0-experimental-b30030471-20240117:
-    resolution: {integrity: sha512-kr+02kKnnQ5fxCOf6hoIavhTdJgBDhj+UTxkX6Ny6utbs5PI+CuwQJi0i0Zxb6qBuW7HxGx71y/L/VbUJQln/g==}
-    dependencies:
-      loose-envify: 1.4.0
-    dev: false
 
   /scheduler@0.24.0-canary-60a927d04-20240113:
     resolution: {integrity: sha512-nZnKdZXaqoLyiFtfbN/BoGZTINy/0aQXZ6AeUHPJILG5Jyro4lPQLlt63EV3VxNlqPGYScMk6ZlTnZMs8EZr3A==}
