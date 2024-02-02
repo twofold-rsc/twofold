@@ -13,7 +13,8 @@
   },
   "scripts": {
     "compile": "node compile.js",
-    "update-template": "node dist/update-template.js"
+    "update-template": "node dist/update-template.js",
+    "dev": "node dist/index.js"
   },
   "keywords": [],
   "author": "Ryan Toronto",
@@ -21,9 +22,13 @@
   "devDependencies": {
     "@types/node": "^20.11.6",
     "@types/prompts": "^2.4.9",
+    "@types/signale": "^1.4.7",
+    "@types/tar": "^6.1.11",
     "esbuild": "0.19.8"
   },
   "dependencies": {
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "signale": "^1.4.0",
+    "tar": "^6.2.0"
   }
 }

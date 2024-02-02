@@ -2,12 +2,9 @@ import { mkdir, readdir, lstat, copyFile, rm } from "fs/promises";
 import { pathToFileURL } from "node:url";
 import path from "path";
 import { fileURLToPath } from "url";
+import { remapped } from "./remapped.js";
 
 let ignored = ["node_modules", ".twofold", "CHANGELOG.md"];
-
-let remapped: Record<string, string> = {
-  ".gitignore": "gitignore",
-};
 
 let cwd = pathToFileURL(process.cwd());
 
