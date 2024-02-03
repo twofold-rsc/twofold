@@ -230,7 +230,7 @@ export async function makeServer(build: Build) {
       throw new Error("404 - No server action specified");
     }
 
-    if (!build.actions.isAction(serverReference)) {
+    if (!build.rsc.isAction(serverReference)) {
       throw new Error("404 - Server action not found");
     }
 
@@ -258,7 +258,7 @@ export async function makeServer(build: Build) {
       args = await decodeReply(formData);
     }
 
-    let actionResult = await build.actions.runAction(serverReference, args);
+    let actionResult = await build.rsc.runAction(serverReference, args);
 
     let serializedResult: string | undefined;
     if (actionResult) {

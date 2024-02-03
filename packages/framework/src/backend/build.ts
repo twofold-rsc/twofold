@@ -1,15 +1,7 @@
 import { context } from "esbuild";
-import { readFile, rm, watch } from "node:fs/promises";
+import { watch } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { appCompiledDir, frameworkSrcDir } from "./files.js";
-import * as acorn from "acorn";
-import * as acornWalk from "acorn-walk";
-import * as astring from "astring";
-import type {
-  FunctionDeclaration,
-  ExportNamedDeclaration,
-  Program,
-} from "estree";
+import { frameworkSrcDir } from "./files.js";
 import { randomBytes } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { BrowserAppBuilder } from "./build/browser-app-builder.js";
@@ -28,7 +20,6 @@ export class Build {
   #isBuilding = false;
   #errorPageBuilder: ErrorPageBuilder;
   #rscBuilder: RSCBuilder;
-  #serverActionsBuilder: ServerActionsBuilder;
   #browserAppBuilder: BrowserAppBuilder;
   #ssrAppBuilder?: SSRAppBuilder;
   #events = new BuildEvents();
@@ -38,7 +29,6 @@ export class Build {
   constructor() {
     this.#errorPageBuilder = new ErrorPageBuilder();
     this.#rscBuilder = new RSCBuilder();
-    this.#serverActionsBuilder = new ServerActionsBuilder();
     this.#browserAppBuilder = new BrowserAppBuilder({
       rscBuilder: this.#rscBuilder,
     });
@@ -55,7 +45,6 @@ export class Build {
   async setup() {
     await this.#errorPageBuilder.setup();
     await this.#rscBuilder.setup();
-    await this.#serverActionsBuilder.setup();
   }
 
   get errorPage() {
@@ -64,10 +53,6 @@ export class Build {
 
   get rsc() {
     return this.#rscBuilder;
-  }
-
-  get actions() {
-    return this.#serverActionsBuilder;
   }
 
   get error() {
@@ -118,7 +103,6 @@ export class Build {
 
     await this.#errorPageBuilder.build();
     await this.#rscBuilder.build();
-    await this.#serverActionsBuilder.build();
     await this.#browserAppBuilder.build();
 
     this.#ssrAppBuilder = new SSRAppBuilder({
@@ -292,162 +276,6 @@ type ClientComponent = {
   path: string;
   exports: string[];
 };
-
-class ServerActionsBuilder {
-  #context?: BuildContext;
-  #serverActions = new Set<string>();
-
-  async setup() {
-    let builder = this;
-
-    this.#context = await context({
-      format: "esm",
-      logLevel: "error",
-      entryPoints: ["./.twofold/rsc/js/**/*.js"],
-      outdir: "./.twofold/rsc/js/",
-      outbase: "./.twofold/rsc/js/",
-      allowOverwrite: true,
-      plugins: [
-        {
-          name: "rsc-actions",
-          setup(build) {
-            let rscDir = new URL("./rsc/js/", appCompiledDir);
-
-            build.onLoad({ filter: /\.js$/ }, async ({ path }) => {
-              let module = path
-                .slice(fileURLToPath(rscDir).length)
-                .replace(/\.[^/.]+$/, "");
-
-              // console.log("rsc-actions onLoad processing", path);
-              const contents = await readFile(path, "utf-8");
-
-              type State = {
-                actions: FunctionDeclaration[];
-                exports: ExportNamedDeclaration[];
-              };
-
-              let state: State = {
-                actions: [],
-                exports: [],
-              };
-
-              let ast = acorn.parse(contents, {
-                ecmaVersion: "latest",
-                sourceType: "module",
-              });
-
-              acornWalk.ancestor(ast, {
-                FunctionDeclaration(_node, _, ancestors) {
-                  let node = _node as unknown as FunctionDeclaration;
-                  if (
-                    node.body.type === "BlockStatement" &&
-                    node.body.body[0]
-                  ) {
-                    let firstStatement = node.body.body[0];
-                    if (
-                      firstStatement.type === "ExpressionStatement" &&
-                      firstStatement.expression.type === "Literal" &&
-                      firstStatement.expression.value === "use server"
-                    ) {
-                      // console.log("Found a use server");
-                      // console.log(node);
-                      // console.log(state);
-                      // console.log(ancestors);
-
-                      // verify top level
-                      // todo
-
-                      // save state
-                      state.actions.push(node);
-                    }
-                  }
-                },
-                ExportNamedDeclaration(node) {
-                  state.exports.push(node as unknown as ExportNamedDeclaration);
-                },
-              });
-
-              for (let node of state.actions) {
-                let index = (ast as unknown as Program).body.indexOf(node);
-                let name = node.id?.name;
-
-                if (!name) {
-                  // todo
-                  throw new Error("No name found");
-                }
-
-                // export action from another module
-                let referenceCode = `
-                ${name}.$$typeof = Symbol.for("react.server.reference");
-                ${name}.$$id = "${module}#${name}";
-                ${name}.$$bound = null;
-                `;
-
-                builder.#serverActions.add(`${module}#${name}`);
-
-                let tree = acorn.parse(referenceCode, {
-                  ecmaVersion: "latest",
-                });
-
-                for (let exportNode of state.exports) {
-                  let specifiers = exportNode.specifiers;
-
-                  let isExported = specifiers.some((specifier) => {
-                    return (
-                      specifier.exported.name === name &&
-                      specifier.local.name === name
-                    );
-                  });
-
-                  // make sure this name isn't already exported as something else
-
-                  if (!isExported) {
-                    exportNode.specifiers.push({
-                      type: "ExportSpecifier",
-                      local: { type: "Identifier", name: name },
-                      exported: { type: "Identifier", name: name },
-                    });
-                  }
-                }
-
-                ast.body.splice(index + 1, 0, ...tree.body);
-              }
-
-              return {
-                contents: astring.generate(ast),
-                loader: "js",
-              };
-            });
-          },
-        },
-      ],
-    });
-  }
-
-  async build() {
-    this.#serverActions = new Set();
-    await this.#context?.rebuild();
-  }
-
-  isAction(id: string) {
-    return this.#serverActions.has(id);
-  }
-
-  async runAction(id: string, args: any[]) {
-    let [moduleName, exportName] = id.split("#");
-
-    if (!moduleName || !exportName || !this.isAction(id)) {
-      throw new Error("Invalid action id");
-    }
-
-    let rscDir = new URL("./rsc/js/", appCompiledDir);
-    let modulePath = new URL(`${moduleName}.js`, rscDir).href;
-    let module = await import(modulePath);
-    let action = module[exportName];
-
-    return action.apply(null, args);
-  }
-}
 
 class SSRAppBuilder {
   #context?: BuildContext;
