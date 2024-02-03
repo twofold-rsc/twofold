@@ -10,9 +10,6 @@ type Store = {
     outgoingCookies: RequestContextExtensions["outgoingCookies"];
   };
   assets: string[];
-  actions: {
-    results: Record<string, any>;
-  };
 };
 
 export const asyncLocalStorage = new AsyncLocalStorage<Store>();

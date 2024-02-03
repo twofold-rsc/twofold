@@ -7,16 +7,14 @@ kitchen sink
 - action on page with blocking suspense
 - refresh a blocking suspense page
 - click link to page that suspends, then router.refresh before it loads
+- title/meta head tags
 
 cli
 
 - bin script should check node version
 
-Image gallery
-
 Get rid of SSR app
 Bundle react in RSC build, import that version for createElement
-Remove action store
 Worker for RSC
 
 Docs
@@ -56,7 +54,7 @@ Form
 - [x] cookies / secure cookies
 - [x] dynamic params
 - [x] query params
-- [ ] back forward scroll position
+- [x] back forward scroll position
 - [x] router.refresh
 - [ ] redirect
 - [ ] not found
@@ -77,7 +75,6 @@ Form
 
 ## Layouts
 
-- [x] Nested layouts
 - [ ] Control head/title/meta tags
 
 ## HMR

@@ -29,7 +29,7 @@ let initialPath = `${location.pathname}${location.search}${location.hash}`;
 let initialCache = new Map<string, any>();
 
 async function callServer(id: string, args: any) {
-  console.log("requesting action", id);
+  // console.log("requesting action", id);
 
   let body = await encodeReply(args);
   let path = `${location.pathname}${location.search}${location.hash}`;
@@ -38,6 +38,7 @@ async function callServer(id: string, args: any) {
     method: "POST",
     headers: {
       Accept: "text/x-component",
+      "x-twofold-initiator": "call-server",
       "x-twofold-server-reference": id,
       "x-twofold-path": path,
     },

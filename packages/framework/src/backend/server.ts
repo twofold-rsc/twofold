@@ -89,9 +89,6 @@ export async function makeServer(build: Build) {
           outgoingCookies: [],
         },
         assets: [],
-        actions: {
-          results: {},
-        },
       };
 
       return await asyncLocalStorage.run(store, async () => {
@@ -240,7 +237,8 @@ export async function makeServer(build: Build) {
     }
 
     let url = new URL(ctx.request.url);
-    let request = new Request(new URL(path, url), ctx.request);
+    let requestUrl = new URL(path, url);
+    let request = new Request(requestUrl, ctx.request);
     let page = runtime.pageForRequest(request);
 
     if (!page) {
@@ -258,6 +256,9 @@ export async function makeServer(build: Build) {
       args = await decodeReply(formData);
     }
 
+    let [, name] = serverReference.split("#");
+    console.log(`🟣 Running action ${name}`);
+
     let actionResult = await build.rsc.runAction(serverReference, args);
 
     let serializedResult: string | undefined;
@@ -272,10 +273,7 @@ export async function makeServer(build: Build) {
     }
 
     let store = asyncLocalStorage.getStore();
-
     if (store) {
-      console.log("ADDING RESULT TO STORE!");
-      store.actions.results[serverReference] = actionResult;
       store.cookies.outgoingCookies = ctx.outgoingCookies;
     }
 

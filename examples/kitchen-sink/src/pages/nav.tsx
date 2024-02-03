@@ -97,6 +97,24 @@ export default function Nav() {
                           </li>
                           <li>
                             <NavigationMenu.Link
+                              active={path === "/react/use-optimistic"}
+                              asChild
+                            >
+                              <Link
+                                href="/react/use-optimistic"
+                                className="block"
+                              >
+                                <span className="font-medium text-gray-900">
+                                  useOptimistic
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  A hook that shows optimistic updates.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
+                          <li>
+                            <NavigationMenu.Link
                               active={path === "/react/suspense"}
                               asChild
                             >
