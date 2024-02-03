@@ -38,7 +38,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "nodemon": "^3.0.2",
+    "nodemon": "^3.0.3",
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
@@ -47,7 +47,7 @@
     "tailwindcss": ">=3.3.3"
   },
   "dependencies": {
-    "@babel/core": "^7.23.5",
+    "@babel/core": "^7.23.9",
     "@hattip/adapter-node": "^0.0.35",
     "@hattip/compose": "^0.0.35",
     "@hattip/cookie": "^0.0.35",
@@ -56,11 +56,11 @@
     "@hattip/router": "^0.0.35",
     "@hattip/session": "^0.0.35",
     "@types/cookie": "^0.5.2",
-    "acorn": "^8.10.0",
-    "acorn-walk": "^8.2.0",
+    "acorn": "^8.11.3",
+    "acorn-walk": "^8.3.2",
     "astring": "^1.8.6",
     "autoprefixer": "^10.4.16",
-    "esbuild": "0.19.8",
+    "esbuild": "0.20.0",
     "postcss": "^8.4.32",
     "postcss-load-config": "^4.0.1",
     "react-refresh": "^0.14.0",

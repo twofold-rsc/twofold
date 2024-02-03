@@ -41,7 +41,7 @@ async function main() {
     hasGit = false;
   }
 
-  signale.info("Welcome to the twofold app generator!");
+  signale.info("Welcome to the Twofold app generator!");
 
   // get app name
   let response = await prompts({
@@ -84,7 +84,7 @@ async function main() {
     process.exit(1);
   }
 
-  signale.pending("Setting up a new twofold app...");
+  signale.pending("Setting up a new Twofold app...");
 
   // find the latest version of twofold from github
   let latestResp = await fetch(

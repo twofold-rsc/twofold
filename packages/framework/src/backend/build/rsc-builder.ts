@@ -9,6 +9,7 @@ import "urlpattern-polyfill";
 import { componentsToTree } from "../render.js";
 import { createHash } from "crypto";
 import { basename, extname } from "path";
+import { serverActionsPlugin } from "./plugins/server-actions.js";
 
 type ClientComponent = {
   moduleId: string;
@@ -16,14 +17,25 @@ type ClientComponent = {
   exports: string[];
 };
 
+type CompiledAction = {
+  id: string;
+  path: string;
+  export: string;
+};
+
 export class RSCBuilder {
   #context?: BuildContext;
   #metafile?: BuildMetafile;
   #error?: Error;
   #clientComponents = new Set<ClientComponent>();
+  #serverActionMap = new Map<string, CompiledAction>();
 
   get clientComponents() {
     return this.#clientComponents;
+  }
+
+  get serverActionMap() {
+    return this.#serverActionMap;
   }
 
   async setup() {
@@ -90,6 +102,7 @@ export class RSCBuilder {
             });
           },
         },
+        serverActionsPlugin({ builder: builder }),
         {
           name: "postcss",
           async setup(build) {
@@ -142,6 +155,7 @@ export class RSCBuilder {
 
   async build() {
     this.#clientComponents = new Set();
+    this.#serverActionMap = new Map();
     this.#metafile = undefined;
     this.#error = undefined;
 
@@ -297,6 +311,23 @@ export class RSCBuilder {
     pages.forEach((page) => root?.add(page));
 
     return root;
+  }
+
+  isAction(id: string) {
+    return this.#serverActionMap.has(id);
+  }
+
+  async runAction(id: string, args: any[]) {
+    let action = this.#serverActionMap.get(id);
+
+    if (!action) {
+      throw new Error("Invalid action id");
+    }
+
+    let module = await import(action.path);
+    let fn = module[action.export];
+
+    return fn.apply(null, args);
   }
 }
 
