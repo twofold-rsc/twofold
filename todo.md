@@ -4,12 +4,13 @@ Precedence blocks rendering until styles load
 
 kitchen sink
 
-- bin script should check node version
 - action on page with blocking suspense
 - refresh a blocking suspense page
 - click link to page that suspends, then router.refresh before it loads
 
-create-twofold-app
+cli
+
+- bin script should check node version
 
 Image gallery
 
