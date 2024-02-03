@@ -16,7 +16,6 @@ Image gallery
 
 Get rid of SSR app
 Bundle react in RSC build, import that version for createElement
-Better actions
 Remove action store
 Worker for RSC
 
@@ -25,11 +24,6 @@ Docs
 Playwright
 Form
 
-## Refactors
-
-- clean up builders
-- clean up files
-
 ## Actions
 
 - [x] Action from RSC
@@ -37,8 +31,9 @@ Form
 - [x] Action takes form data
 - [x] Action takes primitive
 - [x] Action passes data into next render
-- [ ] Don't do sep build for actions, do action pass in rsc builder
 - [ ] Action imported into client component from 'use server' file
+- [ ] Action imported into server component from 'use server' file
+- [ ] Action defined in render (closure variables)
 
 - [x] pass in text args
 - [x] pass in form args
@@ -87,36 +82,21 @@ Form
 
 ## HMR
 
-- [ ] Errors
 - [ ] find the file that changed, if all capital then trigger refresh otherwise reload window
 - [ ] Disable fast refresh code for prod builds
 
 ## DX
 
 - Block requests during build
-- Clean up post build
 - Link should only navigate with local urls
 - CSS should reload independent of RSC/CC reload. Possible for CC+CSS to change at same time.
 - List of external packages
 
 ## Other
 
-- Async local storage (cache)
 - Preload modules (SSR Store chunks)
 
 ## Error pages
-
-- [x] Have stylesheet load/unload
-- [x] server.ts error should return serialized error for RSC requests
-- [x] Server action throw
-- [x] Server action where client component uses try-catch
-- [ ] Errors indexes
-- [ ] Test streaming still works
-
-- [ ] RSC with syntax error HMR
-- [ ] Client component with syntax error HMR
-- [ ] Reloading after recovering for an RSC error
-- [ ] Reloading after recovering from a client component error
 
 - [ ] Don't allow setting cookies during render
 
