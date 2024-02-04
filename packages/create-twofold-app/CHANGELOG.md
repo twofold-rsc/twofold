@@ -1,5 +1,11 @@
 # create-twofold-app
 
+## 0.0.3
+
+### Patch Changes
+
+- Cleanup
+
 ## 0.0.2
 
 ### Patch Changes
