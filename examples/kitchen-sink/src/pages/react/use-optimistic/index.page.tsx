@@ -5,6 +5,8 @@ let todos = [
   { id: 2, text: "Do laundry" },
 ];
 
+export type Todo = (typeof todos)[number];
+
 async function addTodo(form: FormData) {
   "use server";
 

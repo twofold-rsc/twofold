@@ -1,16 +1,19 @@
 "use client";
 
-import { useOptimistic } from "react";
+import { useOptimistic, useRef } from "react";
+import { Todo } from "./index.page";
+
+type OptimisticTodo = Todo & { tempId?: string };
 
 export default function Form({
   todos,
   addAction,
 }: {
-  todos: { id: number; text: string }[];
+  todos: Todo[];
   addAction: (form: FormData) => Promise<void>;
 }) {
   let [optimisticTodos, setOptimisticTodos] =
-    useOptimistic<((typeof todos)[number] & { tempId?: string })[]>(todos);
+    useOptimistic<OptimisticTodo[]>(todos);
 
   async function formAction(formData: FormData) {
     let text = formData.get("text");
@@ -30,8 +33,12 @@ export default function Form({
       ];
     });
 
+    ref.current?.reset();
+
     await addAction(formData);
   }
+
+  let ref = useRef<HTMLFormElement>(null);
 
   return (
     <div>
@@ -50,7 +57,7 @@ export default function Form({
         ))}
       </ul>
 
-      <form action={formAction}>
+      <form action={formAction} ref={ref}>
         <div className="mt-3 flex items-center space-x-2">
           <input
             type="text"
