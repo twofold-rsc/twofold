@@ -93,7 +93,9 @@ async function main() {
   let latestJson = await latestResp.json();
 
   let downloadUrl = latestJson["tarball_url"];
-  let version = latestJson["tag_name"];
+  let version = latestJson["tag_name"].startsWith("v")
+    ? latestJson["tag_name"].slice(1)
+    : latestJson["tag_name"];
 
   if (!downloadUrl || typeof downloadUrl !== "string") {
     signale.error("Failed to find latest release.");
