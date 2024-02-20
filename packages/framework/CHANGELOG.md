@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.9
+
+### Patch Changes
+
+- Keep certain packages external
+
 ## 0.0.8
 
 ### Patch Changes
