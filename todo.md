@@ -5,10 +5,6 @@ Precedence blocks rendering until styles load
 - client proxy function
 - server actions function
 
-framework
-
-- external packages
-
 kitchen sink
 
 - action on page with blocking suspense
