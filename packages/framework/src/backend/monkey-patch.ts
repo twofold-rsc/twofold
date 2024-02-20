@@ -1,8 +1,12 @@
 // import { getSSRStore } from "./stores/ssr-store.js";
-import { AsyncLocalStorage as NodeAsyncLocalStorage } from "async_hooks";
+import { AsyncLocalStorage as NodeAsyncLocalStorage } from "node:async_hooks";
+import { createRequire } from "node:module";
 
 declare global {
   var AsyncLocalStorage: typeof NodeAsyncLocalStorage;
+  var __webpack_chunk_load__: (chunkId: string) => Promise<any>;
+  var __webpack_require__: (id: string) => any;
+  var __non_webpack_require__: ReturnType<typeof createRequire>;
 }
 
 globalThis.AsyncLocalStorage = NodeAsyncLocalStorage;
@@ -23,7 +27,6 @@ export function injectResolver(resolver: (module: string) => string) {
 
 let moduleMap = new Map();
 
-// @ts-ignore
 globalThis.__webpack_chunk_load__ = async function (chunkId: string) {
   // console.log("*** server loading chunk", chunkId);
 
@@ -46,9 +49,10 @@ globalThis.__webpack_chunk_load__ = async function (chunkId: string) {
   return mod;
 };
 
-// @ts-ignore
 globalThis.__webpack_require__ = function (id: string) {
   let [moduleId, exportName] = id.split("#");
   // console.log("*** server require", id);
   return moduleMap.get(moduleId);
 };
+
+globalThis.__non_webpack_require__ = createRequire(import.meta.url);

@@ -2,6 +2,13 @@
 
 Precedence blocks rendering until styles load
 
+- client proxy function
+- server actions function
+
+framework
+
+- external packages
+
 kitchen sink
 
 - action on page with blocking suspense
@@ -13,9 +20,8 @@ cli
 
 - bin script should check node version
 
+Externals for RSC build (inc react)
 Get rid of SSR app
-Bundle react in RSC build, import that version for createElement
-Worker for RSC
 
 Docs
 
@@ -72,6 +78,7 @@ Form
 - [ ] Live reload updates (client component first, make css independent)
 - [ ] List of dependencies that should be external
 - [ ] allow CC to import css
+- [ ] Worker for RSC
 
 ## Layouts
 
@@ -81,6 +88,7 @@ Form
 
 - [ ] find the file that changed, if all capital then trigger refresh otherwise reload window
 - [ ] Disable fast refresh code for prod builds
+- [ ] Read this: https://bjornlu.com/blog/hot-module-replacement-is-easy#importmetahotaccept
 
 ## DX
 

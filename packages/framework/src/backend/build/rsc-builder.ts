@@ -10,6 +10,7 @@ import { componentsToTree } from "../render.js";
 import { createHash } from "crypto";
 import { basename, extname } from "path";
 import { serverActionsPlugin } from "./plugins/server-actions.js";
+import { externalPackages } from "./externals.js";
 
 type ClientComponent = {
   moduleId: string;
@@ -49,14 +50,9 @@ export class RSCBuilder {
       entryPoints: ["./src/pages/**/*.page.tsx", "./src/pages/**/layout.tsx"],
       outdir: "./.twofold/rsc/",
       entryNames: "[ext]/[dir]/[name]-[hash]",
-      // i don't think we want this
-      // packages: "external",
-      // use this?
-      external: ["shiki", "react"],
+      external: ["react", ...externalPackages],
       conditions: ["react-server", "module"],
       platform: "node",
-      // Not needed but easier to debug?
-      // preserveSymlinks: true,
       splitting: true,
       chunkNames: "chunks/[name]-[hash]",
       metafile: true,
