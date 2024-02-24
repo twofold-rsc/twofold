@@ -287,6 +287,21 @@ export default function Nav() {
                               </Link>
                             </NavigationMenu.Link>
                           </li>
+                          <li>
+                            <NavigationMenu.Link
+                              active={path === "/http/public"}
+                              asChild
+                            >
+                              <Link href="/http/public" className="block">
+                                <span className="font-medium text-gray-900">
+                                  Public folder
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  Public folder for static assets
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
                         </ul>
                       </NavigationMenu.Content>
                     </NavigationMenu.Item>

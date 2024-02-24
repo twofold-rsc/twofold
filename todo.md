@@ -1,7 +1,12 @@
 # TODO
 
-Precedence blocks rendering until styles load
+Next publish: create-twofold-app
 
+framework
+
+- public dir
+- middleware
+- image imports (rsc, browser, ssr)
 - client proxy function
 - server actions function
 

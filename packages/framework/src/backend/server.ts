@@ -19,6 +19,7 @@ import { Runtime } from "./runtime.js";
 import { fileURLToPath } from "url";
 import { appCompiledDir } from "./files.js";
 import { errors } from "./server/errors.js";
+import { staticFiles } from "./server/static-files.js";
 
 export async function makeServer(build: Build) {
   let runtime = new Runtime(build);
@@ -384,6 +385,8 @@ export async function makeServer(build: Build) {
       },
     });
   });
+
+  app.use(staticFiles(build));
 
   app.use(() => {
     throw new Error("404 - Page not found");

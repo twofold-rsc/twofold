@@ -3,6 +3,7 @@
     "strict": true,
     "skipLibCheck": true,
     "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
     "module": "ESNext",
     "moduleResolution": "Node",
     "target": "ESNext",

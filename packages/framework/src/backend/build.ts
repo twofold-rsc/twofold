@@ -12,8 +12,13 @@ import {
 import { RSCBuilder } from "./build/rsc-builder.js";
 import * as path from "node:path";
 import { ErrorPageBuilder } from "./build/error-page-builder.js";
+import { StaticFilesBuilder } from "./build/static-files-builder.js";
 
 class BuildEvents extends EventEmitter {}
+
+// Instead of Build class building everything there's really
+// three different types of things we need to build:
+// Build objects (app, error-app, static files)
 
 export class Build {
   #key = randomBytes(6).toString("hex");
@@ -22,6 +27,7 @@ export class Build {
   #rscBuilder: RSCBuilder;
   #browserAppBuilder: BrowserAppBuilder;
   #ssrAppBuilder?: SSRAppBuilder;
+  #staticFilesBuilder: StaticFilesBuilder;
   #events = new BuildEvents();
   #previousChunks = new Set<string>();
   #previousRSCFiles = new Set<string>();
@@ -32,6 +38,7 @@ export class Build {
     this.#browserAppBuilder = new BrowserAppBuilder({
       rscBuilder: this.#rscBuilder,
     });
+    this.#staticFilesBuilder = new StaticFilesBuilder();
   }
 
   get isBuilding() {
@@ -111,6 +118,8 @@ export class Build {
 
     await this.#ssrAppBuilder.setup();
     await this.#ssrAppBuilder.build();
+
+    await this.#staticFilesBuilder.build();
 
     this.#key = randomBytes(6).toString("hex");
 
@@ -258,11 +267,18 @@ export class Build {
     return this.newRSCFiles("css");
   }
 
+  get staticFileMap() {
+    return this.#staticFilesBuilder.fileMap;
+  }
+
   async watch() {
-    let watched = watch("./src", { recursive: true });
-    for await (const event of watched) {
-      await this.build();
-    }
+    let dirs = ["./src", "./public"];
+    dirs.forEach(async (dir) => {
+      let watched = watch(dir, { recursive: true });
+      for await (let _event of watched) {
+        await this.build();
+      }
+    });
   }
 }
 
