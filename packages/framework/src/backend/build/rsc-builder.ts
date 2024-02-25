@@ -1,8 +1,8 @@
 import { context } from "esbuild";
 import { BuildContext, BuildMetafile } from "../build";
-import { readFile } from "fs/promises";
+import { readFile, stat } from "fs/promises";
 import { fileURLToPath, pathToFileURL } from "url";
-import { appCompiledDir, frameworkSrcDir } from "../files.js";
+import { appCompiledDir, appSrcDir, frameworkSrcDir } from "../files.js";
 import * as postcssrc from "postcss-load-config";
 import postcss from "postcss";
 import "urlpattern-polyfill";
@@ -11,6 +11,7 @@ import { createHash } from "crypto";
 import { basename, extname } from "path";
 import { serverActionsPlugin } from "./plugins/server-actions.js";
 import { externalPackages } from "./externals.js";
+import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
 
 type ClientComponent = {
   moduleId: string;
@@ -42,12 +43,23 @@ export class RSCBuilder {
   async setup() {
     let builder = this;
 
+    let hasMiddleware = await this.hasMiddleware();
+
+    let entryPoints = [
+      "./src/pages/**/*.page.tsx",
+      "./src/pages/**/layout.tsx",
+    ];
+
+    if (hasMiddleware) {
+      entryPoints.push("./src/middleware.ts");
+    }
+
     this.#context = await context({
       bundle: true,
       format: "esm",
       jsx: "automatic",
       logLevel: "error",
-      entryPoints: ["./src/pages/**/*.page.tsx", "./src/pages/**/layout.tsx"],
+      entryPoints,
       outdir: "./.twofold/rsc/",
       entryNames: "[ext]/[dir]/[name]-[hash]",
       external: ["react", ...externalPackages],
@@ -181,6 +193,27 @@ export class RSCBuilder {
     }
 
     return Object.keys(metafile.outputs);
+  }
+
+  async hasMiddleware() {
+    let middlewareUrl = new URL("./middleware.ts", appSrcDir);
+    try {
+      let stats = await stat(middlewareUrl);
+      return stats.isFile();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  get middlewarePath() {
+    if (!this.#metafile) {
+      throw new Error("No metafile");
+    }
+
+    let middlewareUrl = new URL("./middleware.ts", appSrcDir);
+    let middlewarePath = fileURLToPath(middlewareUrl);
+
+    return getCompiledEntrypoint(middlewarePath, this.#metafile);
   }
 
   get pages() {

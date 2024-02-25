@@ -274,6 +274,26 @@ export default function Nav() {
                           </li>
                           <li>
                             <NavigationMenu.Link
+                              active={
+                                path === "/http/middleware?global-middleware=1"
+                              }
+                              asChild
+                            >
+                              <Link
+                                href="/http/middleware?global-middleware=1"
+                                className="block"
+                              >
+                                <span className="font-medium text-gray-900">
+                                  Global middleware
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  Run code before handling a request.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
+                          <li>
+                            <NavigationMenu.Link
                               active={path === "/http/streaming"}
                               asChild
                             >

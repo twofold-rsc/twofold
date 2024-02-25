@@ -4,8 +4,6 @@ Next publish: create-twofold-app
 
 framework
 
-- public dir
-- middleware
 - image imports (rsc, browser, ssr)
 - client proxy function
 - server actions function
@@ -47,6 +45,8 @@ Form
 - [ ] verify name in build
 - [ ] Test non-actionable functions
 - [ ] check to make sure action isnt already exported as something else
+
+- [ ] this looks amazing: https://github.com/lubieowoce/tangle/blob/main/packages/babel-rsc/src/babel-rsc-actions.ts
 
 ## Client Components
 

@@ -58,6 +58,15 @@ export async function makeServer(build: Build) {
     }),
   );
 
+  app.use(async (ctx) => {
+    let hasMiddleware = await build.rsc.hasMiddleware();
+    if (hasMiddleware) {
+      let module = await import(build.rsc.middlewarePath);
+      let ans = await module.default(ctx.request);
+      return ans;
+    }
+  });
+
   let reqId = 0;
 
   app.use(DevReload(build));

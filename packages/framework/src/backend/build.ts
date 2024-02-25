@@ -1,7 +1,7 @@
 import { context } from "esbuild";
-import { watch } from "node:fs/promises";
+import { stat, watch } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { frameworkSrcDir } from "./files.js";
+import { cwdUrl, frameworkSrcDir } from "./files.js";
 import { randomBytes } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { BrowserAppBuilder } from "./build/browser-app-builder.js";
@@ -274,9 +274,20 @@ export class Build {
   async watch() {
     let dirs = ["./src", "./public"];
     dirs.forEach(async (dir) => {
-      let watched = watch(dir, { recursive: true });
-      for await (let _event of watched) {
-        await this.build();
+      let url = new URL(dir, cwdUrl);
+      let canWatch = false;
+      try {
+        let stats = await stat(url);
+        canWatch = stats.isDirectory();
+      } catch (_e) {
+        canWatch = false;
+      }
+
+      if (canWatch) {
+        let watched = watch(dir, { recursive: true });
+        for await (let _event of watched) {
+          await this.build();
+        }
       }
     });
   }
