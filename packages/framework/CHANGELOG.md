@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.10
+
+### Patch Changes
+
+- Static files, global middleware, bug fixes
+
 ## 0.0.9
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # create-twofold-app
 
+## 0.0.5
+
+### Patch Changes
+
+- Static files, global middleware, bug fixes
+
 ## 0.0.4
 
 ### Patch Changes
