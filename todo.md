@@ -15,6 +15,10 @@ cli
 
 - bin script should check node version
 
+base-app
+
+- use uff-8 charset meta tag
+
 kitchen sink
 
 - action on page with blocking suspense

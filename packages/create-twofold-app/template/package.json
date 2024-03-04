@@ -1,6 +1,6 @@
 {
   "name": "base-app",
-  "version": "0.0.5",
+  "version": "0.0.10",
   "private": true,
   "description": "",
   "type": "module",
@@ -16,6 +16,7 @@
     "@twofold/framework": "workspace:*",
     "react": "18.3.0-canary-4b2a1115a-20240202",
     "react-dom": "18.3.0-canary-4b2a1115a-20240202",
+    "react-server-dom-webpack": "18.3.0-canary-4b2a1115a-20240202",
     "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
