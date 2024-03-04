@@ -1,15 +1,5 @@
 # TODO
 
-before releasing
-
-- add RSDW to base-app
-
-release
-
-- improve client component and server action creation
-- bind server actions to props
-- export named client components
-
 framework
 
 - get rid of SSR app

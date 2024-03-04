@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.11
+
+### Patch Changes
+
+- Improve client component and actions support
+
 ## 0.0.10
 
 ### Patch Changes
