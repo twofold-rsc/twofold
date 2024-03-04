@@ -15,7 +15,8 @@
     "@radix-ui/react-navigation-menu": "^1.1.4",
     "@twofold/framework": "workspace:*",
     "react": "18.3.0-canary-4b2a1115a-20240202",
-    "react-dom": "18.3.0-canary-4b2a1115a-20240202"
+    "react-dom": "18.3.0-canary-4b2a1115a-20240202",
+    "react-server-dom-webpack": "18.3.0-canary-4b2a1115a-20240202"
   },
   "devDependencies": {
     "@types/node": "^20.10.2",

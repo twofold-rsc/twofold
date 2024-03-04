@@ -1,6 +1,4 @@
 import { Plugin } from "esbuild";
-import { fileURLToPath } from "url";
-import { appSrcDir } from "../../files.js";
 import * as path from "path";
 
 export type ClientComponentOutput = {
@@ -46,7 +44,7 @@ export function clientComponentMapPlugin({ builder }: { builder: Builder }) {
 
         let outputDirPath = path.join(
           process.cwd(),
-          build.initialOptions.outdir ?? ""
+          build.initialOptions.outdir ?? "",
         );
 
         for (const outputFile in metafile.outputs) {

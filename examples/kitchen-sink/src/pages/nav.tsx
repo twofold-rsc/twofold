@@ -207,6 +207,25 @@ export default function Nav() {
                               </Link>
                             </NavigationMenu.Link>
                           </li>
+                          <li>
+                            <NavigationMenu.Link
+                              active={path === "/server-actions/bind"}
+                              asChild
+                            >
+                              <Link
+                                href="/server-actions/bind"
+                                className="block"
+                              >
+                                <span className="font-medium text-gray-900">
+                                  Bound action
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  A server action that binds to a component
+                                  prop.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
                         </ul>
                       </NavigationMenu.Content>
                     </NavigationMenu.Item>
@@ -228,6 +247,27 @@ export default function Nav() {
                                 </span>
                                 <p className="mt-1 text-sm leading-snug text-gray-700">
                                   A component that runs on the client.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
+                          <li>
+                            <NavigationMenu.Link
+                              active={
+                                path === "/client-components/named-exports"
+                              }
+                              asChild
+                            >
+                              <Link
+                                href="/client-components/named-exports"
+                                className="block"
+                              >
+                                <span className="font-medium text-gray-900">
+                                  Named exports
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  A file that exports multiple client
+                                  components.
                                 </p>
                               </Link>
                             </NavigationMenu.Link>

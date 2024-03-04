@@ -46,6 +46,7 @@
   "peerDependencies": {
     "react": "18.3.0-canary-4b2a1115a-20240202",
     "react-dom": "18.3.0-canary-4b2a1115a-20240202",
+    "react-server-dom-webpack": "18.3.0-canary-4b2a1115a-20240202",
     "tailwindcss": ">=3.3.3"
   },
   "dependencies": {
@@ -69,7 +70,6 @@
     "postcss": "^8.4.32",
     "postcss-load-config": "^4.0.1",
     "react-refresh": "^0.14.0",
-    "react-server-dom-webpack": "18.3.0-canary-4b2a1115a-20240202",
     "serialize-error": "^11.0.3",
     "server-only": "^0.0.1",
     "urlpattern-polyfill": "^9.0.0"

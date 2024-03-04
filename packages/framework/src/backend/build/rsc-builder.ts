@@ -7,8 +7,7 @@ import * as postcssrc from "postcss-load-config";
 import postcss from "postcss";
 import "urlpattern-polyfill";
 import { componentsToTree } from "../render.js";
-import { createHash } from "crypto";
-import { basename, extname } from "path";
+import { clientComponentProxyPlugin } from "./plugins/client-component-proxy-plugin.js";
 import { serverActionsPlugin } from "./plugins/server-actions.js";
 import { externalPackages } from "./externals.js";
 import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
@@ -62,54 +61,14 @@ export class RSCBuilder {
       entryPoints,
       outdir: "./.twofold/rsc/",
       entryNames: "[ext]/[dir]/[name]-[hash]",
-      external: ["react", ...externalPackages],
+      external: ["react", "react-server-dom-webpack", ...externalPackages],
       conditions: ["react-server", "module"],
       platform: "node",
       splitting: true,
       chunkNames: "chunks/[name]-[hash]",
       metafile: true,
       plugins: [
-        {
-          name: "client-components",
-          setup(build) {
-            build.onLoad({ filter: /\.(ts|tsx|js|jsx)$/ }, async ({ path }) => {
-              // console.log("onLoad:", path);
-
-              let contents = await readFile(path, "utf-8");
-              let isClient = contents.startsWith('"use client";\n');
-
-              if (isClient) {
-                let md5 = createHash("md5").update(contents).digest("hex");
-
-                // let module = path.replace(/\.[^/.]+$/, "");
-                // let id = `${module}#default`;
-
-                // generate an id and stash it
-                let name = basename(path, extname(path));
-                // rename this to moduleId
-                let moduleId = `${name}-${md5}`;
-
-                let newContent = `export default { 
-                  $$typeof: Symbol.for("react.client.reference"),
-                  $$async: false, 
-                  $$id: "${moduleId}#default",
-                  name: "default"
-                }`;
-
-                builder.clientComponents.add({
-                  moduleId,
-                  path,
-                  exports: ["default"],
-                });
-
-                return {
-                  loader: "js",
-                  contents: newContent,
-                };
-              }
-            });
-          },
-        },
+        clientComponentProxyPlugin({ builder: builder }),
         serverActionsPlugin({ builder: builder }),
         {
           name: "postcss",

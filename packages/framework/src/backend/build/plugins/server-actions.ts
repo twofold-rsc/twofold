@@ -26,6 +26,12 @@ type ServerAction = {
   export: string;
 };
 
+let importStatement = `import { registerServerReference } from "react-server-dom-webpack/server.edge";`;
+let importNode = acorn.parse(importStatement, {
+  ecmaVersion: "latest",
+  sourceType: "module",
+});
+
 export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
   let plugin: Plugin = {
     name: "server-actions",
@@ -71,6 +77,8 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
             sourceType: "module",
           });
 
+          ast.body.unshift(...importNode.body);
+
           acornWalk.ancestor(ast, {
             FunctionDeclaration(_node, _, ancestors) {
               let node = _node as unknown as FunctionDeclaration;
@@ -109,12 +117,7 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
             }
 
             let id = `${moduleId}#${name}`;
-
-            let referenceCode = `
-                ${name}.$$typeof = Symbol.for("react.server.reference");
-                ${name}.$$id = "${id}";
-                ${name}.$$bound = null;
-                `;
+            let registerCode = `registerServerReference(${name}, "${moduleId}", "${name}");`;
 
             serverActions.add({
               id,
@@ -122,7 +125,7 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
               export: name,
             });
 
-            let tree = acorn.parse(referenceCode, {
+            let tree = acorn.parse(registerCode, {
               ecmaVersion: "latest",
             });
 

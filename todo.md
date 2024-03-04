@@ -1,12 +1,29 @@
 # TODO
 
-Next publish: create-twofold-app
+before releasing
+
+- add RSDW to base-app
+
+release
+
+- improve client component and server action creation
+- bind server actions to props
+- export named client components
 
 framework
 
+- get rid of SSR app
+- use server file
+
 - image imports (rsc, browser, ssr)
-- client proxy function
-- server actions function
+- redirects
+- not found
+
+- prod builds
+
+cli
+
+- bin script should check node version
 
 kitchen sink
 
@@ -15,12 +32,7 @@ kitchen sink
 - click link to page that suspends, then router.refresh before it loads
 - title/meta head tags
 
-cli
-
-- bin script should check node version
-
 Externals for RSC build (inc react)
-Get rid of SSR app
 
 Docs
 
@@ -80,6 +92,9 @@ Form
 - [ ] List of dependencies that should be external
 - [ ] allow CC to import css
 - [ ] Worker for RSC
+- [ ] come up with way of building all apps (public, error, rsc, client)
+- [ ] static routing should come first
+- [ ] check if middleware export default is a function
 
 ## Layouts
 

@@ -19,7 +19,7 @@ export default function InlineRSCStream() {
 
 // From: https://gist.github.com/jacob-ebey/b21d3dbe275befff481ec8f3702f90ae#file-recursive-rsc-stream-inline-ts
 
-export async function Inline({
+async function Inline({
   reader,
   decoder,
   didSetup = false,
@@ -80,7 +80,7 @@ export async function Inline({
             <script
               dangerouslySetInnerHTML={{
                 __html: `window.initialRSC.push(${sanitize(
-                  JSON.stringify(string)
+                  JSON.stringify(string),
                 )});`,
               }}
             />
