@@ -1,11 +1,11 @@
-import "./react-refresh";
+import "../ext/react-refresh";
 import { use, createElement } from "react";
 // @ts-ignore
 import { renderToReadableStream } from "react-dom/server.browser";
 // @ts-ignore
 import { createFromReadableStream } from "react-server-dom-webpack/client.browser";
-import { RoutingContext } from "./routing-context";
-import { StreamContext } from "./stream-context";
+import { RoutingContext } from "../contexts/routing-context";
+import { StreamContext } from "../contexts/stream-context";
 
 export function SSRApp({
   path,
@@ -30,8 +30,6 @@ export function SSRApp({
     </RoutingContext>
   );
 }
-
-export { createElement, renderToReadableStream };
 
 type RenderOptions = {
   rscStream: ReadableStream<Uint8Array>;

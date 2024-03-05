@@ -28,15 +28,15 @@ export function injectResolver(resolver: (module: string) => string) {
 let moduleMap = new Map();
 
 globalThis.__webpack_chunk_load__ = async function (chunkId: string) {
-  console.log("*** server loading chunk", chunkId);
+  // console.log("*** server loading chunk", chunkId);
 
-  let [moduleId, name, browserHash, serverHash] = chunkId.split(":");
+  let [moduleId, name, hash] = chunkId.split(":");
   let modulePath = resolvers.moduleIdToPath(moduleId);
   if (!modulePath) {
     throw new Error(`Failed to resolve module id ${moduleId}`);
   }
 
-  console.log("*** resolved to", modulePath);
+  // console.log("*** resolved to", modulePath);
 
   let mod = await import(modulePath);
 

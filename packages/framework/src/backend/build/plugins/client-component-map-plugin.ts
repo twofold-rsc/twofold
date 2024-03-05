@@ -8,15 +8,15 @@ export type ClientComponentOutput = {
   hash: string;
 };
 
-type Builder = {
+export function clientComponentMapPlugin({
+  clientEntryPoints,
+  setClientComponentOutputMap,
+}: {
   clientEntryPoints: string[];
-  clientComponentOutputMap: Map<string, ClientComponentOutput>;
-};
-
-// todo change this to invoke a callback instead of taking
-// a builder
-
-export function clientComponentMapPlugin({ builder }: { builder: Builder }) {
+  setClientComponentOutputMap: (
+    clientComponentOutputMap: Map<string, ClientComponentOutput>,
+  ) => void;
+}) {
   let plugin: Plugin = {
     name: "client-components",
     setup(build) {
@@ -52,8 +52,7 @@ export function clientComponentMapPlugin({ builder }: { builder: Builder }) {
           let entryPoint = output.entryPoint;
           if (entryPoint) {
             let entryPointPath = path.join(process.cwd(), entryPoint);
-            let isClientComponent =
-              builder.clientEntryPoints.includes(entryPointPath);
+            let isClientComponent = clientEntryPoints.includes(entryPointPath);
 
             if (isClientComponent) {
               let outputPath = path.join(process.cwd(), outputFile);
@@ -71,7 +70,7 @@ export function clientComponentMapPlugin({ builder }: { builder: Builder }) {
         }
 
         // console.log(Object.fromEntries(outputMap.entries()));
-        builder.clientComponentOutputMap = outputMap;
+        setClientComponentOutputMap(outputMap);
       });
     },
   };

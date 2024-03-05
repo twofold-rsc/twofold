@@ -43,7 +43,7 @@ export function errors(build: Build): RouteHandler {
       request.method === "GET" &&
       url.pathname === "/_twofold/errors/app.js"
     ) {
-      let contents = await build.errorPage.js();
+      let contents = await build.builders.error.js();
       return new Response(contents, {
         headers: {
           "content-type": "application/javascript",
@@ -55,7 +55,7 @@ export function errors(build: Build): RouteHandler {
       request.method === "GET" &&
       url.pathname === "/_twofold/errors/app.css"
     ) {
-      let contents = await build.errorPage.css();
+      let contents = await build.builders.error.css();
       return new Response(contents, {
         headers: {
           "content-type": "text/css",

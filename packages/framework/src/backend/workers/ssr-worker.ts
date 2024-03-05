@@ -19,7 +19,7 @@ let bootstrapUrl = workerData.bootstrapUrl;
 let clientComponentModuleMap = workerData.clientComponentModuleMap;
 
 injectResolver((moduleId) => {
-  return clientComponentModuleMap[moduleId]?.browser;
+  return clientComponentModuleMap[moduleId]?.path;
 });
 
 let appModule = await import(appPath);

@@ -7,12 +7,13 @@ import {
 import { readFile } from "fs/promises";
 import { transformAsync } from "@babel/core";
 import { fileURLToPath } from "url";
-import { appSrcDir, cwdUrl, frameworkSrcDir } from "../files.js";
+import { appSrcDir, frameworkSrcDir } from "../files.js";
 import { dirname } from "path";
 import { RSCBuilder } from "./rsc-builder";
 import * as path from "path";
+import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
 
-export class BrowserAppBuilder {
+export class ClientAppBuilder {
   #metafile?: BuildMetafile;
   #error?: Error;
   #rscBuilder: RSCBuilder;
@@ -26,14 +27,6 @@ export class BrowserAppBuilder {
     return Array.from(this.#rscBuilder.clientComponents).map(
       (component) => component.path,
     );
-  }
-
-  get clientComponentOutputMap() {
-    return this.#clientComponentOutputMap;
-  }
-
-  set clientComponentOutputMap(map: Map<string, ClientComponentOutput>) {
-    this.#clientComponentOutputMap = map;
   }
 
   async build() {
@@ -58,7 +51,12 @@ export class BrowserAppBuilder {
         chunkNames: "chunks/[name]-[hash]",
         metafile: true,
         plugins: [
-          clientComponentMapPlugin({ builder: this }),
+          clientComponentMapPlugin({
+            clientEntryPoints: this.clientEntryPoints,
+            setClientComponentOutputMap: (clientComponentOutputMap) => {
+              this.#clientComponentOutputMap = clientComponentOutputMap;
+            },
+          }),
           {
             name: "react-refresh",
             setup(build) {
@@ -136,7 +134,7 @@ export class BrowserAppBuilder {
 
   private get initializeBrowserPath() {
     let initializeBrowser = fileURLToPath(
-      new URL("./clients/browser/initialize-browser.tsx", frameworkSrcDir),
+      new URL("./client-app/browser/initialize-browser.tsx", frameworkSrcDir),
     );
 
     return initializeBrowser;
@@ -144,7 +142,7 @@ export class BrowserAppBuilder {
 
   private get srcSSRAppPath() {
     let initializeBrowser = fileURLToPath(
-      new URL("./clients/browser/ssr-app.tsx", frameworkSrcDir),
+      new URL("./client-app/ssr/ssr-app.tsx", frameworkSrcDir),
     );
 
     return initializeBrowser;
@@ -162,31 +160,8 @@ export class BrowserAppBuilder {
     return this.#error;
   }
 
-  async cleanup() {}
-
-  get files() {
-    return Object.keys(this.metafile.outputs);
-  }
-
   get bootstrapPath() {
-    let outputs = this.metafile.outputs;
-    let outputFiles = Object.keys(outputs);
-
-    let file = outputFiles.find((outputFile) => {
-      let entryPoint = outputs[outputFile].entryPoint;
-      if (entryPoint) {
-        let fullEntryPointPath = path.join(process.cwd(), entryPoint);
-        return fullEntryPointPath === this.initializeBrowserPath;
-      }
-    });
-
-    if (!file) {
-      throw new Error("Failed to get bootstrap module");
-    }
-
-    let filePath = fileURLToPath(new URL(file, cwdUrl));
-
-    return filePath;
+    return getCompiledEntrypoint(this.initializeBrowserPath, this.metafile);
   }
 
   get bootstrapHash() {
@@ -198,24 +173,79 @@ export class BrowserAppBuilder {
   }
 
   get SSRAppPath() {
-    let outputs = this.metafile.outputs;
-    let outputFiles = Object.keys(outputs);
+    return getCompiledEntrypoint(this.srcSSRAppPath, this.metafile);
+  }
 
-    let file = outputFiles.find((outputFile) => {
-      let entryPoint = outputs[outputFile].entryPoint;
-      if (entryPoint) {
-        let fullEntryPointPath = path.join(process.cwd(), entryPoint);
-        return fullEntryPointPath === this.srcSSRAppPath;
-      }
-    });
+  get clientComponentModuleMap() {
+    // moduleId -> {
+    //   path: outputFile
+    // }
 
-    if (!file) {
-      throw new Error("Failed to get bootstrap module");
+    let outputMap = this.#clientComponentOutputMap;
+    if (!outputMap) {
+      return {};
     }
 
-    let filePath = fileURLToPath(new URL(file, cwdUrl));
+    let clientComponents = Array.from(this.#rscBuilder.clientComponents);
+    let clientComponentModuleMap = new Map<
+      string,
+      {
+        path?: string;
+      }
+    >();
 
-    return filePath;
+    for (let clientComponent of clientComponents) {
+      let { moduleId, path } = clientComponent;
+      clientComponentModuleMap.set(moduleId, {
+        path: outputMap.get(path)?.outputPath,
+      });
+    }
+
+    return Object.fromEntries(clientComponentModuleMap.entries());
+  }
+
+  get clientComponentMap() {
+    let outputMap = this.#clientComponentOutputMap;
+
+    if (!outputMap) {
+      return {};
+    }
+
+    let clientComponents = Array.from(this.#rscBuilder.clientComponents);
+    let clientComponentMap = new Map<
+      string,
+      {
+        id: string;
+        chunks: string[];
+        name: string;
+        async: false;
+      }
+    >();
+
+    for (let clientComponent of clientComponents) {
+      let { moduleId, path } = clientComponent;
+
+      let output = outputMap.get(path);
+      if (!output) {
+        throw new Error("Missing output");
+      }
+
+      // [moduleId:name:hash]
+      let chunk = `${moduleId}:${output.name}:${output.hash}`;
+
+      for (let exportName of clientComponent.exports) {
+        let id = `${moduleId}#${exportName}`;
+
+        clientComponentMap.set(id, {
+          id,
+          chunks: [chunk],
+          name: exportName,
+          async: false,
+        });
+      }
+    }
+
+    return Object.fromEntries(clientComponentMap.entries());
   }
 
   get chunks() {

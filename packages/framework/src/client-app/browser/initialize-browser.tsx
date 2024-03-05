@@ -1,4 +1,4 @@
-import "./react-refresh";
+import "../ext/react-refresh";
 import "./browser-loaders";
 import { hydrateRoot } from "react-dom/client";
 import { BrowserApp } from "./browser-app";
