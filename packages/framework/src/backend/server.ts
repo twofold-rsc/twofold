@@ -331,7 +331,7 @@ export async function makeServer(build: Build) {
     return multipart.response();
   });
 
-  app.get("/_assets/browser-app/bootstrap/:hash.js", async ({ request }) => {
+  app.get("/_assets/client-app/bootstrap/:hash.js", async ({ request }) => {
     let modulePath = build.builders.client.bootstrapPath;
     let contents = await readFile(modulePath, "utf-8");
 
@@ -342,7 +342,7 @@ export async function makeServer(build: Build) {
     });
   });
 
-  app.get("/_assets/browser-app/chunks/chunk-:hash.js", async ({ params }) => {
+  app.get("/_assets/client-app/chunks/chunk-:hash.js", async ({ params }) => {
     let { hash } = params as unknown as { hash: string };
     let chunk = build.builders.client.chunks.find(
       (chunk) => chunk.hash === hash,
@@ -359,10 +359,10 @@ export async function makeServer(build: Build) {
     }
   });
 
-  app.get("/_assets/browser-app/entries/:name-:hash.js", async ({ params }) => {
+  app.get("/_assets/client-app/entries/:name-:hash.js", async ({ params }) => {
     let { name, hash } = params as unknown as { name: string; hash: string };
 
-    let entriesUrl = new URL("./browser-app/entries/", appCompiledDir);
+    let entriesUrl = new URL("./client-app/entries/", appCompiledDir);
     let fileUrl = new URL(`${name}-${hash}.js`, entriesUrl);
     let filePath = fileURLToPath(fileUrl);
 
@@ -417,7 +417,7 @@ export async function makeServer(build: Build) {
     if (build.error) {
       worker = null;
     } else {
-      let bootstrapUrl = `/_assets/browser-app/bootstrap/${build.builders.client.bootstrapHash}.js`;
+      let bootstrapUrl = `/_assets/client-app/bootstrap/${build.builders.client.bootstrapHash}.js`;
 
       worker = new Worker(new URL("./workers/ssr-worker.js", import.meta.url), {
         workerData: {

@@ -45,7 +45,7 @@ export class ClientAppBuilder {
           this.srcSSRAppPath,
         ],
         entryNames: "entries/[name]-[hash]",
-        outdir: "./.twofold/browser-app/",
+        outdir: "./.twofold/client-app/",
         outbase: "src",
         splitting: true,
         chunkNames: "chunks/[name]-[hash]",
