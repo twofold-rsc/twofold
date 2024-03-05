@@ -1,14 +1,7 @@
 # TODO
 
-next release
-
-- update template for base-app
-
 framework
 
-- react is an external in client app, import map to react
-
-- get rid of SSR app
 - use server file
 
 - image imports (rsc, browser, ssr)
