@@ -7,12 +7,13 @@ import {
 import { readFile } from "fs/promises";
 import { transformAsync } from "@babel/core";
 import { fileURLToPath } from "url";
-import { appSrcDir, cwdUrl, frameworkSrcDir } from "../files.js";
+import { appSrcDir, frameworkSrcDir } from "../files.js";
 import { dirname } from "path";
 import { RSCBuilder } from "./rsc-builder";
 import * as path from "path";
+import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
 
-export class BrowserAppBuilder {
+export class ClientAppBuilder {
   #metafile?: BuildMetafile;
   #error?: Error;
   #rscBuilder: RSCBuilder;
@@ -28,14 +29,6 @@ export class BrowserAppBuilder {
     );
   }
 
-  get clientComponentOutputMap() {
-    return this.#clientComponentOutputMap;
-  }
-
-  set clientComponentOutputMap(map: Map<string, ClientComponentOutput>) {
-    this.#clientComponentOutputMap = map;
-  }
-
   async build() {
     this.#metafile = undefined;
     this.#error = undefined;
@@ -46,15 +39,24 @@ export class BrowserAppBuilder {
         format: "esm",
         jsx: "automatic",
         logLevel: "error",
-        entryPoints: [...this.clientEntryPoints, this.initializeBrowserPath],
+        entryPoints: [
+          ...this.clientEntryPoints,
+          this.initializeBrowserPath,
+          this.srcSSRAppPath,
+        ],
         entryNames: "entries/[name]-[hash]",
-        outdir: "./.twofold/browser-app/",
+        outdir: "./.twofold/client-app/",
         outbase: "src",
         splitting: true,
         chunkNames: "chunks/[name]-[hash]",
         metafile: true,
         plugins: [
-          clientComponentMapPlugin({ builder: this }),
+          clientComponentMapPlugin({
+            clientEntryPoints: this.clientEntryPoints,
+            setClientComponentOutputMap: (clientComponentOutputMap) => {
+              this.#clientComponentOutputMap = clientComponentOutputMap;
+            },
+          }),
           {
             name: "react-refresh",
             setup(build) {
@@ -85,19 +87,26 @@ export class BrowserAppBuilder {
                   });
 
                   if (result?.code && /\$RefreshReg\$\(/.test(result.code)) {
-                    let start = `let prevRefreshReg = window.$RefreshReg$;
-                    let prevRefreshSig = window.$RefreshSig$;
-                    window.$RefreshReg$ = (type, refreshId) => {
-                      let registerId = \`${moduleName} \${refreshId}\`;
-                      window.$RefreshRuntime$.register(type, registerId);
-                    };
-                    window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
-                  `;
+                    let start = `
+                      let prevRefreshReg = undefined;
+                      let prevRefreshSig = undefined;
+                      if (typeof window !== 'undefined') {
+                        prevRefreshReg = window.$RefreshReg$;
+                        prevRefreshSig = window.$RefreshSig$;
+                        window.$RefreshReg$ = (type, refreshId) => {
+                          let registerId = \`${moduleName} \${refreshId}\`;
+                          window.$RefreshRuntime$.register(type, registerId);
+                        };
+                        window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
+                      }
+                    `;
 
                     let end = `
-                    window.$RefreshReg$ = prevRefreshReg;
-                    window.$RefreshSig$ = prevRefreshSig;
-                  `;
+                      if (typeof window !== 'undefined') {
+                        window.$RefreshReg$ = prevRefreshReg;
+                        window.$RefreshSig$ = prevRefreshSig;
+                      }
+                    `;
 
                     return {
                       contents: `${start}\n${result.code}\n${end}`,
@@ -125,7 +134,15 @@ export class BrowserAppBuilder {
 
   private get initializeBrowserPath() {
     let initializeBrowser = fileURLToPath(
-      new URL("./clients/browser/initialize-browser.tsx", frameworkSrcDir),
+      new URL("./client-app/browser/initialize-browser.tsx", frameworkSrcDir),
+    );
+
+    return initializeBrowser;
+  }
+
+  private get srcSSRAppPath() {
+    let initializeBrowser = fileURLToPath(
+      new URL("./client-app/ssr/ssr-app.tsx", frameworkSrcDir),
     );
 
     return initializeBrowser;
@@ -143,31 +160,8 @@ export class BrowserAppBuilder {
     return this.#error;
   }
 
-  async cleanup() {}
-
-  get files() {
-    return Object.keys(this.metafile.outputs);
-  }
-
   get bootstrapPath() {
-    let outputs = this.metafile.outputs;
-    let outputFiles = Object.keys(outputs);
-
-    let file = outputFiles.find((outputFile) => {
-      let entryPoint = outputs[outputFile].entryPoint;
-      if (entryPoint) {
-        let fullEntryPointPath = path.join(process.cwd(), entryPoint);
-        return fullEntryPointPath === this.initializeBrowserPath;
-      }
-    });
-
-    if (!file) {
-      throw new Error("Failed to get bootstrap module");
-    }
-
-    let filePath = fileURLToPath(new URL(file, cwdUrl));
-
-    return filePath;
+    return getCompiledEntrypoint(this.initializeBrowserPath, this.metafile);
   }
 
   get bootstrapHash() {
@@ -176,6 +170,82 @@ export class BrowserAppBuilder {
     let parts = nameWithoutExtension.split("-");
     let hash = parts.at(-1) ?? "";
     return hash;
+  }
+
+  get SSRAppPath() {
+    return getCompiledEntrypoint(this.srcSSRAppPath, this.metafile);
+  }
+
+  get clientComponentModuleMap() {
+    // moduleId -> {
+    //   path: outputFile
+    // }
+
+    let outputMap = this.#clientComponentOutputMap;
+    if (!outputMap) {
+      return {};
+    }
+
+    let clientComponents = Array.from(this.#rscBuilder.clientComponents);
+    let clientComponentModuleMap = new Map<
+      string,
+      {
+        path?: string;
+      }
+    >();
+
+    for (let clientComponent of clientComponents) {
+      let { moduleId, path } = clientComponent;
+      clientComponentModuleMap.set(moduleId, {
+        path: outputMap.get(path)?.outputPath,
+      });
+    }
+
+    return Object.fromEntries(clientComponentModuleMap.entries());
+  }
+
+  get clientComponentMap() {
+    let outputMap = this.#clientComponentOutputMap;
+
+    if (!outputMap) {
+      return {};
+    }
+
+    let clientComponents = Array.from(this.#rscBuilder.clientComponents);
+    let clientComponentMap = new Map<
+      string,
+      {
+        id: string;
+        chunks: string[];
+        name: string;
+        async: false;
+      }
+    >();
+
+    for (let clientComponent of clientComponents) {
+      let { moduleId, path } = clientComponent;
+
+      let output = outputMap.get(path);
+      if (!output) {
+        throw new Error("Missing output");
+      }
+
+      // [moduleId:name:hash]
+      let chunk = `${moduleId}:${output.name}:${output.hash}`;
+
+      for (let exportName of clientComponent.exports) {
+        let id = `${moduleId}#${exportName}`;
+
+        clientComponentMap.set(id, {
+          id,
+          chunks: [chunk],
+          name: exportName,
+          async: false,
+        });
+      }
+    }
+
+    return Object.fromEntries(clientComponentMap.entries());
   }
 
   get chunks() {

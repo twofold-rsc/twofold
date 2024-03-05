@@ -59,9 +59,9 @@ export async function makeServer(build: Build) {
   );
 
   app.use(async (ctx) => {
-    let hasMiddleware = await build.rsc.hasMiddleware();
+    let hasMiddleware = await build.builders.rsc.hasMiddleware();
     if (hasMiddleware) {
-      let module = await import(build.rsc.middlewarePath);
+      let module = await import(build.builders.rsc.middlewarePath);
       let ans = await module.default(ctx.request);
       return ans;
     }
@@ -128,7 +128,7 @@ export async function makeServer(build: Build) {
       let reactTree = await page.reactTree(request);
       let rscStream = renderToReadableStream(
         reactTree,
-        build.clientComponentMap,
+        build.builders.client.clientComponentMap,
         {
           onError(err: unknown) {
             console.log("RSC STREAM ERROR");
@@ -224,7 +224,10 @@ export async function makeServer(build: Build) {
     }
 
     let reactTree = await page.reactTree(request);
-    let stream = renderToReadableStream(reactTree, build.clientComponentMap);
+    let stream = renderToReadableStream(
+      reactTree,
+      build.builders.client.clientComponentMap,
+    );
 
     return new Response(stream, {
       headers: { "Content-type": "text/x-component" },
@@ -237,7 +240,7 @@ export async function makeServer(build: Build) {
       throw new Error("404 - No server action specified");
     }
 
-    if (!build.rsc.isAction(serverReference)) {
+    if (!build.builders.rsc.isAction(serverReference)) {
       throw new Error("404 - Server action not found");
     }
 
@@ -269,7 +272,10 @@ export async function makeServer(build: Build) {
     let [, name] = serverReference.split("#");
     console.log(`🟣 Running action ${name}`);
 
-    let actionResult = await build.rsc.runAction(serverReference, args);
+    let actionResult = await build.builders.rsc.runAction(
+      serverReference,
+      args,
+    );
 
     let serializedResult: string | undefined;
     if (actionResult) {
@@ -297,7 +303,10 @@ export async function makeServer(build: Build) {
     }
 
     let reactTree = await page.reactTree(request);
-    let rscStream = renderToReadableStream(reactTree, build.clientComponentMap);
+    let rscStream = renderToReadableStream(
+      reactTree,
+      build.builders.client.clientComponentMap,
+    );
 
     let multipart = new MultipartResponse();
 
@@ -322,8 +331,8 @@ export async function makeServer(build: Build) {
     return multipart.response();
   });
 
-  app.get("/_assets/browser-app/bootstrap/:hash.js", async ({ request }) => {
-    let modulePath = build.apps.browser.bootstrapPath;
+  app.get("/_assets/client-app/bootstrap/:hash.js", async ({ request }) => {
+    let modulePath = build.builders.client.bootstrapPath;
     let contents = await readFile(modulePath, "utf-8");
 
     return new Response(contents, {
@@ -333,9 +342,11 @@ export async function makeServer(build: Build) {
     });
   });
 
-  app.get("/_assets/browser-app/chunks/chunk-:hash.js", async ({ params }) => {
+  app.get("/_assets/client-app/chunks/chunk-:hash.js", async ({ params }) => {
     let { hash } = params as unknown as { hash: string };
-    let chunk = build.apps.browser.chunks.find((chunk) => chunk.hash === hash);
+    let chunk = build.builders.client.chunks.find(
+      (chunk) => chunk.hash === hash,
+    );
 
     if (chunk) {
       let contents = await readFile(chunk.path, "utf-8");
@@ -348,24 +359,25 @@ export async function makeServer(build: Build) {
     }
   });
 
-  app.get("/_assets/browser-app/entries/:name-:hash.js", async ({ params }) => {
+  app.get("/_assets/client-app/entries/:name-:hash.js", async ({ params }) => {
     let { name, hash } = params as unknown as { name: string; hash: string };
 
-    let entriesUrl = new URL("./browser-app/entries/", appCompiledDir);
+    let entriesUrl = new URL("./client-app/entries/", appCompiledDir);
     let fileUrl = new URL(`${name}-${hash}.js`, entriesUrl);
     let filePath = fileURLToPath(fileUrl);
 
-    let clientComponentModuleMap = build.clientComponentModuleMap;
+    let clientComponentModuleMap =
+      build.builders.client.clientComponentModuleMap;
 
     // crappy O(n) lookup, change this
     let keys = Object.keys(clientComponentModuleMap);
     let moduleKey = keys.find(
-      (key) => clientComponentModuleMap[key].browser === filePath,
+      (key) => clientComponentModuleMap[key].path === filePath,
     );
     let module = moduleKey ? clientComponentModuleMap[moduleKey] : null;
 
-    if (module && module.browser) {
-      let contents = await readFile(module.browser, "utf-8");
+    if (module && module.path) {
+      let contents = await readFile(module.path, "utf-8");
 
       return new Response(contents, {
         headers: {
@@ -379,7 +391,7 @@ export async function makeServer(build: Build) {
     let { pathname } = new URL(request.url);
 
     let cssPath = pathname.replace(/^\/_assets\/styles\//, "");
-    let knownFile = build.rsc.css.includes(cssPath);
+    let knownFile = build.builders.rsc.css.includes(cssPath);
 
     if (!knownFile) {
       throw new Error("404 - File not found");
@@ -405,13 +417,14 @@ export async function makeServer(build: Build) {
     if (build.error) {
       worker = null;
     } else {
-      let bootstrapUrl = `/_assets/browser-app/bootstrap/${build.apps.browser.bootstrapHash}.js`;
+      let bootstrapUrl = `/_assets/client-app/bootstrap/${build.builders.client.bootstrapHash}.js`;
 
       worker = new Worker(new URL("./workers/ssr-worker.js", import.meta.url), {
         workerData: {
           bootstrapUrl,
-          appPath: build.apps.ssr.appPath,
-          clientComponentModuleMap: build.clientComponentModuleMap,
+          appPath: build.builders.client.SSRAppPath,
+          clientComponentModuleMap:
+            build.builders.client.clientComponentModuleMap,
         },
         execArgv: ["-C", "default"],
         env: {

@@ -18,8 +18,8 @@ export class Runtime {
   }
 
   private pageForPath(path: string) {
-    return this.#build.rsc.tree.findPage((page) =>
-      page.pattern.test(path, this.#base)
+    return this.#build.builders.rsc.tree.findPage((page) =>
+      page.pattern.test(path, this.#base),
     );
   }
 

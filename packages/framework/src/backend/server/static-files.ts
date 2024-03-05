@@ -7,7 +7,7 @@ import path from "node:path";
 export function staticFiles(build: Build) {
   let root = new URL("./public", cwdUrl);
   let read = createFileReader(root);
-  return createStaticMiddleware(build.staticFileMap, read, {
+  return createStaticMiddleware(build.builders.static.fileMap, read, {
     setHeaders(ctx, headers, file) {
       headers.set(
         "Content-Disposition",

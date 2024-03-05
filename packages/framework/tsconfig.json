@@ -7,7 +7,7 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "target": "ESNext",
-    "types": ["react/canary", "react-dom/canary", "node"],
+    "types": ["react/experimental", "react-dom/experimental", "node"],
   },
   "include": ["./src/"],
 }
