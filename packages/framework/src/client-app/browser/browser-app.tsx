@@ -12,9 +12,9 @@ import {
   createFromReadableStream,
   // @ts-expect-error
 } from "react-server-dom-webpack/client";
-import { RoutingContext } from "../shared/routing-context";
-import { MultipartStream } from "./multipart-stream";
-import { ErrorBoundary } from "./error-boundary";
+import { RoutingContext } from "../contexts/routing-context";
+import { MultipartStream } from "../utils/multipart-stream";
+import { ErrorBoundary } from "../components/error-boundary";
 import { deserializeError } from "serialize-error";
 
 declare global {

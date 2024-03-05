@@ -410,7 +410,7 @@ export async function makeServer(build: Build) {
       worker = new Worker(new URL("./workers/ssr-worker.js", import.meta.url), {
         workerData: {
           bootstrapUrl,
-          appPath: build.apps.ssr.appPath,
+          appPath: build.apps.browser.SSRAppPath,
           clientComponentModuleMap: build.clientComponentModuleMap,
         },
         execArgv: ["-C", "default"],

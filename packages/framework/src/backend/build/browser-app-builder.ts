@@ -46,7 +46,11 @@ export class BrowserAppBuilder {
         format: "esm",
         jsx: "automatic",
         logLevel: "error",
-        entryPoints: [...this.clientEntryPoints, this.initializeBrowserPath],
+        entryPoints: [
+          ...this.clientEntryPoints,
+          this.initializeBrowserPath,
+          this.srcSSRAppPath,
+        ],
         entryNames: "entries/[name]-[hash]",
         outdir: "./.twofold/browser-app/",
         outbase: "src",
@@ -85,19 +89,26 @@ export class BrowserAppBuilder {
                   });
 
                   if (result?.code && /\$RefreshReg\$\(/.test(result.code)) {
-                    let start = `let prevRefreshReg = window.$RefreshReg$;
-                    let prevRefreshSig = window.$RefreshSig$;
-                    window.$RefreshReg$ = (type, refreshId) => {
-                      let registerId = \`${moduleName} \${refreshId}\`;
-                      window.$RefreshRuntime$.register(type, registerId);
-                    };
-                    window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
-                  `;
+                    let start = `
+                      let prevRefreshReg = undefined;
+                      let prevRefreshSig = undefined;
+                      if (typeof window !== 'undefined') {
+                        prevRefreshReg = window.$RefreshReg$;
+                        prevRefreshSig = window.$RefreshSig$;
+                        window.$RefreshReg$ = (type, refreshId) => {
+                          let registerId = \`${moduleName} \${refreshId}\`;
+                          window.$RefreshRuntime$.register(type, registerId);
+                        };
+                        window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
+                      }
+                    `;
 
                     let end = `
-                    window.$RefreshReg$ = prevRefreshReg;
-                    window.$RefreshSig$ = prevRefreshSig;
-                  `;
+                      if (typeof window !== 'undefined') {
+                        window.$RefreshReg$ = prevRefreshReg;
+                        window.$RefreshSig$ = prevRefreshSig;
+                      }
+                    `;
 
                     return {
                       contents: `${start}\n${result.code}\n${end}`,
@@ -126,6 +137,14 @@ export class BrowserAppBuilder {
   private get initializeBrowserPath() {
     let initializeBrowser = fileURLToPath(
       new URL("./clients/browser/initialize-browser.tsx", frameworkSrcDir),
+    );
+
+    return initializeBrowser;
+  }
+
+  private get srcSSRAppPath() {
+    let initializeBrowser = fileURLToPath(
+      new URL("./clients/browser/ssr-app.tsx", frameworkSrcDir),
     );
 
     return initializeBrowser;
@@ -176,6 +195,27 @@ export class BrowserAppBuilder {
     let parts = nameWithoutExtension.split("-");
     let hash = parts.at(-1) ?? "";
     return hash;
+  }
+
+  get SSRAppPath() {
+    let outputs = this.metafile.outputs;
+    let outputFiles = Object.keys(outputs);
+
+    let file = outputFiles.find((outputFile) => {
+      let entryPoint = outputs[outputFile].entryPoint;
+      if (entryPoint) {
+        let fullEntryPointPath = path.join(process.cwd(), entryPoint);
+        return fullEntryPointPath === this.srcSSRAppPath;
+      }
+    });
+
+    if (!file) {
+      throw new Error("Failed to get bootstrap module");
+    }
+
+    let filePath = fileURLToPath(new URL(file, cwdUrl));
+
+    return filePath;
   }
 
   get chunks() {

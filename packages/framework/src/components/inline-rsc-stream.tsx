@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useContext } from "react";
-import { Context } from "../clients/shared/stream-context";
+import { Context } from "../clients/browser/stream-context";
 
 export default function InlineRSCStream() {
   let reader = useContext(Context);

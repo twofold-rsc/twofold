@@ -13,6 +13,7 @@ import { RSCBuilder } from "./build/rsc-builder.js";
 import * as path from "node:path";
 import { ErrorPageBuilder } from "./build/error-page-builder.js";
 import { StaticFilesBuilder } from "./build/static-files-builder.js";
+import { ReactBuilder } from "./build/react-builder.js";
 
 class BuildEvents extends EventEmitter {}
 
@@ -23,16 +24,18 @@ class BuildEvents extends EventEmitter {}
 export class Build {
   #key = randomBytes(6).toString("hex");
   #isBuilding = false;
+  #reactBuilder: ReactBuilder;
   #errorPageBuilder: ErrorPageBuilder;
   #rscBuilder: RSCBuilder;
   #browserAppBuilder: BrowserAppBuilder;
-  #ssrAppBuilder?: SSRAppBuilder;
+  // #ssrAppBuilder?: SSRAppBuilder;
   #staticFilesBuilder: StaticFilesBuilder;
   #events = new BuildEvents();
   #previousChunks = new Set<string>();
   #previousRSCFiles = new Set<string>();
 
   constructor() {
+    this.#reactBuilder = new ReactBuilder();
     this.#errorPageBuilder = new ErrorPageBuilder();
     this.#rscBuilder = new RSCBuilder();
     this.#browserAppBuilder = new BrowserAppBuilder({
@@ -64,20 +67,19 @@ export class Build {
 
   get error() {
     return (
-      this.#rscBuilder.error ||
-      this.#browserAppBuilder.error ||
-      this.#ssrAppBuilder?.error
+      this.#rscBuilder.error || this.#browserAppBuilder.error
+      // this.#ssrAppBuilder?.error
     );
   }
 
   get apps() {
-    if (!this.#browserAppBuilder || !this.#ssrAppBuilder) {
-      throw new Error("Apps not built");
-    }
+    // if (!this.#browserAppBuilder || !this.#ssrAppBuilder) {
+    //   throw new Error("Apps not built");
+    // }
 
     return {
       browser: this.#browserAppBuilder,
-      ssr: this.#ssrAppBuilder,
+      // ssr: this.#ssrAppBuilder,
     };
   }
 
@@ -108,16 +110,18 @@ export class Build {
       this.#previousRSCFiles = new Set();
     }
 
+    await this.#reactBuilder.build();
+
     await this.#errorPageBuilder.build();
     await this.#rscBuilder.build();
     await this.#browserAppBuilder.build();
 
-    this.#ssrAppBuilder = new SSRAppBuilder({
-      clientComponents: this.#rscBuilder.clientComponents,
-    });
+    // this.#ssrAppBuilder = new SSRAppBuilder({
+    //   clientComponents: this.#rscBuilder.clientComponents,
+    // });
 
-    await this.#ssrAppBuilder.setup();
-    await this.#ssrAppBuilder.build();
+    // await this.#ssrAppBuilder.setup();
+    // await this.#ssrAppBuilder.build();
 
     await this.#staticFilesBuilder.build();
 
@@ -152,11 +156,15 @@ export class Build {
     // }
 
     let browserOutputMap = this.#browserAppBuilder?.clientComponentOutputMap;
-    let serverOutputMap = this.#ssrAppBuilder?.clientComponentOutputMap;
+    // let serverOutputMap = this.#ssrAppBuilder?.clientComponentOutputMap;
 
-    if (!browserOutputMap || !serverOutputMap) {
+    if (!browserOutputMap) {
       return {};
     }
+
+    // if (!browserOutputMap || !serverOutputMap) {
+    //   return {};
+    // }
 
     let clientComponents = Array.from(this.#rscBuilder.clientComponents);
 
@@ -171,7 +179,7 @@ export class Build {
     for (let clientComponent of clientComponents) {
       let { moduleId, path } = clientComponent;
       clientComponentModuleMap.set(moduleId, {
-        server: serverOutputMap.get(path)?.outputPath,
+        // server: serverOutputMap.get(path)?.outputPath,
         browser: browserOutputMap.get(path)?.outputPath,
       });
     }
@@ -181,11 +189,15 @@ export class Build {
 
   get clientComponentMap() {
     let browserOutputMap = this.#browserAppBuilder?.clientComponentOutputMap;
-    let serverOutputMap = this.#ssrAppBuilder?.clientComponentOutputMap;
+    // let serverOutputMap = this.#ssrAppBuilder?.clientComponentOutputMap;
 
-    if (!browserOutputMap || !serverOutputMap) {
+    if (!browserOutputMap) {
       return {};
     }
+
+    // if (!browserOutputMap || !serverOutputMap) {
+    //   return {};
+    // }
 
     let clientComponents = Array.from(this.#rscBuilder.clientComponents);
     let clientComponentMap = new Map<
@@ -202,18 +214,18 @@ export class Build {
       let { moduleId, path } = clientComponent;
 
       let browserOutput = browserOutputMap.get(path);
-      let serverOutput = serverOutputMap.get(path);
+      // let serverOutput = serverOutputMap.get(path);
 
-      if (!browserOutput || !serverOutput) {
+      if (!browserOutput) {
         throw new Error("Missing output");
       }
 
-      if (browserOutput.name !== serverOutput.name) {
-        throw new Error("Mismatched output names");
-      }
+      // if (browserOutput.name !== serverOutput.name) {
+      //   throw new Error("Mismatched output names");
+      // }
 
       // [moduleId:name:browserHash:serverHash]
-      let chunk = `${moduleId}:${browserOutput.name}:${browserOutput.hash}:${serverOutput.hash}`;
+      let chunk = `${moduleId}:${browserOutput.name}:${browserOutput.hash}`;
 
       for (let exportName of clientComponent.exports) {
         let id = `${moduleId}#${exportName}`;
@@ -298,119 +310,119 @@ export type BuildMetafile = Awaited<
   ReturnType<BuildContext["rebuild"]>
 >["metafile"];
 
-type ClientComponent = {
-  moduleId: string;
-  path: string;
-  exports: string[];
-};
+// type ClientComponent = {
+//   moduleId: string;
+//   path: string;
+//   exports: string[];
+// };
 
-class SSRAppBuilder {
-  #context?: BuildContext;
-  #metafile?: BuildMetafile;
-  #error?: Error;
-  #clientComponents = new Set<ClientComponent>();
-  #clientComponentOutputMap = new Map<string, ClientComponentOutput>();
+// class SSRAppBuilder {
+//   #context?: BuildContext;
+//   #metafile?: BuildMetafile;
+//   #error?: Error;
+//   #clientComponents = new Set<ClientComponent>();
+//   #clientComponentOutputMap = new Map<string, ClientComponentOutput>();
 
-  constructor({
-    clientComponents,
-  }: {
-    clientComponents: Set<ClientComponent>;
-  }) {
-    this.#clientComponents = clientComponents;
-  }
+//   constructor({
+//     clientComponents,
+//   }: {
+//     clientComponents: Set<ClientComponent>;
+//   }) {
+//     this.#clientComponents = clientComponents;
+//   }
 
-  get clientEntryPoints() {
-    return Array.from(this.#clientComponents).map(
-      (component) => component.path,
-    );
-  }
+//   get clientEntryPoints() {
+//     return Array.from(this.#clientComponents).map(
+//       (component) => component.path,
+//     );
+//   }
 
-  get clientComponentOutputMap() {
-    return this.#clientComponentOutputMap;
-  }
+//   get clientComponentOutputMap() {
+//     return this.#clientComponentOutputMap;
+//   }
 
-  set clientComponentOutputMap(map: Map<string, ClientComponentOutput>) {
-    this.#clientComponentOutputMap = map;
-  }
+//   set clientComponentOutputMap(map: Map<string, ClientComponentOutput>) {
+//     this.#clientComponentOutputMap = map;
+//   }
 
-  async setup() {
-    this.#context = await context({
-      bundle: true,
-      splitting: true,
-      format: "esm",
-      jsx: "automatic",
-      logLevel: "error",
-      entryPoints: [...this.clientEntryPoints, this.srcAppPath],
-      outdir: "./.twofold/ssr-app/",
-      outbase: "src",
-      entryNames: "entries/[name]-[hash]",
-      chunkNames: "chunks/[name]-[hash]",
-      external: ["react", "react-dom"],
-      metafile: true,
-      plugins: [clientComponentMapPlugin({ builder: this })],
-    });
-  }
+//   async setup() {
+//     this.#context = await context({
+//       bundle: true,
+//       splitting: true,
+//       format: "esm",
+//       jsx: "automatic",
+//       logLevel: "error",
+//       entryPoints: [...this.clientEntryPoints, this.srcAppPath],
+//       outdir: "./.twofold/ssr-app/",
+//       outbase: "src",
+//       entryNames: "entries/[name]-[hash]",
+//       chunkNames: "chunks/[name]-[hash]",
+//       external: ["react", "react-dom"],
+//       metafile: true,
+//       plugins: [clientComponentMapPlugin({ builder: this })],
+//     });
+//   }
 
-  async build() {
-    this.#metafile = undefined;
-    try {
-      let results = await this.#context?.rebuild();
-      this.#metafile = results?.metafile;
-    } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        this.#error = error;
-      } else {
-        this.#error = new Error("Unknown error");
-      }
-    }
-  }
+//   async build() {
+//     this.#metafile = undefined;
+//     try {
+//       let results = await this.#context?.rebuild();
+//       this.#metafile = results?.metafile;
+//     } catch (error) {
+//       console.error(error);
+//       if (error instanceof Error) {
+//         this.#error = error;
+//       } else {
+//         this.#error = new Error("Unknown error");
+//       }
+//     }
+//   }
 
-  get files() {
-    let metafile = this.#metafile;
+//   get files() {
+//     let metafile = this.#metafile;
 
-    if (!metafile) {
-      throw new Error("Failed to get metafile");
-    }
+//     if (!metafile) {
+//       throw new Error("Failed to get metafile");
+//     }
 
-    return Object.keys(metafile.outputs);
-  }
+//     return Object.keys(metafile.outputs);
+//   }
 
-  get error() {
-    return this.#error;
-  }
+//   get error() {
+//     return this.#error;
+//   }
 
-  private get srcAppPath() {
-    return fileURLToPath(new URL("./clients/ssr/ssr-app.tsx", frameworkSrcDir));
-  }
+//   private get srcAppPath() {
+//     return fileURLToPath(new URL("./clients/ssr/ssr-app.tsx", frameworkSrcDir));
+//   }
 
-  private getCompiledEntryPoint(entryPointPath: string) {
-    let base = process.cwd();
-    let metafile = this.#metafile;
+//   private getCompiledEntryPoint(entryPointPath: string) {
+//     let base = process.cwd();
+//     let metafile = this.#metafile;
 
-    if (!metafile) {
-      throw new Error("Failed to get metafile");
-    }
+//     if (!metafile) {
+//       throw new Error("Failed to get metafile");
+//     }
 
-    let outputs = metafile.outputs;
-    let outputFiles = Object.keys(outputs);
+//     let outputs = metafile.outputs;
+//     let outputFiles = Object.keys(outputs);
 
-    let file = outputFiles.find((outputFile) => {
-      let entryPoint = outputs[outputFile].entryPoint;
-      if (entryPoint) {
-        let fullEntryPointPath = path.join(base, entryPoint);
-        return fullEntryPointPath === entryPointPath;
-      }
-    });
+//     let file = outputFiles.find((outputFile) => {
+//       let entryPoint = outputs[outputFile].entryPoint;
+//       if (entryPoint) {
+//         let fullEntryPointPath = path.join(base, entryPoint);
+//         return fullEntryPointPath === entryPointPath;
+//       }
+//     });
 
-    if (!file) {
-      throw new Error(`Failed to get compiled entry point: ${entryPointPath}`);
-    }
+//     if (!file) {
+//       throw new Error(`Failed to get compiled entry point: ${entryPointPath}`);
+//     }
 
-    return path.join(base, file);
-  }
+//     return path.join(base, file);
+//   }
 
-  get appPath() {
-    return this.getCompiledEntryPoint(this.srcAppPath);
-  }
-}
+//   get appPath() {
+//     return this.getCompiledEntryPoint(this.srcAppPath);
+//   }
+// }
