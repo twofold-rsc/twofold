@@ -2,7 +2,14 @@
 
 framework
 
+- errors kitchen sink nav
+- error in server action module
+- entries builder only save map files
+- use server file imports and returns client component
+- use server file imported and used by client component
+
 - use server file
+- only needed at top of file, all functions become actions
 
 - image imports (rsc, browser, ssr)
 - redirects

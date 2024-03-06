@@ -12,21 +12,20 @@ import { dirname } from "path";
 import { RSCBuilder } from "./rsc-builder";
 import * as path from "path";
 import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
+import { EntriesBuilder } from "./entries-builder";
 
 export class ClientAppBuilder {
   #metafile?: BuildMetafile;
   #error?: Error;
-  #rscBuilder: RSCBuilder;
+  #entriesBuilder: EntriesBuilder;
   #clientComponentOutputMap = new Map<string, ClientComponentOutput>();
 
-  constructor({ rscBuilder }: { rscBuilder: RSCBuilder }) {
-    this.#rscBuilder = rscBuilder;
+  constructor({ entriesBuilder }: { entriesBuilder: EntriesBuilder }) {
+    this.#entriesBuilder = entriesBuilder;
   }
 
   get clientEntryPoints() {
-    return Array.from(this.#rscBuilder.clientComponents).map(
-      (component) => component.path,
-    );
+    return Array.from(this.#entriesBuilder.clientComponentModulePathMap.keys());
   }
 
   async build() {
@@ -60,9 +59,7 @@ export class ClientAppBuilder {
           {
             name: "react-refresh",
             setup(build) {
-              // only refresh files in src
               let appSrcPath = fileURLToPath(appSrcDir);
-              // lookup the module id
 
               build.onLoad({ filter: /\.tsx$/ }, async ({ path }) => {
                 if (path.startsWith(appSrcPath)) {
@@ -186,7 +183,9 @@ export class ClientAppBuilder {
       return {};
     }
 
-    let clientComponents = Array.from(this.#rscBuilder.clientComponents);
+    let clientComponents = Array.from(
+      this.#entriesBuilder.clientComponentModules,
+    );
     let clientComponentModuleMap = new Map<
       string,
       {
@@ -211,7 +210,9 @@ export class ClientAppBuilder {
       return {};
     }
 
-    let clientComponents = Array.from(this.#rscBuilder.clientComponents);
+    let clientComponents = Array.from(
+      this.#entriesBuilder.clientComponentModules,
+    );
     let clientComponentMap = new Map<
       string,
       {

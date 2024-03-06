@@ -7,6 +7,8 @@ import { ClientAppBuilder } from "./build/client-app-builder.js";
 import { RSCBuilder } from "./build/rsc-builder.js";
 import { ErrorPageBuilder } from "./build/error-page-builder.js";
 import { StaticFilesBuilder } from "./build/static-files-builder.js";
+import { EntriesBuilder } from "./build/entries-builder.js";
+import { ServerActionsModuleBuilder } from "./build/server-actions-module-builder.js";
 
 class BuildEvents extends EventEmitter {}
 
@@ -17,19 +19,27 @@ class BuildEvents extends EventEmitter {}
 export class Build {
   #key = randomBytes(6).toString("hex");
   #isBuilding = false;
+  #entriesBuilder: EntriesBuilder;
   #errorPageBuilder: ErrorPageBuilder;
   #rscBuilder: RSCBuilder;
   #clientAppBuilder: ClientAppBuilder;
+  #serverActionsModuleBuilder: ServerActionsModuleBuilder;
   #staticFilesBuilder: StaticFilesBuilder;
   #events = new BuildEvents();
   #previousChunks = new Set<string>();
   #previousRSCFiles = new Set<string>();
 
   constructor() {
+    this.#entriesBuilder = new EntriesBuilder();
     this.#errorPageBuilder = new ErrorPageBuilder();
-    this.#rscBuilder = new RSCBuilder();
+    this.#rscBuilder = new RSCBuilder({
+      entriesBuilder: this.#entriesBuilder,
+    });
+    this.#serverActionsModuleBuilder = new ServerActionsModuleBuilder({
+      entriesBuilder: this.#entriesBuilder,
+    });
     this.#clientAppBuilder = new ClientAppBuilder({
-      rscBuilder: this.#rscBuilder,
+      entriesBuilder: this.#entriesBuilder,
     });
     this.#staticFilesBuilder = new StaticFilesBuilder();
   }
@@ -43,6 +53,7 @@ export class Build {
   }
 
   async setup() {
+    await this.#entriesBuilder.setup();
     await this.#errorPageBuilder.setup();
     await this.#rscBuilder.setup();
   }
@@ -53,8 +64,10 @@ export class Build {
 
   get builders() {
     return {
+      entries: this.#entriesBuilder,
       client: this.#clientAppBuilder,
       rsc: this.#rscBuilder,
+      serverActionsModule: this.#serverActionsModuleBuilder,
       error: this.#errorPageBuilder,
       static: this.#staticFilesBuilder,
     };
@@ -89,10 +102,14 @@ export class Build {
       this.#previousRSCFiles = new Set();
     }
 
+    await this.#entriesBuilder.build();
+
     await this.#errorPageBuilder.build();
+    await this.#staticFilesBuilder.build();
+
     await this.#rscBuilder.build();
     await this.#clientAppBuilder.build();
-    await this.#staticFilesBuilder.build();
+    await this.#serverActionsModuleBuilder.build();
 
     this.#key = randomBytes(6).toString("hex");
 

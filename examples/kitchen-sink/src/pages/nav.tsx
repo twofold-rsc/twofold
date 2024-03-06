@@ -226,6 +226,26 @@ export default function Nav() {
                               </Link>
                             </NavigationMenu.Link>
                           </li>
+                          <li>
+                            <NavigationMenu.Link
+                              active={
+                                path === "/server-actions/actions-file-for-rsc"
+                              }
+                              asChild
+                            >
+                              <Link
+                                href="/server-actions/actions-file-for-rsc"
+                                className="block"
+                              >
+                                <span className="font-medium text-gray-900">
+                                  Actions file RSC
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  A server action imported into an RSC.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
                         </ul>
                       </NavigationMenu.Content>
                     </NavigationMenu.Item>

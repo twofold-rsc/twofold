@@ -29,8 +29,6 @@ export function clientComponentMapPlugin({
           throw new Error("Failed to get metafile");
         }
 
-        // console.log("clientEntryPoints", builder.clientEntryPoints);
-
         function getHash(outputFile: string) {
           let file = outputFile.split("/").at(-1);
           let hash = file?.split("-").at(-1)?.split(".")[0];

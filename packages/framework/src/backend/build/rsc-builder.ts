@@ -11,12 +11,8 @@ import { clientComponentProxyPlugin } from "./plugins/client-component-proxy-plu
 import { serverActionsPlugin } from "./plugins/server-actions.js";
 import { externalPackages } from "./externals.js";
 import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
-
-type ClientComponent = {
-  moduleId: string;
-  path: string;
-  exports: string[];
-};
+import { EntriesBuilder } from "./entries-builder";
+import { serverActionProxyPlugin } from "./plugins/server-action-proxy-plugin.js";
 
 type CompiledAction = {
   id: string;
@@ -28,15 +24,19 @@ export class RSCBuilder {
   #context?: BuildContext;
   #metafile?: BuildMetafile;
   #error?: Error;
-  #clientComponents = new Set<ClientComponent>();
+  #entriesBuilder: EntriesBuilder;
   #serverActionMap = new Map<string, CompiledAction>();
 
-  get clientComponents() {
-    return this.#clientComponents;
+  constructor({ entriesBuilder }: { entriesBuilder: EntriesBuilder }) {
+    this.#entriesBuilder = entriesBuilder;
   }
 
   get serverActionMap() {
     return this.#serverActionMap;
+  }
+
+  get entries() {
+    return this.#entriesBuilder;
   }
 
   async setup() {
@@ -68,14 +68,13 @@ export class RSCBuilder {
       chunkNames: "chunks/[name]-[hash]",
       metafile: true,
       plugins: [
+        serverActionProxyPlugin({ builder: builder }),
         clientComponentProxyPlugin({ builder: builder }),
         serverActionsPlugin({ builder: builder }),
         {
           name: "postcss",
           async setup(build) {
             let postcssConfig: postcssrc.Result | false;
-
-            // let path = fixtureDir.pathname;
 
             // this becomes root when we point at an actual app
             // @ts-ignore
@@ -121,7 +120,6 @@ export class RSCBuilder {
   }
 
   async build() {
-    this.#clientComponents = new Set();
     this.#serverActionMap = new Map();
     this.#metafile = undefined;
     this.#error = undefined;
@@ -299,23 +297,6 @@ export class RSCBuilder {
     pages.forEach((page) => root?.add(page));
 
     return root;
-  }
-
-  isAction(id: string) {
-    return this.#serverActionMap.has(id);
-  }
-
-  async runAction(id: string, args: any[]) {
-    let action = this.#serverActionMap.get(id);
-
-    if (!action) {
-      throw new Error("Invalid action id");
-    }
-
-    let module = await import(action.path);
-    let fn = module[action.export];
-
-    return fn.apply(null, args);
   }
 }
 
