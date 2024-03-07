@@ -8,7 +8,6 @@ import { RSCBuilder } from "./build/rsc-builder.js";
 import { ErrorPageBuilder } from "./build/error-page-builder.js";
 import { StaticFilesBuilder } from "./build/static-files-builder.js";
 import { EntriesBuilder } from "./build/entries-builder.js";
-import { ServerActionsModuleBuilder } from "./build/server-actions-module-builder.js";
 
 class BuildEvents extends EventEmitter {}
 
@@ -23,7 +22,6 @@ export class Build {
   #errorPageBuilder: ErrorPageBuilder;
   #rscBuilder: RSCBuilder;
   #clientAppBuilder: ClientAppBuilder;
-  #serverActionsModuleBuilder: ServerActionsModuleBuilder;
   #staticFilesBuilder: StaticFilesBuilder;
   #events = new BuildEvents();
   #previousChunks = new Set<string>();
@@ -33,9 +31,6 @@ export class Build {
     this.#entriesBuilder = new EntriesBuilder();
     this.#errorPageBuilder = new ErrorPageBuilder();
     this.#rscBuilder = new RSCBuilder({
-      entriesBuilder: this.#entriesBuilder,
-    });
-    this.#serverActionsModuleBuilder = new ServerActionsModuleBuilder({
       entriesBuilder: this.#entriesBuilder,
     });
     this.#clientAppBuilder = new ClientAppBuilder({
@@ -55,7 +50,6 @@ export class Build {
   async setup() {
     await this.#entriesBuilder.setup();
     await this.#errorPageBuilder.setup();
-    await this.#rscBuilder.setup();
   }
 
   get error() {
@@ -67,7 +61,6 @@ export class Build {
       entries: this.#entriesBuilder,
       client: this.#clientAppBuilder,
       rsc: this.#rscBuilder,
-      serverActionsModule: this.#serverActionsModuleBuilder,
       error: this.#errorPageBuilder,
       static: this.#staticFilesBuilder,
     };
@@ -109,7 +102,6 @@ export class Build {
 
     await this.#rscBuilder.build();
     await this.#clientAppBuilder.build();
-    await this.#serverActionsModuleBuilder.build();
 
     this.#key = randomBytes(6).toString("hex");
 

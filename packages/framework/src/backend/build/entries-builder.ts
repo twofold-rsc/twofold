@@ -4,7 +4,7 @@ import { BuildContext, context, transform } from "esbuild";
 import { createHash } from "crypto";
 import { basename, extname } from "path";
 import { readFile } from "fs/promises";
-import { parseAsync } from "@babel/core";
+import { ParseResult, parseAsync } from "@babel/core";
 
 type ClientComponentModule = {
   moduleId: string;
@@ -16,6 +16,7 @@ type ServerActionModule = {
   moduleId: string;
   path: string;
   exports: string[];
+  exportsAndNames: { export: string; local: string }[];
 };
 
 let clientMarker = '"use client";';
@@ -25,31 +26,15 @@ let markers = [clientMarker, serverMarker];
 export class EntriesBuilder {
   #context?: BuildContext;
 
-  #clientComponentModules = new Set<ClientComponentModule>();
-  #serverActionModules = new Set<ServerActionModule>();
+  #clientComponentModuleMap = new Map<string, ClientComponentModule>();
+  #serverActionModuleMap = new Map<string, ServerActionModule>();
 
-  get clientComponentModules() {
-    return this.#clientComponentModules;
+  get clientComponentModuleMap() {
+    return this.#clientComponentModuleMap;
   }
 
-  get clientComponentModulePathMap() {
-    let map = new Map<string, ClientComponentModule>();
-    for (let module of this.#clientComponentModules) {
-      map.set(module.path, module);
-    }
-    return map;
-  }
-
-  get serverActionModules() {
-    return this.#serverActionModules;
-  }
-
-  get serverActionModulePathMap() {
-    let map = new Map<string, ServerActionModule>();
-    for (let module of this.#serverActionModules) {
-      map.set(module.path, module);
-    }
-    return map;
+  get serverActionModuleMap() {
+    return this.#serverActionModuleMap;
   }
 
   async setup() {
@@ -57,7 +42,6 @@ export class EntriesBuilder {
     this.#context = await context({
       entryPoints: ["./src/**/*.ts", "./src/**/*.tsx"],
       bundle: true,
-      format: "esm",
       platform: "neutral",
       logLevel: "error",
       entryNames: "entries/[name]-[hash]",
@@ -78,12 +62,12 @@ export class EntriesBuilder {
               let contents = await readFirstNBytes(path, maxBytes);
 
               if (contents === clientMarker || contents === serverMarker) {
-                let module = await pathToModule(path);
-
                 if (contents === clientMarker) {
-                  builder.#clientComponentModules.add(module);
+                  let module = await pathToClientComponentModule(path);
+                  builder.#clientComponentModuleMap.set(path, module);
                 } else if (contents === serverMarker) {
-                  builder.#serverActionModules.add(module);
+                  let module = await pathToServerActionModule(path);
+                  builder.#serverActionModuleMap.set(path, module);
                 }
               }
 
@@ -100,16 +84,44 @@ export class EntriesBuilder {
       throw new Error("setup must be called before build");
     }
 
-    this.#clientComponentModules = new Set();
+    this.#clientComponentModuleMap = new Map();
+    this.#serverActionModuleMap = new Map();
+
     await this.#context.rebuild();
   }
 }
 
-async function pathToModule(path: string) {
+async function pathToClientComponentModule(path: string) {
+  let moduleId = getModuleId(path);
+  let ast = await getAst(path);
+
+  return {
+    moduleId,
+    path,
+    exports: getExports(ast),
+  };
+}
+
+async function pathToServerActionModule(path: string) {
+  let moduleId = getModuleId(path);
+  let ast = await getAst(path);
+
+  return {
+    moduleId,
+    path,
+    exports: getExports(ast),
+    exportsAndNames: getExportsAndNames(ast),
+  };
+}
+
+function getModuleId(path: string) {
   let md5 = createHash("md5").update(path).digest("hex");
   let name = basename(path, extname(path));
   let moduleId = `${name}-${md5}`;
+  return moduleId;
+}
 
+async function getAst(path: string) {
   let contents = await readFile(path, "utf-8");
 
   let { code } = await transform(contents, {
@@ -120,7 +132,10 @@ async function pathToModule(path: string) {
 
   let ast = await parseAsync(code);
 
-  // find all exports
+  return ast;
+}
+
+function getExports(ast: ParseResult | null) {
   let exports =
     ast?.program.body.reduce<string[]>((exports, node) => {
       if (node.type === "ExportNamedDeclaration") {
@@ -139,9 +154,35 @@ async function pathToModule(path: string) {
       }
     }, []) ?? [];
 
-  return {
-    moduleId,
-    path,
-    exports,
-  };
+  return exports;
+}
+
+function getExportsAndNames(ast: ParseResult | null) {
+  let exports =
+    ast?.program.body.reduce<{ export: string; local: string }[]>(
+      (exports, node) => {
+        if (node.type === "ExportNamedDeclaration") {
+          let functionExports = [];
+
+          for (let specifier of node.specifiers) {
+            if (
+              specifier.type === "ExportSpecifier" &&
+              specifier.exported.type === "Identifier"
+            ) {
+              functionExports.push({
+                export: specifier.exported.name,
+                local: specifier.local.name,
+              });
+            }
+          }
+
+          return [...exports, ...functionExports];
+        }
+
+        return exports;
+      },
+      [],
+    ) ?? [];
+
+  return exports;
 }

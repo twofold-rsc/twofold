@@ -23,11 +23,12 @@ function ActionComponent({ id }: { id: string }) {
 
   return (
     <form action={runAction}>
-      <input
+      <button
         type="submit"
-        value={`Run ${id}`}
         className="block min-w-[128px] rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"
-      />
+      >
+        Run {id}
+      </button>
     </form>
   );
 }

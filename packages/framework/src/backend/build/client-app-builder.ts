@@ -9,10 +9,10 @@ import { transformAsync } from "@babel/core";
 import { fileURLToPath } from "url";
 import { appSrcDir, frameworkSrcDir } from "../files.js";
 import { dirname } from "path";
-import { RSCBuilder } from "./rsc-builder";
 import * as path from "path";
 import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder";
+import { serverActionClientReferencePlugin } from "./plugins/server-action-client-reference-plugin.js";
 
 export class ClientAppBuilder {
   #metafile?: BuildMetafile;
@@ -25,12 +25,18 @@ export class ClientAppBuilder {
   }
 
   get clientEntryPoints() {
-    return Array.from(this.#entriesBuilder.clientComponentModulePathMap.keys());
+    return Array.from(this.#entriesBuilder.clientComponentModuleMap.keys());
+  }
+
+  get entries() {
+    return this.#entriesBuilder;
   }
 
   async build() {
     this.#metafile = undefined;
     this.#error = undefined;
+
+    let builder = this;
 
     try {
       let results = await build({
@@ -50,6 +56,7 @@ export class ClientAppBuilder {
         chunkNames: "chunks/[name]-[hash]",
         metafile: true,
         plugins: [
+          serverActionClientReferencePlugin({ builder: builder }),
           clientComponentMapPlugin({
             clientEntryPoints: this.clientEntryPoints,
             setClientComponentOutputMap: (clientComponentOutputMap) => {
@@ -184,7 +191,7 @@ export class ClientAppBuilder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentModules,
+      this.#entriesBuilder.clientComponentModuleMap.values(),
     );
     let clientComponentModuleMap = new Map<
       string,
@@ -211,7 +218,7 @@ export class ClientAppBuilder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentModules,
+      this.#entriesBuilder.clientComponentModuleMap.values(),
     );
     let clientComponentMap = new Map<
       string,

@@ -246,6 +246,48 @@ export default function Nav() {
                               </Link>
                             </NavigationMenu.Link>
                           </li>
+                          <li>
+                            <NavigationMenu.Link
+                              active={
+                                path === "/server-actions/actions-file-for-cc"
+                              }
+                              asChild
+                            >
+                              <Link
+                                href="/server-actions/actions-file-for-cc"
+                                className="block"
+                              >
+                                <span className="font-medium text-gray-900">
+                                  Actions file CC
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  A server action imported into a client
+                                  component.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
+                          <li>
+                            <NavigationMenu.Link
+                              active={
+                                path === "/server-actions/action-returns-cc"
+                              }
+                              asChild
+                            >
+                              <Link
+                                href="/server-actions/action-returns-cc"
+                                className="block"
+                              >
+                                <span className="font-medium text-gray-900">
+                                  Action returns CC
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  A server action that returns a client
+                                  component.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
                         </ul>
                       </NavigationMenu.Content>
                     </NavigationMenu.Item>

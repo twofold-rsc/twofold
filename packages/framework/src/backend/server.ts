@@ -272,18 +272,26 @@ export async function makeServer(build: Build) {
     let [, name] = serverReference.split("#");
     console.log(`🟣 Running action ${name}`);
 
-    let actionResult = await runtime.runAction(serverReference, args);
+    let actionPromise = runtime.runAction(serverReference, args);
 
-    let serializedResult: string | undefined;
-    if (actionResult) {
-      try {
-        serializedResult = JSON.stringify(actionResult);
-      } catch {
-        console.error(
-          "Action returned non-serializable result, cannot send to client",
-        );
-      }
-    }
+    let actionStream = renderToReadableStream(
+      actionPromise,
+      build.builders.client.clientComponentMap,
+    );
+
+    // console.log("got result from action");
+    // console.log(actionResult);
+
+    // let serializedResult: string | undefined;
+    // if (actionResult) {
+    //   try {
+    //     serializedResult = JSON.stringify(actionResult);
+    //   } catch {
+    //     console.error(
+    //       "Action returned non-serializable result, cannot send to client",
+    //     );
+    //   }
+    // }
 
     let store = asyncLocalStorage.getStore();
     if (store) {
@@ -307,23 +315,31 @@ export async function makeServer(build: Build) {
 
     let multipart = new MultipartResponse();
 
-    if (serializedResult !== undefined) {
-      multipart.add({
-        type: "application/json",
-        body: serializedResult,
-        headers: {
-          "x-twofold-server-reference": serverReference,
-        },
-      });
-    }
+    // if (serializedResult !== undefined) {
+    //   multipart.add({
+    //     type: "application/json",
+    //     body: serializedResult,
+    //     headers: {
+    //       "x-twofold-server-reference": serverReference,
+    //     },
+    //   });
+    // }
 
     multipart.add({
       type: "text/x-component",
-      body: rscStream,
+      body: actionStream,
       headers: {
-        "x-twofold-path": path,
+        "x-twofold-server-reference": serverReference,
       },
     });
+
+    // multipart.add({
+    //   type: "text/x-component",
+    //   body: rscStream,
+    //   headers: {
+    //     "x-twofold-path": path,
+    //   },
+    // });
 
     return multipart.response();
   });

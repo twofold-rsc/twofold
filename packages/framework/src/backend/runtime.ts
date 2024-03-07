@@ -28,10 +28,7 @@ export class Runtime {
   // actions
 
   private get serverActionMap() {
-    return new Map([
-      ...this.#build.builders.rsc.serverActionMap,
-      ...this.#build.builders.serverActionsModule.serverActionMap,
-    ]);
+    return this.#build.builders.rsc.serverActionMap;
   }
 
   isAction(id: string) {

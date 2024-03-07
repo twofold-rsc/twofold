@@ -22,6 +22,7 @@ declare global {
     initialRSC?: {
       stream: ReadableStream<Uint8Array>;
     };
+    callServer?: (id: string, args: any) => Promise<any>;
   }
 }
 
@@ -29,7 +30,7 @@ let initialPath = `${location.pathname}${location.search}${location.hash}`;
 let initialCache = new Map<string, any>();
 
 async function callServer(id: string, args: any) {
-  // console.log("requesting action", id);
+  console.log("requesting action", id);
 
   let body = await encodeReply(args);
   let path = `${location.pathname}${location.search}${location.hash}`;
@@ -58,22 +59,6 @@ async function callServer(id: string, args: any) {
     }
   }
 
-  let jsonStream = new MultipartStream({
-    contentType: "application/json",
-    response,
-  });
-
-  let result = await jsonStream.value();
-  let decoded = new TextDecoder("utf-8").decode(result);
-  let json: JSON | undefined;
-  if (decoded) {
-    try {
-      json = JSON.parse(decoded);
-    } catch {
-      console.log("failed to parse json", decoded);
-    }
-  }
-
   let rscStream = new MultipartStream({
     contentType: "text/x-component",
     response,
@@ -83,9 +68,39 @@ async function callServer(id: string, args: any) {
     callServer,
   });
 
-  bridge.update(path, rscTree);
+  console.log("got tree");
+  console.log(rscTree);
 
-  return json;
+  return rscTree;
+
+  // let jsonStream = new MultipartStream({
+  //   contentType: "application/json",
+  //   response,
+  // });
+
+  // let result = await jsonStream.value();
+  // let decoded = new TextDecoder("utf-8").decode(result);
+  // let json: JSON | undefined;
+  // if (decoded) {
+  //   try {
+  //     json = JSON.parse(decoded);
+  //   } catch {
+  //     console.log("failed to parse json", decoded);
+  //   }
+  // }
+
+  // let rscStream = new MultipartStream({
+  //   contentType: "text/x-component",
+  //   response,
+  // });
+
+  // let rscTree = createFromReadableStream(rscStream.stream, {
+  //   callServer,
+  // });
+
+  // bridge.update(path, rscTree);
+
+  // return json;
 }
 
 if (window.initialRSC?.stream) {
@@ -192,6 +207,13 @@ function Router() {
       bridge.update = () => {};
     };
   }, []);
+
+  useEffect(() => {
+    window.callServer = callServer;
+    return () => {
+      window.callServer = undefined;
+    };
+  });
 
   if (!cache.has(path)) {
     let encodedUrl = encodeURIComponent(path);

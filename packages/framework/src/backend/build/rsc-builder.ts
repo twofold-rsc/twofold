@@ -8,11 +8,10 @@ import postcss from "postcss";
 import "urlpattern-polyfill";
 import { componentsToTree } from "../render.js";
 import { clientComponentProxyPlugin } from "./plugins/client-component-proxy-plugin.js";
-import { serverActionsPlugin } from "./plugins/server-actions.js";
+import { serverActionsPlugin } from "./plugins/server-actions-plugin.js";
 import { externalPackages } from "./externals.js";
 import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder";
-import { serverActionProxyPlugin } from "./plugins/server-action-proxy-plugin.js";
 
 type CompiledAction = {
   id: string;
@@ -39,26 +38,24 @@ export class RSCBuilder {
     return this.#entriesBuilder;
   }
 
-  async setup() {
+  async build() {
     let builder = this;
 
     let hasMiddleware = await this.hasMiddleware();
-
-    let entryPoints = [
-      "./src/pages/**/*.page.tsx",
-      "./src/pages/**/layout.tsx",
-    ];
-
-    if (hasMiddleware) {
-      entryPoints.push("./src/middleware.ts");
-    }
+    let middlewareEntry = hasMiddleware ? ["./src/middleware.ts"] : [];
+    let serverActionModules = this.#entriesBuilder.serverActionModuleMap.keys();
 
     this.#context = await context({
       bundle: true,
       format: "esm",
       jsx: "automatic",
       logLevel: "error",
-      entryPoints,
+      entryPoints: [
+        "./src/pages/**/*.page.tsx",
+        "./src/pages/**/layout.tsx",
+        ...middlewareEntry,
+        ...serverActionModules,
+      ],
       outdir: "./.twofold/rsc/",
       entryNames: "[ext]/[dir]/[name]-[hash]",
       external: ["react", "react-server-dom-webpack", ...externalPackages],
@@ -68,7 +65,6 @@ export class RSCBuilder {
       chunkNames: "chunks/[name]-[hash]",
       metafile: true,
       plugins: [
-        serverActionProxyPlugin({ builder: builder }),
         clientComponentProxyPlugin({ builder: builder }),
         serverActionsPlugin({ builder: builder }),
         {
@@ -117,9 +113,7 @@ export class RSCBuilder {
         },
       ],
     });
-  }
 
-  async build() {
     this.#serverActionMap = new Map();
     this.#metafile = undefined;
     this.#error = undefined;

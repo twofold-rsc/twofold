@@ -10,14 +10,10 @@ export function clientComponentProxyPlugin({
     name: "client-component-proxy-plugin",
 
     setup(build) {
-      let modulePathMap = builder.entries.clientComponentModulePathMap;
-
-      build.onStart(() => {
-        modulePathMap = builder.entries.clientComponentModulePathMap;
-      });
-
       build.onLoad({ filter: /\.(ts|tsx|js|jsx)$/ }, async ({ path }) => {
-        let clientComponentModule = modulePathMap.get(path);
+        let clientComponentModule =
+          builder.entries.clientComponentModuleMap.get(path);
+
         if (clientComponentModule) {
           // re-export using the proxy
           let exportLines = clientComponentModule.exports.map((name) => {
@@ -30,7 +26,7 @@ export function clientComponentProxyPlugin({
 
           // RSC "safe" version of the client component
           let newContents = `
-            import { createClientModuleProxy, registerClientReference } from "react-server-dom-webpack/server.edge";
+            import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
             let proxy = createClientModuleProxy("${clientComponentModule.moduleId}");
 
             ${exportLines.join("\n")}

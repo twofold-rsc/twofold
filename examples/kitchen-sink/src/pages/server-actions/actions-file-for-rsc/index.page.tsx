@@ -8,10 +8,12 @@ export default function Page() {
       </h1>
       <div className="mt-3 space-y-3">
         <form action={action}>
-          <input
+          <button
             type="submit"
-            className="block min-w-[128px] rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"
-          />
+            className="block rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"
+          >
+            Run action
+          </button>
         </form>
       </div>
     </div>
