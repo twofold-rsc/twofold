@@ -62,7 +62,7 @@ export class MultipartResponse2 {
   private get stringBody() {
     return this.#stringParts
       .map(({ body, headers }) => {
-        return `--${this.#boundary}\n${headersToText(headers)}\r\n\r\n${body}`;
+        return `--${this.#boundary}\n${headersToText(headers)}\r\n\r\n${body}\n`;
       })
       .join("\n");
   }
@@ -72,7 +72,7 @@ export class MultipartResponse2 {
     let streamParts = this.#streamParts;
     let boundary = this.#boundary;
     let encoder = this.#encoder;
-    let closing = `\n--${this.#boundary}--`;
+    let closing = `--${this.#boundary}--`;
 
     let firstChunk = stringBody;
 
@@ -87,10 +87,8 @@ export class MultipartResponse2 {
           let reader = streamPart.body.getReader();
 
           // pipe each stream in order
-          // eslint-disable-next-line no-constant-condition
           let reading = true;
           while (reading) {
-            console.log("running...");
             let { done, value } = await reader.read();
 
             if (value) {

@@ -31,7 +31,7 @@ let initialPath = `${location.pathname}${location.search}${location.hash}`;
 let initialCache = new Map<string, any>();
 
 async function callServer(id: string, args: any) {
-  console.log("requesting action", id);
+  // console.log("requesting action", id);
 
   let body = await encodeReply(args);
   let path = `${location.pathname}${location.search}${location.hash}`;
@@ -80,45 +80,13 @@ async function callServer(id: string, args: any) {
     callServer,
   });
 
-  bridge.update(path, rscTree);
-
   let actionTree = createFromReadableStream(actionStream.stream, {
     callServer,
   });
 
-  console.log("got action tree");
-  console.log(actionTree);
+  bridge.update(path, rscTree);
 
   return actionTree;
-
-  // let jsonStream = new MultipartStream({
-  //   contentType: "application/json",
-  //   response,
-  // });
-
-  // let result = await jsonStream.value();
-  // let decoded = new TextDecoder("utf-8").decode(result);
-  // let json: JSON | undefined;
-  // if (decoded) {
-  //   try {
-  //     json = JSON.parse(decoded);
-  //   } catch {
-  //     console.log("failed to parse json", decoded);
-  //   }
-  // }
-
-  // let rscStream = new MultipartStream({
-  //   contentType: "text/x-component",
-  //   response,
-  // });
-
-  // let rscTree = createFromReadableStream(rscStream.stream, {
-  //   callServer,
-  // });
-
-  // bridge.update(path, rscTree);
-
-  // return json;
 }
 
 if (window.initialRSC?.stream) {

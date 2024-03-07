@@ -10,7 +10,6 @@ export default function Control() {
   async function runAction() {
     startTransition(async () => {
       let c = await action();
-      console.log({ c });
       setComponent(c);
     });
   }

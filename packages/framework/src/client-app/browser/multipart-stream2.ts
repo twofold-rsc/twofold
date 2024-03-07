@@ -36,8 +36,6 @@ export class MultipartStream2 {
       throw new Error("Missing boundary");
     }
 
-    console.log("boundary", boundary);
-
     this.#boundary = boundary;
 
     this.#response = response;
@@ -79,14 +77,11 @@ export class MultipartStream2 {
             let { chunk, complete } = multipartStream.extractChunk(value);
 
             if (chunk) {
-              console.log("pushing chunk");
-              console.log(new TextDecoder().decode(chunk));
               controller.enqueue(chunk);
             }
 
             if (complete) {
-              console.log("at end of boundary");
-              // controller.close();
+              controller.close();
               return;
             }
           }
@@ -130,8 +125,6 @@ export class MultipartStream2 {
           );
 
         if (allHeadersMatch) {
-          console.log("found matching headers");
-          console.log(Object.fromEntries(headers.entries()));
           this.#state = "READING";
         }
 
@@ -167,10 +160,6 @@ export class MultipartStream2 {
   private findInBuffer(search: Uint8Array) {
     return findPos(search, this.#buffer);
   }
-
-  // async value() {
-  //   return await readStreamUntilClosed(this.stream);
-  // }
 }
 
 function findPos(search: Uint8Array, buffer: Uint8Array) {
@@ -199,23 +188,4 @@ function concat(a1: Uint8Array, a2: Uint8Array) {
   combined.set(a2, a1.length);
 
   return combined;
-}
-
-async function readStreamUntilClosed(readableStream: ReadableStream) {
-  let reader = readableStream.getReader();
-  let buffer = new Uint8Array();
-  let reading = true;
-
-  while (reading) {
-    let { done, value } = await reader.read();
-    if (done) {
-      reading = false;
-    } else {
-      buffer = concat(buffer, value);
-    }
-  }
-
-  reader.releaseLock();
-
-  return buffer;
 }
