@@ -16,6 +16,7 @@ import { RoutingContext } from "../contexts/routing-context";
 import { MultipartStream } from "./multipart-stream";
 import { ErrorBoundary } from "../components/error-boundary";
 import { deserializeError } from "serialize-error";
+import { MultipartStream2 } from "./multipart-stream2";
 
 declare global {
   interface Window {
@@ -59,8 +60,19 @@ async function callServer(id: string, args: any) {
     }
   }
 
-  let rscStream = new MultipartStream({
+  let actionStream = new MultipartStream2({
     contentType: "text/x-component",
+    headers: {
+      "x-twofold-server-reference": id,
+    },
+    response,
+  });
+
+  let rscStream = new MultipartStream2({
+    contentType: "text/x-component",
+    headers: {
+      "x-twofold-path": path,
+    },
     response,
   });
 
@@ -68,10 +80,16 @@ async function callServer(id: string, args: any) {
     callServer,
   });
 
-  console.log("got tree");
-  console.log(rscTree);
+  bridge.update(path, rscTree);
 
-  return rscTree;
+  let actionTree = createFromReadableStream(actionStream.stream, {
+    callServer,
+  });
+
+  console.log("got action tree");
+  console.log(actionTree);
+
+  return actionTree;
 
   // let jsonStream = new MultipartStream({
   //   contentType: "application/json",

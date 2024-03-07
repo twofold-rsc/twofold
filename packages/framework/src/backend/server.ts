@@ -20,6 +20,7 @@ import { fileURLToPath } from "url";
 import { appCompiledDir } from "./files.js";
 import { errors } from "./server/errors.js";
 import { staticFiles } from "./server/static-files.js";
+import { MultipartResponse2 } from "./multipart-response2.js";
 
 export async function makeServer(build: Build) {
   let runtime = new Runtime(build);
@@ -272,10 +273,9 @@ export async function makeServer(build: Build) {
     let [, name] = serverReference.split("#");
     console.log(`🟣 Running action ${name}`);
 
-    let actionPromise = runtime.runAction(serverReference, args);
-
+    let result = await runtime.runAction(serverReference, args);
     let actionStream = renderToReadableStream(
-      actionPromise,
+      result,
       build.builders.client.clientComponentMap,
     );
 
@@ -313,7 +313,7 @@ export async function makeServer(build: Build) {
       build.builders.client.clientComponentMap,
     );
 
-    let multipart = new MultipartResponse();
+    let multipart = new MultipartResponse2();
 
     // if (serializedResult !== undefined) {
     //   multipart.add({
@@ -333,13 +333,13 @@ export async function makeServer(build: Build) {
       },
     });
 
-    // multipart.add({
-    //   type: "text/x-component",
-    //   body: rscStream,
-    //   headers: {
-    //     "x-twofold-path": path,
-    //   },
-    // });
+    multipart.add({
+      type: "text/x-component",
+      body: rscStream,
+      headers: {
+        "x-twofold-path": path,
+      },
+    });
 
     return multipart.response();
   });

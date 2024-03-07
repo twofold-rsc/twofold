@@ -6,6 +6,8 @@ framework
 - error in server action module
 
 - stream down a page refresh + action result
+- really slow action with fast page (to test streaming parts in order)
+- really fast action with slow page (to test streaming parts in order)
 
 - restart client builder if entries change
 - restart rsc builder if entries change
