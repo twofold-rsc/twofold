@@ -7,6 +7,7 @@ import { ClientAppBuilder } from "./build/client-app-builder.js";
 import { RSCBuilder } from "./build/rsc-builder.js";
 import { ErrorPageBuilder } from "./build/error-page-builder.js";
 import { StaticFilesBuilder } from "./build/static-files-builder.js";
+import { EntriesBuilder } from "./build/entries-builder.js";
 
 class BuildEvents extends EventEmitter {}
 
@@ -17,6 +18,7 @@ class BuildEvents extends EventEmitter {}
 export class Build {
   #key = randomBytes(6).toString("hex");
   #isBuilding = false;
+  #entriesBuilder: EntriesBuilder;
   #errorPageBuilder: ErrorPageBuilder;
   #rscBuilder: RSCBuilder;
   #clientAppBuilder: ClientAppBuilder;
@@ -26,10 +28,13 @@ export class Build {
   #previousRSCFiles = new Set<string>();
 
   constructor() {
+    this.#entriesBuilder = new EntriesBuilder();
     this.#errorPageBuilder = new ErrorPageBuilder();
-    this.#rscBuilder = new RSCBuilder();
+    this.#rscBuilder = new RSCBuilder({
+      entriesBuilder: this.#entriesBuilder,
+    });
     this.#clientAppBuilder = new ClientAppBuilder({
-      rscBuilder: this.#rscBuilder,
+      entriesBuilder: this.#entriesBuilder,
     });
     this.#staticFilesBuilder = new StaticFilesBuilder();
   }
@@ -43,8 +48,8 @@ export class Build {
   }
 
   async setup() {
+    await this.#entriesBuilder.setup();
     await this.#errorPageBuilder.setup();
-    await this.#rscBuilder.setup();
   }
 
   get error() {
@@ -53,6 +58,7 @@ export class Build {
 
   get builders() {
     return {
+      entries: this.#entriesBuilder,
       client: this.#clientAppBuilder,
       rsc: this.#rscBuilder,
       error: this.#errorPageBuilder,
@@ -61,7 +67,8 @@ export class Build {
   }
 
   async build() {
-    performance.mark("build start");
+    let build = time("build");
+    build.start();
 
     if (this.#isBuilding) {
       // i need to figure this out
@@ -89,24 +96,31 @@ export class Build {
       this.#previousRSCFiles = new Set();
     }
 
-    await this.#errorPageBuilder.build();
-    await this.#rscBuilder.build();
-    await this.#clientAppBuilder.build();
-    await this.#staticFilesBuilder.build();
+    let entriesBuild = this.#entriesBuilder.build();
+    let errorPageBuild = this.#errorPageBuilder.build();
+    let staticFilesBuild = this.#staticFilesBuilder.build();
+
+    let frameworkTime = time("framework build");
+    frameworkTime.start();
+    await Promise.all([entriesBuild, errorPageBuild, staticFilesBuild]);
+    frameworkTime.end();
+    // frameworkTime.log();
+
+    let rscBuild = this.#rscBuilder.build();
+    let clientBuild = this.#clientAppBuilder.build();
+
+    let appTime = time("app build");
+    appTime.start();
+    await Promise.all([clientBuild, rscBuild]);
+    appTime.end();
+    // appTime.log();
 
     this.#key = randomBytes(6).toString("hex");
 
-    performance.mark("build end");
-
-    let measure = performance.measure(
-      "build duration",
-      "build start",
-      "build end",
-    );
-    let rebuildTime = measure.duration;
+    build.end();
 
     console.log(
-      `🏗️  Built app in ${rebuildTime.toFixed(2)}ms [version: ${this.#key}]`,
+      `🏗️  Built app in ${build.duration.toFixed(2)}ms [version: ${this.#key}]`,
     );
 
     this.#isBuilding = false;
@@ -183,3 +197,26 @@ export type BuildContext = Awaited<ReturnType<typeof context>>;
 export type BuildMetafile = Awaited<
   ReturnType<BuildContext["rebuild"]>
 >["metafile"];
+
+function time(name: string) {
+  let key = randomBytes(16).toString("hex");
+  return {
+    start() {
+      performance.mark(`${key} start`);
+    },
+    end() {
+      performance.mark(`${key} end`);
+    },
+    get duration() {
+      let measure = performance.measure(
+        `${key} duration`,
+        `${key} start`,
+        `${key} end`,
+      );
+      return measure.duration;
+    },
+    log() {
+      console.log(`${name} duration ${this.duration.toFixed(2)}ms`);
+    },
+  };
+}

@@ -2,7 +2,10 @@
 
 framework
 
-- use server file
+- bug: back cache not working when error thrown
+  go to server action throws error, trigger, then click back
+
+- does rsdw need to be an external?
 
 - image imports (rsc, browser, ssr)
 - redirects
@@ -17,9 +20,12 @@ cli
 kitchen sink
 
 - action on page with blocking suspense
+- really fast action with slow page (to test streaming parts in order)
 - refresh a blocking suspense page
 - click link to page that suspends, then router.refresh before it loads
 - title/meta head tags
+- restart client builder if entries change
+- restart rsc builder if entries change
 
 Externals for RSC build (inc react)
 
@@ -27,6 +33,10 @@ Docs
 
 Playwright
 Form
+
+- it looks like you can render the app and get the action result like this:
+  1. https://github.com/facebook/react/blob/850fac4915864a487e7cb9ecae8a75dbac144174/fixtures/flight/server/region.js#L154
+  2. https://github.com/facebook/react/blob/850fac4915864a487e7cb9ecae8a75dbac144174/fixtures/flight/src/index.js#L19
 
 ## Actions
 

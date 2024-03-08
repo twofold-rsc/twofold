@@ -8,6 +8,8 @@ export class Runtime {
     this.#build = build;
   }
 
+  // pages
+
   pageForRequest(request: Request) {
     return this.pageForUrl(new URL(request.url));
   }
@@ -23,5 +25,26 @@ export class Runtime {
     );
   }
 
-  // add action stuff
+  // actions
+
+  private get serverActionMap() {
+    return this.#build.builders.rsc.serverActionMap;
+  }
+
+  isAction(id: string) {
+    return this.serverActionMap.has(id);
+  }
+
+  async runAction(id: string, args: any[]) {
+    let action = this.serverActionMap.get(id);
+
+    if (!action) {
+      throw new Error("Invalid action id");
+    }
+
+    let module = await import(action.path);
+    let fn = module[action.export];
+
+    return fn.apply(null, args);
+  }
 }

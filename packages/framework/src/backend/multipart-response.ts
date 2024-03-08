@@ -4,7 +4,7 @@ export class MultipartResponse {
   #boundary: string = randomUUID();
 
   #stringParts: { body: string; headers: Headers }[] = [];
-  #streamPart?: { body: ReadableStream; headers: Headers };
+  #streamParts: { body: ReadableStream; headers: Headers }[] = [];
 
   #encoder = new TextEncoder();
 
@@ -53,69 +53,59 @@ export class MultipartResponse {
     body: ReadableStream;
     headers: Headers;
   }) {
-    this.#streamPart = {
+    this.#streamParts.push({
       body,
       headers,
-    };
-  }
-
-  response() {
-    if (this.#streamPart) {
-      return this.streamResponse();
-    } else {
-      return this.stringResponse();
-    }
+    });
   }
 
   private get stringBody() {
     return this.#stringParts
       .map(({ body, headers }) => {
-        return `--${this.#boundary}\n${headersToText(headers)}\r\n\r\n${body}`;
+        return `--${this.#boundary}\n${headersToText(headers)}\r\n\r\n${body}\n`;
       })
       .join("\n");
   }
 
-  private stringResponse() {
-    let closing = `\n--${this.#boundary}--`;
-    return new Response(`${this.stringBody}\n${closing}`, {
-      headers: this.headers,
-    });
-  }
-
-  private streamResponse() {
-    if (!this.#streamPart) {
-      throw new Error("Cannot stream response without stream");
-    }
-
+  response() {
     let stringBody = this.stringBody;
-    let streamHeaders = `--${this.#boundary}\n${headersToText(
-      this.#streamPart.headers,
-    )}\r\n\r\n`;
-
-    let reader = this.#streamPart.body.getReader();
+    let streamParts = this.#streamParts;
+    let boundary = this.#boundary;
     let encoder = this.#encoder;
-    let closing = `\n--${this.#boundary}--`;
+    let closing = `--${this.#boundary}--`;
 
-    let firstChunk = [stringBody, streamHeaders].join("\n");
+    let firstChunk = stringBody;
 
     let responseStream = new ReadableStream({
-      start(controller) {
+      async start(controller) {
         controller.enqueue(encoder.encode(firstChunk));
 
-        async function push() {
-          let { done, value } = await reader.read();
-          if (done) {
-            controller.enqueue(encoder.encode(closing));
-            controller.close();
-            reader.releaseLock();
-            return;
+        for (let streamPart of streamParts) {
+          let streamHeaders = `--${boundary}\n${headersToText(streamPart.headers)}\r\n\r\n`;
+          controller.enqueue(encoder.encode(streamHeaders));
+
+          let reader = streamPart.body.getReader();
+
+          // pipe each stream in order
+          let reading = true;
+          while (reading) {
+            let { done, value } = await reader.read();
+
+            if (value) {
+              controller.enqueue(value);
+            }
+
+            if (done) {
+              controller.enqueue("\n");
+              reading = false;
+            }
           }
 
-          controller.enqueue(value);
-          push();
+          reader.releaseLock();
         }
 
-        push();
+        controller.enqueue(encoder.encode(closing));
+        controller.close();
       },
     });
 

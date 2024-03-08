@@ -16,7 +16,7 @@ window.__webpack_chunk_load__ = async function (chunkId) {
 
 window.$Framework$reloadChunk = async function (chunk) {
   let [moduleId, name, hash] = chunk.split(":");
-  let modulePath = `/_assets/client-app/${name}-${hash}.js?v=${Date.now()}}`;
+  let modulePath = `/_assets/client-app/${name}-${hash}.js?v=${Date.now()}`;
   let mod = await import(modulePath);
   moduleMap.set(moduleId, mod);
   return mod;

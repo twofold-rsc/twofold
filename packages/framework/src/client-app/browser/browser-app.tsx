@@ -22,6 +22,7 @@ declare global {
     initialRSC?: {
       stream: ReadableStream<Uint8Array>;
     };
+    callServer?: (id: string, args: any) => Promise<any>;
   }
 }
 
@@ -58,24 +59,21 @@ async function callServer(id: string, args: any) {
     }
   }
 
-  let jsonStream = new MultipartStream({
-    contentType: "application/json",
+  let actionStream = new MultipartStream({
+    contentType: "text/x-component",
+    headers: {
+      "x-twofold-stream": "action",
+      "x-twofold-server-reference": id,
+    },
     response,
   });
 
-  let result = await jsonStream.value();
-  let decoded = new TextDecoder("utf-8").decode(result);
-  let json: JSON | undefined;
-  if (decoded) {
-    try {
-      json = JSON.parse(decoded);
-    } catch {
-      console.log("failed to parse json", decoded);
-    }
-  }
-
   let rscStream = new MultipartStream({
     contentType: "text/x-component",
+    headers: {
+      "x-twofold-stream": "render",
+      "x-twofold-path": path,
+    },
     response,
   });
 
@@ -83,9 +81,13 @@ async function callServer(id: string, args: any) {
     callServer,
   });
 
+  let actionTree = createFromReadableStream(actionStream.stream, {
+    callServer,
+  });
+
   bridge.update(path, rscTree);
 
-  return json;
+  return actionTree;
 }
 
 if (window.initialRSC?.stream) {
@@ -192,6 +194,13 @@ function Router() {
       bridge.update = () => {};
     };
   }, []);
+
+  useEffect(() => {
+    window.callServer = callServer;
+    return () => {
+      window.callServer = undefined;
+    };
+  });
 
   if (!cache.has(path)) {
     let encodedUrl = encodeURIComponent(path);

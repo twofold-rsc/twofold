@@ -240,7 +240,7 @@ export async function makeServer(build: Build) {
       throw new Error("404 - No server action specified");
     }
 
-    if (!build.builders.rsc.isAction(serverReference)) {
+    if (!runtime.isAction(serverReference)) {
       throw new Error("404 - Server action not found");
     }
 
@@ -272,21 +272,11 @@ export async function makeServer(build: Build) {
     let [, name] = serverReference.split("#");
     console.log(`🟣 Running action ${name}`);
 
-    let actionResult = await build.builders.rsc.runAction(
-      serverReference,
-      args,
+    let result = await runtime.runAction(serverReference, args);
+    let actionStream = renderToReadableStream(
+      result,
+      build.builders.client.clientComponentMap,
     );
-
-    let serializedResult: string | undefined;
-    if (actionResult) {
-      try {
-        serializedResult = JSON.stringify(actionResult);
-      } catch {
-        console.error(
-          "Action returned non-serializable result, cannot send to client",
-        );
-      }
-    }
 
     let store = asyncLocalStorage.getStore();
     if (store) {
@@ -310,20 +300,20 @@ export async function makeServer(build: Build) {
 
     let multipart = new MultipartResponse();
 
-    if (serializedResult !== undefined) {
-      multipart.add({
-        type: "application/json",
-        body: serializedResult,
-        headers: {
-          "x-twofold-server-reference": serverReference,
-        },
-      });
-    }
+    multipart.add({
+      type: "text/x-component",
+      body: actionStream,
+      headers: {
+        "x-twofold-stream": "action",
+        "x-twofold-server-reference": serverReference,
+      },
+    });
 
     multipart.add({
       type: "text/x-component",
       body: rscStream,
       headers: {
+        "x-twofold-stream": "render",
         "x-twofold-path": path,
       },
     });

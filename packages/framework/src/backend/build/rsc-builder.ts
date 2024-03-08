@@ -8,15 +8,10 @@ import postcss from "postcss";
 import "urlpattern-polyfill";
 import { componentsToTree } from "../render.js";
 import { clientComponentProxyPlugin } from "./plugins/client-component-proxy-plugin.js";
-import { serverActionsPlugin } from "./plugins/server-actions.js";
+import { serverActionsPlugin } from "./plugins/server-actions-plugin.js";
 import { externalPackages } from "./externals.js";
 import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
-
-type ClientComponent = {
-  moduleId: string;
-  path: string;
-  exports: string[];
-};
+import { EntriesBuilder } from "./entries-builder";
 
 type CompiledAction = {
   id: string;
@@ -28,37 +23,39 @@ export class RSCBuilder {
   #context?: BuildContext;
   #metafile?: BuildMetafile;
   #error?: Error;
-  #clientComponents = new Set<ClientComponent>();
+  #entriesBuilder: EntriesBuilder;
   #serverActionMap = new Map<string, CompiledAction>();
 
-  get clientComponents() {
-    return this.#clientComponents;
+  constructor({ entriesBuilder }: { entriesBuilder: EntriesBuilder }) {
+    this.#entriesBuilder = entriesBuilder;
   }
 
   get serverActionMap() {
     return this.#serverActionMap;
   }
 
-  async setup() {
+  get entries() {
+    return this.#entriesBuilder;
+  }
+
+  async build() {
     let builder = this;
 
     let hasMiddleware = await this.hasMiddleware();
-
-    let entryPoints = [
-      "./src/pages/**/*.page.tsx",
-      "./src/pages/**/layout.tsx",
-    ];
-
-    if (hasMiddleware) {
-      entryPoints.push("./src/middleware.ts");
-    }
+    let middlewareEntry = hasMiddleware ? ["./src/middleware.ts"] : [];
+    let serverActionModules = this.#entriesBuilder.serverActionModuleMap.keys();
 
     this.#context = await context({
       bundle: true,
       format: "esm",
       jsx: "automatic",
       logLevel: "error",
-      entryPoints,
+      entryPoints: [
+        "./src/pages/**/*.page.tsx",
+        "./src/pages/**/layout.tsx",
+        ...middlewareEntry,
+        ...serverActionModules,
+      ],
       outdir: "./.twofold/rsc/",
       entryNames: "[ext]/[dir]/[name]-[hash]",
       external: ["react", "react-server-dom-webpack", ...externalPackages],
@@ -74,8 +71,6 @@ export class RSCBuilder {
           name: "postcss",
           async setup(build) {
             let postcssConfig: postcssrc.Result | false;
-
-            // let path = fixtureDir.pathname;
 
             // this becomes root when we point at an actual app
             // @ts-ignore
@@ -118,10 +113,7 @@ export class RSCBuilder {
         },
       ],
     });
-  }
 
-  async build() {
-    this.#clientComponents = new Set();
     this.#serverActionMap = new Map();
     this.#metafile = undefined;
     this.#error = undefined;
@@ -299,23 +291,6 @@ export class RSCBuilder {
     pages.forEach((page) => root?.add(page));
 
     return root;
-  }
-
-  isAction(id: string) {
-    return this.#serverActionMap.has(id);
-  }
-
-  async runAction(id: string, args: any[]) {
-    let action = this.#serverActionMap.get(id);
-
-    if (!action) {
-      throw new Error("Invalid action id");
-    }
-
-    let module = await import(action.path);
-    let fn = module[action.export];
-
-    return fn.apply(null, args);
   }
 }
 
