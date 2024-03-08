@@ -34,6 +34,10 @@ Docs
 Playwright
 Form
 
+- it looks like you can render the app and get the action result like this:
+  1. https://github.com/facebook/react/blob/850fac4915864a487e7cb9ecae8a75dbac144174/fixtures/flight/server/region.js#L154
+  2. https://github.com/facebook/react/blob/850fac4915864a487e7cb9ecae8a75dbac144174/fixtures/flight/src/index.js#L19
+
 ## Actions
 
 - [x] Action from RSC
