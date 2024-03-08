@@ -23,7 +23,7 @@ export default function Nav() {
                   >
                     <span className="font-medium text-gray-900">Home</span>
                     <p className="mt-1 text-sm leading-snug text-gray-700">
-                      The kitchen sink site, full of demos and examples.
+                      The kitchen sink site, full of examples and tests.
                     </p>
                   </Link>
                 </NavigationMenu.Link>
