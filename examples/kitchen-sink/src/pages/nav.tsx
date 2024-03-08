@@ -3,6 +3,7 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { useRouter } from "@twofold/framework/use-router";
 import Link from "@twofold/framework/link";
+import { ReactNode } from "react";
 
 export default function Nav() {
   let { path } = useRouter();
@@ -49,575 +50,198 @@ export default function Nav() {
           <NavigationMenu.Trigger>Examples</NavigationMenu.Trigger>
           <NavigationMenu.Content className="absolute left-0 top-0">
             <NavigationMenu.Sub
-              defaultValue="react"
+              defaultValue="React"
               orientation="vertical"
               className="w-[650px]"
             >
               <div className="flex overflow-hidden rounded border-4 border-gray-100 bg-gray-100 shadow-2xl">
                 <div className="w-1/4">
                   <NavigationMenu.List className="space-y-1 bg-gray-100 pr-1">
-                    <NavigationMenu.Item value="react">
-                      <NavigationMenu.Trigger className="w-full rounded-[3px] px-1.5 py-0.5 text-left font-medium text-gray-900 data-[state=open]:bg-white">
-                        React
-                      </NavigationMenu.Trigger>
-                      <NavigationMenu.Content>
-                        <ul className="grid grid-cols-2 gap-2">
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/react/use-id"}
-                              asChild
-                            >
-                              <Link href="/react/use-id" className="block">
-                                <span className="font-medium text-gray-900">
-                                  useId
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  The useId hook from React
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/react/use-form-state"}
-                              asChild
-                            >
-                              <Link
-                                href="/react/use-form-state"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  useFormState
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A hook for managing form state.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/react/use-optimistic"}
-                              asChild
-                            >
-                              <Link
-                                href="/react/use-optimistic"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  useOptimistic
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A hook that shows optimistic updates.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/react/suspense"}
-                              asChild
-                            >
-                              <Link href="/react/suspense" className="block">
-                                <span className="font-medium text-gray-900">
-                                  Suspense
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Suspense boundaries.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/react/cache"}
-                              asChild
-                            >
-                              <Link href="/react/cache" className="block">
-                                <span className="font-medium text-gray-900">
-                                  cache
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Dedupe data requests with React's cache
-                                  helper.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                        </ul>
-                      </NavigationMenu.Content>
-                    </NavigationMenu.Item>
+                    <ExampleGroup name="React">
+                      <ExampleLink
+                        title="useId"
+                        description="The useId hook from React"
+                        href="/react/use-id"
+                      />
+                      <ExampleLink
+                        title="useFormState"
+                        description="A hook for managing form state."
+                        href="/react/use-form-state"
+                      />
+                      <ExampleLink
+                        title="useOptimistic"
+                        description="A hook that shows optimistic updates."
+                        href="/react/use-optimistic"
+                      />
+                      <ExampleLink
+                        title="Suspense"
+                        description="Suspense boundaries."
+                        href="/react/suspense"
+                      />
+                      <ExampleLink
+                        title="cache"
+                        description="Dedupe data requests with React's cache helper."
+                        href="/react/cache"
+                      />
+                    </ExampleGroup>
 
-                    <NavigationMenu.Item value="actions">
-                      <NavigationMenu.Trigger className="w-full rounded-[3px] px-1.5 py-0.5 text-left font-medium text-gray-900 data-[state=open]:bg-white">
-                        Server actions
-                      </NavigationMenu.Trigger>
-                      <NavigationMenu.Content>
-                        <ul className="grid grid-cols-2 gap-2">
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/server-actions"}
-                              asChild
-                            >
-                              <Link href="/server-actions" className="block">
-                                <span className="font-medium text-gray-900">
-                                  Server action
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A function that runs on the server.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/server-actions/client-action"}
-                              asChild
-                            >
-                              <Link
-                                href="/server-actions/client-action"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Client action
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A client component that invokes a server
-                                  action.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/server-actions/form-data"}
-                              asChild
-                            >
-                              <Link
-                                href="/server-actions/form-data"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Form data
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A server action that works with forms and form
-                                  data.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/server-actions/bind"}
-                              asChild
-                            >
-                              <Link
-                                href="/server-actions/bind"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Bound action
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A server action that binds to a component
-                                  prop.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={
-                                path === "/server-actions/actions-file-for-rsc"
-                              }
-                              asChild
-                            >
-                              <Link
-                                href="/server-actions/actions-file-for-rsc"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Actions file RSC
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A server action imported into an RSC.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={
-                                path === "/server-actions/actions-file-for-cc"
-                              }
-                              asChild
-                            >
-                              <Link
-                                href="/server-actions/actions-file-for-cc"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Actions file CC
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A server action imported into a client
-                                  component.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={
-                                path === "/server-actions/action-returns-cc"
-                              }
-                              asChild
-                            >
-                              <Link
-                                href="/server-actions/action-returns-cc"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Action returns CC
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A server action that returns a client
-                                  component.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/server-actions/slow-action"}
-                              asChild
-                            >
-                              <Link
-                                href="/server-actions/slow-action"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Slow action
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A server action that is very slow.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                        </ul>
-                      </NavigationMenu.Content>
-                    </NavigationMenu.Item>
+                    <ExampleGroup name="Server actions">
+                      <ExampleLink
+                        title="Server action"
+                        description="A function that runs on the server."
+                        href="/server-actions"
+                      />
+                      <ExampleLink
+                        title="Client action"
+                        description="A client component that invokes a server action."
+                        href="/server-actions/client-action"
+                      />
+                      <ExampleLink
+                        title="Form data"
+                        description="A server action that works with forms and form data."
+                        href="/server-actions/form-data"
+                      />
+                      <ExampleLink
+                        title="Bound action"
+                        description="A server action that binds to a component prop."
+                        href="/server-actions/bind"
+                      />
+                      <ExampleLink
+                        title="Actions file RSC"
+                        description="A server action imported into an RSC."
+                        href="/server-actions/actions-file-for-rsc"
+                      />
+                      <ExampleLink
+                        title="Actions file CC"
+                        description="A server action imported into a client component."
+                        href="/server-actions/actions-file-for-cc"
+                      />
+                      <ExampleLink
+                        title="Action returns CC"
+                        description="A server action that returns a client component."
+                        href="/server-actions/action-returns-cc"
+                      />
+                      <ExampleLink
+                        title="Slow action"
+                        description="A server action that is very slow."
+                        href="/server-actions/slow-action"
+                      />
+                    </ExampleGroup>
 
-                    <NavigationMenu.Item value="client-components">
-                      <NavigationMenu.Trigger className="w-full rounded-[3px] px-1.5 py-0.5 text-left font-medium text-gray-900 data-[state=open]:bg-white">
-                        Client components
-                      </NavigationMenu.Trigger>
-                      <NavigationMenu.Content>
-                        <ul className="grid grid-cols-2 gap-2">
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/client-components"}
-                              asChild
-                            >
-                              <Link href="/client-components" className="block">
-                                <span className="font-medium text-gray-900">
-                                  Client component
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A component that runs on the client.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={
-                                path === "/client-components/named-exports"
-                              }
-                              asChild
-                            >
-                              <Link
-                                href="/client-components/named-exports"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Named exports
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A file that exports multiple client
-                                  components.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                        </ul>
-                      </NavigationMenu.Content>
-                    </NavigationMenu.Item>
+                    <ExampleGroup name="Client components">
+                      <ExampleLink
+                        title="Client component"
+                        description="A component that runs on the client."
+                        href="/client-components"
+                      />
+                      <ExampleLink
+                        title="Named exports"
+                        description="A file that exports multiple client components."
+                        href="/client-components/named-exports"
+                      />
+                    </ExampleGroup>
 
-                    <NavigationMenu.Item value="cookies">
-                      <NavigationMenu.Trigger className="w-full rounded-[3px] px-1.5 py-0.5 text-left font-medium text-gray-900 data-[state=open]:bg-white">
-                        HTTP server
-                      </NavigationMenu.Trigger>
-                      <NavigationMenu.Content>
-                        <ul className="grid grid-cols-2 gap-2">
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/http/cookies"}
-                              asChild
-                            >
-                              <Link href="/http/cookies" className="block">
-                                <span className="font-medium text-gray-900">
-                                  Cookies
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Read, set, and destroy cookies.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/http/middleware"}
-                              asChild
-                            >
-                              <Link href="/http/middleware" className="block">
-                                <span className="font-medium text-gray-900">
-                                  Middleware
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Run code before rendering a page.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={
-                                path === "/http/middleware?global-middleware=1"
-                              }
-                              asChild
-                            >
-                              <Link
-                                href="/http/middleware?global-middleware=1"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Global middleware
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Run code before handling a request.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/http/streaming"}
-                              asChild
-                            >
-                              <Link href="/http/streaming" className="block">
-                                <span className="font-medium text-gray-900">
-                                  Streaming
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Stream suspense boundaries as they resolve.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/http/public"}
-                              asChild
-                            >
-                              <Link href="/http/public" className="block">
-                                <span className="font-medium text-gray-900">
-                                  Public folder
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Public folder for static assets
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                        </ul>
-                      </NavigationMenu.Content>
-                    </NavigationMenu.Item>
+                    <ExampleGroup name="HTTP">
+                      <ExampleLink
+                        title="Cookies"
+                        description="Read, set, and destroy cookies."
+                        href="/http/cookies"
+                      />
+                      <ExampleLink
+                        title="Middleware"
+                        description="Run code before rendering a page."
+                        href="/http/middleware"
+                      />
+                      <ExampleLink
+                        title="Global middleware"
+                        description="Run code before handling a request."
+                        href="/http/middleware?global-middleware=1"
+                      />
+                      <ExampleLink
+                        title="Streaming"
+                        description="Stream suspense boundaries as they resolve."
+                        href="/http/streaming"
+                      />
+                      <ExampleLink
+                        title="Public folder"
+                        description="Public folder for static assets"
+                        href="/http/public"
+                      />
+                    </ExampleGroup>
 
-                    <NavigationMenu.Item value="build">
-                      <NavigationMenu.Trigger className="w-full rounded-[3px] px-1.5 py-0.5 text-left font-medium text-gray-900 data-[state=open]:bg-white">
-                        Build
-                      </NavigationMenu.Trigger>
-                      <NavigationMenu.Content>
-                        <ul className="grid grid-cols-2 gap-2">
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/build/css"}
-                              asChild
-                            >
-                              <Link href="/build/css" className="block">
-                                <span className="font-medium text-gray-900">
-                                  CSS
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  A page with custom css.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/build/dev-reload"}
-                              asChild
-                            >
-                              <Link href="/build/dev-reload" className="block">
-                                <span className="font-medium text-gray-900">
-                                  Dev reload
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Reload pages in development as they are
-                                  edited.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/build/hmr"}
-                              asChild
-                            >
-                              <Link href="/build/hmr" className="block">
-                                <span className="font-medium text-gray-900">
-                                  HMR
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Hot module reloading of client components.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                        </ul>
-                      </NavigationMenu.Content>
-                    </NavigationMenu.Item>
+                    <ExampleGroup name="Build">
+                      <ExampleLink
+                        title="CSS"
+                        description="A page with custom css."
+                        href="/build/css"
+                      />
+                      <ExampleLink
+                        title="Dev reload"
+                        description="Reload pages in development as they are edited."
+                        href="/build/dev-reload"
+                      />
+                      <ExampleLink
+                        title="HMR"
+                        description="Hot module reloading of client components."
+                        href="/build/hmr"
+                      />
+                    </ExampleGroup>
 
-                    <NavigationMenu.Item value="routing">
-                      <NavigationMenu.Trigger className="w-full rounded-[3px] px-1.5 py-0.5 text-left font-medium text-gray-900 data-[state=open]:bg-white">
-                        Routing
-                      </NavigationMenu.Trigger>
-                      <NavigationMenu.Content>
-                        <ul className="grid grid-cols-2 gap-2">
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/routing/use-router"}
-                              asChild
-                            >
-                              <Link
-                                href="/routing/use-router"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  useRouter
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  The hook that controls the router.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/routing/search-params"}
-                              asChild
-                            >
-                              <Link
-                                href="/routing/search-params"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Search params
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Read query search params from the URL.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/routing/nested-layouts"}
-                              asChild
-                            >
-                              <Link
-                                href="/routing/nested-layouts"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Nested layouts
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Use layouts to nest shared UI between pages.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/routing/slugs"}
-                              asChild
-                            >
-                              <Link href="/routing/slugs" className="block">
-                                <span className="font-medium text-gray-900">
-                                  Dynamic URLs
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Use dynamic params to load different data
-                                  based off the URL.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/routing/scroll-position"}
-                              asChild
-                            >
-                              <Link
-                                href="/routing/scroll-position"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Scroll position
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Maintain scroll position as you navigate
-                                  around the app.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                          <li>
-                            <NavigationMenu.Link
-                              active={path === "/routing/path-normalization/"}
-                              asChild
-                            >
-                              <Link
-                                href="/routing/path-normalization/"
-                                className="block"
-                              >
-                                <span className="font-medium text-gray-900">
-                                  Path normalization
-                                </span>
-                                <p className="mt-1 text-sm leading-snug text-gray-700">
-                                  Remove trailing slashes from URLs.
-                                </p>
-                              </Link>
-                            </NavigationMenu.Link>
-                          </li>
-                        </ul>
-                      </NavigationMenu.Content>
-                    </NavigationMenu.Item>
+                    <ExampleGroup name="Routing">
+                      <ExampleLink
+                        title="useRouter"
+                        description="The hook that controls the router."
+                        href="/routing/use-router"
+                      />
+                      <ExampleLink
+                        title="Search params"
+                        description="Read query search params from the URL."
+                        href="/routing/search-params"
+                      />
+                      <ExampleLink
+                        title="Nested layouts"
+                        description="Use layouts to nest shared UI between pages."
+                        href="/routing/nested-layouts"
+                      />
+                      <ExampleLink
+                        title="Dynamic URLs"
+                        description="Use dynamic params to load different data based off the URL."
+                        href="/routing/slugs"
+                      />
+                      <ExampleLink
+                        title="Scroll position"
+                        description="Maintain scroll position as you navigate around the app."
+                        href="/routing/scroll-position"
+                      />
+                      <ExampleLink
+                        title="Path normalization"
+                        description="Remove trailing slashes from URLs."
+                        href="/routing/path-normalization/"
+                      />
+                    </ExampleGroup>
+
+                    <ExampleGroup name="Errors">
+                      <ExampleLink
+                        title="Client component errors"
+                        description="Errors that happen in client components."
+                        href="/errors/client-components"
+                      />
+                      <ExampleLink
+                        title="RSC errors"
+                        description="Errors that happen in RSCs."
+                        href="/errors/rsc"
+                      />
+                      <ExampleLink
+                        title="Server action errors"
+                        description="Errors that happen in server actions."
+                        href="/errors/server-actions"
+                      />
+                      <ExampleLink
+                        title="SSR errors"
+                        description="Errors that happen during the SSR pass."
+                        href="/errors/ssr"
+                      />
+                    </ExampleGroup>
 
                     <NavigationMenu.Indicator className="z-1 -right-5 flex h-6 items-center justify-center overflow-hidden">
                       <div className="relative -left-[70%] flex h-6 w-6 rotate-45 items-center justify-center rounded-[3px] bg-gray-100">
@@ -644,5 +268,49 @@ export default function Nav() {
         <NavigationMenu.Viewport className="relative mt-2.5 h-[var(--radix-navigation-menu-viewport-height)] w-[var(--radix-navigation-menu-viewport-width)] bg-white" />
       </div>
     </NavigationMenu.Root>
+  );
+}
+
+function ExampleGroup({
+  name,
+  children,
+}: {
+  name: string;
+  children: ReactNode;
+}) {
+  return (
+    <NavigationMenu.Item value={name}>
+      <NavigationMenu.Trigger className="w-full rounded-[3px] px-1.5 py-0.5 text-left font-medium text-gray-900 data-[state=open]:bg-white">
+        {name}
+      </NavigationMenu.Trigger>
+      <NavigationMenu.Content>
+        <ul className="grid grid-cols-2 gap-x-8 gap-y-5 pb-2 pl-2 pr-1">
+          {children}
+        </ul>
+      </NavigationMenu.Content>
+    </NavigationMenu.Item>
+  );
+}
+
+function ExampleLink({
+  title,
+  description,
+  href,
+}: {
+  title: string;
+  description: string;
+  href: string;
+}) {
+  let { path } = useRouter();
+
+  return (
+    <li>
+      <NavigationMenu.Link active={path === href} asChild>
+        <Link href={href} className="block">
+          <h6 className="font-medium text-gray-900">{title}</h6>
+          <p className="text-sm leading-snug text-gray-500">{description}</p>
+        </Link>
+      </NavigationMenu.Link>
+    </li>
   );
 }

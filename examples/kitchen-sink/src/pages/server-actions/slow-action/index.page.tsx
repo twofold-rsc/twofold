@@ -1,0 +1,12 @@
+import Control from "./control";
+
+export default function Page() {
+  return (
+    <div>
+      <h1 className="text-4xl font-black tracking-tighter">Slow action</h1>
+      <div className="mt-3 space-y-3">
+        <Control />
+      </div>
+    </div>
+  );
+}

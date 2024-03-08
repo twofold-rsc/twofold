@@ -2,14 +2,8 @@
 
 framework
 
-- errors kitchen sink nav
-- error in server action module
-
-- really slow action with fast page (to test streaming parts in order)
-- really fast action with slow page (to test streaming parts in order)
-
-- restart client builder if entries change
-- restart rsc builder if entries change
+- bug: back cache not working when error thrown
+  go to server action throws error, trigger, then click back
 
 - does rsdw need to be an external?
 
@@ -26,9 +20,12 @@ cli
 kitchen sink
 
 - action on page with blocking suspense
+- really fast action with slow page (to test streaming parts in order)
 - refresh a blocking suspense page
 - click link to page that suspends, then router.refresh before it loads
 - title/meta head tags
+- restart client builder if entries change
+- restart rsc builder if entries change
 
 Externals for RSC build (inc react)
 
