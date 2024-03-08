@@ -20,7 +20,6 @@ import { fileURLToPath } from "url";
 import { appCompiledDir } from "./files.js";
 import { errors } from "./server/errors.js";
 import { staticFiles } from "./server/static-files.js";
-import { MultipartResponse2 } from "./multipart-response2.js";
 
 export async function makeServer(build: Build) {
   let runtime = new Runtime(build);
@@ -279,20 +278,6 @@ export async function makeServer(build: Build) {
       build.builders.client.clientComponentMap,
     );
 
-    // console.log("got result from action");
-    // console.log(actionResult);
-
-    // let serializedResult: string | undefined;
-    // if (actionResult) {
-    //   try {
-    //     serializedResult = JSON.stringify(actionResult);
-    //   } catch {
-    //     console.error(
-    //       "Action returned non-serializable result, cannot send to client",
-    //     );
-    //   }
-    // }
-
     let store = asyncLocalStorage.getStore();
     if (store) {
       store.cookies.outgoingCookies = ctx.outgoingCookies;
@@ -313,22 +298,13 @@ export async function makeServer(build: Build) {
       build.builders.client.clientComponentMap,
     );
 
-    let multipart = new MultipartResponse2();
-
-    // if (serializedResult !== undefined) {
-    //   multipart.add({
-    //     type: "application/json",
-    //     body: serializedResult,
-    //     headers: {
-    //       "x-twofold-server-reference": serverReference,
-    //     },
-    //   });
-    // }
+    let multipart = new MultipartResponse();
 
     multipart.add({
       type: "text/x-component",
       body: actionStream,
       headers: {
+        "x-twofold-stream": "action",
         "x-twofold-server-reference": serverReference,
       },
     });
@@ -337,6 +313,7 @@ export async function makeServer(build: Build) {
       type: "text/x-component",
       body: rscStream,
       headers: {
+        "x-twofold-stream": "render",
         "x-twofold-path": path,
       },
     });

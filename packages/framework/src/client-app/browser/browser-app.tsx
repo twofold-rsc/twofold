@@ -16,7 +16,6 @@ import { RoutingContext } from "../contexts/routing-context";
 import { MultipartStream } from "./multipart-stream";
 import { ErrorBoundary } from "../components/error-boundary";
 import { deserializeError } from "serialize-error";
-import { MultipartStream2 } from "./multipart-stream2";
 
 declare global {
   interface Window {
@@ -60,17 +59,19 @@ async function callServer(id: string, args: any) {
     }
   }
 
-  let actionStream = new MultipartStream2({
+  let actionStream = new MultipartStream({
     contentType: "text/x-component",
     headers: {
+      "x-twofold-stream": "action",
       "x-twofold-server-reference": id,
     },
     response,
   });
 
-  let rscStream = new MultipartStream2({
+  let rscStream = new MultipartStream({
     contentType: "text/x-component",
     headers: {
+      "x-twofold-stream": "render",
       "x-twofold-path": path,
     },
     response,

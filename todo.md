@@ -5,7 +5,6 @@ framework
 - errors kitchen sink nav
 - error in server action module
 
-- stream down a page refresh + action result
 - really slow action with fast page (to test streaming parts in order)
 - really fast action with slow page (to test streaming parts in order)
 

@@ -5,6 +5,7 @@ export class MultipartStream {
 
   #response: Response;
   #contentType: string;
+  #headers: Record<string, string>;
 
   #boundary: string;
   #boundaryEnd: string;
@@ -16,9 +17,11 @@ export class MultipartStream {
   constructor({
     response,
     contentType,
+    headers,
   }: {
     response: Response;
     contentType: string;
+    headers: Record<string, string>;
   }) {
     let ctHeader = response.headers.get("content-type") ?? "";
     let [type, boundarySection] = ctHeader.split(";");
@@ -37,6 +40,7 @@ export class MultipartStream {
 
     this.#response = response;
     this.#contentType = contentType;
+    this.#headers = headers;
     this.#boundary = `--${boundary}\n`;
     this.#boundaryEnd = `\n--${boundary}`;
     this.#encodedBoundary = this.#encoder.encode(this.#boundary);
@@ -104,7 +108,7 @@ export class MultipartStream {
         let headers = new Headers();
         let encodedHeaders = this.#buffer.slice(
           boundaryPos + this.#boundaryLength,
-          headersEndPos
+          headersEndPos,
         );
         let headerText = new TextDecoder().decode(encodedHeaders);
         let lines = headerText.split("\n");
@@ -114,12 +118,18 @@ export class MultipartStream {
           headers.set(key, value);
         });
 
-        if (headers.get("content-type") === this.#contentType) {
+        let allHeadersMatch =
+          headers.get("content-type") === this.#contentType &&
+          Object.keys(this.#headers).every(
+            (key) => headers.get(key) === this.#headers[key],
+          );
+
+        if (allHeadersMatch) {
           this.#state = "READING";
         }
 
         this.#buffer = this.#buffer.slice(
-          headersEndPos + this.#encodedHeaderEnd.length
+          headersEndPos + this.#encodedHeaderEnd.length,
         );
 
         boundaryPos = this.findInBuffer(this.#encodedBoundary);
@@ -150,10 +160,6 @@ export class MultipartStream {
   private findInBuffer(search: Uint8Array) {
     return findPos(search, this.#buffer);
   }
-
-  async value() {
-    return await readStreamUntilClosed(this.stream);
-  }
 }
 
 function findPos(search: Uint8Array, buffer: Uint8Array) {
@@ -182,23 +188,4 @@ function concat(a1: Uint8Array, a2: Uint8Array) {
   combined.set(a2, a1.length);
 
   return combined;
-}
-
-async function readStreamUntilClosed(readableStream: ReadableStream) {
-  let reader = readableStream.getReader();
-  let buffer = new Uint8Array();
-  let reading = true;
-
-  while (reading) {
-    let { done, value } = await reader.read();
-    if (done) {
-      reading = false;
-    } else {
-      buffer = concat(buffer, value);
-    }
-  }
-
-  reader.releaseLock();
-
-  return buffer;
 }

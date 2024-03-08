@@ -1,8 +1,3 @@
-async function run(id: string) {
-  "use server";
-  console.log("Action run with:", id);
-}
-
 export default function Page() {
   return (
     <div>
@@ -16,6 +11,11 @@ export default function Page() {
       </div>
     </div>
   );
+}
+
+async function run(id: string) {
+  "use server";
+  console.log("Action run with:", id);
 }
 
 function ActionComponent({ id }: { id: string }) {

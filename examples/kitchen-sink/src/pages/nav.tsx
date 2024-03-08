@@ -288,6 +288,24 @@ export default function Nav() {
                               </Link>
                             </NavigationMenu.Link>
                           </li>
+                          <li>
+                            <NavigationMenu.Link
+                              active={path === "/server-actions/slow-action"}
+                              asChild
+                            >
+                              <Link
+                                href="/server-actions/slow-action"
+                                className="block"
+                              >
+                                <span className="font-medium text-gray-900">
+                                  Slow action
+                                </span>
+                                <p className="mt-1 text-sm leading-snug text-gray-700">
+                                  A server action that is very slow.
+                                </p>
+                              </Link>
+                            </NavigationMenu.Link>
+                          </li>
                         </ul>
                       </NavigationMenu.Content>
                     </NavigationMenu.Item>
