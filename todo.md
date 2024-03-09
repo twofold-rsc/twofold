@@ -10,9 +10,10 @@ framework
 - redirects
 
 - not found
+- move all server code to middlewares
+- update how bin/build/runtime compose
 - default not found
-- ssr not found
-- csr not found
+- custom not found
 - notFound helper
 - notFound helper in suspense
 
@@ -24,6 +25,7 @@ cli
 
 kitchen sink
 
+- ssr page w/ query params
 - action on page with blocking suspense
 - really fast action with slow page (to test streaming parts in order)
 - refresh a blocking suspense page
@@ -117,6 +119,7 @@ Form
 - Link should only navigate with local urls
 - CSS should reload independent of RSC/CC reload. Possible for CC+CSS to change at same time.
 - List of external packages
+- Style the default 404 page, needs custom tailwind build?
 
 ## Other
 

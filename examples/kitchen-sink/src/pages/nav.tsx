@@ -167,6 +167,11 @@ export default function Nav() {
                         description="Public folder for static assets"
                         href="/http/public"
                       />
+                      <ExampleLink
+                        title="Not found"
+                        description="Handle missing pages and 404 errors."
+                        href="/http/not-found"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup name="Build">

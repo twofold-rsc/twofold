@@ -112,7 +112,7 @@ export async function makeServer(build: Build) {
     }
 
     let page = runtime.pageForRequest(request);
-    let stream = await page.rscStream(request);
+    let stream = await page.rscStream();
 
     return new Response(stream, {
       headers: { "Content-type": "text/x-component" },
@@ -177,7 +177,7 @@ export async function makeServer(build: Build) {
 
     // start render
 
-    let rscStream = await page.rscStream(request);
+    let rscStream = await page.rscStream();
 
     multipart.add({
       type: "text/x-component",
@@ -198,7 +198,7 @@ export async function makeServer(build: Build) {
 
     console.log("🟢 Serving", url.pathname);
 
-    let stream = await page.ssrStream(request);
+    let stream = await page.ssrStream();
 
     return new Response(stream, {
       headers: { "Content-type": "text/html" },

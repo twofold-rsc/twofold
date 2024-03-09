@@ -27,8 +27,8 @@ export class RunnablePage {
     this.#runtime = runtime;
   }
 
-  async rscStream(request: Request) {
-    await this.#page.runMiddleware(request);
+  async rscStream() {
+    await this.runMiddleware();
 
     let store = getStore();
 
@@ -37,7 +37,20 @@ export class RunnablePage {
       store.assets = [...store.assets, ...assets];
     }
 
-    let reactTree = await this.#page.reactTree(request);
+    // props that our rsc will get
+
+    let url = new URL(this.#request.url);
+    let execPattern = this.#page.pattern.exec(url);
+    let params = execPattern?.pathname.groups ?? {};
+    let searchParams = url.searchParams;
+
+    let props = {
+      params,
+      searchParams,
+      request: this.#request,
+    };
+
+    let reactTree = await this.#page.reactTree(props);
     let rscStream = renderToReadableStream(
       reactTree,
       this.#runtime.clientComponentMap,
@@ -51,8 +64,8 @@ export class RunnablePage {
     return rscStream;
   }
 
-  async ssrStream(request: Request) {
-    let rscStream = await this.rscStream(request);
+  async ssrStream() {
+    let rscStream = await this.rscStream();
 
     let { port1, port2 } = new MessageChannel();
 
@@ -75,7 +88,7 @@ export class RunnablePage {
       throw new Error("Worker not available");
     }
 
-    let url = new URL(request.url);
+    let url = new URL(this.#request.url);
 
     this.#runtime.ssrWorker.postMessage(
       {
@@ -104,5 +117,17 @@ export class RunnablePage {
     });
 
     return htmlStream;
+  }
+
+  private async runMiddleware() {
+    let rsc = this.#page.rsc;
+    let layouts = this.#page.layouts;
+
+    let promises = [
+      rsc.runMiddleware(this.#request),
+      ...layouts.map((layout) => layout.rsc.runMiddleware(this.#request)),
+    ];
+
+    await Promise.all(promises);
   }
 }

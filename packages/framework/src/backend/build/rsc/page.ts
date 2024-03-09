@@ -34,7 +34,7 @@ export class Page {
     return this.#layout;
   }
 
-  private get layouts() {
+  get layouts() {
     let layouts = [];
     let layout = this.#layout;
 
@@ -46,15 +46,6 @@ export class Page {
     return layouts.reverse();
   }
 
-  async runMiddleware(request: Request) {
-    let promises = [
-      this.#rsc.runMiddleware(request),
-      ...this.layouts.map((layout) => layout.rsc.runMiddleware(request)),
-    ];
-
-    await Promise.all(promises);
-  }
-
   get assets() {
     return [
       ...this.layouts.map((layout) => layout.rsc.css),
@@ -62,16 +53,12 @@ export class Page {
     ].filter(Boolean);
   }
 
-  async reactTree(request: Request) {
-    let url = new URL(request.url);
-    let execPattern = this.pattern.exec(url);
-    let params = execPattern?.pathname.groups ?? {};
-    let searchParams = url.searchParams;
+  async reactTree(props: Record<string, unknown>) {
     let { page, layouts } = await this.components();
 
     let tree = componentsToTree({
       components: [...layouts, page],
-      props: { params, searchParams, request },
+      props,
     });
 
     return tree;

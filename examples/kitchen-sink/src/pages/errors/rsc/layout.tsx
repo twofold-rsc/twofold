@@ -71,14 +71,6 @@ export default function Layout({ children }: { children: ReactNode }) {
               RSC syntax error
             </Link>
           </li>
-          <li>
-            <Link
-              href="/errors/rsc/this-url-doesnt-exist"
-              className="text-blue-500 underline"
-            >
-              RSC page doesn't exist
-            </Link>
-          </li>
         </ul>
       </div>
       <div>{children}</div>
