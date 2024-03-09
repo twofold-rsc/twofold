@@ -12,7 +12,11 @@ type Store = {
   assets: string[];
 };
 
-export const asyncLocalStorage = new AsyncLocalStorage<Store>();
+let asyncLocalStorage = new AsyncLocalStorage<Store>();
+
+export function runStore<T>(store: Store, fn: () => Promise<T>) {
+  return asyncLocalStorage.run(store, fn);
+}
 
 export function getStore() {
   let store = asyncLocalStorage.getStore();

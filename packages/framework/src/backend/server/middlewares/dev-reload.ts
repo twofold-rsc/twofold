@@ -1,5 +1,5 @@
 import { RouteHandler } from "@hattip/router";
-import { Build } from "../build";
+import { Build } from "../../build";
 import { ServerSentEventSink, serverSentEvents } from "@hattip/response";
 
 type Connection = {
@@ -9,7 +9,7 @@ type Connection = {
 
 let activeConnections: Connection[] = [];
 
-export function DevReload(build: Build): RouteHandler {
+export function devReload(build: Build): RouteHandler {
   if (process.env.NODE_ENV === "production") {
     return () => {};
   } else {
@@ -37,13 +37,13 @@ export function DevReload(build: Build): RouteHandler {
                       type: "rsc",
                     }
                   : build.newCSSFiles.size > 0
-                  ? { type: "css" }
-                  : build.newChunks.size > 0
-                  ? {
-                      type: "chunks",
-                      chunks: Array.from(build.newChunks),
-                    }
-                  : { type: "unknown" };
+                    ? { type: "css" }
+                    : build.newChunks.size > 0
+                      ? {
+                          type: "chunks",
+                          chunks: Array.from(build.newChunks),
+                        }
+                      : { type: "unknown" };
 
               sink.sendMessage(JSON.stringify(json));
             };

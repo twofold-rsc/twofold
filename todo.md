@@ -7,9 +7,14 @@ framework
 
 - does rsdw need to be an external?
 
-- image imports (rsc, browser, ssr)
 - redirects
+
 - not found
+- default not found
+- ssr not found
+- csr not found
+- notFound helper
+- notFound helper in suspense
 
 - prod builds
 
@@ -94,6 +99,7 @@ Form
 - [ ] come up with way of building all apps (public, error, rsc, client)
 - [ ] static routing should come first
 - [ ] check if middleware export default is a function
+- [ ] image imports (rsc, client)
 
 ## Layouts
 

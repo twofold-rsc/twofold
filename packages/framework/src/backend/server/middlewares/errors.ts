@@ -1,6 +1,6 @@
 import { RouteHandler } from "@hattip/router";
-import { Build } from "../build";
-import { shell } from "../error-shell.js";
+import { Build } from "../../build";
+import { shell } from "../../error-shell.js";
 import { serializeError } from "serialize-error";
 // import { parseHeaderValue } from "@hattip/headers";
 

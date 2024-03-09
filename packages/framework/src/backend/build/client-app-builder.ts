@@ -138,7 +138,7 @@ export class ClientAppBuilder {
 
   private get initializeBrowserPath() {
     let initializeBrowser = fileURLToPath(
-      new URL("./client-app/browser/initialize-browser.tsx", frameworkSrcDir),
+      new URL("./apps/client/browser/initialize-browser.tsx", frameworkSrcDir),
     );
 
     return initializeBrowser;
@@ -146,7 +146,7 @@ export class ClientAppBuilder {
 
   private get srcSSRAppPath() {
     let initializeBrowser = fileURLToPath(
-      new URL("./client-app/ssr/ssr-app.tsx", frameworkSrcDir),
+      new URL("./apps/client/ssr/ssr-app.tsx", frameworkSrcDir),
     );
 
     return initializeBrowser;

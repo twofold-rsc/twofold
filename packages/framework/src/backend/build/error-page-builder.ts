@@ -41,7 +41,9 @@ export class ErrorPageBuilder {
   }
 
   private get appPath() {
-    let appPath = fileURLToPath(new URL("./errors/app.tsx", frameworkSrcDir));
+    let appPath = fileURLToPath(
+      new URL("./apps/errors/app.tsx", frameworkSrcDir),
+    );
     return appPath;
   }
 

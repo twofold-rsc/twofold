@@ -1,6 +1,6 @@
 import { Component, ReactNode } from "react";
 import { ErrorViewer } from "../../errors/error-viewer";
-import Stylesheet from "../../components/stylesheet";
+import Stylesheet from "../../../components/stylesheet";
 
 export class ErrorBoundary extends Component<
   { children?: ReactNode },

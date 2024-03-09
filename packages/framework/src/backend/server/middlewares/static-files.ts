@@ -1,7 +1,7 @@
-import { Build } from "../build";
+import { Build } from "../../build";
 import { createStaticMiddleware } from "@hattip/static";
 import { createFileReader } from "@hattip/static/fs";
-import { cwdUrl } from "../files.js";
+import { cwdUrl } from "../../files.js";
 import path from "node:path";
 
 export function staticFiles(build: Build) {
