@@ -6,6 +6,7 @@ import {
   renderToReadableStream,
   // @ts-ignore
 } from "react-server-dom-webpack/server.edge";
+import { NotFoundError } from "../errors/not-found-error.js";
 
 // Turns a built page into something that's runnable
 export class RunnablePage {
@@ -25,6 +26,10 @@ export class RunnablePage {
     this.#page = page;
     this.#request = request;
     this.#runtime = runtime;
+  }
+
+  get isNotFound() {
+    return this.#page.type === "not-found";
   }
 
   async rscStream() {
@@ -50,18 +55,49 @@ export class RunnablePage {
       request: this.#request,
     };
 
+    let notFound = false;
     let reactTree = await this.#page.reactTree(props);
     let rscStream = renderToReadableStream(
       reactTree,
       this.#runtime.clientComponentMap,
       {
         onError(err: unknown) {
-          console.log("RSC STREAM ERROR");
+          console.log("rsc onError");
+          if (err instanceof Error && "isTwofoldError" in err) {
+            notFound = true;
+          }
         },
       },
     );
 
-    return rscStream;
+    // await the first chunk
+    let [t1, t2] = rscStream.tee();
+    let reader = t1.getReader();
+    await reader.read();
+
+    // if there's a twofold error and the first chunk hasn't been sent
+    // then we can abort and throw
+    if (notFound) {
+      // console.log("got a not found before returning");
+      reader.releaseLock();
+      t1.cancel();
+      t2.cancel();
+
+      if (this.isNotFound) {
+        throw new Error("The not found page cannot call notFound()");
+      } else {
+        // ask the runtime to render the not found page
+        let otherPage = this.#runtime.getNotFoundPage();
+        return otherPage.rscStream();
+      }
+    } else {
+      // were done with t1
+      reader.releaseLock();
+      t1.cancel();
+    }
+
+    // otherwise give back the stream
+    return t2;
   }
 
   async ssrStream() {

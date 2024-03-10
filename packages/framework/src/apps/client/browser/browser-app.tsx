@@ -213,7 +213,10 @@ function Router() {
     }).then(async (response) => {
       if (!response.ok) {
         let contentType = response.headers.get("content-type");
-        if (contentType === "text/x-serialized-error") {
+        if (contentType === "text/x-component") {
+          // there was an error, but we have a valid response, so we're
+          // going to let that response render
+        } else if (contentType === "text/x-serialized-error") {
           let json = await response.json();
           let error = deserializeError(json);
           throw error;

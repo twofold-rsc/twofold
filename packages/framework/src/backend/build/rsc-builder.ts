@@ -191,7 +191,10 @@ export class RSCBuilder {
       fileUrl: pathToFileURL(outputFile),
     });
 
-    let page = new Page({ rsc: notFoundRsc });
+    let page = new Page({
+      rsc: notFoundRsc,
+      type: "not-found",
+    });
     let rootLayout = this.layouts.find((layout) => layout.rsc.path === "/");
     page.layout = rootLayout;
 
@@ -246,7 +249,10 @@ export class RSCBuilder {
           fileUrl: new URL(key, baseUrl),
         });
 
-        return new Page({ rsc });
+        return new Page({
+          rsc,
+          type: "page",
+        });
       });
   }
 

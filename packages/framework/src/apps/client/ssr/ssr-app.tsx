@@ -1,5 +1,5 @@
 import "../ext/react-refresh";
-import { use, createElement } from "react";
+import { use, createElement, Component, ReactNode } from "react";
 // @ts-ignore
 import { renderToReadableStream } from "react-dom/server.browser";
 // @ts-ignore
@@ -53,9 +53,16 @@ export async function render({ rscStream, path, bootstrapUrl }: RenderOptions) {
     {
       bootstrapModules: [bootstrapUrl],
       onError(err: unknown) {
-        // console.log("ssr worker onError");
+        console.log("ssr renderToReadableStream onError");
+        if (err instanceof Error) {
+          console.log({
+            instanceOfError: true,
+            isTwofoldError: "isTwofoldError" in err,
+            name: err.name,
+          });
+        }
         // do something useful here
-        console.log(err);
+        // console.log(err);
       },
     },
   );

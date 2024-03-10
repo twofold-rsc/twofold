@@ -5,17 +5,17 @@ framework
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
 
+- error responses should update the url
+
 - does rsdw need to be an external?
 
 - redirects
 
 - not found
-- move all server code to middlewares
-- update how bin/build/runtime compose
-- default not found
 - custom not found
 - notFound helper
 - notFound helper in suspense
+- action that triggers notFound
 
 - prod builds
 
@@ -25,7 +25,6 @@ cli
 
 kitchen sink
 
-- ssr page w/ query params
 - action on page with blocking suspense
 - really fast action with slow page (to test streaming parts in order)
 - refresh a blocking suspense page
@@ -102,6 +101,7 @@ Form
 - [ ] static routing should come first
 - [ ] check if middleware export default is a function
 - [ ] image imports (rsc, client)
+- [ ] creating new static files
 
 ## Layouts
 

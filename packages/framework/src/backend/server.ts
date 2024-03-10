@@ -8,90 +8,36 @@ import {
   // @ts-ignore
 } from "react-server-dom-webpack/server.edge";
 import { getStore, runStore } from "./stores/rsc-store.js";
-import { Build } from "./build.js";
-import { CookieSerializeOptions, cookie } from "@hattip/cookie";
-import { SignedCookieStore, session } from "@hattip/session";
+import { cookie } from "@hattip/cookie";
 import { MultipartResponse } from "./multipart-response.js";
 import { devReload } from "./server/middlewares/dev-reload.js";
 import { Runtime } from "./runtime.js";
 import { errors } from "./server/middlewares/errors.js";
 import { staticFiles } from "./server/middlewares/static-files.js";
 import { assets } from "./server/middlewares/assets.js";
+import { pathNormalization } from "./server/middlewares/path-normalization.js";
+import { session } from "./server/middlewares/session.js";
+import { globalMiddleware } from "./server/middlewares/global-middleware.js";
+import { requestStore } from "./server/middlewares/request-store.js";
 
-export async function makeServer(build: Build) {
-  let runtime = new Runtime(build);
+export async function create(runtime: Runtime) {
+  let build = runtime.build;
 
   let app = createRouter();
 
-  app.use(async (ctx) => {
-    let url = new URL(ctx.request.url);
-    if (url.pathname.endsWith("/") && url.pathname !== "/") {
-      return new Response(null, {
-        status: 307,
-        headers: {
-          Location: url.pathname.slice(0, -1),
-        },
-      });
-    }
-  });
+  app.use(pathNormalization());
 
-  let cookieSecret = "secret";
   app.use(cookie());
-  app.use(
-    session({
-      cookieName: "_twofold-session",
-      cookieOptions: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: true,
-      },
-      store: new SignedCookieStore(
-        await SignedCookieStore.generateKeysFromSecrets([cookieSecret]),
-      ),
-      defaultSessionData: {},
-    }),
-  );
+  app.use(await session());
 
-  app.use(async (ctx) => {
-    let hasMiddleware = await build.builders.rsc.hasMiddleware();
-    if (hasMiddleware) {
-      let module = await import(build.builders.rsc.middlewarePath);
-      let ans = await module.default(ctx.request);
-      return ans;
-    }
-  });
-
+  app.use(globalMiddleware(build));
   app.use(assets(build));
   app.use(staticFiles(build));
   app.use(devReload(build));
   app.use(errors(build));
 
   // every request below here should use the store
-  let reqId = 0;
-
-  app.use(async (ctx) => {
-    reqId = reqId + 1;
-
-    let store = {
-      reqId,
-      cookies: {
-        set: (key: string, value: string, options: CookieSerializeOptions) => {
-          ctx.setCookie(key, value, options);
-        },
-        get: (key: string) => {
-          return ctx.cookie[key];
-        },
-        destroy: (key: string) => {
-          ctx.deleteCookie(key);
-        },
-        outgoingCookies: [],
-      },
-      assets: [],
-    };
-
-    return runStore(store, () => ctx.next());
-  });
+  app.use(requestStore());
 
   app.get("/__rsc", async (ctx) => {
     let url = new URL(ctx.request.url);
@@ -103,18 +49,22 @@ export async function makeServer(build: Build) {
 
     let requestUrl = new URL(path, url);
     let request = new Request(requestUrl, ctx.request);
+    let page = runtime.pageForRequest(request);
 
     let initiator = ctx.request.headers.get("x-twofold-initiator");
-    if (initiator === "refresh") {
+
+    if (page.isNotFound) {
+      console.log("🔴 Not found", requestUrl.pathname);
+    } else if (initiator === "refresh") {
       console.log("🔵 Refreshing", requestUrl.pathname);
     } else if (initiator === "client-side-navigation") {
       console.log("🟢 Rendering", requestUrl.pathname);
     }
 
-    let page = runtime.pageForRequest(request);
     let stream = await page.rscStream();
 
     return new Response(stream, {
+      status: page.isNotFound ? 404 : 200,
       headers: { "Content-type": "text/x-component" },
     });
   });
@@ -196,22 +146,36 @@ export async function makeServer(build: Build) {
     let request = ctx.request;
     let page = runtime.pageForRequest(request);
 
-    console.log("🟢 Serving", url.pathname);
+    if (!page.isNotFound) {
+      console.log("🟢 Serving", url.pathname);
+    } else {
+      console.log("🔴 Not found", url.pathname);
+    }
 
     let stream = await page.ssrStream();
 
+    console.log("responding...");
     return new Response(stream, {
+      status: page.isNotFound ? 404 : 200,
       headers: { "Content-type": "text/html" },
     });
   });
 
-  return async function start() {
-    await build.setup();
-    await build.build();
+  return {
+    async start() {
+      let r: () => void = () => {};
+      let promise = new Promise<void>((resolve) => (r = resolve));
 
-    createServer(app.buildHandler()).listen(3000, "localhost", () => {
-      console.log("Server listening on http://localhost:3000");
-      build.watch();
-    });
+      createServer(app.buildHandler()).listen(
+        runtime.port,
+        runtime.hostname,
+        () => {
+          console.log(`🚀 Server listening on ${runtime.baseUrl}/`);
+          r();
+        },
+      );
+
+      return promise;
+    },
   };
 }

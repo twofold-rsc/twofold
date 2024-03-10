@@ -2,16 +2,24 @@ import { ComponentType, ReactElement, createElement } from "react";
 import { Layout } from "./layout.js";
 import { RSC } from "./rsc.js";
 
+type PageType = "page" | "not-found";
+
 export class Page {
   #rsc: RSC;
   #layout?: Layout;
+  #type: PageType;
 
-  constructor({ rsc }: { rsc: RSC }) {
+  constructor({ rsc, type }: { rsc: RSC; type: PageType }) {
     this.#rsc = rsc;
+    this.#type = type;
   }
 
   get isDynamic() {
     return this.#rsc.path.includes("$");
+  }
+
+  get type() {
+    return this.#type;
   }
 
   get pattern() {

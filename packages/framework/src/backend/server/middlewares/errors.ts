@@ -7,8 +7,6 @@ import { serializeError } from "serialize-error";
 export function errors(build: Build): RouteHandler {
   return async (ctx) => {
     ctx.handleError = (e: unknown) => {
-      console.log(e);
-
       let request = ctx.request;
       let isRSCFetch = request.headers.get("accept") === "text/x-component";
 

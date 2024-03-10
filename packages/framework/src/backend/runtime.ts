@@ -1,9 +1,11 @@
 import { Build } from "./build.js";
 import { Worker } from "node:worker_threads";
 import { RunnablePage } from "./runtime/runnable-page.js";
+import { create } from "./server.js";
 
 export class Runtime {
-  #base = "http://localhost:3000";
+  #hostname = "localhost";
+  #port = 3000;
   #build: Build;
   #ssrWorker?: Worker;
 
@@ -26,35 +28,56 @@ export class Runtime {
     return this.#build.builders.client.clientComponentMap;
   }
 
+  get baseUrl() {
+    return `http://${this.hostname}:${this.port}`;
+  }
+
+  get hostname() {
+    return this.#hostname;
+  }
+
+  get port() {
+    return this.#port;
+  }
+
+  // server
+
+  async server() {
+    let server = await create(this);
+    await server.start();
+    this.#build.watch();
+  }
+
   // pages
 
   pageForRequest(request: Request) {
     let url = new URL(request.url);
 
-    let page =
-      this.#build.builders.rsc.tree.findPage((page) =>
-        page.pattern.test(url.pathname, this.#base),
-      ) ?? this.#build.builders.rsc.notFoundPage;
+    let page = this.#build.builders.rsc.tree.findPage((page) =>
+      page.pattern.test(url.pathname, this.baseUrl),
+    );
 
-    return new RunnablePage({
-      page: page,
-      request: request,
-      runtime: this,
-    });
+    let runnablePage = page
+      ? new RunnablePage({ page, request, runtime: this })
+      : new RunnablePage({
+          page: this.#build.builders.rsc.notFoundPage,
+          request,
+          runtime: this,
+        });
+
+    return runnablePage;
   }
 
   // actions
 
-  private get serverActionMap() {
-    return this.#build.builders.rsc.serverActionMap;
-  }
-
   isAction(id: string) {
-    return this.serverActionMap.has(id);
+    let serverActionMap = this.#build.builders.rsc.serverActionMap;
+    return serverActionMap.has(id);
   }
 
   async runAction(id: string, args: any[]) {
-    let action = this.serverActionMap.get(id);
+    let serverActionMap = this.#build.builders.rsc.serverActionMap;
+    let action = serverActionMap.get(id);
 
     if (!action) {
       throw new Error("Invalid action id");

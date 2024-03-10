@@ -1,6 +1,6 @@
 import { context } from "esbuild";
-import { stat, watch } from "node:fs/promises";
-import { cwdUrl } from "./files.js";
+import { rm, stat, watch } from "node:fs/promises";
+import { appCompiledDir, cwdUrl } from "./files.js";
 import { randomBytes } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { ClientAppBuilder } from "./build/client-app-builder.js";
@@ -48,6 +48,7 @@ export class Build {
   }
 
   async setup() {
+    await rm(appCompiledDir, { recursive: true, force: true });
     await this.#entriesBuilder.setup();
     await this.#errorPageBuilder.setup();
   }

@@ -1,25 +1,31 @@
 #!/usr/bin/env node
 
-import { rm } from "fs/promises";
 import { Build } from "./build.js";
-import { makeServer } from "./server.js";
-import { appCompiledDir } from "./files.js";
+import { Runtime } from "./runtime.js";
 
 async function main() {
-  await rm(appCompiledDir, { recursive: true, force: true });
+  // verify node version
+  const [major, minor, patch] = process.versions.node.split(".").map(Number);
+  let hasRequiredNodeVersion = major >= 20 && minor >= 9 && patch >= 0;
+  if (!hasRequiredNodeVersion) {
+    console.log(
+      "You must use Node.js version 20.0.9 or higher to run twofold.",
+    );
+    process.exit(1);
+  }
 
   // create/load build
+  let build = new Build();
 
   // create runtime
+  let runtime = new Runtime(build);
+
+  // start build
+  await build.setup();
+  await build.build();
 
   // start server
-
-  let build = new Build();
-  // await build.setup();
-  // await build.build();
-
-  let start = await makeServer(build);
-  await start();
+  await runtime.server();
 }
 
 main();
