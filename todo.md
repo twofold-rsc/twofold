@@ -14,6 +14,7 @@ framework
 - not found
 - custom not found
 - notFound helper
+- custom twofold error for notfound
 - notFound helper in suspense
 - action that triggers notFound
 

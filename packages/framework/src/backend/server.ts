@@ -49,11 +49,12 @@ export async function create(runtime: Runtime) {
 
     let requestUrl = new URL(path, url);
     let request = new Request(requestUrl, ctx.request);
-    let page = runtime.pageForRequest(request);
+    let pageRequest = runtime.pageRequest(request);
+    let response = await pageRequest.rscResponse();
 
     let initiator = ctx.request.headers.get("x-twofold-initiator");
 
-    if (page.isNotFound) {
+    if (response.status === 404) {
       console.log("🔴 Not found", requestUrl.pathname);
     } else if (initiator === "refresh") {
       console.log("🔵 Refreshing", requestUrl.pathname);
@@ -61,12 +62,7 @@ export async function create(runtime: Runtime) {
       console.log("🟢 Rendering", requestUrl.pathname);
     }
 
-    let stream = await page.rscStream();
-
-    return new Response(stream, {
-      status: page.isNotFound ? 404 : 200,
-      headers: { "Content-type": "text/x-component" },
-    });
+    return response;
   });
 
   app.post("/__rsc", async (ctx) => {
@@ -87,7 +83,7 @@ export async function create(runtime: Runtime) {
     let url = new URL(ctx.request.url);
     let requestUrl = new URL(path, url);
     let request = new Request(requestUrl, ctx.request);
-    let page = runtime.pageForRequest(request);
+    let pageRequest = runtime.pageRequest(request);
 
     let args = [];
     let [contentType] = parseHeaderValue(request.headers.get("content-type"));
@@ -127,11 +123,11 @@ export async function create(runtime: Runtime) {
 
     // start render
 
-    let rscStream = await page.rscStream();
+    let rscPageResponse = await pageRequest.rscResponse();
 
     multipart.add({
       type: "text/x-component",
-      body: rscStream,
+      body: rscPageResponse.body,
       headers: {
         "x-twofold-stream": "render",
         "x-twofold-path": path,
@@ -144,21 +140,16 @@ export async function create(runtime: Runtime) {
   app.get("/**/*", async (ctx) => {
     let url = new URL(ctx.request.url);
     let request = ctx.request;
-    let page = runtime.pageForRequest(request);
+    let pageRequest = runtime.pageRequest(request);
+    let response = await pageRequest.ssrResponse();
 
-    if (!page.isNotFound) {
-      console.log("🟢 Serving", url.pathname);
-    } else {
+    if (response.status === 404) {
       console.log("🔴 Not found", url.pathname);
+    } else {
+      console.log("🟢 Serving", url.pathname);
     }
 
-    let stream = await page.ssrStream();
-
-    console.log("responding...");
-    return new Response(stream, {
-      status: page.isNotFound ? 404 : 200,
-      headers: { "Content-type": "text/html" },
-    });
+    return response;
   });
 
   return {

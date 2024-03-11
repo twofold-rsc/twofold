@@ -16,7 +16,7 @@ export class MultipartResponse {
     headers,
   }: {
     type: string;
-    body: ReadableStream | string;
+    body: ReadableStream | string | null;
     headers: Headers | Record<string, string>;
   }) {
     let headersObject = new Headers(headers);
@@ -26,6 +26,12 @@ export class MultipartResponse {
       this.addStringPart({
         headers: headersObject,
         body,
+      });
+    }
+    if (body === null) {
+      this.addStringPart({
+        headers: headersObject,
+        body: "",
       });
     } else if (body instanceof ReadableStream) {
       this.addStreamPart({

@@ -1,6 +1,6 @@
 import { Build } from "./build.js";
 import { Worker } from "node:worker_threads";
-import { RunnablePage } from "./runtime/runnable-page.js";
+import { PageRequest } from "./runtime/page-request.js";
 import { create } from "./server.js";
 
 export class Runtime {
@@ -50,22 +50,27 @@ export class Runtime {
 
   // pages
 
-  pageForRequest(request: Request) {
+  pageRequest(request: Request) {
     let url = new URL(request.url);
 
     let page = this.#build.builders.rsc.tree.findPage((page) =>
       page.pattern.test(url.pathname, this.baseUrl),
     );
 
-    let runnablePage = page
-      ? new RunnablePage({ page, request, runtime: this })
-      : new RunnablePage({
-          page: this.#build.builders.rsc.notFoundPage,
-          request,
-          runtime: this,
-        });
+    let response = page
+      ? new PageRequest({ page, request, runtime: this })
+      : this.notFoundPageRequest(request);
 
-    return runnablePage;
+    return response;
+  }
+
+  notFoundPageRequest(request: Request) {
+    return new PageRequest({
+      page: this.#build.builders.rsc.notFoundPage,
+      request,
+      runtime: this,
+      status: 404,
+    });
   }
 
   // actions
