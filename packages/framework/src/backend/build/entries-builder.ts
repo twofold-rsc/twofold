@@ -5,6 +5,8 @@ import { createHash } from "crypto";
 import { basename, extname } from "path";
 import { readFile } from "fs/promises";
 import { ParseResult, parseAsync } from "@babel/core";
+import { frameworkSrcDir } from "../files.js";
+import { fileURLToPath } from "url";
 
 type ClientComponentModule = {
   moduleId: string;
@@ -38,9 +40,16 @@ export class EntriesBuilder {
   }
 
   async setup() {
+    let frameworkComponentsUrl = new URL("./components/", frameworkSrcDir);
+    let frameworkComponentsPath = fileURLToPath(frameworkComponentsUrl);
+
     let builder = this;
     this.#context = await context({
-      entryPoints: ["./src/**/*.ts", "./src/**/*.tsx"],
+      entryPoints: [
+        "./src/**/*.ts",
+        "./src/**/*.tsx",
+        `${frameworkComponentsPath}/**/*.tsx`,
+      ],
       bundle: true,
       platform: "neutral",
       logLevel: "error",

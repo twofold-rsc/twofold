@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useContext } from "react";
+import { Component, ReactNode, Suspense, useContext } from "react";
 import { Context } from "../apps/client/contexts/stream-context";
 
 export default function InlineRSCStream() {
@@ -11,9 +11,11 @@ export default function InlineRSCStream() {
   }
 
   return (
-    <Suspense fallback={null}>
-      <Inline reader={reader} />
-    </Suspense>
+    <TeardownOnError>
+      <Suspense fallback={null}>
+        <Inline reader={reader} />
+      </Suspense>
+    </TeardownOnError>
   );
 }
 
@@ -110,4 +112,35 @@ function sanitizer(match: string | number) {
 
 function sanitize(str: string) {
   return str.replace(TERMINATORS_REGEX, sanitizer);
+}
+
+export class TeardownOnError extends Component<
+  { children: ReactNode },
+  {
+    error: unknown;
+    hasError: boolean;
+  }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = {
+      error: null,
+      hasError: false,
+    };
+  }
+
+  static getDerivedStateFromError(error: unknown) {
+    return {
+      error,
+      hasError: true,
+    };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null;
+    } else {
+      return this.props.children;
+    }
+  }
 }

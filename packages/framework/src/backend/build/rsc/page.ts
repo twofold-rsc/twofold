@@ -2,24 +2,16 @@ import { ComponentType, ReactElement, createElement } from "react";
 import { Layout } from "./layout.js";
 import { RSC } from "./rsc.js";
 
-type PageType = "page" | "not-found";
-
 export class Page {
   #rsc: RSC;
   #layout?: Layout;
-  #type: PageType;
 
-  constructor({ rsc, type }: { rsc: RSC; type: PageType }) {
+  constructor({ rsc }: { rsc: RSC }) {
     this.#rsc = rsc;
-    this.#type = type;
   }
 
   get isDynamic() {
     return this.#rsc.path.includes("$");
-  }
-
-  get type() {
-    return this.#type;
   }
 
   get pattern() {
@@ -62,10 +54,10 @@ export class Page {
   }
 
   async reactTree(props: Record<string, unknown>) {
-    let { page, layouts } = await this.components();
+    let components = await this.components();
 
     let tree = componentsToTree({
-      components: [...layouts, page],
+      components,
       props,
     });
 
@@ -73,27 +65,25 @@ export class Page {
   }
 
   private async components() {
-    let loadLayoutModules = this.layouts.map(async (layout) => {
-      let module = await layout.rsc.loadModule();
-      if (!module.default) {
-        throw new Error(
-          `Layout for ${layout.rsc.path}/ has no default export.`,
-        );
-      }
-      return module.default;
+    // flat list of all modules the render tree needs
+    // -> [Layout, Inner, Layout, Layout, Page]
+
+    // get promises that load every parent module
+    let loadParentModules = this.layouts.flatMap(async (layout) => {
+      let components = await layout.components();
+      return components;
     });
 
-    let layouts = await Promise.all(loadLayoutModules);
-    let module = await this.#rsc.loadModule();
+    // then transform those loads into a flat list of modules
+    let loadedParentModules = await Promise.all(loadParentModules);
+    let parents = loadedParentModules.flat();
 
+    let module = await this.#rsc.loadModule();
     if (!module.default) {
       throw new Error(`Page ${this.rsc.path} has no default export.`);
     }
 
-    return {
-      page: module.default,
-      layouts: layouts,
-    };
+    return [...parents, module.default];
   }
 }
 

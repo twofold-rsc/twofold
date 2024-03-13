@@ -12,9 +12,9 @@ framework
 - redirects
 
 - not found
-- custom not found
+- custom not found + app's pages/errors/ dir
 - notFound helper
-- custom twofold error for notfound
+- custom twofold error for not found
 - notFound helper in suspense
 - action that triggers notFound
 
@@ -26,6 +26,9 @@ cli
 
 kitchen sink
 
+- action return types
+- strings, objects, thrown errors?
+
 - action on page with blocking suspense
 - really fast action with slow page (to test streaming parts in order)
 - refresh a blocking suspense page
@@ -34,7 +37,8 @@ kitchen sink
 - restart client builder if entries change
 - restart rsc builder if entries change
 
-Externals for RSC build (inc react)
+- Externals for RSC build (inc react)
+  https://github.com/LinbuduLab/esbuild-plugins/tree/main/packages/esbuild-plugin-node-externals
 
 Docs
 

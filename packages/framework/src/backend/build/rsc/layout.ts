@@ -1,11 +1,13 @@
 import { Page } from "./page.js";
 import { RSC } from "./rsc.js";
+import { Wrapper } from "./wrapper.js";
 
 export class Layout {
   #rsc: RSC;
   #children: Layout[] = [];
   #parent?: Layout;
   #pages: Page[] = [];
+  #wrappers: Wrapper[] = [];
 
   constructor({ rsc }: { rsc: RSC }) {
     this.#rsc = rsc;
@@ -113,6 +115,36 @@ export class Layout {
         `Could not add page ${page.rsc.path} to ${this.rsc.path}`,
       );
     }
+  }
+
+  addWrapper(wrapper: Wrapper) {
+    this.#wrappers.push(wrapper);
+  }
+
+  async components() {
+    // flat list of all the modules the render tree needs
+    // -> [Layout, Inner, Providers, etc]
+
+    let module = await this.#rsc.loadModule();
+    if (!module.default) {
+      throw new Error(`Layout for ${this.rsc.path}/ has no default export.`);
+    }
+
+    let loadWrapperModules = this.#wrappers.map(async (wrapper) => {
+      let module = await wrapper.rsc.loadModule();
+      if (!module.default) {
+        throw new Error(
+          `Wrapper for ${wrapper.rsc.path} has no default export.`,
+        );
+      }
+
+      return module.default;
+    });
+
+    let loadedWrapperModules = await Promise.all(loadWrapperModules);
+    let wrapperModules = loadedWrapperModules.flat();
+
+    return [module.default, ...wrapperModules];
   }
 }
 

@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import Link from "@twofold/framework/link";
 
 export default function Layout({ children }: { children: ReactNode }) {
+  return children;
   return (
     <div className="flex space-x-12">
       <div>
@@ -21,6 +22,14 @@ export default function Layout({ children }: { children: ReactNode }) {
               className="text-blue-500 underline"
             >
               Page calls notFound
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/http/not-found/suspended-not-found"
+              className="text-blue-500 underline"
+            >
+              Suspended notFound
             </Link>
           </li>
         </ul>

@@ -3,7 +3,7 @@ import { MessagePort, parentPort, workerData } from "node:worker_threads";
 import { ReadableStream } from "stream/web";
 import { injectResolver } from "../monkey-patch.js";
 import { shell } from "../error-shell.js";
-import { NotFoundError } from "../errors/not-found-error.js";
+import { NotFoundError } from "../../errors/not-found-error.js";
 // import { getSSRStore, runSSRStore } from "../stores/ssr-store.js";
 
 if (!parentPort) {
@@ -53,26 +53,6 @@ parentPort.on("message", async ({ port, pathname }: RenderRequest) => {
       port.postMessage(chunk, [chunk.buffer]);
     }
   } catch (e: unknown) {
-    console.log("SSR ERROR!");
-    // if (e instanceof Error) {
-    //   console.log({
-    //     isTwofoldError: e.isTwofoldError,
-    //     message: e.message,
-    //   });
-    //   console.log({
-    //     instanceOfError: true,
-    //     isTwofoldError: "isTwofoldError" in e,
-    //     name: e.name,
-    //   });
-    // }
-    // if (
-    //   e instanceof Error &&
-    //   "isTwofoldError" in e &&
-    //   e.name === "NotFoundError"
-    // ) {
-    //   console.log("we got a not found in the rsc stream");
-    // }
-    // console.log(e);
     let error = e instanceof Error ? e : new Error("Unknown error");
     let html = shell(error);
     let buf = Buffer.from(html);

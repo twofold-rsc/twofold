@@ -6,7 +6,6 @@ import {
   renderToReadableStream,
   // @ts-ignore
 } from "react-server-dom-webpack/server.edge";
-import { NotFoundError } from "../errors/not-found-error.js";
 import { readStream } from "../steams/process-stream.js";
 
 export class PageRequest {
@@ -32,10 +31,6 @@ export class PageRequest {
     this.#status = status;
   }
 
-  get isNotFound() {
-    return this.#page.type === "not-found";
-  }
-
   async rscResponse(): Promise<Response> {
     await this.runMiddleware();
 
@@ -57,16 +52,17 @@ export class PageRequest {
       request: this.#request,
     };
 
-    let notFound = false;
+    let controller = new AbortController();
     let reactTree = await this.#page.reactTree(props);
     let rscStream = renderToReadableStream(
       reactTree,
       this.#runtime.clientComponentMap,
       {
         onError(err: unknown) {
-          console.log("rsc onError");
-          if (err instanceof Error && "isTwofoldError" in err) {
-            notFound = true;
+          if (isNotFoundError(err)) {
+            controller.abort("not-found");
+          } else if (err instanceof Error) {
+            console.error(err);
           }
         },
       },
@@ -79,21 +75,24 @@ export class PageRequest {
 
     // if there's a twofold error and the first chunk hasn't been sent
     // then we can abort
-    if (notFound) {
-      console.log("got a not found before returning");
+    if (controller.signal.aborted) {
+      console.log("got an abort before returning");
       reader.releaseLock();
       t1.cancel();
       t2.cancel();
 
-      if (this.#status === 404) {
-        // page is already marked as 404
-        throw new Error("The not-found page cannot call notFound()");
-      } else {
-        console.log("page invoked not found, so rendering not found page");
-        // ask the runtime for the not found page
-        let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
-        // merge headers?
-        return notFoundRequest.rscResponse();
+      if (controller.signal.reason === "not-found") {
+        if (this.#status === 404) {
+          throw new Error("The not-found page cannot call notFound()");
+        } else {
+          console.log("page invoked not found, so rendering not found page");
+          // ask the runtime for the not found page
+          let notFoundRequest = this.#runtime.notFoundPageRequest(
+            this.#request,
+          );
+          // merge headers?
+          return notFoundRequest.rscResponse();
+        }
       }
     } else {
       // were done with t1
@@ -182,4 +181,12 @@ export class PageRequest {
 
     await Promise.all(promises);
   }
+}
+
+function isNotFoundError(err: unknown) {
+  return (
+    err instanceof Error &&
+    "isTwofoldError" in err &&
+    err.name === "NotFoundError"
+  );
 }

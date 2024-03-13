@@ -24,6 +24,12 @@ export class ErrorBoundary extends Component<
     };
   }
 
+  componentDidCatch(error: unknown) {
+    console.log("main caught");
+  }
+
+  // this logic is probs wrong?
+
   onPopState = (_event: PopStateEvent) => {
     this.setState({
       hasError: false,

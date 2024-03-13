@@ -39,7 +39,7 @@ export async function create(runtime: Runtime) {
   // every request below here should use the store
   app.use(requestStore());
 
-  app.get("/__rsc", async (ctx) => {
+  app.get("/__rsc/page", async (ctx) => {
     let url = new URL(ctx.request.url);
     let path = url.searchParams.get("path");
 
@@ -65,7 +65,23 @@ export async function create(runtime: Runtime) {
     return response;
   });
 
-  app.post("/__rsc", async (ctx) => {
+  app.get("/__rsc/not-found", async (ctx) => {
+    let url = new URL(ctx.request.url);
+    let path = url.searchParams.get("path");
+
+    if (typeof path !== "string") {
+      throw new Error("No path specified");
+    }
+
+    let requestUrl = new URL(path, url);
+    let request = new Request(requestUrl, ctx.request);
+    let pageRequest = runtime.notFoundPageRequest(request);
+    let response = await pageRequest.rscResponse();
+
+    return response;
+  });
+
+  app.post("/__rsc/action", async (ctx) => {
     let serverReference = ctx.request.headers.get("x-twofold-server-reference");
     if (!serverReference) {
       throw new Error("No server action specified");

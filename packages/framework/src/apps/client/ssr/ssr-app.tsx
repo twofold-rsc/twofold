@@ -1,5 +1,5 @@
 import "../ext/react-refresh";
-import { use, createElement, Component, ReactNode } from "react";
+import { use, createElement } from "react";
 // @ts-ignore
 import { renderToReadableStream } from "react-dom/server.browser";
 // @ts-ignore
@@ -20,12 +20,26 @@ export function SSRApp({
     throw new Error("Cannot call navigate during SSR");
   };
 
+  let replace = (path: string) => {
+    throw new Error("Cannot call replace during SSR");
+  };
+
   let refresh = () => {
     throw new Error("Cannot call refresh during SSR");
   };
 
+  let notFound = () => {
+    throw new Error("Cannot call notFound during SSR");
+  };
+
   return (
-    <RoutingContext path={path} navigate={navigate} refresh={refresh}>
+    <RoutingContext
+      path={path}
+      navigate={navigate}
+      replace={replace}
+      refresh={refresh}
+      notFound={notFound}
+    >
       <StreamContext reader={rscStreamReader}>{use(tree)}</StreamContext>
     </RoutingContext>
   );
@@ -53,19 +67,23 @@ export async function render({ rscStream, path, bootstrapUrl }: RenderOptions) {
     {
       bootstrapModules: [bootstrapUrl],
       onError(err: unknown) {
-        console.log("ssr renderToReadableStream onError");
-        if (err instanceof Error) {
-          console.log({
-            instanceOfError: true,
-            isTwofoldError: "isTwofoldError" in err,
-            name: err.name,
-          });
+        if (err instanceof Error && isSafeError(err)) {
+          // certain errors we know are safe for client handling
+        } else if (err instanceof Error) {
+          // do something useful here
+          console.error(err);
+        } else {
+          console.error(
+            `An unknown error occurred while SSR rendering: ${path}`,
+          );
         }
-        // do something useful here
-        // console.log(err);
       },
     },
   );
 
   return htmlStream;
+}
+
+function isSafeError(err: Error) {
+  return err.message === "TwofoldNotFoundError";
 }

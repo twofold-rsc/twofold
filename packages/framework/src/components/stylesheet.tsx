@@ -1,8 +1,8 @@
 "use client";
 
 /*
-  Currently using precedence does not unload the stylesheet when the
-  <link> is un-rendered. This component takes care of loading and unloading
+  Using precedence does not unload the stylesheet when the
+  <link> is un-rendered. This component takes care of loading and _unloading_
   stylesheets in a suspense-friendly way.
 */
 
@@ -60,8 +60,4 @@ export default function Stylesheet({ href }: { href: string }) {
   }, [href]);
 
   return null;
-  // return (
-  //   /* @ts-ignore */
-  //   <link rel="stylesheet" href={href} precedence="default" />
-  // );
 }

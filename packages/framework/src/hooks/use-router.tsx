@@ -7,6 +7,7 @@ export function useRouter() {
   return {
     path: context.path,
     navigate: context.navigate,
+    replace: context.replace,
     refresh: context.refresh,
   };
 }

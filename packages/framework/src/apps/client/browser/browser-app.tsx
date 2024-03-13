@@ -29,13 +29,14 @@ declare global {
 let initialPath = `${location.pathname}${location.search}${location.hash}`;
 let initialCache = new Map<string, any>();
 
+// move to another file
 async function callServer(id: string, args: any) {
   // console.log("requesting action", id);
 
   let body = await encodeReply(args);
   let path = `${location.pathname}${location.search}${location.hash}`;
 
-  let p = fetch("/__rsc", {
+  let p = fetch("/__rsc/action", {
     method: "POST",
     headers: {
       Accept: "text/x-component",
@@ -116,18 +117,25 @@ export function BrowserApp() {
 }
 
 function Router() {
+  // this should all be a reducer, im just making a mess here!
+
   let [path, setPath] = useState(initialPath);
   let [navType, setNavType] = useState<string>();
   let [cache, setCache] = useState(initialCache);
-  let [isPending, startTransition] = useTransition();
 
   // Whenever we are transitioning into a new route state we set how we
   // initiated it here. We might be doing a client side nav, a refresh,
   // a dev reload, or something else.
   let [initiator, setInitiator] = useState<string>("initial-render");
 
+  // when we're requesting an RSC, what resource endpoint do we want
+  // to fetch from.
+  let [resourceType, setResourceType] = useState<"page" | "not-found">("page");
+
+  let [isPending, startTransition] = useTransition();
+
   let navigate = useCallback(
-    (toPath: string) => {
+    (toPath: string, options: { updateUrl: boolean } = { updateUrl: true }) => {
       let url = new URL(toPath, window.location.href);
 
       let pathname =
@@ -141,26 +149,50 @@ function Router() {
 
       startTransition(() => {
         setCache(newCache);
+        setResourceType("page");
         setPath(newPath);
-        setNavType("navigate");
+        setNavType(options.updateUrl ? "navigate" : "replace");
         setInitiator("client-side-navigation");
       });
     },
     [cache],
   );
 
+  let replace = useCallback(
+    (toPath: string) => {
+      navigate(toPath, { updateUrl: false });
+    },
+    [navigate],
+  );
+
   let refresh = useCallback(() => {
     startTransition(() => {
+      setResourceType("page");
       setInitiator("refresh");
       setCache(new Map());
     });
   }, []);
+
+  // replaces the current cache entry with the not found
+  // page
+  let notFound = useCallback(() => {
+    let newCache = new Map(cache);
+    newCache.delete(path);
+
+    startTransition(() => {
+      setCache(newCache);
+      setResourceType("not-found");
+      setNavType("replace");
+      setInitiator("refresh");
+    });
+  }, [cache, path]);
 
   useEffect(() => {
     function onPopState(_event: PopStateEvent) {
       startTransition(() => {
         let path = `${location.pathname}${location.search}${location.hash}`;
         setPath(path);
+        setResourceType("page");
         setNavType("pop");
         setInitiator("popstate");
       });
@@ -176,6 +208,8 @@ function Router() {
     if (navType === "navigate") {
       window.history.pushState({}, "", path);
       document.documentElement.scrollTop = 0;
+    } else if (navType === "replace") {
+      document.documentElement.scrollTop = 0;
     }
   }, [navType, path]);
 
@@ -190,22 +224,23 @@ function Router() {
       });
     };
 
+    window.callServer = callServer;
+
     return () => {
       bridge.update = () => {};
-    };
-  }, []);
-
-  useEffect(() => {
-    window.callServer = callServer;
-    return () => {
       window.callServer = undefined;
     };
-  });
+  }, []);
 
   if (!cache.has(path)) {
     let encodedUrl = encodeURIComponent(path);
     // console.log("fetching rsc payload from server for", path);
-    let p = fetch(`/__rsc?path=${encodedUrl}`, {
+    let endpoint =
+      resourceType === "page"
+        ? `/__rsc/page?path=${encodedUrl}`
+        : `/__rsc/not-found?path=${encodedUrl}`;
+
+    let p = fetch(endpoint, {
       headers: {
         Accept: "text/x-component",
         "x-twofold-initiator": initiator,
@@ -215,12 +250,14 @@ function Router() {
         let contentType = response.headers.get("content-type");
         if (contentType === "text/x-component") {
           // there was an error, but we have a valid response, so we're
-          // going to let that response render
+          // going to let that response render. most likely 404
         } else if (contentType === "text/x-serialized-error") {
           let json = await response.json();
           let error = deserializeError(json);
+          // put into cache?
           throw error;
         } else {
+          // put into cache?
           throw new Error(response.statusText);
         }
       }
@@ -237,7 +274,13 @@ function Router() {
   let serverOutput = cache.get(path);
 
   return (
-    <RoutingContext path={path} navigate={navigate} refresh={refresh}>
+    <RoutingContext
+      path={path}
+      navigate={navigate}
+      replace={replace}
+      refresh={refresh}
+      notFound={notFound}
+    >
       {use(serverOutput)}
     </RoutingContext>
   );

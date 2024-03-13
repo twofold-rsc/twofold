@@ -3,6 +3,6 @@ export class NotFoundError extends Error {
   name = "NotFoundError";
 
   constructor() {
-    super("Not found");
+    super("TwofoldNotFoundError");
   }
 }

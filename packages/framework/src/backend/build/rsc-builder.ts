@@ -15,6 +15,7 @@ import path from "path";
 import { Layout } from "./rsc/layout.js";
 import { RSC } from "./rsc/rsc.js";
 import { Page } from "./rsc/page.js";
+import { Wrapper } from "./rsc/wrapper.js";
 
 type CompiledAction = {
   id: string;
@@ -59,6 +60,7 @@ export class RSCBuilder {
         ...middlewareEntry,
         ...serverActionModules,
         this.notFoundSrcPath,
+        this.innerRootWrapperSrcPath,
       ],
       outdir: "./.twofold/rsc/",
       outbase: "src",
@@ -176,6 +178,14 @@ export class RSCBuilder {
     return path.join(fileURLToPath(frameworkSrcDir), "pages", "not-found.tsx");
   }
 
+  get innerRootWrapperSrcPath() {
+    return path.join(
+      fileURLToPath(frameworkSrcDir),
+      "components",
+      "inner-root-wrapper.tsx",
+    );
+  }
+
   get notFoundPage() {
     let metafile = this.#metafile;
 
@@ -193,7 +203,6 @@ export class RSCBuilder {
 
     let page = new Page({
       rsc: notFoundRsc,
-      type: "not-found",
     });
     let rootLayout = this.layouts.find((layout) => layout.rsc.path === "/");
     page.layout = rootLayout;
@@ -251,7 +260,6 @@ export class RSCBuilder {
 
         return new Page({
           rsc,
-          type: "page",
         });
       });
   }
@@ -304,6 +312,29 @@ export class RSCBuilder {
       });
   }
 
+  get innerRootWrapper() {
+    let metafile = this.#metafile;
+
+    if (!metafile) {
+      throw new Error("Could not find inner root wrapper");
+    }
+
+    let outputFilePath = getCompiledEntrypoint(
+      this.innerRootWrapperSrcPath,
+      metafile,
+    );
+    let outputFileUrl = pathToFileURL(outputFilePath);
+
+    let rsc = new RSC({
+      path: "/",
+      fileUrl: outputFileUrl,
+    });
+
+    let wrapper = new Wrapper({ rsc });
+
+    return wrapper;
+  }
+
   get css() {
     let layoutCss = this.layouts.map((layout) => layout.rsc.css);
     let pageCss = this.pages.map((page) => page.rsc.css);
@@ -316,6 +347,7 @@ export class RSCBuilder {
   get tree() {
     let pages = this.pages;
     let layouts = this.layouts;
+    let innerRootWrapper = this.innerRootWrapper;
 
     let root = layouts.find((layout) => layout.rsc.path === "/");
     let otherLayouts = layouts.filter((layout) => layout.rsc.path !== "/");
@@ -326,6 +358,8 @@ export class RSCBuilder {
 
     otherLayouts.forEach((layout) => root?.add(layout));
     pages.forEach((page) => root?.add(page));
+
+    root.addWrapper(innerRootWrapper);
 
     return root;
   }
