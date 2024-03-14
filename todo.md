@@ -1,28 +1,20 @@
 # TODO
 
+release
+test
+
 framework
 
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
 
-- error responses should update the url
+- error responses should update the url (visit an error page, url doesnt change)
 
 - does rsdw need to be an external?
 
 - redirects
 
-- not found
-- custom not found + app's pages/errors/ dir
-- notFound helper
-- custom twofold error for not found
-- notFound helper in suspense
-- action that triggers notFound
-
 - prod builds
-
-cli
-
-- bin script should check node version
 
 kitchen sink
 
@@ -56,8 +48,8 @@ Form
 - [x] Action takes form data
 - [x] Action takes primitive
 - [x] Action passes data into next render
-- [ ] Action imported into client component from 'use server' file
-- [ ] Action imported into server component from 'use server' file
+- [x] Action imported into client component from 'use server' file
+- [x] Action imported into server component from 'use server' file
 - [ ] Action defined in render (closure variables)
 
 - [x] pass in text args
@@ -72,7 +64,7 @@ Form
 
 ## Client Components
 
-- [ ] Multiple exports
+- [x] Multiple exports
 - [ ] SSR should preloadmodule
 
 ## Routing
@@ -86,14 +78,14 @@ Form
 - [x] back forward scroll position
 - [x] router.refresh
 - [ ] redirect
-- [ ] not found
+- [x] not found
 - [x] browser app rsc cache and query params
 - [ ] don't allow two dynamic routes with the same dynamic identifier ($id)
 
 ## Build
 
 - [ ] unload css assets (in live reload)
-- [ ] How to keep client component builder around
+- [ ] How to keep rsc and app builder around
 - [ ] Time how long each build takes
 - [ ] Adding a file, deleting a file
 - [ ] Server should pause requests while building
@@ -106,7 +98,7 @@ Form
 - [ ] static routing should come first
 - [ ] check if middleware export default is a function
 - [ ] image imports (rsc, client)
-- [ ] creating new static files
+- [ ] run server, create a new static files, visit it
 
 ## Layouts
 
@@ -123,8 +115,6 @@ Form
 - Block requests during build
 - Link should only navigate with local urls
 - CSS should reload independent of RSC/CC reload. Possible for CC+CSS to change at same time.
-- List of external packages
-- Style the default 404 page, needs custom tailwind build?
 
 ## Other
 
@@ -133,10 +123,6 @@ Form
 ## Error pages
 
 - [ ] Don't allow setting cookies during render
-
-## Outstanding issues
-
-- [ ] CSS doesnt unload when you navigate
 
 ## Goals
 
