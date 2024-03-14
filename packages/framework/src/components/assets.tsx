@@ -1,4 +1,4 @@
-import { getStore } from "../backend/store.js";
+import { getStore } from "../backend/stores/rsc-store.js";
 import DevReload from "./dev-reload.js";
 import "server-only";
 

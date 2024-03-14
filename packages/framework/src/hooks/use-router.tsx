@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { Context } from "../client-app/contexts/routing-context";
+import { Context } from "../apps/client/contexts/routing-context";
 
 export function useRouter() {
   let context = useContext(Context);
@@ -7,6 +7,7 @@ export function useRouter() {
   return {
     path: context.path,
     navigate: context.navigate,
+    replace: context.replace,
     refresh: context.refresh,
   };
 }

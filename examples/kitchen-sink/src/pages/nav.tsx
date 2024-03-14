@@ -218,28 +218,33 @@ export default function Nav() {
                         description="Remove trailing slashes from URLs."
                         href="/routing/path-normalization/"
                       />
+                      <ExampleLink
+                        title="Not found"
+                        description="Handle missing pages and 404 errors."
+                        href="/routing/not-found"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup name="Errors">
                       <ExampleLink
                         title="Client component errors"
                         description="Errors that happen in client components."
-                        href="/errors/client-components"
+                        href="/error-handling/client-components"
                       />
                       <ExampleLink
                         title="RSC errors"
                         description="Errors that happen in RSCs."
-                        href="/errors/rsc"
+                        href="/error-handling/rsc"
                       />
                       <ExampleLink
                         title="Server action errors"
                         description="Errors that happen in server actions."
-                        href="/errors/server-actions"
+                        href="/error-handling/server-actions"
                       />
                       <ExampleLink
                         title="SSR errors"
                         description="Errors that happen during the SSR pass."
-                        href="/errors/ssr"
+                        href="/error-handling/ssr"
                       />
                     </ExampleGroup>
 

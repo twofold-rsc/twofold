@@ -1,4 +1,5 @@
 import { PathLike, createReadStream } from "fs";
+import { stat } from "fs/promises";
 
 export async function readFirstNBytes(path: PathLike, n: number) {
   const chunks = [];
@@ -6,4 +7,13 @@ export async function readFirstNBytes(path: PathLike, n: number) {
     chunks.push(chunk);
   }
   return Buffer.concat(chunks).toString("utf-8");
+}
+
+export async function fileExists(path: PathLike) {
+  try {
+    let stats = await stat(path);
+    return stats.isFile();
+  } catch (e) {
+    return false;
+  }
 }

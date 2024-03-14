@@ -1,5 +1,8 @@
+import cookies from "@twofold/framework/cookies";
+
 export async function before() {
   console.log("running before middleware");
+  cookies.set("ran-middleware", "true");
 }
 
 export default function Page() {

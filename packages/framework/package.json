@@ -18,7 +18,8 @@
     "./twofold-framework": "./src/components/twofold-framework.tsx",
     "./link": "./src/components/link.tsx",
     "./use-router": "./src/hooks/use-router.tsx",
-    "./cookies": "./src/http/cookies.ts"
+    "./cookies": "./src/http/cookies.ts",
+    "./not-found": "./src/http/not-found.ts"
   },
   "keywords": [],
   "author": "Ryan Toronto",
@@ -40,7 +41,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "nodemon": "^3.0.3",
+    "nodemon": "^3.1.0",
     "typescript": "^5.2.2"
   },
   "peerDependencies": {

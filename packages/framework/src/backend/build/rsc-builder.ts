@@ -1,17 +1,22 @@
 import { context } from "esbuild";
 import { BuildContext, BuildMetafile } from "../build";
-import { readFile, stat } from "fs/promises";
+import { readFile } from "fs/promises";
 import { fileURLToPath, pathToFileURL } from "url";
 import { appCompiledDir, appSrcDir, frameworkSrcDir } from "../files.js";
 import * as postcssrc from "postcss-load-config";
 import postcss from "postcss";
 import "urlpattern-polyfill";
-import { componentsToTree } from "../render.js";
 import { clientComponentProxyPlugin } from "./plugins/client-component-proxy-plugin.js";
 import { serverActionsPlugin } from "./plugins/server-actions-plugin.js";
 import { externalPackages } from "./externals.js";
 import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder";
+import path from "path";
+import { Layout } from "./rsc/layout.js";
+import { RSC } from "./rsc/rsc.js";
+import { Page } from "./rsc/page.js";
+import { Wrapper } from "./rsc/wrapper.js";
+import { fileExists } from "./helpers/file.js";
 
 type CompiledAction = {
   id: string;
@@ -43,6 +48,9 @@ export class RSCBuilder {
 
     let hasMiddleware = await this.hasMiddleware();
     let middlewareEntry = hasMiddleware ? ["./src/middleware.ts"] : [];
+
+    let notFoundEntry = await this.notFoundSrcPath();
+
     let serverActionModules = this.#entriesBuilder.serverActionModuleMap.keys();
 
     this.#context = await context({
@@ -55,8 +63,11 @@ export class RSCBuilder {
         "./src/pages/**/layout.tsx",
         ...middlewareEntry,
         ...serverActionModules,
+        notFoundEntry,
+        this.innerRootWrapperSrcPath,
       ],
       outdir: "./.twofold/rsc/",
+      outbase: "src",
       entryNames: "[ext]/[dir]/[name]-[hash]",
       external: ["react", "react-server-dom-webpack", ...externalPackages],
       conditions: ["react-server", "module"],
@@ -95,14 +106,14 @@ export class RSCBuilder {
           },
         },
         {
-          name: "store",
+          name: "stores",
           setup(build) {
-            let srcPath = fileURLToPath(frameworkSrcDir);
+            let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
             let storePath = fileURLToPath(
-              new URL("../store.js", import.meta.url),
+              new URL("../stores/rsc-store.js", import.meta.url),
             );
-            build.onResolve({ filter: /backend\/store\.js$/ }, (args) => {
-              if (args.importer.startsWith(srcPath)) {
+            build.onResolve({ filter: /\/stores\/rsc-store\.js$/ }, (args) => {
+              if (args.importer.startsWith(frameworkSrcPath)) {
                 return {
                   external: true,
                   path: storePath,
@@ -146,14 +157,8 @@ export class RSCBuilder {
     return Object.keys(metafile.outputs);
   }
 
-  async hasMiddleware() {
-    let middlewareUrl = new URL("./middleware.ts", appSrcDir);
-    try {
-      let stats = await stat(middlewareUrl);
-      return stats.isFile();
-    } catch (e) {
-      return false;
-    }
+  hasMiddleware() {
+    return fileExists(new URL("./middleware.ts", appSrcDir));
   }
 
   get middlewarePath() {
@@ -165,6 +170,51 @@ export class RSCBuilder {
     let middlewarePath = fileURLToPath(middlewareUrl);
 
     return getCompiledEntrypoint(middlewarePath, this.#metafile);
+  }
+
+  private async notFoundSrcPath() {
+    let hasCustomNotFound = await fileExists(srcPaths.app.notFound);
+    return hasCustomNotFound
+      ? srcPaths.app.notFound
+      : srcPaths.framework.notFound;
+  }
+
+  get innerRootWrapperSrcPath() {
+    return path.join(
+      fileURLToPath(frameworkSrcDir),
+      "components",
+      "inner-root-wrapper.tsx",
+    );
+  }
+
+  get notFoundPage() {
+    let metafile = this.#metafile;
+
+    if (!metafile) {
+      throw new Error("Could not find not-found page");
+    }
+
+    let page = this.tree.findPage(
+      (p) => p.pattern.pathname === "/errors/not-found",
+    );
+
+    if (!page) {
+      let entryPoint = srcPaths.framework.notFound;
+      let outputFile = getCompiledEntrypoint(entryPoint, metafile);
+
+      let notFoundRsc = new RSC({
+        path: "/errors/not-found",
+        fileUrl: pathToFileURL(outputFile),
+      });
+
+      let rootLayout = this.layouts.find((layout) => layout.rsc.path === "/");
+      page = new Page({
+        rsc: notFoundRsc,
+      });
+      page.layout = rootLayout;
+    }
+
+    return page;
   }
 
   get pages() {
@@ -215,7 +265,9 @@ export class RSCBuilder {
           fileUrl: new URL(key, baseUrl),
         });
 
-        return new Page({ rsc });
+        return new Page({
+          rsc,
+        });
       });
   }
 
@@ -267,6 +319,29 @@ export class RSCBuilder {
       });
   }
 
+  get innerRootWrapper() {
+    let metafile = this.#metafile;
+
+    if (!metafile) {
+      throw new Error("Could not find inner root wrapper");
+    }
+
+    let outputFilePath = getCompiledEntrypoint(
+      this.innerRootWrapperSrcPath,
+      metafile,
+    );
+    let outputFileUrl = pathToFileURL(outputFilePath);
+
+    let rsc = new RSC({
+      path: "/",
+      fileUrl: outputFileUrl,
+    });
+
+    let wrapper = new Wrapper({ rsc });
+
+    return wrapper;
+  }
+
   get css() {
     let layoutCss = this.layouts.map((layout) => layout.rsc.css);
     let pageCss = this.pages.map((page) => page.rsc.css);
@@ -279,6 +354,7 @@ export class RSCBuilder {
   get tree() {
     let pages = this.pages;
     let layouts = this.layouts;
+    let innerRootWrapper = this.innerRootWrapper;
 
     let root = layouts.find((layout) => layout.rsc.path === "/");
     let otherLayouts = layouts.filter((layout) => layout.rsc.path !== "/");
@@ -290,278 +366,19 @@ export class RSCBuilder {
     otherLayouts.forEach((layout) => root?.add(layout));
     pages.forEach((page) => root?.add(page));
 
+    root.addWrapper(innerRootWrapper);
+
     return root;
   }
 }
 
-class RSC {
-  path: string;
-  css?: string;
-  fileUrl: URL;
-
-  constructor({
-    path,
-    css,
-    fileUrl,
-  }: {
-    path: string;
-    css?: string;
-    fileUrl: URL;
-  }) {
-    this.path = path;
-    this.fileUrl = fileUrl;
-    this.css = css;
-  }
-
-  async runMiddleware(request: Request) {
-    let module = await this.loadModule();
-    if (module.before) {
-      module.before(request);
-    }
-  }
-
-  async loadModule() {
-    let module = await import(this.fileUrl.href);
-    return module;
-  }
-}
-
-class Layout {
-  #rsc: RSC;
-  #children: Layout[] = [];
-  #parent?: Layout;
-  #pages: Page[] = [];
-
-  constructor({ rsc }: { rsc: RSC }) {
-    this.#rsc = rsc;
-  }
-
-  get rsc() {
-    return this.#rsc;
-  }
-
-  get children() {
-    return this.#children;
-  }
-
-  set parent(parent: Layout | undefined) {
-    this.#parent = parent;
-  }
-
-  get parent() {
-    return this.#parent;
-  }
-
-  add(child: Layout | Page) {
-    if (child instanceof Layout) {
-      this.addLayout(child);
-    } else if (child instanceof Page) {
-      this.addPage(child);
-    }
-  }
-
-  findPage(f: (page: Page) => boolean): Page | undefined {
-    let page =
-      this.#pages.find(f) ||
-      this.#children.map((child) => child.findPage(f)).find(Boolean);
-
-    return page;
-  }
-
-  print() {
-    let indent = 0;
-
-    console.log("*** Printing Tree ***");
-
-    let print = (layout: Layout) => {
-      console.log(`${" ".repeat(indent)} ${layout.rsc.path} (layout)`);
-      indent++;
-      layout.#pages.map((page) => {
-        console.log(`${" ".repeat(indent)} ${page.rsc.path} (page)`);
-      });
-      layout.children.forEach(print);
-      indent--;
-    };
-
-    print(this);
-
-    console.log("*** Done Printing Tree ***");
-  }
-
-  private addLayout(layout: Layout) {
-    // can it go under a child of mine?
-    let child = this.#children.find((possibleParent) =>
-      canGoUnder(layout, possibleParent),
-    );
-
-    if (child) {
-      child.addLayout(layout);
-    } else if (canGoUnder(layout, this)) {
-      // re-balance my children
-      let [move, keep] = partition(this.#children, (child) =>
-        canGoUnder(layout, child),
-      );
-      this.#children = keep;
-
-      // move the matching children to the new layout
-      move.forEach((child) => layout.addLayout(child));
-
-      // add to my children
-      this.#children.push(layout);
-      layout.parent = this;
-
-      // readd all my pages?
-      let pages = this.#pages;
-      this.#pages = [];
-      pages.forEach((page) => this.addPage(page));
-    } else {
-      // cant go under a child, cant go under me
-      throw new Error(
-        `Could not add layout ${layout.rsc.path} to ${this.rsc.path}`,
-      );
-    }
-  }
-
-  private addPage(page: Page) {
-    let isMatch = page.rsc.path.startsWith(this.rsc.path);
-    let matchingChild = this.#children.find((child) =>
-      page.rsc.path.startsWith(child.rsc.path),
-    );
-
-    if (matchingChild) {
-      matchingChild.addPage(page);
-    } else if (isMatch) {
-      this.#pages.push(page);
-      page.layout = this;
-    } else {
-      throw new Error(
-        `Could not add page ${page.rsc.path} to ${this.rsc.path}`,
-      );
-    }
-  }
-}
-
-function canGoUnder(child: Layout, parent: Layout) {
-  let alreadyHave = parent.children.some(
-    (current) => current.rsc.path === child.rsc.path,
-  );
-  let matchingPath =
-    child.rsc.path.startsWith(parent.rsc.path) &&
-    child.rsc.path !== parent.rsc.path;
-
-  return !alreadyHave && matchingPath;
-}
-
-function partition<T>(arr: T[], condition: (item: T) => boolean) {
-  return arr.reduce<[T[], T[]]>(
-    (acc, item) => {
-      if (condition(item)) {
-        acc[0].push(item);
-      } else {
-        acc[1].push(item);
-      }
-      return acc;
-    },
-    [[], []],
-  );
-}
-
-class Page {
-  #rsc: RSC;
-  #layout?: Layout;
-
-  constructor({ rsc }: { rsc: RSC }) {
-    this.#rsc = rsc;
-  }
-
-  get isDynamic() {
-    return this.#rsc.path.includes("$");
-  }
-
-  get pattern() {
-    return new URLPattern({
-      protocol: "http{s}?",
-      hostname: "*",
-      pathname: this.#rsc.path.replace(/\/\$/g, "/:"),
-    });
-  }
-
-  get rsc() {
-    return this.#rsc;
-  }
-
-  set layout(layout: Layout | undefined) {
-    this.#layout = layout;
-  }
-
-  get layout() {
-    return this.#layout;
-  }
-
-  private get layouts() {
-    let layouts = [];
-    let layout = this.#layout;
-
-    while (layout) {
-      layouts.push(layout);
-      layout = layout.parent;
-    }
-
-    return layouts.reverse();
-  }
-
-  async runMiddleware(request: Request) {
-    let promises = [
-      this.#rsc.runMiddleware(request),
-      ...this.layouts.map((layout) => layout.rsc.runMiddleware(request)),
-    ];
-
-    await Promise.all(promises);
-  }
-
-  get assets() {
-    return [
-      ...this.layouts.map((layout) => layout.rsc.css),
-      this.#rsc.css,
-    ].filter(Boolean);
-  }
-
-  async reactTree(request: Request) {
-    let url = new URL(request.url);
-    let execPattern = this.pattern.exec(url);
-    let params = execPattern?.pathname.groups ?? {};
-    let searchParams = url.searchParams;
-    let { page, layouts } = await this.components();
-
-    let tree = componentsToTree({
-      components: [...layouts, page],
-      props: { params, searchParams, request },
-    });
-
-    return tree;
-  }
-
-  private async components() {
-    let loadLayoutModules = this.layouts.map(async (layout) => {
-      let module = await layout.rsc.loadModule();
-      if (!module.default) {
-        throw new Error(
-          `Layout for ${layout.rsc.path}/ has no default export.`,
-        );
-      }
-      return module.default;
-    });
-
-    let layouts = await Promise.all(loadLayoutModules);
-    let module = await this.#rsc.loadModule();
-
-    if (!module.default) {
-      throw new Error(`Page ${this.rsc.path} has no default export.`);
-    }
-
-    return {
-      page: module.default,
-      layouts: layouts,
-    };
-  }
-}
+let appSrcPath = fileURLToPath(appSrcDir);
+let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
+let srcPaths = {
+  framework: {
+    notFound: path.join(frameworkSrcPath, "pages", "not-found.tsx"),
+  },
+  app: {
+    notFound: path.join(appSrcPath, "pages", "errors", "not-found.tsx"),
+  },
+};

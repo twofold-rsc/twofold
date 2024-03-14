@@ -5,11 +5,18 @@ framework
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
 
+- error responses should update the url
+
 - does rsdw need to be an external?
 
-- image imports (rsc, browser, ssr)
 - redirects
+
 - not found
+- custom not found + app's pages/errors/ dir
+- notFound helper
+- custom twofold error for not found
+- notFound helper in suspense
+- action that triggers notFound
 
 - prod builds
 
@@ -19,6 +26,9 @@ cli
 
 kitchen sink
 
+- action return types
+- strings, objects, thrown errors?
+
 - action on page with blocking suspense
 - really fast action with slow page (to test streaming parts in order)
 - refresh a blocking suspense page
@@ -27,7 +37,8 @@ kitchen sink
 - restart client builder if entries change
 - restart rsc builder if entries change
 
-Externals for RSC build (inc react)
+- Externals for RSC build (inc react)
+  https://github.com/LinbuduLab/esbuild-plugins/tree/main/packages/esbuild-plugin-node-externals
 
 Docs
 
@@ -94,6 +105,8 @@ Form
 - [ ] come up with way of building all apps (public, error, rsc, client)
 - [ ] static routing should come first
 - [ ] check if middleware export default is a function
+- [ ] image imports (rsc, client)
+- [ ] creating new static files
 
 ## Layouts
 
@@ -111,6 +124,7 @@ Form
 - Link should only navigate with local urls
 - CSS should reload independent of RSC/CC reload. Possible for CC+CSS to change at same time.
 - List of external packages
+- Style the default 404 page, needs custom tailwind build?
 
 ## Other
 
