@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.14
+
+### Patch Changes
+
+- bugfix for entrynames that were node modules
+
 ## 0.0.13
 
 ### Patch Changes
