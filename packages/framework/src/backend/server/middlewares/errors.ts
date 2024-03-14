@@ -12,8 +12,7 @@ export function errors(build: Build): RouteHandler {
 
       let error = e instanceof Error ? e : new Error("Internal server error");
 
-      // TODO make this smarter
-      let status = 500;
+      let status = error.message === "TwofoldNotFoundError" ? 404 : 500;
 
       if (isRSCFetch) {
         let text = JSON.stringify(serializeError(error));

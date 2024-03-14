@@ -9,7 +9,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <ul>
           <li>
             <Link
-              href="/errors/rsc/rsc-throw"
+              href="/error-handling/rsc/rsc-throw"
               className="text-blue-500 underline"
             >
               RSC throw
@@ -17,7 +17,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
-              href="/errors/rsc/rsc-async-throw"
+              href="/error-handling/rsc/rsc-async-throw"
               className="text-blue-500 underline"
             >
               RSC async throw
@@ -25,7 +25,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
-              href="/errors/rsc/rsc-async-reject"
+              href="/error-handling/rsc/rsc-async-reject"
               className="text-blue-500 underline"
             >
               RSC async reject
@@ -33,7 +33,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
-              href="/errors/rsc/rsc-suspended-throw"
+              href="/error-handling/rsc/rsc-suspended-throw"
               className="text-blue-500 underline"
             >
               RSC suspended throw
@@ -41,7 +41,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
-              href="/errors/rsc/rsc-no-default-export"
+              href="/error-handling/rsc/rsc-no-default-export"
               className="text-blue-500 underline"
             >
               RSC no default export
@@ -49,7 +49,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
-              href="/errors/rsc/rsc-layout-no-default-export"
+              href="/error-handling/rsc/rsc-layout-no-default-export"
               className="text-blue-500 underline"
             >
               RSC layout no default export
@@ -57,7 +57,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
-              href="/errors/rsc/rsc-missing-import"
+              href="/error-handling/rsc/rsc-missing-import"
               className="text-blue-500 underline"
             >
               RSC missing import
@@ -65,7 +65,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
-              href="/errors/rsc/rsc-syntax-error"
+              href="/error-handling/rsc/rsc-syntax-error"
               className="text-blue-500 underline"
             >
               RSC syntax error

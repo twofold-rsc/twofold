@@ -2,34 +2,33 @@ import { ReactNode } from "react";
 import Link from "@twofold/framework/link";
 
 export default function Layout({ children }: { children: ReactNode }) {
-  return children;
   return (
     <div className="flex space-x-12">
       <div>
-        <h2 className="text-lg font-semibold">Not found</h2>
+        <h2 className="text-lg font-semibold">Errors</h2>
         <ul>
           <li>
             <Link
-              href="/http/not-found/missing-page-doesnt-exist"
+              href="/error-handling/server-actions/action-missing-use-server"
               className="text-blue-500 underline"
             >
-              Page doesn't exist
+              Server action missing use server
             </Link>
           </li>
           <li>
             <Link
-              href="/http/not-found/page-invokes-not-found"
+              href="/error-handling/server-actions/action-throw"
               className="text-blue-500 underline"
             >
-              Page calls notFound
+              Server action throw
             </Link>
           </li>
           <li>
             <Link
-              href="/http/not-found/suspended-not-found"
+              href="/error-handling/server-actions/action-throw-client-catch"
               className="text-blue-500 underline"
             >
-              Suspended notFound
+              Server action throw and client catch
             </Link>
           </li>
         </ul>

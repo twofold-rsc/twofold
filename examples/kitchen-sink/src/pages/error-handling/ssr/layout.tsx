@@ -9,7 +9,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <ul>
           <li>
             <Link
-              href="/errors/ssr/ssr-throw"
+              href="/error-handling/ssr/ssr-throw"
               className="text-blue-500 underline"
             >
               SSR throw

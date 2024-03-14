@@ -9,26 +9,26 @@ export default function Layout({ children }: { children: ReactNode }) {
         <ul>
           <li>
             <Link
-              href="/errors/server-actions/action-missing-use-server"
+              href="/error-handling/client-components/cc-throws-in-browser"
               className="text-blue-500 underline"
             >
-              Server action missing use server
+              Client browser error
             </Link>
           </li>
           <li>
             <Link
-              href="/errors/server-actions/action-throw"
+              href="/error-handling/client-components/cc-import-error"
               className="text-blue-500 underline"
             >
-              Server action throw
+              Client import error
             </Link>
           </li>
           <li>
             <Link
-              href="/errors/server-actions/action-throw-client-catch"
+              href="/error-handling/client-components/cc-syntax-error"
               className="text-blue-500 underline"
             >
-              Server action throw and client catch
+              Client syntax error
             </Link>
           </li>
         </ul>

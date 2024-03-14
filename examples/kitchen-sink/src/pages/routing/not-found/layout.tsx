@@ -5,30 +5,38 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex space-x-12">
       <div>
-        <h2 className="text-lg font-semibold">Errors</h2>
+        <h2 className="text-lg font-semibold">Not found</h2>
         <ul>
           <li>
             <Link
-              href="/errors/client-components/cc-throws-in-browser"
+              href="/routing/not-found/missing-page-doesnt-exist"
               className="text-blue-500 underline"
             >
-              Client browser error
+              Page doesn't exist
             </Link>
           </li>
           <li>
             <Link
-              href="/errors/client-components/cc-import-error"
+              href="/routing/not-found/page-invokes-not-found"
               className="text-blue-500 underline"
             >
-              Client import error
+              Page calls notFound
             </Link>
           </li>
           <li>
             <Link
-              href="/errors/client-components/cc-syntax-error"
+              href="/routing/not-found/suspended-not-found"
               className="text-blue-500 underline"
             >
-              Client syntax error
+              Suspended notFound
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/not-found/action-invokes-not-found"
+              className="text-blue-500 underline"
+            >
+              Action calls notFound
             </Link>
           </li>
         </ul>

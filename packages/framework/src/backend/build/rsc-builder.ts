@@ -1,6 +1,6 @@
 import { context } from "esbuild";
 import { BuildContext, BuildMetafile } from "../build";
-import { readFile, stat } from "fs/promises";
+import { readFile } from "fs/promises";
 import { fileURLToPath, pathToFileURL } from "url";
 import { appCompiledDir, appSrcDir, frameworkSrcDir } from "../files.js";
 import * as postcssrc from "postcss-load-config";
@@ -16,6 +16,7 @@ import { Layout } from "./rsc/layout.js";
 import { RSC } from "./rsc/rsc.js";
 import { Page } from "./rsc/page.js";
 import { Wrapper } from "./rsc/wrapper.js";
+import { fileExists } from "./helpers/file.js";
 
 type CompiledAction = {
   id: string;
@@ -47,6 +48,9 @@ export class RSCBuilder {
 
     let hasMiddleware = await this.hasMiddleware();
     let middlewareEntry = hasMiddleware ? ["./src/middleware.ts"] : [];
+
+    let notFoundEntry = await this.notFoundSrcPath();
+
     let serverActionModules = this.#entriesBuilder.serverActionModuleMap.keys();
 
     this.#context = await context({
@@ -59,7 +63,7 @@ export class RSCBuilder {
         "./src/pages/**/layout.tsx",
         ...middlewareEntry,
         ...serverActionModules,
-        this.notFoundSrcPath,
+        notFoundEntry,
         this.innerRootWrapperSrcPath,
       ],
       outdir: "./.twofold/rsc/",
@@ -153,14 +157,8 @@ export class RSCBuilder {
     return Object.keys(metafile.outputs);
   }
 
-  async hasMiddleware() {
-    let middlewareUrl = new URL("./middleware.ts", appSrcDir);
-    try {
-      let stats = await stat(middlewareUrl);
-      return stats.isFile();
-    } catch (e) {
-      return false;
-    }
+  hasMiddleware() {
+    return fileExists(new URL("./middleware.ts", appSrcDir));
   }
 
   get middlewarePath() {
@@ -174,8 +172,11 @@ export class RSCBuilder {
     return getCompiledEntrypoint(middlewarePath, this.#metafile);
   }
 
-  get notFoundSrcPath() {
-    return path.join(fileURLToPath(frameworkSrcDir), "pages", "not-found.tsx");
+  private async notFoundSrcPath() {
+    let hasCustomNotFound = await fileExists(srcPaths.app.notFound);
+    return hasCustomNotFound
+      ? srcPaths.app.notFound
+      : srcPaths.framework.notFound;
   }
 
   get innerRootWrapperSrcPath() {
@@ -193,19 +194,25 @@ export class RSCBuilder {
       throw new Error("Could not find not-found page");
     }
 
-    // find not found in output
-    let outputFile = getCompiledEntrypoint(this.notFoundSrcPath, metafile);
+    let page = this.tree.findPage(
+      (p) => p.pattern.pathname === "/errors/not-found",
+    );
 
-    let notFoundRsc = new RSC({
-      path: "/**",
-      fileUrl: pathToFileURL(outputFile),
-    });
+    if (!page) {
+      let entryPoint = srcPaths.framework.notFound;
+      let outputFile = getCompiledEntrypoint(entryPoint, metafile);
 
-    let page = new Page({
-      rsc: notFoundRsc,
-    });
-    let rootLayout = this.layouts.find((layout) => layout.rsc.path === "/");
-    page.layout = rootLayout;
+      let notFoundRsc = new RSC({
+        path: "/errors/not-found",
+        fileUrl: pathToFileURL(outputFile),
+      });
+
+      let rootLayout = this.layouts.find((layout) => layout.rsc.path === "/");
+      page = new Page({
+        rsc: notFoundRsc,
+      });
+      page.layout = rootLayout;
+    }
 
     return page;
   }
@@ -364,3 +371,14 @@ export class RSCBuilder {
     return root;
   }
 }
+
+let appSrcPath = fileURLToPath(appSrcDir);
+let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
+let srcPaths = {
+  framework: {
+    notFound: path.join(frameworkSrcPath, "pages", "not-found.tsx"),
+  },
+  app: {
+    notFound: path.join(appSrcPath, "pages", "errors", "not-found.tsx"),
+  },
+};

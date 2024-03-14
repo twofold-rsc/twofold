@@ -76,7 +76,6 @@ export class PageRequest {
     // if there's a twofold error and the first chunk hasn't been sent
     // then we can abort
     if (controller.signal.aborted) {
-      console.log("got an abort before returning");
       reader.releaseLock();
       t1.cancel();
       t2.cancel();
@@ -85,7 +84,6 @@ export class PageRequest {
         if (this.#status === 404) {
           throw new Error("The not-found page cannot call notFound()");
         } else {
-          console.log("page invoked not found, so rendering not found page");
           // ask the runtime for the not found page
           let notFoundRequest = this.#runtime.notFoundPageRequest(
             this.#request,
