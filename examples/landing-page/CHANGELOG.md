@@ -1,5 +1,12 @@
 # landing-page
 
+## 1.0.12
+
+### Patch Changes
+
+- Updated dependencies
+  - @twofold/framework@0.0.13
+
 ## 1.0.11
 
 ### Patch Changes
