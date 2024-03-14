@@ -68,7 +68,7 @@ export class RSCBuilder {
       ],
       outdir: "./.twofold/rsc/",
       outbase: "src",
-      entryNames: "[ext]/[dir]/[name]-[hash]",
+      entryNames: "[ext]/[name]-[hash]",
       external: ["react", "react-server-dom-webpack", ...externalPackages],
       conditions: ["react-server", "module"],
       platform: "node",
