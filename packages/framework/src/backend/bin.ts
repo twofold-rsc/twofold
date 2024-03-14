@@ -9,7 +9,7 @@ async function main() {
   let hasRequiredNodeVersion = major >= 20 && minor >= 9 && patch >= 0;
   if (!hasRequiredNodeVersion) {
     console.log(
-      "You must use Node.js version 20.0.9 or higher to run twofold.",
+      "You must use Node.js version 20.9.0 or higher to run twofold.",
     );
     process.exit(1);
   }
