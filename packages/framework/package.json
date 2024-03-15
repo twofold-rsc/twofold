@@ -65,7 +65,7 @@
     "acorn-walk": "^8.3.2",
     "astring": "^1.8.6",
     "autoprefixer": "^10.4.16",
-    "esbuild": "0.20.0",
+    "esbuild": "0.20.2",
     "etag": "^1.8.1",
     "mime-types": "^2.1.35",
     "postcss": "^8.4.32",

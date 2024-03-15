@@ -1,9 +1,9 @@
 # TODO
 
-release
-test
-
 framework
+
+- alter entryNames issue
+- try newer node
 
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
