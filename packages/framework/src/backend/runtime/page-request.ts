@@ -31,6 +31,10 @@ export class PageRequest {
     this.#status = status;
   }
 
+  get isNotFound() {
+    return this.#status === 404;
+  }
+
   async rscResponse(): Promise<Response> {
     await this.runMiddleware();
 
@@ -52,15 +56,16 @@ export class PageRequest {
       request: this.#request,
     };
 
-    let controller = new AbortController();
+    let streamError: unknown;
     let reactTree = await this.#page.reactTree(props);
     let rscStream = renderToReadableStream(
       reactTree,
       this.#runtime.clientComponentMap,
       {
         onError(err: unknown) {
-          if (isNotFoundError(err)) {
-            controller.abort("not-found");
+          // console.log("rsc on error");
+          if (isNotFoundError(err) || isRedirectError(err)) {
+            streamError = err;
           } else if (err instanceof Error) {
             console.error(err);
           }
@@ -72,30 +77,63 @@ export class PageRequest {
     let [t1, t2] = rscStream.tee();
     let reader = t1.getReader();
     await reader.read();
+    reader.releaseLock();
+    t1.cancel();
 
     // if there's a twofold error and the first chunk hasn't been sent
     // then we can abort
-    if (controller.signal.aborted) {
-      reader.releaseLock();
-      t1.cancel();
-      t2.cancel();
+    if (streamError) {
+      if (isNotFoundError(streamError)) {
+        t2.cancel();
 
-      if (controller.signal.reason === "not-found") {
-        if (this.#status === 404) {
+        if (this.isNotFound) {
           throw new Error("The not-found page cannot call notFound()");
-        } else {
-          // ask the runtime for the not found page
-          let notFoundRequest = this.#runtime.notFoundPageRequest(
-            this.#request,
-          );
-          // merge headers?
-          return notFoundRequest.rscResponse();
+        }
+
+        // ask the runtime for the not found page
+        let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
+        // merge headers?
+        return notFoundRequest.rscResponse();
+      } else if (isRedirectError(streamError)) {
+        let { status, url } = redirectErrorInfo(streamError);
+        let isRSCFetch =
+          this.#request.headers.get("accept") === "text/x-component";
+        let requestUrl = new URL(this.#request.url);
+        let redirectUrl = new URL(url, this.#request.url);
+        let isRelative =
+          redirectUrl.origin === requestUrl.origin && url.startsWith("/");
+
+        if (isRSCFetch && isRelative) {
+          let redirectRequest = new Request(redirectUrl, this.#request);
+          let redirectPageRequest = this.#runtime.pageRequest(redirectRequest);
+          if (!redirectPageRequest.isNotFound) {
+            // this is a csr request, the redirect is relative,
+            // and a page exists: lets redirect to the url
+            // that will render that page
+            t2.cancel();
+            let encodedPath = encodeURIComponent(redirectUrl.pathname);
+            let newUrl = `/__rsc/page?path=${encodedPath}`;
+
+            return new Response(null, {
+              status,
+              headers: {
+                location: newUrl,
+              },
+            });
+          }
+        }
+
+        if (!isRSCFetch) {
+          // this is a ssr request, we can redirect to the url
+          t2.cancel();
+          return new Response(null, {
+            status,
+            headers: {
+              location: url,
+            },
+          });
         }
       }
-    } else {
-      // were done with t1
-      reader.releaseLock();
-      t1.cancel();
     }
 
     // merge headers
@@ -187,4 +225,35 @@ function isNotFoundError(err: unknown) {
     "isTwofoldError" in err &&
     err.name === "NotFoundError"
   );
+}
+
+function isRedirectError(err: unknown) {
+  return (
+    err instanceof Error &&
+    "isTwofoldError" in err &&
+    err.name === "RedirectError"
+  );
+}
+
+function redirectErrorToResponse(err: Error) {
+  let [name, status, url] = err.message.split(":");
+
+  return new Response(null, {
+    status: Number(status),
+    headers: {
+      Location: decodeURIComponent(url),
+    },
+  });
+}
+
+function redirectErrorInfo(err: unknown) {
+  if (err instanceof Error) {
+    let [name, status, url] = err.message.split(":");
+    return {
+      status: Number(status),
+      url: decodeURIComponent(url),
+    };
+  } else {
+    throw new Error("Invalid redirect");
+  }
 }

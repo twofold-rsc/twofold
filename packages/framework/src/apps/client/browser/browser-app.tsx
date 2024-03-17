@@ -8,14 +8,14 @@ import {
 } from "react";
 import {
   encodeReply,
-  createFromFetch,
   createFromReadableStream,
   // @ts-expect-error
 } from "react-server-dom-webpack/client";
 import { RoutingContext } from "../contexts/routing-context";
-import { MultipartStream } from "./multipart-stream";
+// import { MultipartStream } from "../actions/multipart-stream";
 import { ErrorBoundary } from "../components/error-boundary";
-import { deserializeError } from "serialize-error";
+// import { deserializeError } from "serialize-error";
+import { useRouterReducer } from "./router-hooks";
 
 declare global {
   interface Window {
@@ -30,73 +30,73 @@ let initialPath = `${location.pathname}${location.search}${location.hash}`;
 let initialCache = new Map<string, any>();
 
 // move to another file
-async function callServer(id: string, args: any) {
-  // console.log("requesting action", id);
+// async function callServer(id: string, args: any) {
+//   // console.log("requesting action", id);
 
-  let body = await encodeReply(args);
-  let path = `${location.pathname}${location.search}${location.hash}`;
+//   let body = await encodeReply(args);
+//   let path = `${location.pathname}${location.search}${location.hash}`;
 
-  let p = fetch("/__rsc/action", {
-    method: "POST",
-    headers: {
-      Accept: "text/x-component",
-      "x-twofold-initiator": "call-server",
-      "x-twofold-server-reference": id,
-      "x-twofold-path": path,
-    },
-    body,
-  });
+//   let p = fetch("/__rsc/action", {
+//     method: "POST",
+//     headers: {
+//       Accept: "text/x-component",
+//       "x-twofold-initiator": "call-server",
+//       "x-twofold-server-reference": id,
+//       "x-twofold-path": path,
+//     },
+//     body,
+//   });
 
-  let response = await p;
+//   let response = await p;
 
-  if (!response.ok) {
-    let contentType = response.headers.get("content-type");
-    if (contentType === "text/x-serialized-error") {
-      let json = await response.json();
-      let error = deserializeError(json);
-      throw error;
-    } else {
-      throw new Error(response.statusText);
-    }
-  }
+//   if (!response.ok) {
+//     let contentType = response.headers.get("content-type");
+//     if (contentType === "text/x-serialized-error") {
+//       let json = await response.json();
+//       let error = deserializeError(json);
+//       throw error;
+//     } else {
+//       throw new Error(response.statusText);
+//     }
+//   }
 
-  let actionStream = new MultipartStream({
-    contentType: "text/x-component",
-    headers: {
-      "x-twofold-stream": "action",
-      "x-twofold-server-reference": id,
-    },
-    response,
-  });
+//   let actionStream = new MultipartStream({
+//     contentType: "text/x-component",
+//     headers: {
+//       "x-twofold-stream": "action",
+//       "x-twofold-server-reference": id,
+//     },
+//     response,
+//   });
 
-  let rscStream = new MultipartStream({
-    contentType: "text/x-component",
-    headers: {
-      "x-twofold-stream": "render",
-      "x-twofold-path": path,
-    },
-    response,
-  });
+//   let rscStream = new MultipartStream({
+//     contentType: "text/x-component",
+//     headers: {
+//       "x-twofold-stream": "render",
+//       "x-twofold-path": path,
+//     },
+//     response,
+//   });
 
-  let rscTree = createFromReadableStream(rscStream.stream, {
-    callServer,
-  });
+//   let rscTree = createFromReadableStream(rscStream.stream, {
+//     callServer,
+//   });
 
-  let actionTree = createFromReadableStream(actionStream.stream, {
-    callServer,
-  });
+//   let actionTree = createFromReadableStream(actionStream.stream, {
+//     callServer,
+//   });
 
-  bridge.update(path, rscTree);
+//   bridge.update(path, rscTree);
 
-  return actionTree;
-}
+//   return actionTree;
+// }
 
-if (window.initialRSC?.stream) {
-  let tree = createFromReadableStream(window.initialRSC.stream, {
-    callServer,
-  });
-  initialCache.set(initialPath, tree);
-}
+// if (window.initialRSC?.stream) {
+//   let tree = createFromReadableStream(window.initialRSC.stream, {
+//     callServer,
+//   });
+//   initialCache.set(initialPath, tree);
+// }
 
 type Bridge = {
   update(path: string, lazy: any): void | never;
@@ -118,6 +118,15 @@ export function BrowserApp() {
 
 function Router() {
   // this should all be a reducer, im just making a mess here!
+  // let tree = null;
+  // if (window.initialRSC?.stream) {
+  // tree = createFromReadableStream(window.initialRSC.stream, {
+  //   callServer,
+  // });
+  // initialCache.set(initialPath, tree);
+  // }
+
+  let [routerState, dispatch] = useRouterReducer();
 
   let [path, setPath] = useState(initialPath);
   let [navType, setNavType] = useState<string>();
@@ -148,14 +157,12 @@ function Router() {
       newCache.delete(toPath);
 
       startTransition(() => {
-        setCache(newCache);
-        setResourceType("page");
-        setPath(newPath);
-        setNavType(options.updateUrl ? "navigate" : "replace");
-        setInitiator("client-side-navigation");
+        // setInitiator("client-side-navigation");
+        // setNavType(options.updateUrl ? "navigate" : "replace");
+        dispatch({ type: "NAVIGATE", path: newPath });
       });
     },
-    [cache],
+    [cache, dispatch],
   );
 
   let replace = useCallback(
@@ -165,13 +172,18 @@ function Router() {
     [navigate],
   );
 
+  // let refresh = useCallback(() => {
+  //   startTransition(() => {
+  //     setResourceType("page");
+  //     setInitiator("refresh");
+  //     setCache(new Map());
+  //   });
+  // }, []);
   let refresh = useCallback(() => {
     startTransition(() => {
-      setResourceType("page");
-      setInitiator("refresh");
-      setCache(new Map());
+      dispatch({ type: "REFRESH" });
     });
-  }, []);
+  }, [dispatch]);
 
   // replaces the current cache entry with the not found
   // page
@@ -187,14 +199,29 @@ function Router() {
     });
   }, [cache, path]);
 
+  // useEffect(() => {
+  //   function onPopState(_event: PopStateEvent) {
+  //     startTransition(() => {
+  //       let path = `${location.pathname}${location.search}${location.hash}`;
+  //       setPath(path);
+  //       setResourceType("page");
+  //       setNavType("pop");
+  //       setInitiator("popstate");
+  //     });
+  //   }
+
+  //   window.addEventListener("popstate", onPopState);
+  //   return () => {
+  //     window.removeEventListener("popstate", onPopState);
+  //   };
+  // }, []);
+
   useEffect(() => {
     function onPopState(_event: PopStateEvent) {
+      console.log("pop state fired!");
+      let path = `${location.pathname}${location.search}${location.hash}`;
       startTransition(() => {
-        let path = `${location.pathname}${location.search}${location.hash}`;
-        setPath(path);
-        setResourceType("page");
-        setNavType("pop");
-        setInitiator("popstate");
+        dispatch({ type: "POP", path });
       });
     }
 
@@ -202,16 +229,27 @@ function Router() {
     return () => {
       window.removeEventListener("popstate", onPopState);
     };
-  }, []);
+  }, [dispatch]);
+
+  // useLayoutEffect(() => {
+  //   if (navType === "navigate") {
+  //     console.log("adding history for", path);
+  //     window.history.pushState({}, "", path);
+  //     document.documentElement.scrollTop = 0;
+  //   } else if (navType === "replace") {
+  //     console.log("replacing history for", path);
+  //     window.history.replaceState({}, "", path);
+  //     document.documentElement.scrollTop = 0;
+  //   }
+  // }, [navType, path]);
 
   useLayoutEffect(() => {
-    if (navType === "navigate") {
-      window.history.pushState({}, "", path);
-      document.documentElement.scrollTop = 0;
-    } else if (navType === "replace") {
+    if (routerState.type === "navigate") {
+      console.log("adding history for", routerState.path);
+      window.history.pushState({}, "", routerState.path);
       document.documentElement.scrollTop = 0;
     }
-  }, [navType, path]);
+  }, [routerState.path, routerState.type]);
 
   useEffect(() => {
     bridge.update = (path: string, lazy: any) => {
@@ -224,54 +262,86 @@ function Router() {
       });
     };
 
-    window.callServer = callServer;
+    // window.callServer = callServer;
 
     return () => {
       bridge.update = () => {};
-      window.callServer = undefined;
+      // window.callServer = undefined;
     };
   }, []);
 
-  if (!cache.has(path)) {
-    let encodedUrl = encodeURIComponent(path);
-    // console.log("fetching rsc payload from server for", path);
-    let endpoint =
-      resourceType === "page"
-        ? `/__rsc/page?path=${encodedUrl}`
-        : `/__rsc/not-found?path=${encodedUrl}`;
+  // if (!cache.has(path)) {
+  //   let encodedPath = encodeURIComponent(path);
+  //   // console.log("fetching rsc payload from server for", path);
+  //   let endpoint =
+  //     resourceType === "page"
+  //       ? `/__rsc/page?path=${encodedPath}`
+  //       : `/__rsc/not-found?path=${encodedPath}`;
 
-    let p = fetch(endpoint, {
-      headers: {
-        Accept: "text/x-component",
-        "x-twofold-initiator": initiator,
-      },
-    }).then(async (response) => {
-      if (!response.ok) {
-        let contentType = response.headers.get("content-type");
-        if (contentType === "text/x-component") {
-          // there was an error, but we have a valid response, so we're
-          // going to let that response render. most likely 404
-        } else if (contentType === "text/x-serialized-error") {
-          let json = await response.json();
-          let error = deserializeError(json);
-          // put into cache?
-          throw error;
-        } else {
-          // put into cache?
-          throw new Error(response.statusText);
-        }
-      }
-      return response;
-    });
+  //   let p = fetch(endpoint, {
+  //     headers: {
+  //       Accept: "text/x-component",
+  //       "x-twofold-initiator": initiator,
+  //     },
+  //   })
+  //     .then(async (response) => {
+  //       if (!response.ok) {
+  //         let contentType = response.headers.get("content-type");
+  //         if (contentType === "text/x-component") {
+  //           // there was an error, but we have a valid response, so we're
+  //           // going to let that response render. most likely 404
+  //         } else if (contentType === "text/x-serialized-error") {
+  //           let json = await response.json();
+  //           let error = deserializeError(json);
+  //           // put into cache?
+  //           throw error;
+  //         } else {
+  //           // put into cache?
+  //           throw new Error(response.statusText);
+  //         }
+  //       }
+  //       return response;
+  //     })
+  //     .then((response) => {
+  //       let url = new URL(response.url);
+  //       let encodedPath = url.searchParams.get("path");
+  //       if (encodedPath) {
+  //         let fetchedPath = decodeURIComponent(encodedPath);
+  //         if (path !== fetchedPath) {
+  //           // a redirect caused us to fetch another path, so we will
+  //           // get the tree for the path we thought we were fetching,
+  //           // and put it into the cache for the path we got redirected
+  //           // to
+  //           // console.log("fetched a redirect");
+  //           // console.log({
+  //           //   path: path,
+  //           //   fetchedPath: fetchedPath,
+  //           // });
 
-    let lazyRoot = createFromFetch(p, {
-      callServer,
-    });
+  //           // legal sets here?
+  //           setPath(fetchedPath);
+  //           setCache((c) => {
+  //             let newCache = new Map(c);
+  //             if (newCache.has(path)) {
+  //               let tree = newCache.get(path);
+  //               newCache.set(fetchedPath, tree);
+  //             }
+  //             return newCache;
+  //           });
+  //         }
+  //       }
 
-    cache.set(path, lazyRoot);
-  }
+  //       return response;
+  //     });
 
-  let serverOutput = cache.get(path);
+  //   let lazyRoot = createFromFetch(p, {
+  //     callServer,
+  //   });
+
+  //   cache.set(path, lazyRoot);
+  // }
+
+  // let serverOutput = cache.get(path);
 
   return (
     <RoutingContext
@@ -281,7 +351,9 @@ function Router() {
       refresh={refresh}
       notFound={notFound}
     >
-      {use(serverOutput)}
+      {routerState.tree}
+      {/* {use(tree)} */}
+      {/* {use(serverOutput)} */}
     </RoutingContext>
   );
 }

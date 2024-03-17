@@ -19,7 +19,8 @@
     "./link": "./src/components/link.tsx",
     "./use-router": "./src/hooks/use-router.tsx",
     "./cookies": "./src/http/cookies.ts",
-    "./not-found": "./src/http/not-found.ts"
+    "./not-found": "./src/http/not-found.ts",
+    "./redirect": "./src/http/redirect.ts"
   },
   "keywords": [],
   "author": "Ryan Toronto",

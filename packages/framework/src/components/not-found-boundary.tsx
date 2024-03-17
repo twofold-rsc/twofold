@@ -35,6 +35,8 @@ export class NotFoundBoundary extends Component<
         hasError: true,
       };
     }
+
+    throw error;
   }
 
   reset() {

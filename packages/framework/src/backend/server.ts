@@ -7,7 +7,7 @@ import {
   decodeReply,
   // @ts-ignore
 } from "react-server-dom-webpack/server.edge";
-import { getStore, runStore } from "./stores/rsc-store.js";
+import { getStore } from "./stores/rsc-store.js";
 import { cookie } from "@hattip/cookie";
 import { MultipartResponse } from "./multipart-response.js";
 import { devReload } from "./server/middlewares/dev-reload.js";
@@ -56,6 +56,9 @@ export async function create(runtime: Runtime) {
 
     if (response.status === 404) {
       console.log("🔴 Not found", requestUrl.pathname);
+    } else if (response.status === 307) {
+      let location = response.headers.get("location");
+      console.log("🔵 Redirecting to", location);
     } else if (initiator === "refresh") {
       console.log("🔵 Refreshing", requestUrl.pathname);
     } else if (initiator === "client-side-navigation") {
@@ -161,6 +164,8 @@ export async function create(runtime: Runtime) {
 
     if (response.status === 404) {
       console.log("🔴 Not found", url.pathname);
+    } else if (response.status === 307) {
+      console.log("🔵 Redirecting to", response.headers.get("location"));
     } else {
       console.log("🟢 Serving", url.pathname);
     }

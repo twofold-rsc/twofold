@@ -2,9 +2,6 @@
 
 framework
 
-- alter entryNames issue
-- try newer node
-
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
 
@@ -13,6 +10,15 @@ framework
 - does rsdw need to be an external?
 
 - redirects
+- ssr
+- rsc/csr
+- csr redirect console.log output is funny
+- after streaming starts
+- from action (303)
+- action set cookie and redirect
+- different domain
+- to not found
+- to static file
 
 - prod builds
 

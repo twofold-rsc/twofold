@@ -223,6 +223,11 @@ export default function Nav() {
                         description="Handle missing pages and 404 errors."
                         href="/routing/not-found"
                       />
+                      <ExampleLink
+                        title="Redirects"
+                        description="Handle redirects from pages and actions."
+                        href="/routing/redirects"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup name="Errors">

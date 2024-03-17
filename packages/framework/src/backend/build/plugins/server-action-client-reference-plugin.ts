@@ -32,14 +32,14 @@ export function serverActionClientReferencePlugin({
           });
 
           // CC "safe" version of the server action
-          // relies on the router setting up window.callServer, there might be a
+          // relies on the router setting up window.__twofold.callServer, there might be a
           // better way to do this.
           let newContents = `
             import { createServerReference } from "react-server-dom-webpack/client";
 
             function callServer(...args) {
-              if (typeof window !== 'undefined' && window.callServer) {
-                return window.callServer(...args);
+              if (typeof window !== 'undefined' && window.__twofold && window.__twofold.callServer) {
+                return window.__twofold.callServer(...args);
               } else {
                 throw new Error("Could not find callServer");
               }

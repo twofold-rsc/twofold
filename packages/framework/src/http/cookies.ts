@@ -1,3 +1,4 @@
+import "server-only";
 import { getStore } from "../backend/stores/rsc-store.js";
 import { CookieSerializeOptions } from "cookie";
 
