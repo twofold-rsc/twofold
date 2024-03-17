@@ -1,8 +1,7 @@
 import "../ext/react-refresh";
-import "./browser-loaders";
+import "../ext/webpack-loaders";
 import { hydrateRoot } from "react-dom/client";
 import { BrowserApp } from "./browser-app";
-import { callServer } from "../actions/call-server";
 
 declare global {
   interface Window {
@@ -10,7 +9,6 @@ declare global {
       stream: ReadableStream<Uint8Array>;
     };
     __twofold?: {
-      callServer?: typeof callServer;
       updateTree?: (path: string, tree: any) => void;
     };
   }

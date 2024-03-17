@@ -56,10 +56,40 @@ export class ClientAppBuilder {
         chunkNames: "chunks/[name]-[hash]",
         metafile: true,
         plugins: [
+          {
+            name: "add-webpack-loaders-to-rdsw-client",
+            async setup(build) {
+              let loadersUrl = new URL(
+                "./apps/client/ext/webpack-loaders.ts",
+                frameworkSrcDir,
+              );
+              let loadersPath = fileURLToPath(loadersUrl);
+              let loadersContents = await readFile(loadersPath, "utf-8");
+
+              let result = await transform(loadersContents, {
+                loader: "ts",
+                format: "cjs",
+              });
+              let header = result.code;
+
+              build.onLoad(
+                { filter: /react-server-dom-webpack\/client/ },
+                async ({ path }) => {
+                  let rdswClientContents = await readFile(path, "utf-8");
+                  let newContents = `${header}\n\n${rdswClientContents}`;
+
+                  return {
+                    contents: newContents,
+                    loader: "js",
+                  };
+                },
+              );
+            },
+          },
           serverActionClientReferencePlugin({ builder: builder }),
           clientComponentMapPlugin({
             clientEntryPoints: this.clientEntryPoints,
-            setClientComponentOutputMap: (clientComponentOutputMap) => {
+            onEnd: (clientComponentOutputMap) => {
               this.#clientComponentOutputMap = clientComponentOutputMap;
             },
           }),

@@ -1,4 +1,4 @@
-import { startTransition, use, useEffect, useReducer } from "react";
+import { use, useEffect, useReducer } from "react";
 import { deserializeError } from "serialize-error";
 import {
   createFromReadableStream,
@@ -6,9 +6,8 @@ import {
 } from "react-server-dom-webpack/client";
 import { callServer } from "../actions/call-server";
 
+// clean up window call server
 // not found
-// replace
-// router transitions examples
 
 type Tree = any;
 
@@ -29,29 +28,13 @@ export function useRouterReducer() {
 
   if (!cache.has(path)) {
     // we got asked to render a path and we don't have a tree for it.
-    dispatch({ type: "REFRESH" });
+    dispatch({ type: "REFRESH", path });
   }
 
   useEffect(() => {
-    console.log("finalized state changed");
     fetchCache.clear();
     routerStateCache.clear();
   }, [finalizedState]);
-
-  useEffect(() => {
-    window.__twofold = {
-      callServer,
-      updateTree(path: string, tree: Tree) {
-        startTransition(() => {
-          dispatch({ type: "UPDATE", path, tree });
-        });
-      },
-    };
-
-    return () => {
-      window.__twofold = undefined;
-    };
-  }, []);
 
   let returnedState = {
     path: finalizedState.path,
@@ -74,15 +57,27 @@ type PopAction = {
 
 type RefreshAction = {
   type: "REFRESH";
+  path: string;
 };
 
 type UpdateAction = {
   type: "UPDATE";
   path: string;
   tree: Tree;
+  updateId: string;
 };
 
-type Action = NavigateAction | PopAction | RefreshAction | UpdateAction;
+type NotFoundAction = {
+  type: "NOT_FOUND";
+  path: string;
+};
+
+type Action =
+  | NavigateAction
+  | PopAction
+  | RefreshAction
+  | UpdateAction
+  | NotFoundAction;
 
 function reducer(state: Promise<State>, action: Action): Promise<State> {
   switch (action.type) {
@@ -92,7 +87,9 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
         async reduce() {
           let previous = await state;
           let newCache = new Map(previous.cache);
-          let rsc = await fetchRSCPayload(action.path);
+          let rsc = await fetchRSCPayload(action.path, {
+            initiator: "client-side-navigation",
+          });
 
           newCache.set(rsc.path, rsc.tree);
 
@@ -118,10 +115,12 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
       });
     case "REFRESH":
       return createRouterState({
-        cacheKey: "refresh",
+        cacheKey: `refresh-${action.path}`,
         async reduce() {
           let previous = await state;
-          let rsc = await fetchRSCPayload(previous.path);
+          let rsc = await fetchRSCPayload(action.path, {
+            initiator: "refresh",
+          });
 
           let newCache = new Map(previous.cache);
           newCache.set(rsc.path, rsc.tree);
@@ -134,7 +133,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
       });
     case "UPDATE":
       return createRouterState({
-        cacheKey: `update-${action.path}`,
+        cacheKey: `update-${action.path}-${action.updateId}`,
         async reduce() {
           let previous = await state;
           let newCache = new Map(previous.cache);
@@ -142,6 +141,25 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            cache: newCache,
+          };
+        },
+      });
+    case "NOT_FOUND":
+      return createRouterState({
+        cacheKey: `not-found-${action.path}`,
+        async reduce() {
+          let previous = await state;
+          let newCache = new Map(previous.cache);
+
+          let rsc = await fetchRSCPayload(action.path, {
+            resource: "not-found",
+          });
+          newCache.set(rsc.path, rsc.tree);
+
+          return {
+            path: rsc.path,
+            type: "replace",
             cache: newCache,
           };
         },
@@ -180,22 +198,17 @@ type RSCPayload = {
 };
 let fetchCache = new Map<string, Promise<RSCPayload>>();
 
-// this needs to be typed
-function fetchRSCPayload(path: string) {
-  // console.log("fetching rsc payload for", path);
-  // make these args?
-  let resourceType = "page";
-  let initiator = "client-side-navigation";
+type FetchOptions = {
+  initiator?: string;
+  resource?: "page" | "not-found";
+};
 
+function fetchRSCPayload(path: string, options: FetchOptions = {}) {
+  let resource = options.resource ?? "page";
   let encodedPath = encodeURIComponent(path);
-  // console.log("fetching rsc payload from server for", path);
-  let endpoint =
-    resourceType === "page"
-      ? `/__rsc/page?path=${encodedPath}`
-      : `/__rsc/not-found?path=${encodedPath}`;
-
-  // real cache keys: endpoint?
-  let cacheKey = path;
+  let endpoint = `/__rsc/${resource}?path=${encodedPath}`;
+  let initiator = options.initiator ?? "not-specified";
+  let cacheKey = `${initiator}:${endpoint}`;
 
   if (!fetchCache.has(cacheKey)) {
     let fetchPromise = fetch(endpoint, {
@@ -208,14 +221,12 @@ function fetchRSCPayload(path: string) {
         let contentType = response.headers.get("content-type");
         if (contentType === "text/x-component") {
           // there was an error, but we have a valid response, so we're
-          // going to let that response render. most likely 404
+          // going to let that response render. most likely 4xx (error but renderable)
         } else if (contentType === "text/x-serialized-error") {
           let json = await response.json();
           let error = deserializeError(json);
-          // put into cache?
           throw error;
         } else {
-          // put into cache?
           throw new Error(response.statusText);
         }
       }
@@ -246,8 +257,8 @@ function fetchRSCPayload(path: string) {
   return result;
 }
 
-let initialPath = `${location.pathname}${location.search}${location.hash}`;
 async function getInitialRouterState() {
+  let initialPath = `${location.pathname}${location.search}${location.hash}`;
   let cache = new Map<string, Tree>();
 
   if (window.initialRSC?.stream) {
@@ -262,7 +273,9 @@ async function getInitialRouterState() {
       cache,
     } as const;
   } else {
-    let { path, tree } = await fetchRSCPayload(initialPath);
+    let { path, tree } = await fetchRSCPayload(initialPath, {
+      initiator: "initial-render",
+    });
     cache.set(path, tree);
 
     return {
