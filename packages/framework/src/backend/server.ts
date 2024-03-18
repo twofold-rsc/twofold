@@ -137,6 +137,7 @@ export async function create(runtime: Runtime) {
 
     let store = getStore();
     if (store) {
+      console.log(ctx.outgoingCookies);
       store.cookies.outgoingCookies = ctx.outgoingCookies;
     }
 

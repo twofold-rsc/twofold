@@ -15,9 +15,9 @@ let cookies = {
     store.cookies.set(name, value, options);
   },
 
-  destroy(name: string) {
+  destroy(name: string, options?: CookieSerializeOptions) {
     let store = getStore();
-    store.cookies.destroy(name);
+    store.cookies.destroy(name, options);
   },
 };
 

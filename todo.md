@@ -17,6 +17,7 @@ framework
 - from action (303)
 - action set cookie and redirect
 - different domain
+- 308
 - to not found
 - to static file
 

@@ -17,8 +17,8 @@ export function requestStore(): RouteHandler {
         get: (key: string) => {
           return ctx.cookie[key];
         },
-        destroy: (key: string) => {
-          ctx.deleteCookie(key);
+        destroy: (key: string, options: CookieSerializeOptions) => {
+          ctx.deleteCookie(key, options);
         },
         outgoingCookies: [],
       },

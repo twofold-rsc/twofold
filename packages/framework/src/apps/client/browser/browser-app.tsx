@@ -47,9 +47,9 @@ function Router() {
 
   let refresh = useCallback(() => {
     startTransition(() => {
-      dispatch({ type: "REFRESH", path: routerState.path });
+      dispatch({ type: "REFRESH" });
     });
-  }, [dispatch, routerState.path]);
+  }, [dispatch]);
 
   let notFound = useCallback(() => {
     startTransition(() => {

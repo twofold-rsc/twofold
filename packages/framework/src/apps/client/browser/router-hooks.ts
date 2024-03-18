@@ -6,9 +6,6 @@ import {
 } from "react-server-dom-webpack/client";
 import { callServer } from "../actions/call-server";
 
-// clean up window call server
-// not found
-
 type Tree = any;
 
 type State = {
@@ -28,7 +25,7 @@ export function useRouterReducer() {
 
   if (!cache.has(path)) {
     // we got asked to render a path and we don't have a tree for it.
-    dispatch({ type: "REFRESH", path });
+    dispatch({ type: "POPULATE", path });
   }
 
   useEffect(() => {
@@ -57,6 +54,10 @@ type PopAction = {
 
 type RefreshAction = {
   type: "REFRESH";
+};
+
+type PopulateAction = {
+  type: "POPULATE";
   path: string;
 };
 
@@ -76,6 +77,7 @@ type Action =
   | NavigateAction
   | PopAction
   | RefreshAction
+  | PopulateAction
   | UpdateAction
   | NotFoundAction;
 
@@ -115,11 +117,29 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
       });
     case "REFRESH":
       return createRouterState({
-        cacheKey: `refresh-${action.path}`,
+        cacheKey: `refresh`,
+        async reduce() {
+          let previous = await state;
+          let rsc = await fetchRSCPayload(previous.path, {
+            initiator: "refresh",
+          });
+
+          let newCache = new Map(previous.cache);
+          newCache.set(rsc.path, rsc.tree);
+
+          return {
+            ...previous,
+            cache: newCache,
+          };
+        },
+      });
+    case "POPULATE":
+      return createRouterState({
+        cacheKey: `populate-${action.path}`,
         async reduce() {
           let previous = await state;
           let rsc = await fetchRSCPayload(action.path, {
-            initiator: "refresh",
+            initiator: "populate",
           });
 
           let newCache = new Map(previous.cache);

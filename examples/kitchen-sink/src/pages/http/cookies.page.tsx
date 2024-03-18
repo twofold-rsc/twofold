@@ -16,7 +16,9 @@ async function setCookie(formData: FormData) {
 async function destroyCookie() {
   "use server";
 
-  cookies.destroy("my-cookie");
+  cookies.destroy("my-cookie", {
+    path: "/",
+  });
 }
 
 export default function Page() {
