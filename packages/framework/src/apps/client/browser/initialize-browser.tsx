@@ -10,6 +10,8 @@ declare global {
     };
     __twofold?: {
       updateTree?: (path: string, tree: any) => void;
+      navigate?: (path: string) => void;
+      showTree?: (path: string, tree: any) => void;
     };
   }
 }

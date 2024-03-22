@@ -20,7 +20,10 @@ function Router() {
   let [routerState, dispatch] = useRouterReducer();
 
   let navigate = useCallback(
-    (toPath: string, options: { updateUrl: boolean } = { updateUrl: true }) => {
+    (
+      toPath: string,
+      options: { addHistory: boolean } = { addHistory: true },
+    ) => {
       let url = new URL(toPath, window.location.href);
 
       let pathname =
@@ -31,8 +34,12 @@ function Router() {
       let newPath = `${pathname}${url.search}${url.hash}`;
 
       startTransition(() => {
-        // setNavType(options.updateUrl ? "navigate" : "replace");
-        dispatch({ type: "NAVIGATE", path: newPath });
+        dispatch({
+          type: "NAVIGATE",
+          path: newPath,
+          using: options.addHistory ? "push" : "replace",
+          fetch: true,
+        });
       });
     },
     [dispatch],
@@ -40,7 +47,7 @@ function Router() {
 
   let replace = useCallback(
     (toPath: string) => {
-      navigate(toPath, { updateUrl: false });
+      navigate(toPath, { addHistory: false });
     },
     [navigate],
   );
@@ -72,12 +79,19 @@ function Router() {
   }, [dispatch]);
 
   useLayoutEffect(() => {
-    if (routerState.type === "navigate") {
-      console.log("adding history for", routerState.path);
-      window.history.pushState({}, "", routerState.path);
+    if (routerState.history === "push") {
+      let isOnPath = window.location.pathname === routerState.path;
+      if (!isOnPath) {
+        console.log("adding history for", routerState.path);
+        window.history.pushState({}, "", routerState.path);
+      }
+      document.documentElement.scrollTop = 0;
+    } else if (routerState.history === "replace") {
+      console.log("replacing history for", routerState.path);
+      window.history.replaceState({}, "", routerState.path);
       document.documentElement.scrollTop = 0;
     }
-  }, [routerState.path, routerState.type]);
+  }, [routerState.path, routerState.history]);
 
   useEffect(() => {
     window.__twofold = {
@@ -88,6 +102,16 @@ function Router() {
             path,
             tree,
             updateId: crypto.randomUUID(),
+          });
+        });
+      },
+      navigate(path: string) {
+        startTransition(() => {
+          dispatch({
+            type: "NAVIGATE",
+            path,
+            using: "push",
+            fetch: false,
           });
         });
       },

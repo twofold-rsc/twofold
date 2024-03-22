@@ -2,6 +2,10 @@
 
 framework
 
+- add fire action to nested layout
+- client component nested layout
+- input/browser state in nested layout
+
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
 
@@ -12,11 +16,11 @@ framework
 - redirects
 - ssr
 - rsc/csr
-- csr redirect console.log output is funny
 - after streaming starts
 - from action (303)
 - action set cookie and redirect
 - different domain
+- different domain from action
 - 308
 - to not found
 - to static file
@@ -25,9 +29,12 @@ framework
 
 kitchen sink
 
+- add test page for router.replace
+
 - action return types
 - strings, objects, thrown errors?
 
+- reload then click a link to the page your on, you get a history entry when you shouldnt
 - action on page with blocking suspense
 - really fast action with slow page (to test streaming parts in order)
 - refresh a blocking suspense page

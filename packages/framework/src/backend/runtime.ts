@@ -80,7 +80,7 @@ export class Runtime {
     return serverActionMap.has(id);
   }
 
-  async runAction(id: string, args: any[]) {
+  async getAction(id: string) {
     let serverActionMap = this.#build.builders.rsc.serverActionMap;
     let action = serverActionMap.get(id);
 
@@ -91,6 +91,11 @@ export class Runtime {
     let module = await import(action.path);
     let fn = module[action.export];
 
+    return fn;
+  }
+
+  async runAction(id: string, args: any[]) {
+    let fn = await this.getAction(id);
     return fn.apply(null, args);
   }
 

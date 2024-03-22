@@ -10,7 +10,8 @@ type Tree = any;
 
 type State = {
   path: string;
-  type: "initial" | "navigate" | "pop" | "replace";
+  action: "none" | "refresh" | "navigate" | "popstate";
+  history: "none" | "push" | "replace";
   cache: Map<string, Tree>;
 };
 
@@ -35,7 +36,8 @@ export function useRouterReducer() {
 
   let returnedState = {
     path: finalizedState.path,
-    type: finalizedState.type,
+    action: finalizedState.action,
+    history: finalizedState.history,
     tree: cache.get(path),
   };
 
@@ -45,6 +47,8 @@ export function useRouterReducer() {
 type NavigateAction = {
   type: "NAVIGATE";
   path: string;
+  using: "push" | "replace";
+  fetch: boolean;
 };
 
 type PopAction = {
@@ -89,15 +93,21 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
         async reduce() {
           let previous = await state;
           let newCache = new Map(previous.cache);
-          let rsc = await fetchRSCPayload(action.path, {
-            initiator: "client-side-navigation",
-          });
+          let path = action.path;
 
-          newCache.set(rsc.path, rsc.tree);
+          if (action.fetch) {
+            let rsc = await fetchRSCPayload(action.path, {
+              initiator: "client-side-navigation",
+            });
+
+            path = rsc.path;
+            newCache.set(rsc.path, rsc.tree);
+          }
 
           return {
-            path: rsc.path,
-            type: "navigate",
+            path,
+            action: "navigate",
+            history: action.using,
             cache: newCache,
           };
         },
@@ -110,7 +120,8 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             path: action.path,
-            type: "pop",
+            action: "popstate",
+            history: "none",
             cache: previous.cache,
           };
         },
@@ -129,6 +140,8 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            action: "refresh",
+            history: "none",
             cache: newCache,
           };
         },
@@ -147,6 +160,8 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            action: "none",
+            history: "none",
             cache: newCache,
           };
         },
@@ -160,7 +175,9 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           newCache.set(action.path, action.tree);
 
           return {
-            ...previous,
+            path: previous.path,
+            action: "refresh",
+            history: "none",
             cache: newCache,
           };
         },
@@ -179,7 +196,8 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             path: rsc.path,
-            type: "replace",
+            action: "none",
+            history: "none",
             cache: newCache,
           };
         },
@@ -237,8 +255,8 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
         "x-twofold-initiator": initiator,
       },
     }).then(async (response) => {
+      let contentType = response.headers.get("content-type");
       if (!response.ok) {
-        let contentType = response.headers.get("content-type");
         if (contentType === "text/x-component") {
           // there was an error, but we have a valid response, so we're
           // going to let that response render. most likely 4xx (error but renderable)
@@ -251,14 +269,23 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
         }
       }
 
-      let url = new URL(response.url);
-      let responseEncodedPath = url.searchParams.get("path");
-      let payloadEncodedPath = responseEncodedPath ?? encodedPath;
-      let fetchedPath = decodeURIComponent(payloadEncodedPath);
+      if (contentType === "application/json") {
+        let json = await response.json();
+        if (json.type === "twofold-offsite-redirect") {
+          // should we verify this is offsite?
+          window.location.href = json.url;
+        }
+      }
 
-      let tree = createFromReadableStream(response.body, {
-        callServer,
-      });
+      let url = new URL(response.url);
+      let responsePath = url.searchParams.get("path");
+      let fetchedPath = responsePath ?? decodeURIComponent(encodedPath);
+      let tree =
+        contentType === "text/x-component"
+          ? createFromReadableStream(response.body, {
+              callServer,
+            })
+          : { then() {} };
 
       return {
         path: fetchedPath,
@@ -280,28 +307,25 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
 async function getInitialRouterState() {
   let initialPath = `${location.pathname}${location.search}${location.hash}`;
   let cache = new Map<string, Tree>();
+  let path = initialPath;
 
   if (window.initialRSC?.stream) {
     let tree = createFromReadableStream(window.initialRSC.stream, {
       callServer,
     });
     cache.set(initialPath, tree);
-
-    return {
-      path: initialPath,
-      type: "initial",
-      cache,
-    } as const;
   } else {
-    let { path, tree } = await fetchRSCPayload(initialPath, {
+    let rscPayload = await fetchRSCPayload(initialPath, {
       initiator: "initial-render",
     });
-    cache.set(path, tree);
-
-    return {
-      path,
-      type: "initial",
-      cache,
-    } as const;
+    cache.set(rscPayload.path, rscPayload.tree);
+    path = rscPayload.path;
   }
+
+  return {
+    path,
+    action: "none",
+    history: "none",
+    cache,
+  } as const;
 }

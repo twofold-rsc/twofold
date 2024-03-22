@@ -4,15 +4,17 @@ import {
   // @ts-expect-error
 } from "react-server-dom-webpack/client";
 import { deserializeError } from "serialize-error";
-import { MultipartStream } from "./multipart-stream";
+import { MultipartResponse } from "./multipart-response";
 
 export async function callServer(id: string, args: any) {
   // console.log("requesting action", id);
 
   let body = await encodeReply(args);
   let path = `${location.pathname}${location.search}${location.hash}`;
+  let encodedPath = encodeURIComponent(path);
+  let encodedId = encodeURIComponent(id);
 
-  let p = fetch("/__rsc/action", {
+  let p = fetch(`/__rsc/action/${encodedId}?path=${encodedPath}`, {
     method: "POST",
     headers: {
       Accept: "text/x-component",
@@ -24,10 +26,13 @@ export async function callServer(id: string, args: any) {
   });
 
   let response = await p;
+  let contentType = response.headers.get("content-type");
 
   if (!response.ok) {
-    let contentType = response.headers.get("content-type");
-    if (contentType === "text/x-serialized-error") {
+    if (contentType === "text/x-component") {
+      // error response, but we have something we can render.
+      // most likely a 4xx page came back from our action.
+    } else if (contentType === "text/x-serialized-error") {
       let json = await response.json();
       let error = deserializeError(json);
       throw error;
@@ -36,35 +41,60 @@ export async function callServer(id: string, args: any) {
     }
   }
 
-  let actionStream = new MultipartStream({
-    contentType: "text/x-component",
-    headers: {
-      "x-twofold-stream": "action",
-      "x-twofold-server-reference": id,
-    },
-    response,
-  });
+  let isMultipart =
+    typeof contentType === "string" &&
+    contentType.split(";")[0] === "multipart/mixed";
 
-  let rscStream = new MultipartStream({
-    contentType: "text/x-component",
-    headers: {
-      "x-twofold-stream": "render",
-      "x-twofold-path": path,
-    },
-    response,
-  });
+  let rscStream;
+  let actionStream;
+  if (contentType === "text/x-component") {
+    // single response is a page that we can render
+    rscStream = response.body;
+  } else if (isMultipart) {
+    // multiple responses to this action
+    let actionResponse = new MultipartResponse({
+      contentType: "text/x-action",
+      response,
+    });
 
-  let rscTree = createFromReadableStream(rscStream.stream, {
-    callServer,
-  });
+    let rscResponse = new MultipartResponse({
+      contentType: "text/x-component",
+      response,
+    });
 
-  let actionTree = createFromReadableStream(actionStream.stream, {
-    callServer,
-  });
-
-  if (window.__twofold?.updateTree) {
-    window.__twofold.updateTree(path, rscTree);
+    rscStream = rscResponse.stream;
+    actionStream = actionResponse.stream;
+  } else if (contentType === "application/json") {
+    let json = await response.json();
+    if (json.type === "twofold-offsite-redirect") {
+      window.location.href = json.url;
+    }
   }
 
-  return actionTree;
+  if (rscStream) {
+    let url = new URL(response.url);
+    let receivedPath = url.searchParams.get("path");
+    let pathToUpdate =
+      response.redirected && receivedPath ? receivedPath : path;
+
+    let rscTree = createFromReadableStream(rscStream, {
+      callServer,
+    });
+
+    if (window.__twofold?.updateTree) {
+      window.__twofold.updateTree(pathToUpdate, rscTree);
+    }
+
+    if (response.redirected && window.__twofold?.navigate) {
+      window.__twofold.navigate(pathToUpdate);
+    }
+  }
+
+  if (actionStream) {
+    let actionTree = createFromReadableStream(actionStream, {
+      callServer,
+    });
+
+    return actionTree;
+  }
 }

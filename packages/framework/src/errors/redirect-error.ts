@@ -3,7 +3,7 @@ export class RedirectError extends Error {
   name = "RedirectError";
 
   constructor(status: number, url: string) {
-    let encodedUrl = encodeURI(url);
+    let encodedUrl = encodeURIComponent(url);
     super(`TwofoldRedirectError:${status}:${encodedUrl}`);
   }
 }

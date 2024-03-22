@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import Counter from "./counter";
 
 export default function NestedLayout({ children }: { children: ReactNode }) {
   return (
@@ -8,6 +9,9 @@ export default function NestedLayout({ children }: { children: ReactNode }) {
         <span className="bg-blue-500 px-1.5 py-1 text-white">
           Nested layout
         </span>
+        <div>
+          <Counter />
+        </div>
         <div className="border border-blue-500 p-4">{children}</div>
       </div>
     </div>

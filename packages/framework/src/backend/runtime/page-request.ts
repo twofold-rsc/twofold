@@ -7,6 +7,11 @@ import {
   // @ts-ignore
 } from "react-server-dom-webpack/server.edge";
 import { readStream } from "../steams/process-stream.js";
+import {
+  isNotFoundError,
+  isRedirectError,
+  redirectErrorInfo,
+} from "./helpers/errors.js";
 
 export class PageRequest {
   #page: Page;
@@ -95,6 +100,8 @@ export class PageRequest {
         // merge headers?
         return notFoundRequest.rscResponse();
       } else if (isRedirectError(streamError)) {
+        t2.cancel();
+
         let { status, url } = redirectErrorInfo(streamError);
         let isRSCFetch =
           this.#request.headers.get("accept") === "text/x-component";
@@ -110,7 +117,6 @@ export class PageRequest {
             // this is a csr request, the redirect is relative,
             // and a page exists: lets redirect to the url
             // that will render that page
-            t2.cancel();
             let encodedPath = encodeURIComponent(redirectUrl.pathname);
             let newUrl = `/__rsc/page?path=${encodedPath}`;
 
@@ -125,11 +131,24 @@ export class PageRequest {
 
         if (!isRSCFetch) {
           // this is a ssr request, we can redirect to the url
-          t2.cancel();
           return new Response(null, {
             status,
             headers: {
               location: url,
+            },
+          });
+        } else {
+          // this is a csr request, but the redirect is to a non-csr page
+          // lets ask the browser to handle it
+          let payload = JSON.stringify({
+            type: "twofold-offsite-redirect",
+            url,
+            status,
+          });
+          return new Response(payload, {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
             },
           });
         }
@@ -216,44 +235,5 @@ export class PageRequest {
     ];
 
     await Promise.all(promises);
-  }
-}
-
-function isNotFoundError(err: unknown) {
-  return (
-    err instanceof Error &&
-    "isTwofoldError" in err &&
-    err.name === "NotFoundError"
-  );
-}
-
-function isRedirectError(err: unknown) {
-  return (
-    err instanceof Error &&
-    "isTwofoldError" in err &&
-    err.name === "RedirectError"
-  );
-}
-
-function redirectErrorToResponse(err: Error) {
-  let [name, status, url] = err.message.split(":");
-
-  return new Response(null, {
-    status: Number(status),
-    headers: {
-      Location: decodeURIComponent(url),
-    },
-  });
-}
-
-function redirectErrorInfo(err: unknown) {
-  if (err instanceof Error) {
-    let [name, status, url] = err.message.split(":");
-    return {
-      status: Number(status),
-      url: decodeURIComponent(url),
-    };
-  } else {
-    throw new Error("Invalid redirect");
   }
 }

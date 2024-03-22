@@ -9,28 +9,44 @@ export default function Layout({ children }: { children: ReactNode }) {
         <ul>
           <li>
             <Link
-              href="/routing/redirects/page-invokes-redirect"
+              href="/routing/redirects/page-redirect"
               className="text-blue-500 underline"
             >
               Page calls redirect
             </Link>
           </li>
-          {/* <li>
+          <li>
             <Link
-              href="/routing/not-found/suspended-not-found"
+              href="/routing/redirects/redirect-to-another-domain"
               className="text-blue-500 underline"
             >
-              Suspended notFound
+              Redirect to another domain
             </Link>
           </li>
           <li>
             <Link
-              href="/routing/not-found/action-invokes-not-found"
+              href="/routing/redirects/suspended-redirect"
               className="text-blue-500 underline"
             >
-              Action calls notFound
+              Suspended redirect
             </Link>
-          </li> */}
+          </li>
+          <li>
+            <Link
+              href="/routing/redirects/action-redirect"
+              className="text-blue-500 underline"
+            >
+              Action calls redirect
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/redirects/action-redirect-to-another-domain"
+              className="text-blue-500 underline"
+            >
+              Action redirect to another domain
+            </Link>
+          </li>
         </ul>
       </div>
       <div>{children}</div>

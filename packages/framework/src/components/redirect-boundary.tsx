@@ -60,18 +60,18 @@ function getUrlFromError(error: Error) {
 }
 
 function TriggerRedirect({ url, reset }: { url: string; reset: () => void }) {
-  let { navigate } = useRouter();
+  let { navigate, replace } = useRouter();
 
   useEffect(() => {
     startTransition(() => {
       if (url.startsWith("/")) {
-        navigate(url);
+        replace(url);
       } else {
         window.location.replace(url);
       }
       reset();
     });
-  }, [navigate, url, reset]);
+  }, [navigate, replace, url, reset]);
 
   return null;
 }
