@@ -23,7 +23,6 @@ framework
 - different domain from action
 - 308
 - to not found
-- to static file
 
 - prod builds
 
@@ -91,10 +90,11 @@ Form
 - [x] query params
 - [x] back forward scroll position
 - [x] router.refresh
-- [ ] redirect
+- [x] redirect
 - [x] not found
 - [x] browser app rsc cache and query params
 - [ ] don't allow two dynamic routes with the same dynamic identifier ($id)
+- [ ] redirects to static files
 
 ## Build
 

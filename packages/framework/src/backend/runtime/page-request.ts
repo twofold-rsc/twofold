@@ -113,20 +113,17 @@ export class PageRequest {
         if (isRSCFetch && isRelative) {
           let redirectRequest = new Request(redirectUrl, this.#request);
           let redirectPageRequest = this.#runtime.pageRequest(redirectRequest);
-          if (!redirectPageRequest.isNotFound) {
-            // this is a csr request, the redirect is relative,
-            // and a page exists: lets redirect to the url
-            // that will render that page
-            let encodedPath = encodeURIComponent(redirectUrl.pathname);
-            let newUrl = `/__rsc/page?path=${encodedPath}`;
 
-            return new Response(null, {
-              status,
-              headers: {
-                location: newUrl,
-              },
-            });
-          }
+          let encodedPath = encodeURIComponent(redirectUrl.pathname);
+          let resource = redirectPageRequest.isNotFound ? "not-found" : "page";
+          let newUrl = `/__rsc/${resource}?path=${encodedPath}`;
+
+          return new Response(null, {
+            status,
+            headers: {
+              location: newUrl,
+            },
+          });
         }
 
         if (!isRSCFetch) {

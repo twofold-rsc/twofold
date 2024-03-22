@@ -166,18 +166,19 @@ export async function create(runtime: Runtime) {
       if (isRelative) {
         let redirectRequest = new Request(redirectUrl, requestToRender);
         let redirectPageRequest = runtime.pageRequest(redirectRequest);
-        if (!redirectPageRequest.isNotFound) {
-          console.log("🔵 Redirecting to", redirectUrl.pathname);
-          let encodedPath = encodeURIComponent(redirectUrl.pathname);
-          let newUrl = `/__rsc/page?path=${encodedPath}`;
 
-          return new Response(null, {
-            status: 303,
-            headers: {
-              location: newUrl,
-            },
-          });
-        }
+        let encodedPath = encodeURIComponent(redirectUrl.pathname);
+        let resource = redirectPageRequest.isNotFound ? "not-found" : "page";
+        let newUrl = `/__rsc/${resource}?path=${encodedPath}`;
+
+        console.log("🔵 Redirecting to", redirectUrl.pathname);
+
+        return new Response(null, {
+          status: 303,
+          headers: {
+            location: newUrl,
+          },
+        });
       }
 
       // we could not return a redirect to a page with an rsc payload, so lets

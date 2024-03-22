@@ -17,6 +17,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/routing/redirects/permanent-redirect"
+              className="text-blue-500 underline"
+            >
+              Permanent redirect
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/redirects/redirect-to-another-domain"
               className="text-blue-500 underline"
             >
@@ -33,6 +41,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/routing/redirects/redirect-not-found"
+              className="text-blue-500 underline"
+            >
+              Redirect to not found
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/redirects/action-redirect"
               className="text-blue-500 underline"
             >
@@ -45,6 +61,14 @@ export default function Layout({ children }: { children: ReactNode }) {
               className="text-blue-500 underline"
             >
               Action redirect to another domain
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/redirects/action-redirect-not-found"
+              className="text-blue-500 underline"
+            >
+              Action redirect not found
             </Link>
           </li>
         </ul>
