@@ -82,12 +82,10 @@ function Router() {
     if (routerState.history === "push") {
       let isOnPath = window.location.pathname === routerState.path;
       if (!isOnPath) {
-        console.log("adding history for", routerState.path);
         window.history.pushState({}, "", routerState.path);
       }
       document.documentElement.scrollTop = 0;
     } else if (routerState.history === "replace") {
-      console.log("replacing history for", routerState.path);
       window.history.replaceState({}, "", routerState.path);
       document.documentElement.scrollTop = 0;
     }

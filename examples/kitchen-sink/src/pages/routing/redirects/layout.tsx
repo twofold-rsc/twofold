@@ -49,6 +49,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/routing/redirects/middleware-redirect"
+              className="text-blue-500 underline"
+            >
+              Middleware calls redirect
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/redirects/action-redirect"
               className="text-blue-500 underline"
             >

@@ -2,8 +2,6 @@
 
 framework
 
-- remove logs for history push state effect
-
 - not found in before
 - redirect in before
 
@@ -23,6 +21,8 @@ kitchen sink
 - input/browser state in nested layout
 
 - add test page for router.replace
+
+- merge redirects branch
 
 - action return types
 - strings, objects, thrown errors?
