@@ -1,6 +1,6 @@
 import cookies from "@twofold/framework/cookies";
-import Link from "@twofold/framework/link";
 import { notFound } from "@twofold/framework/not-found";
+import { redirect } from "@twofold/framework/redirect";
 
 export function before() {
   if (cookies.get("auth") !== "true") {
@@ -8,14 +8,22 @@ export function before() {
   }
 }
 
+async function logout() {
+  "use server";
+  cookies.destroy("auth");
+  redirect("/uis/login");
+}
+
 export default function Page() {
   return (
     <div>
       <div>Welcome to the dashboard page!</div>
       <div className="mt-4">
-        <Link href="/uis/login" className="text-blue-500 hover:underline">
-          Logout
-        </Link>
+        <form action={logout}>
+          <button type="submit" className="text-blue-500 hover:underline">
+            Logout
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -194,6 +194,11 @@ export default function Nav() {
                         href="/routing/use-router"
                       />
                       <ExampleLink
+                        title="Navigation"
+                        description="Navigation between different pages"
+                        href="/routing/navigation"
+                      />
+                      <ExampleLink
                         title="Search params"
                         description="Read query search params from the URL."
                         href="/routing/search-params"

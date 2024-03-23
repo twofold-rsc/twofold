@@ -2,9 +2,6 @@
 
 framework
 
-- not found in before
-- redirect in before
-
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
 
@@ -19,8 +16,6 @@ kitchen sink
 - add fire action to nested layout
 - client component nested layout
 - input/browser state in nested layout
-
-- add test page for router.replace
 
 - merge redirects branch
 

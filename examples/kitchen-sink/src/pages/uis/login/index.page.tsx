@@ -4,7 +4,9 @@ import { z } from "zod";
 import { redirect } from "@twofold/framework/redirect";
 
 export function before() {
-  cookies.destroy("auth");
+  if (cookies.get("auth")) {
+    redirect("/uis/login/dashboard");
+  }
 }
 
 async function login(formData: FormData) {
