@@ -27,6 +27,7 @@ let markers = [clientMarker, serverMarker];
 
 export class EntriesBuilder {
   #context?: BuildContext;
+  #error?: Error;
 
   #clientComponentModuleMap = new Map<string, ClientComponentModule>();
   #serverActionModuleMap = new Map<string, ServerActionModule>();
@@ -37,6 +38,10 @@ export class EntriesBuilder {
 
   get serverActionModuleMap() {
     return this.#serverActionModuleMap;
+  }
+
+  get error() {
+    return this.#error;
   }
 
   async setup() {
@@ -95,8 +100,19 @@ export class EntriesBuilder {
 
     this.#clientComponentModuleMap = new Map();
     this.#serverActionModuleMap = new Map();
+    this.#error = undefined;
 
-    await this.#context.rebuild();
+    try {
+      await this.#context.rebuild();
+    } catch (e: unknown) {
+      console.log(e);
+
+      if (e instanceof Error) {
+        this.#error = e;
+      } else {
+        this.#error = new Error("Unknown error");
+      }
+    }
   }
 }
 

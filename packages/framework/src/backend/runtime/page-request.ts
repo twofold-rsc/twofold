@@ -41,7 +41,18 @@ export class PageRequest {
   }
 
   async rscResponse(): Promise<Response> {
-    await this.runMiddleware();
+    try {
+      await this.runMiddleware();
+    } catch (error: unknown) {
+      if (isNotFoundError(error)) {
+        return this.notFoundRscResponse();
+      } else if (isRedirectError(error)) {
+        let { status, url } = redirectErrorInfo(error);
+        return this.redirectResponse(status, url);
+      } else {
+        throw error;
+      }
+    }
 
     let store = getStore();
     let assets = this.#page.assets.map((asset) => `/_assets/styles/${asset}`);
@@ -90,65 +101,11 @@ export class PageRequest {
     if (streamError) {
       if (isNotFoundError(streamError)) {
         t2.cancel();
-
-        if (this.isNotFound) {
-          throw new Error("The not-found page cannot call notFound()");
-        }
-
-        // ask the runtime for the not found page
-        let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
-        // merge headers?
-        return notFoundRequest.rscResponse();
+        return this.notFoundRscResponse();
       } else if (isRedirectError(streamError)) {
         t2.cancel();
-
         let { status, url } = redirectErrorInfo(streamError);
-        let isRSCFetch =
-          this.#request.headers.get("accept") === "text/x-component";
-        let requestUrl = new URL(this.#request.url);
-        let redirectUrl = new URL(url, this.#request.url);
-        let isRelative =
-          redirectUrl.origin === requestUrl.origin && url.startsWith("/");
-
-        if (isRSCFetch && isRelative) {
-          let redirectRequest = new Request(redirectUrl, this.#request);
-          let redirectPageRequest = this.#runtime.pageRequest(redirectRequest);
-
-          let encodedPath = encodeURIComponent(redirectUrl.pathname);
-          let resource = redirectPageRequest.isNotFound ? "not-found" : "page";
-          let newUrl = `/__rsc/${resource}?path=${encodedPath}`;
-
-          return new Response(null, {
-            status,
-            headers: {
-              location: newUrl,
-            },
-          });
-        }
-
-        if (!isRSCFetch) {
-          // this is a ssr request, we can redirect to the url
-          return new Response(null, {
-            status,
-            headers: {
-              location: url,
-            },
-          });
-        } else {
-          // this is a csr request, but the redirect is to a non-csr page
-          // lets ask the browser to handle it
-          let payload = JSON.stringify({
-            type: "twofold-offsite-redirect",
-            url,
-            status,
-          });
-          return new Response(payload, {
-            status: 200,
-            headers: {
-              "content-type": "application/json",
-            },
-          });
-        }
+        return this.redirectResponse(status, url);
       }
     }
 
@@ -232,5 +189,62 @@ export class PageRequest {
     ];
 
     await Promise.all(promises);
+  }
+
+  private notFoundRscResponse() {
+    if (this.isNotFound) {
+      throw new Error("The not-found page cannot call notFound()");
+    }
+
+    let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
+    return notFoundRequest.rscResponse();
+  }
+
+  private redirectResponse(status: number, url: string) {
+    let isRSCFetch = this.#request.headers.get("accept") === "text/x-component";
+    let requestUrl = new URL(this.#request.url);
+    let redirectUrl = new URL(url, this.#request.url);
+    let isRelative =
+      redirectUrl.origin === requestUrl.origin && url.startsWith("/");
+
+    if (isRSCFetch && isRelative) {
+      let redirectRequest = new Request(redirectUrl, this.#request);
+      let redirectPageRequest = this.#runtime.pageRequest(redirectRequest);
+
+      let encodedPath = encodeURIComponent(redirectUrl.pathname);
+      let resource = redirectPageRequest.isNotFound ? "not-found" : "page";
+      let newUrl = `/__rsc/${resource}?path=${encodedPath}`;
+
+      return new Response(null, {
+        status,
+        headers: {
+          location: newUrl,
+        },
+      });
+    }
+
+    if (!isRSCFetch) {
+      // this is a ssr request, we can redirect to the url
+      return new Response(null, {
+        status,
+        headers: {
+          location: url,
+        },
+      });
+    } else {
+      // this is a csr request, but the redirect is to a non-csr page
+      // lets ask the browser to handle it
+      let payload = JSON.stringify({
+        type: "twofold-offsite-redirect",
+        url,
+        status,
+      });
+      return new Response(payload, {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
   }
 }

@@ -253,6 +253,14 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
+                    <ExampleGroup name="UIs">
+                      <ExampleLink
+                        title="Login"
+                        description="A login form using client components, server actions, cookies, and redirects."
+                        href="/uis/login"
+                      />
+                    </ExampleGroup>
+
                     <NavigationMenu.Indicator className="z-1 -right-5 flex h-6 items-center justify-center overflow-hidden">
                       <div className="relative -left-[70%] flex h-6 w-6 rotate-45 items-center justify-center rounded-[3px] bg-gray-100">
                         <div className="relative h-4 w-4 rounded-[1.5px] bg-white" />

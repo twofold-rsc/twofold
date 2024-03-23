@@ -2,9 +2,10 @@
 
 framework
 
-- add fire action to nested layout
-- client component nested layout
-- input/browser state in nested layout
+- remove logs for history push state effect
+
+- not found in before
+- redirect in before
 
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
@@ -13,20 +14,13 @@ framework
 
 - does rsdw need to be an external?
 
-- redirects
-- ssr
-- rsc/csr
-- after streaming starts
-- from action (303)
-- action set cookie and redirect
-- different domain
-- different domain from action
-- 308
-- to not found
-
 - prod builds
 
 kitchen sink
+
+- add fire action to nested layout
+- client component nested layout
+- input/browser state in nested layout
 
 - add test page for router.replace
 
