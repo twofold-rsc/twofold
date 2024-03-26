@@ -1,12 +1,11 @@
 # Twofold RSC
 
-Twofold is an RSC framework made for creating demos and toy apps to show
-off the exciting APIs coming to React 19 and server components.
+Twofold is an experimental React Server Components (RSC) framework designed for creating demos and toy applications to showcase the features and capabilities of React 19 and Server Components.
 
-There's no docs yet, but to create a demo app run the following command and follow the instructions on screen.
+Currently, there are no docs available. To create a demo application using Twofold, follow these steps:
 
 ```text
 pnpm create twofold-app@latest
 ```
 
-Note that Twofold requires Node.js `20.9.0` or higher.
+Note: Twofold requires Node.js `20.9.0` or higher.
