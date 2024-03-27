@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.15
+
+### Patch Changes
+
+- Add redirects
+
 ## 0.0.14
 
 ### Patch Changes
