@@ -10,10 +10,9 @@ export type Todo = (typeof todos)[number];
 async function addTodo(form: FormData) {
   "use server";
 
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  await new Promise((resolve) => setTimeout(resolve, 2500));
 
   let text = form.get("text");
-
   if (typeof text === "string" && Math.random() > 0.5) {
     todos.push({ id: todos.length + 1, text });
   } else {

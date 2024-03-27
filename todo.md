@@ -2,9 +2,6 @@
 
 framework
 
-- alter entryNames issue
-- try newer node
-
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
 
@@ -12,15 +9,16 @@ framework
 
 - does rsdw need to be an external?
 
-- redirects
-
 - prod builds
 
 kitchen sink
 
+- merge redirects branch
+
 - action return types
 - strings, objects, thrown errors?
 
+- reload then click a link to the page your on, you get a history entry when you shouldnt
 - action on page with blocking suspense
 - really fast action with slow page (to test streaming parts in order)
 - refresh a blocking suspense page
@@ -77,10 +75,11 @@ Form
 - [x] query params
 - [x] back forward scroll position
 - [x] router.refresh
-- [ ] redirect
+- [x] redirect
 - [x] not found
 - [x] browser app rsc cache and query params
 - [ ] don't allow two dynamic routes with the same dynamic identifier ($id)
+- [ ] redirects to static files
 
 ## Build
 

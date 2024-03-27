@@ -194,6 +194,11 @@ export default function Nav() {
                         href="/routing/use-router"
                       />
                       <ExampleLink
+                        title="Navigation"
+                        description="Navigation between different pages"
+                        href="/routing/navigation"
+                      />
+                      <ExampleLink
                         title="Search params"
                         description="Read query search params from the URL."
                         href="/routing/search-params"
@@ -223,6 +228,11 @@ export default function Nav() {
                         description="Handle missing pages and 404 errors."
                         href="/routing/not-found"
                       />
+                      <ExampleLink
+                        title="Redirects"
+                        description="Handle redirects from pages and actions."
+                        href="/routing/redirects"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup name="Errors">
@@ -245,6 +255,14 @@ export default function Nav() {
                         title="SSR errors"
                         description="Errors that happen during the SSR pass."
                         href="/error-handling/ssr"
+                      />
+                    </ExampleGroup>
+
+                    <ExampleGroup name="UIs">
+                      <ExampleLink
+                        title="Login"
+                        description="A login form using client components, server actions, cookies, and redirects."
+                        href="/uis/login"
                       />
                     </ExampleGroup>
 

@@ -5,14 +5,16 @@ import { useRouter } from "../hooks/use-router";
 
 type Props = {
   href: string;
+  replace?: boolean;
   children: ReactNode;
 } & LinkHTMLAttributes<HTMLAnchorElement>;
 
 let Link = forwardRef<HTMLAnchorElement, Props>(function LinkWithRef(
-  { href, children, onClick, ...props },
+  { href, children, replace, onClick, ...props },
   ref,
 ) {
-  let { navigate } = useRouter();
+  let router = useRouter();
+  let using: "replace" | "navigate" = replace ? "replace" : "navigate";
 
   return (
     <a
@@ -24,9 +26,9 @@ let Link = forwardRef<HTMLAnchorElement, Props>(function LinkWithRef(
           onClick(e);
         }
 
-        if (e.button === 0 && !e.ctrlKey && !e.metaKey) {
+        if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.defaultPrevented) {
           e.preventDefault();
-          navigate(href);
+          router[using](href);
         }
       }}
     >

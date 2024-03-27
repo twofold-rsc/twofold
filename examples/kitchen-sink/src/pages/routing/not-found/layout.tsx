@@ -17,7 +17,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
-              href="/routing/not-found/page-invokes-not-found"
+              href="/routing/not-found/page-calls-not-found"
               className="text-blue-500 underline"
             >
               Page calls notFound
@@ -33,7 +33,15 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
-              href="/routing/not-found/action-invokes-not-found"
+              href="/routing/not-found/middleware-calls-not-found"
+              className="text-blue-500 underline"
+            >
+              Middleware calls notFound
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/not-found/action-calls-not-found"
               className="text-blue-500 underline"
             >
               Action calls notFound

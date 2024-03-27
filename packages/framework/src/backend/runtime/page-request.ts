@@ -7,6 +7,11 @@ import {
   // @ts-ignore
 } from "react-server-dom-webpack/server.edge";
 import { readStream } from "../steams/process-stream.js";
+import {
+  isNotFoundError,
+  isRedirectError,
+  redirectErrorInfo,
+} from "./helpers/errors.js";
 
 export class PageRequest {
   #page: Page;
@@ -31,8 +36,23 @@ export class PageRequest {
     this.#status = status;
   }
 
+  get isNotFound() {
+    return this.#status === 404;
+  }
+
   async rscResponse(): Promise<Response> {
-    await this.runMiddleware();
+    try {
+      await this.runMiddleware();
+    } catch (error: unknown) {
+      if (isNotFoundError(error)) {
+        return this.notFoundRscResponse();
+      } else if (isRedirectError(error)) {
+        let { status, url } = redirectErrorInfo(error);
+        return this.redirectResponse(status, url);
+      } else {
+        throw error;
+      }
+    }
 
     let store = getStore();
     let assets = this.#page.assets.map((asset) => `/_assets/styles/${asset}`);
@@ -52,15 +72,16 @@ export class PageRequest {
       request: this.#request,
     };
 
-    let controller = new AbortController();
+    let streamError: unknown;
     let reactTree = await this.#page.reactTree(props);
     let rscStream = renderToReadableStream(
       reactTree,
       this.#runtime.clientComponentMap,
       {
         onError(err: unknown) {
-          if (isNotFoundError(err)) {
-            controller.abort("not-found");
+          // console.log("rsc on error");
+          if (isNotFoundError(err) || isRedirectError(err)) {
+            streamError = err;
           } else if (err instanceof Error) {
             console.error(err);
           }
@@ -72,30 +93,20 @@ export class PageRequest {
     let [t1, t2] = rscStream.tee();
     let reader = t1.getReader();
     await reader.read();
+    reader.releaseLock();
+    t1.cancel();
 
     // if there's a twofold error and the first chunk hasn't been sent
     // then we can abort
-    if (controller.signal.aborted) {
-      reader.releaseLock();
-      t1.cancel();
-      t2.cancel();
-
-      if (controller.signal.reason === "not-found") {
-        if (this.#status === 404) {
-          throw new Error("The not-found page cannot call notFound()");
-        } else {
-          // ask the runtime for the not found page
-          let notFoundRequest = this.#runtime.notFoundPageRequest(
-            this.#request,
-          );
-          // merge headers?
-          return notFoundRequest.rscResponse();
-        }
+    if (streamError) {
+      if (isNotFoundError(streamError)) {
+        t2.cancel();
+        return this.notFoundRscResponse();
+      } else if (isRedirectError(streamError)) {
+        t2.cancel();
+        let { status, url } = redirectErrorInfo(streamError);
+        return this.redirectResponse(status, url);
       }
-    } else {
-      // were done with t1
-      reader.releaseLock();
-      t1.cancel();
     }
 
     // merge headers
@@ -179,12 +190,61 @@ export class PageRequest {
 
     await Promise.all(promises);
   }
-}
 
-function isNotFoundError(err: unknown) {
-  return (
-    err instanceof Error &&
-    "isTwofoldError" in err &&
-    err.name === "NotFoundError"
-  );
+  private notFoundRscResponse() {
+    if (this.isNotFound) {
+      throw new Error("The not-found page cannot call notFound()");
+    }
+
+    let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
+    return notFoundRequest.rscResponse();
+  }
+
+  private redirectResponse(status: number, url: string) {
+    let isRSCFetch = this.#request.headers.get("accept") === "text/x-component";
+    let requestUrl = new URL(this.#request.url);
+    let redirectUrl = new URL(url, this.#request.url);
+    let isRelative =
+      redirectUrl.origin === requestUrl.origin && url.startsWith("/");
+
+    if (isRSCFetch && isRelative) {
+      let redirectRequest = new Request(redirectUrl, this.#request);
+      let redirectPageRequest = this.#runtime.pageRequest(redirectRequest);
+
+      let encodedPath = encodeURIComponent(redirectUrl.pathname);
+      let resource = redirectPageRequest.isNotFound ? "not-found" : "page";
+      let newUrl = `/__rsc/${resource}?path=${encodedPath}`;
+
+      return new Response(null, {
+        status,
+        headers: {
+          location: newUrl,
+        },
+      });
+    }
+
+    if (!isRSCFetch) {
+      // this is a ssr request, we can redirect to the url
+      return new Response(null, {
+        status,
+        headers: {
+          location: url,
+        },
+      });
+    } else {
+      // this is a csr request, but the redirect is to a non-csr page
+      // lets ask the browser to handle it
+      let payload = JSON.stringify({
+        type: "twofold-offsite-redirect",
+        url,
+        status,
+      });
+      return new Response(payload, {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+  }
 }

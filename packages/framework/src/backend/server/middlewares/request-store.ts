@@ -8,17 +8,31 @@ export function requestStore(): RouteHandler {
   return async (ctx) => {
     reqId = reqId + 1;
 
+    let defaultCookieOptions: CookieSerializeOptions = {
+      path: "/",
+    };
+
     let store = {
       reqId,
       cookies: {
-        set: (key: string, value: string, options: CookieSerializeOptions) => {
-          ctx.setCookie(key, value, options);
+        set: (key: string, value: string, options?: CookieSerializeOptions) => {
+          let cookieOptions = {
+            ...defaultCookieOptions,
+            ...options,
+          };
+
+          ctx.setCookie(key, value, cookieOptions);
         },
         get: (key: string) => {
           return ctx.cookie[key];
         },
-        destroy: (key: string) => {
-          ctx.deleteCookie(key);
+        destroy: (key: string, options?: CookieSerializeOptions) => {
+          let cookieOptions = {
+            ...defaultCookieOptions,
+            ...options,
+          };
+
+          ctx.deleteCookie(key, cookieOptions);
         },
         outgoingCookies: [],
       },

@@ -10,15 +10,13 @@ export type ClientComponentOutput = {
 
 export function clientComponentMapPlugin({
   clientEntryPoints,
-  setClientComponentOutputMap,
+  onEnd,
 }: {
   clientEntryPoints: string[];
-  setClientComponentOutputMap: (
-    clientComponentOutputMap: Map<string, ClientComponentOutput>,
-  ) => void;
+  onEnd: (clientComponentOutputMap: Map<string, ClientComponentOutput>) => void;
 }) {
   let plugin: Plugin = {
-    name: "client-components",
+    name: "client-component-map-plugin",
     setup(build) {
       build.initialOptions.metafile = true;
 
@@ -68,7 +66,7 @@ export function clientComponentMapPlugin({
         }
 
         // console.log(Object.fromEntries(outputMap.entries()));
-        setClientComponentOutputMap(outputMap);
+        onEnd(outputMap);
       });
     },
   };

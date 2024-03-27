@@ -1,4 +1,4 @@
-export class MultipartStream {
+export class MultipartResponse {
   #buffer = new Uint8Array();
   #encoder = new TextEncoder();
   #state = "SEARCHING";
@@ -17,11 +17,11 @@ export class MultipartStream {
   constructor({
     response,
     contentType,
-    headers,
+    headers = {},
   }: {
     response: Response;
     contentType: string;
-    headers: Record<string, string>;
+    headers?: Record<string, string>;
   }) {
     let ctHeader = response.headers.get("content-type") ?? "";
     let [type, boundarySection] = ctHeader.split(";");

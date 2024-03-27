@@ -54,7 +54,11 @@ export class Build {
   }
 
   get error() {
-    return this.#rscBuilder.error || this.#clientAppBuilder.error;
+    return (
+      this.#entriesBuilder.error ||
+      this.#rscBuilder.error ||
+      this.#clientAppBuilder.error
+    );
   }
 
   get builders() {
@@ -68,8 +72,8 @@ export class Build {
   }
 
   async build() {
-    let build = time("build");
-    build.start();
+    let buildTime = time("build");
+    buildTime.start();
 
     if (this.#isBuilding) {
       // i need to figure this out
@@ -107,21 +111,23 @@ export class Build {
     frameworkTime.end();
     // frameworkTime.log();
 
-    let rscBuild = this.#rscBuilder.build();
-    let clientBuild = this.#clientAppBuilder.build();
+    if (!this.#entriesBuilder.error) {
+      let rscBuild = this.#rscBuilder.build();
+      let clientBuild = this.#clientAppBuilder.build();
 
-    let appTime = time("app build");
-    appTime.start();
-    await Promise.all([clientBuild, rscBuild]);
-    appTime.end();
-    // appTime.log();
+      let appTime = time("app build");
+      appTime.start();
+      await Promise.all([clientBuild, rscBuild]);
+      appTime.end();
+      // appTime.log();
+    }
 
     this.#key = randomBytes(6).toString("hex");
 
-    build.end();
+    buildTime.end();
 
     console.log(
-      `🏗️  Built app in ${build.duration.toFixed(2)}ms [version: ${this.#key}]`,
+      `🏗️  Built app in ${buildTime.duration.toFixed(2)}ms [version: ${this.#key}]`,
     );
 
     this.#isBuilding = false;
