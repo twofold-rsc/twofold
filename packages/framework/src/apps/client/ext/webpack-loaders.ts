@@ -11,8 +11,12 @@ if (typeof window !== "undefined") {
     window.__webpack_chunk_load__ = async function (chunkId) {
       let [moduleId, name, hash] = chunkId.split(":");
       let modulePath = `/_assets/client-app/${name}-${hash}.js`;
-      let mod = await import(modulePath);
-      moduleMap.set(moduleId, mod);
+      let mod = moduleMap.get(moduleId);
+      if (!mod) {
+        // only import modules we don't know about
+        mod = await import(modulePath);
+        moduleMap.set(moduleId, mod);
+      }
       return mod;
     };
   }

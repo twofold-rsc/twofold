@@ -13,10 +13,6 @@ framework
 
 kitchen sink
 
-- add fire action to nested layout
-- client component nested layout
-- input/browser state in nested layout
-
 - merge redirects branch
 
 - action return types
