@@ -13,8 +13,6 @@ framework
 
 kitchen sink
 
-- merge redirects branch
-
 - action return types
 - strings, objects, thrown errors?
 
