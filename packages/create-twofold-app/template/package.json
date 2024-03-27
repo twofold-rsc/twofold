@@ -1,6 +1,10 @@
 {
   "name": "base-app",
+<<<<<<< HEAD
   "version": "0.0.14",
+=======
+  "version": "0.0.13",
+>>>>>>> 69f1c5a (base app)
   "private": true,
   "description": "",
   "type": "module",
