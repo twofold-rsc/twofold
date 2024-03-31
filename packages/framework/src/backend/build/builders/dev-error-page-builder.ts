@@ -1,12 +1,12 @@
 import { BuildContext, context } from "esbuild";
 import * as path from "path";
 import { fileURLToPath } from "url";
-import { BuildMetafile } from "../build";
-import { cwdUrl, frameworkSrcDir } from "../files.js";
-import { postcssTailwind } from "./plugins/postcss-tailwind.js";
-import { readFile } from "fs/promises";
+import { BuildMetafile } from "../dev-build";
+import { cwdUrl, frameworkSrcDir } from "../../files.js";
+import { postcssTailwind } from "../plugins/postcss-tailwind.js";
+import { copyFile, readFile } from "fs/promises";
 
-export class ErrorPageBuilder {
+export class DevErrorPageBuilder {
   #metafile?: BuildMetafile;
   #context?: BuildContext;
   #rebuild = false;

@@ -1,19 +1,17 @@
-import { Build } from "./build.js";
+import { DevBuild } from "./build/dev-build.js";
 import { Worker } from "node:worker_threads";
 import { PageRequest } from "./runtime/page-request.js";
 import { create } from "./server.js";
+import { ProdBuild } from "./build/prod-build.js";
 
 export class Runtime {
   #hostname = "localhost";
   #port = 3000;
-  #build: Build;
+  #build: DevBuild | ProdBuild;
   #ssrWorker?: Worker;
 
-  constructor(build: Build) {
+  constructor(build: DevBuild | ProdBuild) {
     this.#build = build;
-    build.events.on("complete", async () => {
-      this.createSSRWorker();
-    });
   }
 
   get build() {
@@ -40,12 +38,23 @@ export class Runtime {
     return this.#port;
   }
 
+  async start() {
+    if (this.#build.env === "development") {
+      this.#build.watch();
+      this.#build.events.on("complete", async () => {
+        this.createSSRWorker();
+      });
+    }
+
+    this.createSSRWorker();
+    await this.server();
+  }
+
   // server
 
-  async server() {
+  private async server() {
     let server = await create(this);
     await server.start();
-    this.#build.watch();
   }
 
   // pages

@@ -1,7 +1,7 @@
 import { ReadOnlyFile } from "@hattip/static";
 import { access, readdir, stat } from "fs/promises";
 import * as path from "path";
-import { cwdUrl } from "../files.js";
+import { cwdUrl } from "../../files.js";
 import { fileURLToPath } from "url";
 import { Stats } from "fs";
 import * as mime from "mime-types";

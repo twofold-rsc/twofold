@@ -1,5 +1,5 @@
 import { Plugin } from "esbuild";
-import { EntriesBuilder } from "../entries-builder";
+import { EntriesBuilder } from "../builders/entries-builder";
 import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
 

@@ -1,5 +1,5 @@
 import { Plugin, transform } from "esbuild";
-import { RSCBuilder } from "../rsc-builder";
+import { RSCBuilder } from "../builders/rsc-builder";
 import { readFile } from "fs/promises";
 import type {
   FunctionDeclaration,

@@ -1,5 +1,5 @@
 import { RouteHandler } from "@hattip/router";
-import { Build } from "../../build";
+import { Build } from "../../build/interface";
 
 export function globalMiddleware(build: Build): RouteHandler {
   return async (ctx) => {

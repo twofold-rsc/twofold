@@ -1,11 +1,8 @@
-"use client";
-
 /*
   Using precedence does not unload the stylesheet when the
   <link> is un-rendered. This component takes care of loading and _unloading_
   stylesheets in a suspense-friendly way.
 */
-
 import { use, useEffect } from "react";
 
 function load(href: string) {
@@ -32,7 +29,7 @@ function load(href: string) {
 
 let cache = new Map<string, ReturnType<typeof load>>();
 
-export default function Stylesheet({ href }: { href: string }) {
+export function Stylesheet({ href }: { href: string }) {
   if (!cache.has(href)) {
     cache.set(href, load(href));
   }

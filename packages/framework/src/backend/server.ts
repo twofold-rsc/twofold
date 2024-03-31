@@ -38,11 +38,15 @@ export async function create(runtime: Runtime) {
   app.use(globalMiddleware(build));
   app.use(assets(build));
   app.use(staticFiles(build));
-  app.use(devReload(build));
+
+  if (build.env === "development") {
+    app.use(devReload(build));
+  }
+
   app.use(errors(build));
 
   // every request below here should use the store
-  app.use(requestStore());
+  app.use(requestStore(build));
 
   app.get("/__rsc/page", async (ctx) => {
     let url = new URL(ctx.request.url);

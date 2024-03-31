@@ -255,42 +255,127 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
         "x-twofold-initiator": initiator,
       },
     }).then(async (response) => {
-      let contentType = response.headers.get("content-type");
-      if (!response.ok) {
-        if (contentType === "text/x-component") {
-          // there was an error, but we have a valid response, so we're
-          // going to let that response render. most likely 4xx (error but renderable)
-        } else if (contentType === "text/x-serialized-error") {
-          let json = await response.json();
-          let error = deserializeError(json);
-          throw error;
-        } else {
-          throw new Error(response.statusText);
-        }
-      }
-
-      if (contentType === "application/json") {
-        let json = await response.json();
-        if (json.type === "twofold-offsite-redirect") {
-          // should we verify this is offsite?
-          window.location.href = json.url;
-        }
-      }
-
       let url = new URL(response.url);
       let responsePath = url.searchParams.get("path");
+      let contentType = response.headers.get("content-type");
       let fetchedPath = responsePath ?? decodeURIComponent(encodedPath);
-      let tree =
-        contentType === "text/x-component"
-          ? createFromReadableStream(response.body, {
-              callServer,
-            })
-          : { then() {} };
 
-      return {
-        path: fetchedPath,
-        tree,
-      };
+      if (contentType === "text/x-component") {
+        let tree = createFromReadableStream(response.body, {
+          callServer,
+        });
+
+        return {
+          path: fetchedPath,
+          tree,
+        };
+      } else if (contentType === "text/x-serialized-error") {
+        let json = await response.json();
+        let error = deserializeError(json);
+        let stream = new ReadableStream({
+          start(controller) {
+            controller.error(error);
+          },
+        });
+        let tree = createFromReadableStream(stream);
+
+        return {
+          path: fetchedPath,
+          tree,
+        };
+      } else if (contentType === "application/json") {
+        let json = await response.json();
+        if (json.type === "twofold-offsite-redirect") {
+          window.location.href = json.url;
+          return {
+            path: fetchedPath,
+            tree: { then: () => {} },
+          };
+        } else {
+          let stream = new ReadableStream({
+            start(controller) {
+              let error = new Error("Unexpected response");
+              controller.error(error);
+            },
+          });
+          let tree = createFromReadableStream(stream);
+          return {
+            path: fetchedPath,
+            tree,
+          };
+        }
+      } else if (!response.ok) {
+        let stream = new ReadableStream({
+          start(controller) {
+            let error = new Error(response.statusText);
+            controller.error(error);
+          },
+        });
+
+        let tree = createFromReadableStream(stream);
+        return {
+          path: fetchedPath,
+          tree,
+        };
+      } else {
+        let stream = new ReadableStream({
+          start(controller) {
+            let error = new Error("Unexpected response");
+            controller.error(error);
+          },
+        });
+        let tree = createFromReadableStream(stream);
+        return {
+          path: fetchedPath,
+          tree,
+        };
+      }
+
+      // if (!response.ok) {
+      //   if (contentType === "text/x-component") {
+      //     // there was an error, but we have a valid response, so we're
+      //     // going to let that response render. most likely 4xx (error but renderable)
+      //   } else if (contentType === "text/x-serialized-error") {
+      //     let json = await response.json();
+      //     let error = deserializeError(json);
+      //     let stream = new ReadableStream({
+      //       start(controller) {
+      //         controller.error(error);
+      //       },
+      //     });
+      //     let errorStream = createFromReadableStream(stream);
+      //     console.log({ errorStream });
+
+      //     return {
+      //       path: fetchedPath,
+      //       tree: errorStream,
+      //     };
+
+      //     // throw error;
+      //   } else {
+      //     throw new Error(response.statusText);
+      //   }
+      // }
+
+      // if (contentType === "application/json") {
+      //   let json = await response.json();
+      //   if (json.type === "twofold-offsite-redirect") {
+      //     // should we verify this is offsite?
+      //     window.location.href = json.url;
+      //   }
+      // }
+
+      // let tree =
+      //   contentType === "text/x-component"
+      //     ? createFromReadableStream(response.body, {
+      //         callServer,
+      //       })
+      //     : { then() {} };
+
+      // return {
+      //   path: fetchedPath,
+      //   tree,
+      // };
     });
 
     fetchCache.set(cacheKey, fetchPromise);

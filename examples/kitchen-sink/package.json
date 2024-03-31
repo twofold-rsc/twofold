@@ -5,8 +5,10 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "NODE_OPTIONS=\"-C react-server\" pnpm twofold",
-    "dev-framework": "nodemon --delay 100ms --exec \"NODE_OPTIONS='-C react-server' pnpm twofold\" --watch $(realpath node_modules/@twofold/framework/dist) -e js"
+    "dev": "NODE_OPTIONS=\"-C react-server\" pnpm twofold dev",
+    "prod": "NODE_OPTIONS=\"-C react-server\" pnpm twofold prod",
+    "dev-framework": "nodemon --delay 100ms --exec \"NODE_OPTIONS='-C react-server' pnpm twofold dev\" --watch $(realpath node_modules/@twofold/framework/dist) -e js",
+    "prod-framework": "nodemon --delay 100ms --exec \"NODE_OPTIONS='-C react-server' pnpm twofold prod\" --watch $(realpath node_modules/@twofold/framework/dist) -e js"
   },
   "keywords": [],
   "author": "Ryan Toronto",

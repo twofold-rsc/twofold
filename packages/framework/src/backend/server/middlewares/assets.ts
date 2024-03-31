@@ -1,8 +1,8 @@
 import { RouteHandler, createRouter } from "@hattip/router";
-import { Build } from "../../build";
 import { appCompiledDir } from "../../files.js";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
+import { Build } from "../../build/interface";
 
 export function assets(build: Build): RouteHandler {
   let router = createRouter();

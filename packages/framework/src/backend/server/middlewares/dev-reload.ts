@@ -1,5 +1,5 @@
 import { RouteHandler } from "@hattip/router";
-import { Build } from "../../build";
+import { DevBuild } from "../../build/dev-build";
 import { ServerSentEventSink, serverSentEvents } from "@hattip/response";
 
 type Connection = {
@@ -9,7 +9,7 @@ type Connection = {
 
 let activeConnections: Connection[] = [];
 
-export function devReload(build: Build): RouteHandler {
+export function devReload(build: DevBuild): RouteHandler {
   if (process.env.NODE_ENV === "production") {
     return () => {};
   } else {

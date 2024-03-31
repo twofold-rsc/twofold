@@ -3,16 +3,18 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useState,
 } from "react";
 import { RoutingContext } from "../contexts/routing-context";
-import { ErrorBoundary } from "../components/error-boundary";
 import { useRouterReducer } from "./router-hooks";
+import { ErrorBoundary } from "../components/error-boundary";
+import { CrashBoundary } from "../components/crash-boundary";
 
 export function BrowserApp() {
   return (
-    <ErrorBoundary>
-      <Router />
-    </ErrorBoundary>
+    // <CrashBoundary>
+    <Router />
+    // </CrashBoundary>
   );
 }
 
@@ -121,14 +123,16 @@ function Router() {
   }, [dispatch]);
 
   return (
-    <RoutingContext
-      path={routerState.path}
-      navigate={navigate}
-      replace={replace}
-      refresh={refresh}
-      notFound={notFound}
-    >
-      {routerState.tree}
-    </RoutingContext>
+    <ErrorBoundary>
+      <RoutingContext
+        path={routerState.path}
+        navigate={navigate}
+        replace={replace}
+        refresh={refresh}
+        notFound={notFound}
+      >
+        {routerState.tree}
+      </RoutingContext>
+    </ErrorBoundary>
   );
 }

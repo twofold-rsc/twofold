@@ -1,8 +1,9 @@
 import { RequestContextExtensions } from "@hattip/compose";
 import { AsyncLocalStorage } from "node:async_hooks";
 
-type Store = {
+export type Store = {
   reqId: number;
+  env: "development" | "production";
   cookies: {
     get: (key: string) => string | undefined;
     set: RequestContextExtensions["setCookie"];

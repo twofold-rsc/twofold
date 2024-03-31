@@ -1,11 +1,11 @@
 import { RouteHandler } from "@hattip/router";
-import { Build } from "../../build";
-import { shell } from "../../error-shell.js";
+import { errorPage } from "../../error-page.js";
 import { serializeError } from "serialize-error";
+import { Build } from "../../build/interface";
 
 export function errors(build: Build): RouteHandler {
   return async (ctx) => {
-    ctx.handleError = (e: unknown) => {
+    ctx.handleError = async (e: unknown) => {
       let request = ctx.request;
       let isRSCFetch = request.headers.get("accept") === "text/x-component";
 
@@ -22,7 +22,7 @@ export function errors(build: Build): RouteHandler {
           },
         });
       } else {
-        let html = shell(error);
+        let html = await errorPage(error);
         return new Response(html, {
           status,
           headers: {
@@ -32,31 +32,33 @@ export function errors(build: Build): RouteHandler {
       }
     };
 
-    let request = ctx.request;
-    let url = new URL(request.url);
+    if (build.env === "development") {
+      let request = ctx.request;
+      let url = new URL(request.url);
 
-    if (
-      request.method === "GET" &&
-      url.pathname === "/_twofold/errors/app.js"
-    ) {
-      let contents = await build.builders.error.js();
-      return new Response(contents, {
-        headers: {
-          "content-type": "application/javascript",
-        },
-      });
-    }
+      if (
+        request.method === "GET" &&
+        url.pathname === "/_twofold/errors/app.js"
+      ) {
+        let contents = await build.builders.error.js();
+        return new Response(contents, {
+          headers: {
+            "content-type": "application/javascript",
+          },
+        });
+      }
 
-    if (
-      request.method === "GET" &&
-      url.pathname === "/_twofold/errors/app.css"
-    ) {
-      let contents = await build.builders.error.css();
-      return new Response(contents, {
-        headers: {
-          "content-type": "text/css",
-        },
-      });
+      if (
+        request.method === "GET" &&
+        url.pathname === "/_twofold/errors/app.css"
+      ) {
+        let contents = await build.builders.error.css();
+        return new Response(contents, {
+          headers: {
+            "content-type": "text/css",
+          },
+        });
+      }
     }
 
     if (build.error) {

@@ -1,11 +1,11 @@
-import { readFirstNBytes } from "./helpers/file.js";
-import { externalPackages } from "./externals.js";
+import { readFirstNBytes } from "../helpers/file.js";
+import { externalPackages } from "../externals.js";
 import { BuildContext, context, transform } from "esbuild";
 import { createHash } from "crypto";
 import { basename, extname } from "path";
 import { readFile } from "fs/promises";
 import { ParseResult, parseAsync } from "@babel/core";
-import { frameworkSrcDir } from "../files.js";
+import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
 
 type ClientComponentModule = {

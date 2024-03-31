@@ -1,22 +1,27 @@
 import { context } from "esbuild";
-import { BuildContext, BuildMetafile } from "../build";
+import { BuildContext, BuildMetafile } from "../dev-build";
 import { readFile } from "fs/promises";
 import { fileURLToPath, pathToFileURL } from "url";
-import { appCompiledDir, appSrcDir, frameworkSrcDir } from "../files.js";
+import {
+  appCompiledDir,
+  appSrcDir,
+  frameworkCompiledDir,
+  frameworkSrcDir,
+} from "../../files.js";
 import * as postcssrc from "postcss-load-config";
 import postcss from "postcss";
 import "urlpattern-polyfill";
-import { clientComponentProxyPlugin } from "./plugins/client-component-proxy-plugin.js";
-import { serverActionsPlugin } from "./plugins/server-actions-plugin.js";
-import { externalPackages } from "./externals.js";
-import { getCompiledEntrypoint } from "./helpers/compiled-entrypoint.js";
+import { clientComponentProxyPlugin } from "../plugins/client-component-proxy-plugin.js";
+import { serverActionsPlugin } from "../plugins/server-actions-plugin.js";
+import { externalPackages } from "../externals.js";
+import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder";
 import path from "path";
-import { Layout } from "./rsc/layout.js";
-import { RSC } from "./rsc/rsc.js";
-import { Page } from "./rsc/page.js";
-import { Wrapper } from "./rsc/wrapper.js";
-import { fileExists } from "./helpers/file.js";
+import { Layout } from "../rsc/layout.js";
+import { RSC } from "../rsc/rsc.js";
+import { Page } from "../rsc/page.js";
+import { Wrapper } from "../rsc/wrapper.js";
+import { fileExists } from "../helpers/file.js";
 
 type CompiledAction = {
   id: string;
@@ -110,7 +115,7 @@ export class RSCBuilder {
           setup(build) {
             let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
             let storePath = fileURLToPath(
-              new URL("../stores/rsc-store.js", import.meta.url),
+              new URL("./backend/stores/rsc-store.js", frameworkCompiledDir),
             );
             build.onResolve({ filter: /\/stores\/rsc-store\.js$/ }, (args) => {
               if (args.importer.startsWith(frameworkSrcPath)) {

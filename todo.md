@@ -1,5 +1,18 @@
 # TODO
 
+builds
+
+- if the rsc payload errors we should update the status code (rsc throw test)
+- test error pages in kitchen sick
+- test error pages in dev
+- build script
+- start script
+- docker
+- worker for rsc
+
+Different ErrorBoundary between prod and dev
+Different error shell between prod and dev
+
 framework
 
 - bug: back cache not working when error thrown
@@ -10,6 +23,8 @@ framework
 - does rsdw need to be an external?
 
 - prod builds
+
+- custom error page for prod (errors/500.html)
 
 kitchen sink
 
@@ -96,6 +111,11 @@ Form
 - [ ] check if middleware export default is a function
 - [ ] image imports (rsc, client)
 - [ ] run server, create a new static files, visit it
+- [ ] Pinned canaries + rsdw
+
+# Create twofold app
+
+- [ ] Ability to install pre-released version of twofold/framework
 
 ## Layouts
 

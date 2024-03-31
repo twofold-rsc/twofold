@@ -1,8 +1,6 @@
 import { Component, ReactNode } from "react";
-import { Stylesheet } from "./stylesheet";
-import { ErrorViewer } from "../../errors/error-viewer";
 
-export class ErrorBoundary extends Component<
+export class CrashBoundary extends Component<
   { children?: ReactNode },
   {
     hasError: boolean;
@@ -26,7 +24,7 @@ export class ErrorBoundary extends Component<
 
   onPopState = (_event: PopStateEvent) => {
     if (this.state.hasError) {
-      window.location.reload();
+      console.log("crash boundary pop state");
     }
   };
 
@@ -38,32 +36,22 @@ export class ErrorBoundary extends Component<
     window.removeEventListener("popstate", this.onPopState);
   }
 
-  reset() {
-    this.setState({
-      hasError: false,
-      error: null,
-    });
-  }
-
   render() {
     if (this.state.hasError) {
-      return <ErrorPage error={this.state.error} />;
+      console.log("rendering crash page");
+      return <CrashPage error={this.state.error} />;
     }
 
     return this.props.children;
   }
 }
 
-function ErrorPage({ error }: { error: unknown }) {
-  return (
-    <html>
-      <head>
-        <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
-        <Stylesheet href="/_twofold/errors/app.css" />
-      </head>
-      <body>
-        <ErrorViewer error={error} />
-      </body>
-    </html>
-  );
+function CrashPage({ error }: { error: unknown }) {
+  console.log("crash page");
+  let message =
+    error instanceof Error ? error.message : "Internal server error";
+
+  let html = `${process.env.TWOFOLD_CRASH_HTML}`.replace("$message", message);
+
+  return <html dangerouslySetInnerHTML={{ __html: html }} />;
 }

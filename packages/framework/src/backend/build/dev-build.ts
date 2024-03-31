@@ -1,13 +1,14 @@
 import { context } from "esbuild";
 import { rm, stat, watch } from "node:fs/promises";
-import { appCompiledDir, cwdUrl } from "./files.js";
+import { appCompiledDir, cwdUrl } from "../files.js";
 import { randomBytes } from "node:crypto";
 import { EventEmitter } from "node:events";
-import { ClientAppBuilder } from "./build/client-app-builder.js";
-import { RSCBuilder } from "./build/rsc-builder.js";
-import { ErrorPageBuilder } from "./build/error-page-builder.js";
-import { StaticFilesBuilder } from "./build/static-files-builder.js";
-import { EntriesBuilder } from "./build/entries-builder.js";
+import { ClientAppBuilder } from "./builders/client-app-builder.js";
+import { RSCBuilder } from "./builders/rsc-builder.js";
+import { DevErrorPageBuilder } from "./builders/dev-error-page-builder.js";
+import { StaticFilesBuilder } from "./builders/static-files-builder.js";
+import { EntriesBuilder } from "./builders/entries-builder.js";
+import { ServerFilesBuilder } from "./builders/server-files-builder.js";
 
 class BuildEvents extends EventEmitter {}
 
@@ -15,13 +16,16 @@ class BuildEvents extends EventEmitter {}
 // different types of things we need to build:
 // Build objects (apps, error-app, static files)
 
-export class Build {
+export class DevBuild {
+  readonly env = "development";
+
   #key = randomBytes(6).toString("hex");
   #isBuilding = false;
   #entriesBuilder: EntriesBuilder;
-  #errorPageBuilder: ErrorPageBuilder;
+  #errorPageBuilder: DevErrorPageBuilder;
   #rscBuilder: RSCBuilder;
   #clientAppBuilder: ClientAppBuilder;
+  #serverFilesBuilder: ServerFilesBuilder;
   #staticFilesBuilder: StaticFilesBuilder;
   #events = new BuildEvents();
   #previousChunks = new Set<string>();
@@ -29,13 +33,15 @@ export class Build {
 
   constructor() {
     this.#entriesBuilder = new EntriesBuilder();
-    this.#errorPageBuilder = new ErrorPageBuilder();
+    this.#errorPageBuilder = new DevErrorPageBuilder();
     this.#rscBuilder = new RSCBuilder({
       entriesBuilder: this.#entriesBuilder,
     });
     this.#clientAppBuilder = new ClientAppBuilder({
+      env: "development",
       entriesBuilder: this.#entriesBuilder,
     });
+    this.#serverFilesBuilder = new ServerFilesBuilder({ env: "development" });
     this.#staticFilesBuilder = new StaticFilesBuilder();
   }
 
@@ -50,6 +56,7 @@ export class Build {
   async setup() {
     await rm(appCompiledDir, { recursive: true, force: true });
     await this.#entriesBuilder.setup();
+    await this.#serverFilesBuilder.setup();
     await this.#errorPageBuilder.setup();
   }
 
@@ -103,11 +110,17 @@ export class Build {
 
     let entriesBuild = this.#entriesBuilder.build();
     let errorPageBuild = this.#errorPageBuilder.build();
+    let serverFilesBuild = this.#serverFilesBuilder.build();
     let staticFilesBuild = this.#staticFilesBuilder.build();
 
     let frameworkTime = time("framework build");
     frameworkTime.start();
-    await Promise.all([entriesBuild, errorPageBuild, staticFilesBuild]);
+    await Promise.all([
+      entriesBuild,
+      errorPageBuild,
+      serverFilesBuild,
+      staticFilesBuild,
+    ]);
     frameworkTime.end();
     // frameworkTime.log();
 
