@@ -7,9 +7,6 @@ builds
 - docker
 - worker for rsc
 
-Different ErrorBoundary between prod and dev
-Different error shell between prod and dev
-
 framework
 
 - bug: back cache not working when error thrown

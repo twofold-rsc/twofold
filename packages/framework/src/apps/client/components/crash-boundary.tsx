@@ -1,5 +1,4 @@
 import { Component, ReactNode } from "react";
-import { ProdErrorPage } from "./error-pages";
 
 export class CrashBoundary extends Component<
   { children?: ReactNode },
@@ -25,9 +24,25 @@ export class CrashBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      return <ProdErrorPage error={this.state.error} />;
+      return <CrashPage error={this.state.error} />;
     }
 
     return this.props.children;
   }
+}
+
+export function CrashPage({ error }: { error: unknown }) {
+  return (
+    <html>
+      <head>
+        <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+      </head>
+      <body>
+        <p>
+          An unrecoverable error occurred in Twofold. This is most likely a bug
+          in Twofold's framework code.
+        </p>
+      </body>
+    </html>
+  );
 }
