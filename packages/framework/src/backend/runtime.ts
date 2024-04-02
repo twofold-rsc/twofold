@@ -78,7 +78,7 @@ export class Runtime {
       page: this.#build.builders.rsc.notFoundPage,
       request,
       runtime: this,
-      status: 404,
+      conditions: ["not-found"],
     });
   }
 

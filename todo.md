@@ -2,9 +2,10 @@
 
 builds
 
-- if the rsc payload errors we should update the status code (rsc throw test)
+- redirects should use digest
+- not found should use digest
+
 - test error pages in kitchen sick
-- test error pages in dev
 - build script
 - start script
 - docker

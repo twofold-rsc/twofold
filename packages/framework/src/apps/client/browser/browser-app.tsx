@@ -3,7 +3,6 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useState,
 } from "react";
 import { RoutingContext } from "../contexts/routing-context";
 import { useRouterReducer } from "./router-hooks";
@@ -12,9 +11,9 @@ import { CrashBoundary } from "../components/crash-boundary";
 
 export function BrowserApp() {
   return (
-    // <CrashBoundary>
-    <Router />
-    // </CrashBoundary>
+    <CrashBoundary>
+      <Router />
+    </CrashBoundary>
   );
 }
 

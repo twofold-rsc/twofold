@@ -26,32 +26,31 @@ export async function callServer(id: string, args: any) {
   });
 
   let response = await p;
+
   let contentType = response.headers.get("content-type");
-
-  if (!response.ok) {
-    if (contentType === "text/x-component") {
-      // error response, but we have something we can render.
-      // most likely a 4xx page came back from our action.
-    } else if (contentType === "text/x-serialized-error") {
-      let json = await response.json();
-      let error = deserializeError(json);
-      throw error;
-    } else {
-      throw new Error(response.statusText);
-    }
-  }
-
   let isMultipart =
     typeof contentType === "string" &&
     contentType.split(";")[0] === "multipart/mixed";
 
   let rscStream;
   let actionStream;
+
   if (contentType === "text/x-component") {
-    // single response is a page that we can render
     rscStream = response.body;
+  } else if (contentType === "text/x-serialized-error") {
+    let json = await response.json();
+    let error = deserializeError(json);
+    actionStream = new ReadableStream({
+      start(controller) {
+        controller.error(error);
+      },
+    });
+  } else if (contentType === "application/json") {
+    let json = await response.json();
+    if (json.type === "twofold-offsite-redirect") {
+      window.location.href = json.url;
+    }
   } else if (isMultipart) {
-    // multiple responses to this action
     let actionResponse = new MultipartResponse({
       contentType: "text/x-action",
       response,
@@ -64,11 +63,13 @@ export async function callServer(id: string, args: any) {
 
     rscStream = rscResponse.stream;
     actionStream = actionResponse.stream;
-  } else if (contentType === "application/json") {
-    let json = await response.json();
-    if (json.type === "twofold-offsite-redirect") {
-      window.location.href = json.url;
-    }
+  } else if (!response.ok) {
+    let error = new Error(response.statusText);
+    actionStream = new ReadableStream({
+      start(controller) {
+        controller.error(error);
+      },
+    });
   }
 
   if (rscStream) {

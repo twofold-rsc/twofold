@@ -8,10 +8,20 @@ export async function errorPage(error: Error) {
 
   let errorString = JSON.stringify(serializeError(error));
   let message = error.message;
+  let digest =
+    error instanceof Error &&
+    "digest" in error &&
+    typeof error.digest === "string"
+      ? error.digest
+      : "Unknown digest";
 
   let html = contents
     .replace("$error", errorString)
-    .replace("$message", message);
+    .replace("$message", message)
+    .replace("$digest", digest);
+
+  // we should maybe include on on pop state + window.reload
+  // logic alongside this html
 
   return html;
 }

@@ -1,6 +1,5 @@
 import { Component, ReactNode } from "react";
-import { Stylesheet } from "./stylesheet";
-import { ErrorViewer } from "../../errors/error-viewer";
+import { DevErrorPage, ProdErrorPage } from "./error-pages";
 
 export class ErrorBoundary extends Component<
   { children?: ReactNode },
@@ -25,6 +24,7 @@ export class ErrorBoundary extends Component<
   }
 
   onPopState = (_event: PopStateEvent) => {
+    console.log("pop state error boundary");
     if (this.state.hasError) {
       window.location.reload();
     }
@@ -47,23 +47,13 @@ export class ErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      return <ErrorPage error={this.state.error} />;
+      return process.env.NODE_ENV === "production" ? (
+        <ProdErrorPage error={this.state.error} />
+      ) : (
+        <DevErrorPage error={this.state.error} />
+      );
     }
 
     return this.props.children;
   }
-}
-
-function ErrorPage({ error }: { error: unknown }) {
-  return (
-    <html>
-      <head>
-        <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
-        <Stylesheet href="/_twofold/errors/app.css" />
-      </head>
-      <body>
-        <ErrorViewer error={error} />
-      </body>
-    </html>
-  );
 }

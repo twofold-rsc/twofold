@@ -72,20 +72,23 @@ export class ClientAppBuilder {
           {
             name: "prod-error-html",
             async setup(build) {
-              build.initialOptions.define = build.initialOptions.define ?? {};
+              if (builder.#env === "production") {
+                build.initialOptions.define = build.initialOptions.define ?? {};
 
-              let errorHtml = await readFile(
-                new URL("./server-files/error.html", appCompiledDir),
-                "utf-8",
-              );
+                let errorHtml = await readFile(
+                  new URL("./server-files/error.html", appCompiledDir),
+                  "utf-8",
+                );
 
-              let encodedHtml = JSON.stringify(errorHtml);
-              build.initialOptions.define["process.env.TWOFOLD_CRASH_HTML"] =
-                `${encodedHtml}`;
+                let encodedHtml = JSON.stringify(errorHtml);
+                build.initialOptions.define[
+                  "process.env.TWOFOLD_PROD_ERROR_HTML"
+                ] = `${encodedHtml}`;
+              }
             },
           },
           {
-            name: "add-webpack-loaders-to-rdsw-client",
+            name: "add-webpack-loaders-to-rsdw-client",
             async setup(build) {
               let loadersUrl = new URL(
                 "./apps/client/ext/webpack-loaders.ts",

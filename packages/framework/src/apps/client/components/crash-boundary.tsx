@@ -1,4 +1,5 @@
 import { Component, ReactNode } from "react";
+import { ProdErrorPage } from "./error-pages";
 
 export class CrashBoundary extends Component<
   { children?: ReactNode },
@@ -22,36 +23,11 @@ export class CrashBoundary extends Component<
     };
   }
 
-  onPopState = (_event: PopStateEvent) => {
-    if (this.state.hasError) {
-      console.log("crash boundary pop state");
-    }
-  };
-
-  componentDidMount(): void {
-    window.addEventListener("popstate", this.onPopState);
-  }
-
-  componentWillUnmount(): void {
-    window.removeEventListener("popstate", this.onPopState);
-  }
-
   render() {
     if (this.state.hasError) {
-      console.log("rendering crash page");
-      return <CrashPage error={this.state.error} />;
+      return <ProdErrorPage error={this.state.error} />;
     }
 
     return this.props.children;
   }
-}
-
-function CrashPage({ error }: { error: unknown }) {
-  console.log("crash page");
-  let message =
-    error instanceof Error ? error.message : "Internal server error";
-
-  let html = `${process.env.TWOFOLD_CRASH_HTML}`.replace("$message", message);
-
-  return <html dangerouslySetInnerHTML={{ __html: html }} />;
 }
