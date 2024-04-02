@@ -24,7 +24,6 @@ export class ErrorBoundary extends Component<
   }
 
   onPopState = (_event: PopStateEvent) => {
-    console.log("pop state error boundary");
     if (this.state.hasError) {
       window.location.reload();
     }

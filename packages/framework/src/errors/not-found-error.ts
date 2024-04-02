@@ -1,6 +1,7 @@
 export class NotFoundError extends Error {
   isTwofoldError = true;
-  name = "NotFoundError";
+  name = "TwofoldNotFoundError";
+  digest = "TwofoldNotFoundError";
 
   constructor() {
     super("TwofoldNotFoundError");

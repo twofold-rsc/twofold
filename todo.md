@@ -2,10 +2,6 @@
 
 builds
 
-- redirects should use digest
-- not found should use digest
-
-- test error pages in kitchen sick
 - build script
 - start script
 - docker

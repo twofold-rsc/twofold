@@ -81,8 +81,13 @@ export class PageRequest {
       {
         onError(err: unknown) {
           streamError = err;
-          if (isNotFoundError(err) || isRedirectError(err)) {
-            // nothing
+          if (
+            (isNotFoundError(err) || isRedirectError(err)) &&
+            err instanceof Error &&
+            "digest" in err &&
+            typeof err.digest === "string"
+          ) {
+            return err.digest;
           } else if (err instanceof Error) {
             let digest = randomUUID();
             console.log(`Error digest: ${digest}`);

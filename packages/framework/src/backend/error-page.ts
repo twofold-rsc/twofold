@@ -13,7 +13,7 @@ export async function errorPage(error: Error) {
     "digest" in error &&
     typeof error.digest === "string"
       ? error.digest
-      : "Unknown digest";
+      : "";
 
   let html = contents
     .replace("$error", errorString)
