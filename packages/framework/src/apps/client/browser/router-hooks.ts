@@ -15,6 +15,7 @@ type State = {
   cache: Map<string, Tree>;
 };
 
+let fetchCache = new Map<string, Promise<RSCPayload>>();
 let initialState = getInitialRouterState();
 
 export function useRouterReducer() {
@@ -234,7 +235,6 @@ type RSCPayload = {
   path: string;
   tree: Tree;
 };
-let fetchCache = new Map<string, Promise<RSCPayload>>();
 
 type FetchOptions = {
   initiator?: string;

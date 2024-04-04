@@ -129,7 +129,9 @@ export class ClientAppBuilder {
             setup(build) {
               let appSrcPath = fileURLToPath(appSrcDir);
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
-              let enabled = builder.#env === "development";
+              let enabled =
+                builder.#env === "development" &&
+                process.env.NODE_ENV !== "production";
 
               if (!enabled) {
                 build.onLoad({ filter: /ext\/react-refresh/ }, async (args) => {

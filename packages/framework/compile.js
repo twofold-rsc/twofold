@@ -12,6 +12,7 @@ async function main() {
     entryPoints: ["./src/backend/**/*.ts"],
     outdir: "./dist/backend",
     packages: "external",
+    platform: "node",
   });
 }
 

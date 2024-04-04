@@ -89,8 +89,13 @@ export class PageRequest {
           ) {
             return err.digest;
           } else if (err instanceof Error) {
-            let digest = randomUUID();
-            console.log(`Error digest: ${digest}`);
+            let digest =
+              process.env.NODE_ENV === "production" ? randomUUID() : undefined;
+
+            if (digest) {
+              console.log(`Error digest: ${digest}`);
+            }
+
             console.error(err);
             return digest;
           }
