@@ -214,6 +214,17 @@ export class ClientAppBuilder {
     }
   }
 
+  async stop() {}
+
+  serialize() {
+    return {
+      metafile: this.#metafile,
+      clientComponentOutputMap: Object.fromEntries(
+        this.#clientComponentOutputMap.entries(),
+      ),
+    };
+  }
+
   private get initializeBrowserPath() {
     let initializeBrowser = fileURLToPath(
       new URL("./apps/client/browser/initialize-browser.tsx", frameworkSrcDir),

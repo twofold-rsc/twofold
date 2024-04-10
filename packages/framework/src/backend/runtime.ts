@@ -130,6 +130,7 @@ export class Runtime {
         execArgv: ["-C", "default"],
         env: {
           NODE_OPTIONS: "",
+          NODE_ENV: this.#build.env,
         },
       });
     }

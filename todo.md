@@ -89,7 +89,6 @@ Form
 - [x] not found
 - [x] browser app rsc cache and query params
 - [ ] don't allow two dynamic routes with the same dynamic identifier ($id)
-- [ ] redirects to static files
 
 ## Build
 
@@ -104,13 +103,18 @@ Form
 - [ ] allow CC to import css
 - [ ] Worker for RSC
 - [ ] come up with way of building all apps (public, error, rsc, client)
-- [ ] static routing should come first
 - [ ] check if middleware export default is a function
 - [ ] image imports (rsc, client)
-- [ ] run server, create a new static files, visit it
 - [ ] Pinned canaries + rsdw
 
-# Create twofold app
+## Static files
+
+- [ ] Redirect to static file
+- [ ] Static files should come first in routing checks
+- [ ] Rebuild static files when dir changes
+- [ ] Prod static files should move into build dir
+
+## Create twofold app
 
 - [ ] Ability to install pre-released version of twofold/framework
 

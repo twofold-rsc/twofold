@@ -30,6 +30,8 @@ export class StaticFilesBuilder {
     }
   }
 
+  async stop() {}
+
   async addFile(file: File) {
     let httpPath = file.path.slice(fileURLToPath(this.#staticUrl).length);
 

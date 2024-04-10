@@ -36,6 +36,21 @@ program
   });
 
 program
+  .command("build")
+  .description("Build the project")
+  .action(async () => {
+    let build = new ProdBuild();
+
+    // start build
+    await build.setup();
+    await build.build();
+    await build.stop();
+
+    // stash the build
+    await build.save();
+  });
+
+program
   .command("prod")
   .description("Run the production server")
   .action(async () => {

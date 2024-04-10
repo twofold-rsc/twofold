@@ -114,6 +114,10 @@ export class EntriesBuilder {
       }
     }
   }
+
+  async stop() {
+    await this.#context?.dispose();
+  }
 }
 
 async function pathToClientComponentModule(path: string) {

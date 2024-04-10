@@ -23,4 +23,6 @@ export class ServerFilesBuilder {
       new URL("./server-files/error.html", appCompiledDir),
     );
   }
+
+  async stop() {}
 }

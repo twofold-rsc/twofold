@@ -1,4 +1,4 @@
-import { rm } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { appCompiledDir } from "../files.js";
 import { randomBytes } from "node:crypto";
 import { ClientAppBuilder } from "./builders/client-app-builder.js";
@@ -90,5 +90,32 @@ export class ProdBuild {
     console.log(
       `🏗️  Built app in ${buildTime.duration.toFixed(2)}ms [version: ${this.#key}]`,
     );
+  }
+
+  async stop() {
+    await this.#entriesBuilder.stop();
+    await this.#serverFilesBuilder.stop();
+    await this.#rscBuilder.stop();
+    await this.#clientAppBuilder.stop();
+  }
+
+  async save() {
+    // make sure there are no errors
+    let rscBuild = this.#rscBuilder.serialize();
+    let clientBuild = this.#clientAppBuilder.serialize();
+
+    let json = JSON.stringify(
+      {
+        key: this.#key,
+        rscBuild: rscBuild,
+        clientBuild: clientBuild,
+      },
+      null,
+      2,
+    );
+
+    let buildJsonUrl = new URL("./build.json", appCompiledDir);
+
+    await writeFile(buildJsonUrl, json, "utf-8");
   }
 }

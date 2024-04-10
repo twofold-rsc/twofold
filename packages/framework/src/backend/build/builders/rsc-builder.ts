@@ -148,6 +148,17 @@ export class RSCBuilder {
     }
   }
 
+  async stop() {
+    await this.#context?.dispose();
+  }
+
+  serialize() {
+    return {
+      metafile: this.#metafile,
+      serverActionMap: Object.fromEntries(this.#serverActionMap.entries()),
+    };
+  }
+
   get error() {
     return this.#error;
   }
