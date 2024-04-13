@@ -159,6 +159,11 @@ export class RSCBuilder {
     };
   }
 
+  load(data: any) {
+    this.#metafile = data.metafile;
+    this.#serverActionMap = new Map(Object.entries(data.serverActionMap));
+  }
+
   get error() {
     return this.#error;
   }

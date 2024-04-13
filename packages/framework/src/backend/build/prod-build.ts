@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { appCompiledDir } from "../files.js";
 import { randomBytes } from "node:crypto";
 import { ClientAppBuilder } from "./builders/client-app-builder.js";
@@ -101,14 +101,16 @@ export class ProdBuild {
 
   async save() {
     // make sure there are no errors
+    let entriesBuild = this.#entriesBuilder.serialize();
     let rscBuild = this.#rscBuilder.serialize();
     let clientBuild = this.#clientAppBuilder.serialize();
 
     let json = JSON.stringify(
       {
         key: this.#key,
-        rscBuild: rscBuild,
-        clientBuild: clientBuild,
+        entriesBuild,
+        rscBuild,
+        clientBuild,
       },
       null,
       2,
@@ -117,5 +119,17 @@ export class ProdBuild {
     let buildJsonUrl = new URL("./build.json", appCompiledDir);
 
     await writeFile(buildJsonUrl, json, "utf-8");
+  }
+
+  async load() {
+    let buildJsonUrl = new URL("./build.json", appCompiledDir);
+
+    let json = await readFile(buildJsonUrl, "utf-8");
+    let buildData = JSON.parse(json);
+
+    this.#key = buildData.key;
+    this.#entriesBuilder.load(buildData.entriesBuild);
+    this.#rscBuilder.load(buildData.rscBuild);
+    this.#clientAppBuilder.load(buildData.clientBuild);
   }
 }

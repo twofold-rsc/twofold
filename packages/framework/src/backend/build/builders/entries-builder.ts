@@ -118,6 +118,26 @@ export class EntriesBuilder {
   async stop() {
     await this.#context?.dispose();
   }
+
+  serialize() {
+    return {
+      clientComponentModuleMap: Object.fromEntries(
+        this.#clientComponentModuleMap.entries(),
+      ),
+      serverActionModuleMap: Object.fromEntries(
+        this.#serverActionModuleMap.entries(),
+      ),
+    };
+  }
+
+  load(data: any) {
+    this.#clientComponentModuleMap = new Map(
+      Object.entries(data.clientComponentModuleMap),
+    );
+    this.#serverActionModuleMap = new Map(
+      Object.entries(data.serverActionModuleMap),
+    );
+  }
 }
 
 async function pathToClientComponentModule(path: string) {

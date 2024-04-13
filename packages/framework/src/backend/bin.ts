@@ -20,9 +20,17 @@ program.name("twofold").description("Twofold CLI");
 program
   .command("dev")
   .description("Run the development server")
-  .action(async () => {
-    // create/load build
-    let build = new DevBuild();
+  .option(
+    "--env <env>",
+    "Which environment to run in (production, development)",
+    "development",
+  )
+  .action(async (args) => {
+    let build = args.env === "production" ? new ProdBuild() : new DevBuild();
+
+    if (args.env === "production") {
+      process.env.NODE_ENV = "production";
+    }
 
     // start build
     await build.setup();
@@ -37,8 +45,9 @@ program
 
 program
   .command("build")
-  .description("Build the project")
+  .description("Build the project for production")
   .action(async () => {
+    process.env.NODE_ENV = "production";
     let build = new ProdBuild();
 
     // start build
@@ -51,15 +60,16 @@ program
   });
 
 program
-  .command("prod")
-  .description("Run the production server")
+  .command("serve")
+  .description("Serve a production build")
   .action(async () => {
+    process.env.NODE_ENV = "production";
+
     // create/load build
     let build = new ProdBuild();
 
-    // start build
-    await build.setup();
-    await build.build();
+    // load build
+    await build.load();
 
     // create runtime
     let runtime = new Runtime(build);

@@ -6,10 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS=\"-C react-server\" pnpm twofold dev",
-    "build": "NODE_ENV=\"production\" NODE_OPTIONS=\"-C react-server\" pnpm twofold build",
-    "prod": "NODE_ENV=\"production\" NODE_OPTIONS=\"-C react-server\" pnpm twofold prod",
     "dev-framework": "nodemon --delay 100ms --exec \"NODE_OPTIONS='-C react-server' pnpm twofold dev\" --watch $(realpath node_modules/@twofold/framework/dist) -e js",
-    "prod-framework": "nodemon --delay 100ms --exec \"NODE_OPTIONS='-C react-server' NODE_ENV='production' pnpm twofold prod\" --watch $(realpath node_modules/@twofold/framework/dist) -e js"
+    "build": "NODE_OPTIONS=\"-C react-server\" pnpm twofold build",
+    "serve": "NODE_OPTIONS=\"-C react-server\" pnpm twofold serve"
   },
   "keywords": [],
   "author": "Ryan Toronto",

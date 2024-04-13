@@ -3,6 +3,8 @@
 upgrade from: 18.3.0-canary-4b2a1115a-20240202
 to: 19.0.0-canary-48ec17b86-20240402
 
+change rsc builder to use build (not context)
+
 builds
 
 - build script
@@ -113,6 +115,10 @@ Form
 - [ ] Static files should come first in routing checks
 - [ ] Rebuild static files when dir changes
 - [ ] Prod static files should move into build dir
+
+## Global middleware
+
+- [ ] hasMiddleware shouldn't check for ts file (should look for compiled entry point)
 
 ## Create twofold app
 
