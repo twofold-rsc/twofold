@@ -1,7 +1,9 @@
 # TODO
 
-.npmrc in base app
-package.json script updates in base app
+publish:
+
+create-app
+framework
 
 builds
 
@@ -122,6 +124,7 @@ Form
 ## Create twofold app
 
 - [ ] Ability to install pre-released version of twofold/framework
+- [ ] Verify version of pnpm
 
 ## Layouts
 
@@ -138,6 +141,7 @@ Form
 - Block requests during build
 - Link should only navigate with local urls
 - CSS should reload independent of RSC/CC reload. Possible for CC+CSS to change at same time.
+- Verify version of pnpm
 
 ## Other
 
