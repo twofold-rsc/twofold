@@ -203,7 +203,7 @@ export async function create(runtime: Runtime) {
     // couldn't this be a tree that throws something?
     let actionStream = renderToReadableStream(
       result,
-      build.builders.client.clientComponentMap,
+      build.getBuilder("client").clientComponentMap,
     );
 
     let multipart = new MultipartResponse();

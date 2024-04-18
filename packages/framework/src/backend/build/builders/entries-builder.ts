@@ -7,6 +7,7 @@ import { readFile } from "fs/promises";
 import { ParseResult, parseAsync } from "@babel/core";
 import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
+import { Builder } from "./base-builder.js";
 
 type ClientComponentModule = {
   moduleId: string;
@@ -25,9 +26,10 @@ let clientMarker = '"use client";';
 let serverMarker = '"use server";';
 let markers = [clientMarker, serverMarker];
 
-export class EntriesBuilder {
+export class EntriesBuilder extends Builder {
+  readonly name = "entries";
+
   #context?: BuildContext;
-  #error?: Error;
 
   #clientComponentModuleMap = new Map<string, ClientComponentModule>();
   #serverActionModuleMap = new Map<string, ServerActionModule>();
@@ -38,10 +40,6 @@ export class EntriesBuilder {
 
   get serverActionModuleMap() {
     return this.#serverActionModuleMap;
-  }
-
-  get error() {
-    return this.#error;
   }
 
   async setup() {
@@ -100,18 +98,14 @@ export class EntriesBuilder {
 
     this.#clientComponentModuleMap = new Map();
     this.#serverActionModuleMap = new Map();
-    this.#error = undefined;
+
+    this.clearError();
 
     try {
       await this.#context.rebuild();
-    } catch (e: unknown) {
-      console.log(e);
-
-      if (e instanceof Error) {
-        this.#error = e;
-      } else {
-        this.#error = new Error("Unknown error");
-      }
+    } catch (error) {
+      console.error(error);
+      this.reportError(error);
     }
   }
 

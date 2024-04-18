@@ -2,13 +2,13 @@ import { RouteHandler, createRouter } from "@hattip/router";
 import { appCompiledDir } from "../../files.js";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
-import { Build } from "../../build/interface";
+import { Build } from "../../build/base-build.js";
 
 export function assets(build: Build): RouteHandler {
   let router = createRouter();
 
   router.get("/_assets/client-app/bootstrap/:hash.js", async () => {
-    let modulePath = build.builders.client.bootstrapPath;
+    let modulePath = build.getBuilder("client").bootstrapPath;
     let contents = await readFile(modulePath, "utf-8");
 
     return new Response(contents, {
@@ -22,9 +22,9 @@ export function assets(build: Build): RouteHandler {
     "/_assets/client-app/chunks/chunk-:hash.js",
     async ({ params }) => {
       let { hash } = params as unknown as { hash: string };
-      let chunk = build.builders.client.chunks.find(
-        (chunk) => chunk.hash === hash,
-      );
+      let chunk = build
+        .getBuilder("client")
+        .chunks.find((chunk) => chunk.hash === hash);
 
       if (chunk) {
         let contents = await readFile(chunk.path, "utf-8");
@@ -48,7 +48,7 @@ export function assets(build: Build): RouteHandler {
       let filePath = fileURLToPath(fileUrl);
 
       let clientComponentModuleMap =
-        build.builders.client.clientComponentModuleMap;
+        build.getBuilder("client").clientComponentModuleMap;
 
       // crappy O(n) lookup, change this
       let keys = Object.keys(clientComponentModuleMap);
@@ -73,7 +73,7 @@ export function assets(build: Build): RouteHandler {
     let { pathname } = new URL(request.url);
 
     let cssPath = pathname.replace(/^\/_assets\/styles\//, "");
-    let knownFile = build.builders.rsc.css.includes(cssPath);
+    let knownFile = build.getBuilder("rsc").css.includes(cssPath);
 
     if (knownFile) {
       let cssUrl = new URL("./rsc/css/", appCompiledDir);

@@ -23,6 +23,7 @@
   "plugins": ["@typescript-eslint", "react"],
   "rules": {
     "no-unused-vars": ["off", { "args": "none", "varsIgnorePattern": "^_" }],
+    "no-dupe-class-members": "off",
     "react/no-unescaped-entities": [
       "error",
       {

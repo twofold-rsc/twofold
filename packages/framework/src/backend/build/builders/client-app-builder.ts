@@ -1,5 +1,4 @@
-import { build, transform } from "esbuild";
-import { BuildMetafile } from "../dev-build";
+import { Metafile, build, transform } from "esbuild";
 import {
   clientComponentMapPlugin,
   ClientComponentOutput,
@@ -13,10 +12,12 @@ import * as path from "path";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder";
 import { serverActionClientReferencePlugin } from "../plugins/server-action-client-reference-plugin.js";
+import { Builder } from "./base-builder.js";
 
-export class ClientAppBuilder {
-  #metafile?: BuildMetafile;
-  #error?: Error;
+export class ClientAppBuilder extends Builder {
+  readonly name = "client";
+
+  #metafile?: Metafile;
   #entriesBuilder: EntriesBuilder;
   #clientComponentOutputMap = new Map<string, ClientComponentOutput>();
 
@@ -29,6 +30,7 @@ export class ClientAppBuilder {
     entriesBuilder: EntriesBuilder;
     env: "development" | "production";
   }) {
+    super();
     this.#env = env;
     this.#entriesBuilder = entriesBuilder;
   }
@@ -41,9 +43,11 @@ export class ClientAppBuilder {
     return this.#entriesBuilder;
   }
 
+  async setup() {}
+
   async build() {
+    this.clearError();
     this.#metafile = undefined;
-    this.#error = undefined;
 
     let builder = this;
 
@@ -206,11 +210,7 @@ export class ClientAppBuilder {
       this.#metafile = results?.metafile;
     } catch (error) {
       console.error(error);
-      if (error instanceof Error) {
-        this.#error = error;
-      } else {
-        this.#error = new Error("Unknown error");
-      }
+      reportError(error);
     }
   }
 
@@ -254,10 +254,6 @@ export class ClientAppBuilder {
     }
 
     return this.#metafile;
-  }
-
-  get error() {
-    return this.#error;
   }
 
   get bootstrapPath() {

@@ -1,13 +1,17 @@
 import { copyFile, mkdir } from "fs/promises";
 import { appCompiledDir, frameworkSrcDir } from "../../files.js";
+import { Builder } from "./base-builder.js";
 
 let devFile = new URL("./apps/errors/index.html", frameworkSrcDir);
 let prodFile = new URL("./backend/server/internal-error.html", frameworkSrcDir);
 
-export class ServerFilesBuilder {
+export class ServerFilesBuilder extends Builder {
+  readonly name = "server-files";
+
   #env: "development" | "production";
 
   constructor({ env }: { env: "development" | "production" }) {
+    super();
     this.#env = env;
   }
 
@@ -25,4 +29,10 @@ export class ServerFilesBuilder {
   }
 
   async stop() {}
+
+  serialize() {
+    return {};
+  }
+
+  load(data: any) {}
 }

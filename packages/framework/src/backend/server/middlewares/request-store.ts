@@ -1,7 +1,7 @@
 import { RouteHandler } from "@hattip/router";
 import { CookieSerializeOptions } from "cookie";
 import { Store, runStore } from "../../stores/rsc-store.js";
-import { Build } from "../../build/interface.js";
+import { Build } from "../../build/base-build.js";
 
 let reqId = 0;
 

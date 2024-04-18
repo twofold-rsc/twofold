@@ -1,17 +1,17 @@
-import { BuildContext, context } from "esbuild";
+import { BuildContext, Metafile, context } from "esbuild";
 import * as path from "path";
 import { fileURLToPath } from "url";
-import { BuildMetafile } from "../dev-build";
 import { cwdUrl, frameworkSrcDir } from "../../files.js";
 import { postcssTailwind } from "../plugins/postcss-tailwind.js";
-import { copyFile, readFile } from "fs/promises";
+import { readFile } from "fs/promises";
+import { Builder } from "./base-builder.js";
 
-export class DevErrorPageBuilder {
-  #metafile?: BuildMetafile;
+export class DevErrorPageBuilder extends Builder {
+  readonly name = "dev-error-page";
+
+  #metafile?: Metafile;
   #context?: BuildContext;
   #rebuild = false;
-
-  constructor() {}
 
   async setup() {
     this.#context = await context({
@@ -38,6 +38,20 @@ export class DevErrorPageBuilder {
       let results = await this.#context?.rebuild();
       this.#metafile = results?.metafile;
     }
+  }
+
+  async stop() {
+    await this.#context?.dispose();
+  }
+
+  serialize() {
+    return {
+      metafile: this.#metafile,
+    };
+  }
+
+  load(data: any) {
+    this.#metafile = data.metafile;
   }
 
   private get appPath() {

@@ -23,7 +23,7 @@ export class Runtime {
   }
 
   get clientComponentMap() {
-    return this.#build.builders.client.clientComponentMap;
+    return this.#build.getBuilder("client").clientComponentMap;
   }
 
   get baseUrl() {
@@ -62,9 +62,9 @@ export class Runtime {
   pageRequest(request: Request) {
     let url = new URL(request.url);
 
-    let page = this.#build.builders.rsc.tree.findPage((page) =>
-      page.pattern.test(url.pathname, this.baseUrl),
-    );
+    let page = this.#build
+      .getBuilder("rsc")
+      .tree.findPage((page) => page.pattern.test(url.pathname, this.baseUrl));
 
     let response = page
       ? new PageRequest({ page, request, runtime: this })
@@ -75,7 +75,7 @@ export class Runtime {
 
   notFoundPageRequest(request: Request) {
     return new PageRequest({
-      page: this.#build.builders.rsc.notFoundPage,
+      page: this.#build.getBuilder("rsc").notFoundPage,
       request,
       runtime: this,
       conditions: ["not-found"],
@@ -85,12 +85,12 @@ export class Runtime {
   // actions
 
   isAction(id: string) {
-    let serverActionMap = this.#build.builders.rsc.serverActionMap;
+    let serverActionMap = this.#build.getBuilder("rsc").serverActionMap;
     return serverActionMap.has(id);
   }
 
   async getAction(id: string) {
-    let serverActionMap = this.#build.builders.rsc.serverActionMap;
+    let serverActionMap = this.#build.getBuilder("rsc").serverActionMap;
     let action = serverActionMap.get(id);
 
     if (!action) {
@@ -117,15 +117,15 @@ export class Runtime {
     }
 
     if (!this.#build.error) {
-      let bootstrapUrl = `/_assets/client-app/bootstrap/${this.#build.builders.client.bootstrapHash}.js`;
+      let bootstrapUrl = `/_assets/client-app/bootstrap/${this.#build.getBuilder("client").bootstrapHash}.js`;
       let workerUrl = new URL("./workers/ssr-worker.js", import.meta.url);
 
       this.#ssrWorker = new Worker(workerUrl, {
         workerData: {
           bootstrapUrl,
-          appPath: this.#build.builders.client.SSRAppPath,
+          appPath: this.#build.getBuilder("client").SSRAppPath,
           clientComponentModuleMap:
-            this.#build.builders.client.clientComponentModuleMap,
+            this.#build.getBuilder("client").clientComponentModuleMap,
         },
         execArgv: ["-C", "default"],
         env: {

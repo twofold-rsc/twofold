@@ -1,7 +1,7 @@
 import { RouteHandler } from "@hattip/router";
 import { errorPage } from "../../error-page.js";
 import { serializeError } from "serialize-error";
-import { Build } from "../../build/interface";
+import { Build } from "../../build/base-build.js";
 
 export function errors(build: Build): RouteHandler {
   return async (ctx) => {
@@ -45,7 +45,7 @@ export function errors(build: Build): RouteHandler {
         request.method === "GET" &&
         url.pathname === "/_twofold/errors/app.js"
       ) {
-        let contents = await build.builders.error.js();
+        let contents = await build.getBuilder("dev-error-page").js();
         return new Response(contents, {
           headers: {
             "content-type": "application/javascript",
@@ -57,7 +57,7 @@ export function errors(build: Build): RouteHandler {
         request.method === "GET" &&
         url.pathname === "/_twofold/errors/app.css"
       ) {
-        let contents = await build.builders.error.css();
+        let contents = await build.getBuilder("dev-error-page").css();
         return new Response(contents, {
           headers: {
             "content-type": "text/css",

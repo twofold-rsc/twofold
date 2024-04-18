@@ -1,6 +1,7 @@
 import { ComponentType, ReactElement, createElement } from "react";
 import { Layout } from "./layout.js";
 import { RSC } from "./rsc.js";
+import "urlpattern-polyfill";
 
 export class Page {
   #rsc: RSC;

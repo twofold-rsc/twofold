@@ -1,5 +1,4 @@
-import { context } from "esbuild";
-import { BuildContext, BuildMetafile } from "../dev-build";
+import { Metafile, build } from "esbuild";
 import { readFile } from "fs/promises";
 import { fileURLToPath, pathToFileURL } from "url";
 import {
@@ -10,7 +9,6 @@ import {
 } from "../../files.js";
 import * as postcssrc from "postcss-load-config";
 import postcss from "postcss";
-import "urlpattern-polyfill";
 import { clientComponentProxyPlugin } from "../plugins/client-component-proxy-plugin.js";
 import { serverActionsPlugin } from "../plugins/server-actions-plugin.js";
 import { externalPackages } from "../externals.js";
@@ -22,6 +20,7 @@ import { RSC } from "../rsc/rsc.js";
 import { Page } from "../rsc/page.js";
 import { Wrapper } from "../rsc/wrapper.js";
 import { fileExists } from "../helpers/file.js";
+import { Builder } from "./base-builder.js";
 
 type CompiledAction = {
   id: string;
@@ -29,14 +28,15 @@ type CompiledAction = {
   export: string;
 };
 
-export class RSCBuilder {
-  #context?: BuildContext;
-  #metafile?: BuildMetafile;
-  #error?: Error;
+export class RSCBuilder extends Builder {
+  readonly name = "rsc";
+
+  #metafile?: Metafile;
   #entriesBuilder: EntriesBuilder;
   #serverActionMap = new Map<string, CompiledAction>();
 
   constructor({ entriesBuilder }: { entriesBuilder: EntriesBuilder }) {
+    super();
     this.#entriesBuilder = entriesBuilder;
   }
 
@@ -48,6 +48,8 @@ export class RSCBuilder {
     return this.#entriesBuilder;
   }
 
+  async setup() {}
+
   async build() {
     let builder = this;
 
@@ -58,99 +60,94 @@ export class RSCBuilder {
 
     let serverActionModules = this.#entriesBuilder.serverActionModuleMap.keys();
 
-    this.#context = await context({
-      bundle: true,
-      format: "esm",
-      jsx: "automatic",
-      logLevel: "error",
-      entryPoints: [
-        "./src/pages/**/*.page.tsx",
-        "./src/pages/**/layout.tsx",
-        ...middlewareEntry,
-        ...serverActionModules,
-        notFoundEntry,
-        this.innerRootWrapperSrcPath,
-      ],
-      outdir: "./.twofold/rsc/",
-      outbase: "src",
-      entryNames: "[ext]/[name]-[hash]",
-      external: ["react", "react-server-dom-webpack", ...externalPackages],
-      conditions: ["react-server", "module"],
-      platform: "node",
-      splitting: true,
-      chunkNames: "chunks/[name]-[hash]",
-      metafile: true,
-      plugins: [
-        clientComponentProxyPlugin({ builder: builder }),
-        serverActionsPlugin({ builder: builder }),
-        {
-          name: "postcss",
-          async setup(build) {
-            let postcssConfig: postcssrc.Result | false;
-
-            // this becomes root when we point at an actual app
-            // @ts-ignore
-            postcssConfig = await postcssrc.default();
-            build.onLoad({ filter: /\.css$/ }, async ({ path }) => {
-              let css = await readFile(path, "utf8");
-
-              if (!postcssConfig) {
-                return { contents: css, loader: "css" };
-              }
-
-              let result = await postcss(postcssConfig.plugins).process(css, {
-                ...postcssConfig.options,
-                from: path,
-              });
-
-              return {
-                contents: result.css,
-                loader: "css",
-              };
-            });
-          },
-        },
-        {
-          name: "stores",
-          setup(build) {
-            let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
-            let storePath = fileURLToPath(
-              new URL("./backend/stores/rsc-store.js", frameworkCompiledDir),
-            );
-            build.onResolve({ filter: /\/stores\/rsc-store\.js$/ }, (args) => {
-              if (args.importer.startsWith(frameworkSrcPath)) {
-                return {
-                  external: true,
-                  path: storePath,
-                };
-              }
-            });
-          },
-        },
-      ],
-    });
-
     this.#serverActionMap = new Map();
     this.#metafile = undefined;
-    this.#error = undefined;
+    this.clearError();
 
     try {
-      let result = await this.#context?.rebuild();
-      this.#metafile = result?.metafile;
-    } catch (e: unknown) {
-      console.log(e);
+      let result = await build({
+        bundle: true,
+        format: "esm",
+        jsx: "automatic",
+        logLevel: "error",
+        entryPoints: [
+          "./src/pages/**/*.page.tsx",
+          "./src/pages/**/layout.tsx",
+          ...middlewareEntry,
+          ...serverActionModules,
+          notFoundEntry,
+          this.innerRootWrapperSrcPath,
+        ],
+        outdir: "./.twofold/rsc/",
+        outbase: "src",
+        entryNames: "[ext]/[name]-[hash]",
+        external: ["react", "react-server-dom-webpack", ...externalPackages],
+        conditions: ["react-server", "module"],
+        platform: "node",
+        splitting: true,
+        chunkNames: "chunks/[name]-[hash]",
+        metafile: true,
+        plugins: [
+          clientComponentProxyPlugin({ builder: builder }),
+          serverActionsPlugin({ builder: builder }),
+          {
+            name: "postcss",
+            async setup(build) {
+              let postcssConfig: postcssrc.Result | false;
 
-      if (e instanceof Error) {
-        this.#error = e;
-      } else {
-        this.#error = new Error("Unknown error");
-      }
+              // this becomes root when we point at an actual app
+              // @ts-ignore
+              postcssConfig = await postcssrc.default();
+              build.onLoad({ filter: /\.css$/ }, async ({ path }) => {
+                let css = await readFile(path, "utf8");
+
+                if (!postcssConfig) {
+                  return { contents: css, loader: "css" };
+                }
+
+                let result = await postcss(postcssConfig.plugins).process(css, {
+                  ...postcssConfig.options,
+                  from: path,
+                });
+
+                return {
+                  contents: result.css,
+                  loader: "css",
+                };
+              });
+            },
+          },
+          {
+            name: "stores",
+            setup(build) {
+              let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
+              let storePath = fileURLToPath(
+                new URL("./backend/stores/rsc-store.js", frameworkCompiledDir),
+              );
+              build.onResolve(
+                { filter: /\/stores\/rsc-store\.js$/ },
+                (args) => {
+                  if (args.importer.startsWith(frameworkSrcPath)) {
+                    return {
+                      external: true,
+                      path: storePath,
+                    };
+                  }
+                },
+              );
+            },
+          },
+        ],
+      });
+
+      this.#metafile = result?.metafile;
+    } catch (error) {
+      console.error(error);
+      this.reportError(error);
     }
   }
 
-  async stop() {
-    await this.#context?.dispose();
-  }
+  async stop() {}
 
   serialize() {
     return {
@@ -162,10 +159,6 @@ export class RSCBuilder {
   load(data: any) {
     this.#metafile = data.metafile;
     this.#serverActionMap = new Map(Object.entries(data.serverActionMap));
-  }
-
-  get error() {
-    return this.#error;
   }
 
   get files() {
