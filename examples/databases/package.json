@@ -16,8 +16,8 @@
   "dependencies": {
     "@twofold/framework": "workspace:*",
     "better-sqlite3": "^9.4.1",
-    "react": "18.3.0-canary-4b2a1115a-20240202",
-    "react-dom": "18.3.0-canary-4b2a1115a-20240202",
+    "react": "19.0.0-canary-48ec17b86-20240402",
+    "react-dom": "19.0.0-canary-48ec17b86-20240402",
     "tailwindcss": "^3.4.1",
     "zod": "^3.22.4"
   },

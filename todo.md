@@ -1,8 +1,5 @@
 # TODO
 
-upgrade from: 18.3.0-canary-4b2a1115a-20240202
-to: 19.0.0-canary-48ec17b86-20240402
-
 .npmrc in base app
 package.json script updates in base app
 
@@ -22,6 +19,10 @@ framework
 - bundle rsdw
 
 - custom error page for prod (errors/500.html)
+
+- linux/ubuntu
+
+- windows
 
 kitchen sink
 
