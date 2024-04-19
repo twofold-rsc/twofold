@@ -349,7 +349,13 @@ export class ClientAppBuilder extends Builder {
   }
 
   get chunks() {
-    let outputs = this.metafile.outputs;
+    let metafile = this.#metafile;
+
+    if (!metafile) {
+      return [];
+    }
+
+    let outputs = metafile.outputs;
     let outputFiles = Object.keys(outputs);
 
     let chunkFiles = outputFiles.filter((outputFile) => {
@@ -363,6 +369,7 @@ export class ClientAppBuilder extends Builder {
       let hash = parts.at(-1) ?? "";
       return {
         hash,
+        file,
         path: path.join(process.cwd(), chunkFile),
       };
     });

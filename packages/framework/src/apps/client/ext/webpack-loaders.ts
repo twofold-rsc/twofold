@@ -1,7 +1,7 @@
 interface Window {
   __webpack_chunk_load__: (id: string) => Promise<any>;
   __webpack_require__: (id: string) => any;
-  $Framework$reloadChunk: (chunk: string) => Promise<any>;
+  __twofold__chunk_reload__: (chunk: string) => Promise<any>;
 }
 
 if (typeof window !== "undefined") {
@@ -21,8 +21,8 @@ if (typeof window !== "undefined") {
     };
   }
 
-  if (!window.$Framework$reloadChunk) {
-    window.$Framework$reloadChunk = async function (chunk) {
+  if (!window.__twofold__chunk_reload__) {
+    window.__twofold__chunk_reload__ = async function (chunk) {
       let [moduleId, name, hash] = chunk.split(":");
       let modulePath = `/_assets/client-app/${name}-${hash}.js?v=${Date.now()}`;
       let mod = await import(modulePath);

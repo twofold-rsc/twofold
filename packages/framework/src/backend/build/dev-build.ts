@@ -1,7 +1,5 @@
-import { context } from "esbuild";
-import { rm, stat, watch } from "node:fs/promises";
-import { appCompiledDir, cwdUrl } from "../files.js";
-import { randomBytes } from "node:crypto";
+import { stat, watch } from "node:fs/promises";
+import { cwdUrl } from "../files.js";
 import { EventEmitter } from "node:events";
 import { ClientAppBuilder } from "./builders/client-app-builder.js";
 import { RSCBuilder } from "./builders/rsc-builder.js";
@@ -11,6 +9,10 @@ import { EntriesBuilder } from "./builders/entries-builder.js";
 import { ServerFilesBuilder } from "./builders/server-files-builder.js";
 import { Build } from "./base-build.js";
 import { time } from "./helpers/time.js";
+import { ClientComponentMapSnapshot } from "./snapshots/client-component-map-snapshot.js";
+import { ClientChunksSnapshot } from "./snapshots/client-chunks-snapshot.js";
+import { RSCSnapshot } from "./snapshots/rsc-snapshot.js";
+import { CSSSnapshot } from "./snapshots/css-snapshot.js";
 
 class BuildEvents extends EventEmitter {}
 
@@ -19,8 +21,11 @@ export class DevBuild extends Build {
 
   #isBuilding = false;
   #events = new BuildEvents();
-  #previousChunks = new Set<string>();
-  #previousRSCFiles = new Set<string>();
+
+  #clientComponentMapSnapshot = new ClientComponentMapSnapshot();
+  #clientChunksSnapshot = new ClientChunksSnapshot();
+  #rscSnapshot = new RSCSnapshot();
+  #cssSnapshot = new CSSSnapshot();
 
   constructor() {
     super();
@@ -62,21 +67,12 @@ export class DevBuild extends Build {
 
     // stash old chunks so we can see what changed
     if (!this.error) {
-      let clientComponentMapKeys = Object.keys(
+      this.#clientComponentMapSnapshot.take(
         this.getBuilder("client").clientComponentMap,
       );
-      this.#previousChunks = new Set<string>();
-      for (let key of clientComponentMapKeys) {
-        let chunks = this.getBuilder("client").clientComponentMap[key].chunks;
-        for (let chunk of chunks) {
-          this.#previousChunks.add(chunk);
-        }
-      }
-
-      this.#previousRSCFiles = new Set(this.getBuilder("rsc").files);
-    } else {
-      this.#previousChunks = new Set();
-      this.#previousRSCFiles = new Set();
+      this.#clientChunksSnapshot.take(this.getBuilder("client").chunks);
+      this.#rscSnapshot.take(this.getBuilder("rsc").files);
+      this.#cssSnapshot.take(this.getBuilder("rsc").files);
     }
 
     let entriesBuild = this.getBuilder("entries").build();
@@ -123,43 +119,23 @@ export class DevBuild extends Build {
     return this.#events;
   }
 
-  // rename this
-  get newChunks() {
-    let clientComponentMapKeys = Object.keys(
+  get changes() {
+    this.#clientComponentMapSnapshot.latest(
       this.getBuilder("client").clientComponentMap,
     );
-    let newChunks = new Set<string>();
-    for (let key of clientComponentMapKeys) {
-      let chunks = this.getBuilder("client").clientComponentMap[key].chunks;
-      for (let chunk of chunks) {
-        if (!this.#previousChunks.has(chunk)) {
-          newChunks.add(chunk);
-        }
-      }
-    }
-    return newChunks;
-  }
 
-  private newRSCFiles(extension: string) {
-    let newRSCs = new Set<string>();
-    let RSCs = this.getBuilder("rsc").files.filter((file) =>
-      file.endsWith(`.${extension}`),
-    );
-    for (let key of RSCs) {
-      if (!this.#previousRSCFiles.has(key)) {
-        newRSCs.add(key);
-      }
-    }
+    this.#clientChunksSnapshot.latest(this.getBuilder("client").chunks);
 
-    return newRSCs;
-  }
+    this.#rscSnapshot.latest(this.getBuilder("rsc").files);
 
-  get newRSCs() {
-    return this.newRSCFiles("js");
-  }
+    this.#cssSnapshot.latest(this.getBuilder("rsc").files);
 
-  get newCSSFiles() {
-    return this.newRSCFiles("css");
+    return {
+      chunkIds: this.#clientComponentMapSnapshot.chunkIds,
+      chunkFiles: this.#clientChunksSnapshot.chunkFiles,
+      rscFiles: this.#rscSnapshot.rscFiles,
+      cssFiles: this.#cssSnapshot.cssFiles,
+    };
   }
 
   async watch() {
