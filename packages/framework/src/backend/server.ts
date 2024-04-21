@@ -235,6 +235,7 @@ export async function create(runtime: Runtime) {
   app.get("/**/*", async (ctx) => {
     let url = new URL(ctx.request.url);
     let request = ctx.request;
+
     let pageRequest = runtime.pageRequest(request);
     let response = await pageRequest.ssrResponse();
 

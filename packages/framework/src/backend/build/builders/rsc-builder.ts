@@ -121,16 +121,23 @@ export class RSCBuilder extends Builder {
             name: "stores",
             setup(build) {
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
-              let storePath = fileURLToPath(
-                new URL("./backend/stores/rsc-store.js", frameworkCompiledDir),
-              );
+              let storeUrl = new URL("./backend/stores/rsc-store.js", frameworkCompiledDir);
+              let storePath = fileURLToPath(storeUrl);
+
               build.onResolve(
                 { filter: /\/stores\/rsc-store\.js$/ },
                 (args) => {
                   if (args.importer.startsWith(frameworkSrcPath)) {
+                    // does this work on windows and posix? if so
+                    // also change the action module plugin
+
+                    //console.log('path', args.path);
+                    //console.log('storePath', storePath);
+                    //console.log('storeUrl', storeUrl)
+
                     return {
                       external: true,
-                      path: storePath,
+                      path: storeUrl.href,
                     };
                   }
                 },
@@ -304,6 +311,10 @@ export class RSCBuilder extends Builder {
 
     let keys = Object.keys(outputs);
 
+    console.log('cssUrl', cssUrl);
+    console.log('cssPath', cssPath);
+    console.log('cssPrefix', cssPrefix);
+
     return keys
       .filter((key) => {
         let entryPoint = outputs[key].entryPoint;
@@ -320,6 +331,14 @@ export class RSCBuilder extends Builder {
         let path = entryPoint
           .slice(prefix.length)
           .slice(0, -layoutSuffix.length);
+
+          if (output.cssBundle) {
+            console.log('path css', path)
+            console.log('cssBundle', output.cssBundle)
+          }
+
+        // the replace below is wrong because it has a web path,
+        // but on windows we have a \ path
 
         let rsc = new RSC({
           path: `/${path}`,

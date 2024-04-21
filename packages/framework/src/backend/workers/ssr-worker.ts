@@ -3,9 +3,8 @@ import { MessagePort, parentPort, workerData } from "node:worker_threads";
 import { ReadableStream } from "stream/web";
 import { injectResolver } from "../monkey-patch.js";
 import { errorPage } from "../error-page.js";
+import { pathToFileURL } from "node:url";
 // import { getSSRStore, runSSRStore } from "../stores/ssr-store.js";
-
-console.log('loading worker...')
 
 if (!parentPort) {
   throw new Error("Must be run as a worker");
@@ -24,12 +23,7 @@ injectResolver((moduleId) => {
   return clientComponentModuleMap[moduleId]?.path;
 });
 
-console.log({ appPath });
-
-console.log('here...')
-await new Promise(resolve => setTimeout(resolve, 1000))
-
-let appModule = await import(appPath);
+let appModule = await import(pathToFileURL(appPath).href);
 let render = appModule.render;
 
 parentPort.on("message", async ({ port, pathname }: RenderRequest) => {

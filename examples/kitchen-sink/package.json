@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "twofold dev",
-    "dev-framework": "nodemon --delay 100ms --exec \"pnpm twofold dev\" --watch $(realpath node_modules/@twofold/framework/dist) -e js",
-    "prod-framework": "nodemon --delay 100ms --exec \"NODE_ENV=production pnpm twofold dev\" --watch $(realpath node_modules/@twofold/framework/dist) -e js",
+    "dev-framework": "nodemon --delay 100ms --exec \"pnpm twofold dev\" --watch ../../packages/framework/dist -e js",
+    "prod-framework": "nodemon --delay 100ms --exec \"NODE_ENV=production pnpm twofold dev\" --watch ../../packages/framework/dist -e js",
     "build": "twofold build",
     "serve": "twofold serve"
   },

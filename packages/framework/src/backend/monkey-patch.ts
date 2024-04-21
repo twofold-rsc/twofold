@@ -1,6 +1,7 @@
 // import { getSSRStore } from "./stores/ssr-store.js";
 import { AsyncLocalStorage as NodeAsyncLocalStorage } from "node:async_hooks";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 
 declare global {
   var AsyncLocalStorage: typeof NodeAsyncLocalStorage;
@@ -28,7 +29,7 @@ export function injectResolver(resolver: (module: string) => string) {
 let moduleMap = new Map();
 
 globalThis.__webpack_chunk_load__ = async function (chunkId: string) {
-  // console.log("*** server loading chunk", chunkId);
+  //console.log("*** server loading chunk", chunkId);
 
   let [moduleId, name, hash] = chunkId.split(":");
   let modulePath = resolvers.moduleIdToPath(moduleId);
@@ -36,9 +37,10 @@ globalThis.__webpack_chunk_load__ = async function (chunkId: string) {
     throw new Error(`Failed to resolve module id ${moduleId}`);
   }
 
-  // console.log("*** resolved to", modulePath);
+  //console.log("*** resolved to", modulePath);
 
-  let mod = await import(modulePath);
+  let moduleUrl = pathToFileURL(modulePath);
+  let mod = await import(moduleUrl.href);
 
   // let ssrStore = getSSRStore();
   // if (ssrStore) {
