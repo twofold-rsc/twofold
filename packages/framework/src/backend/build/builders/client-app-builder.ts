@@ -179,7 +179,7 @@ export class ClientAppBuilder extends Builder {
                         prevRefreshReg = window.$RefreshReg$;
                         prevRefreshSig = window.$RefreshSig$;
                         window.$RefreshReg$ = (type, refreshId) => {
-                          let registerId = \`${moduleName} \${refreshId}\`;
+                          let registerId = \`${encodeURIComponent(moduleName)} \${refreshId}\`;
                           window.$RefreshRuntime$.register(type, registerId);
                         };
                         window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
@@ -210,7 +210,7 @@ export class ClientAppBuilder extends Builder {
       this.#metafile = results?.metafile;
     } catch (error) {
       console.error(error);
-      reportError(error);
+      this.reportError(error);
     }
   }
 

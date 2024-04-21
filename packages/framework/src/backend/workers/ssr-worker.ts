@@ -5,6 +5,8 @@ import { injectResolver } from "../monkey-patch.js";
 import { errorPage } from "../error-page.js";
 // import { getSSRStore, runSSRStore } from "../stores/ssr-store.js";
 
+console.log('loading worker...')
+
 if (!parentPort) {
   throw new Error("Must be run as a worker");
 }
@@ -21,6 +23,11 @@ let clientComponentModuleMap = workerData.clientComponentModuleMap;
 injectResolver((moduleId) => {
   return clientComponentModuleMap[moduleId]?.path;
 });
+
+console.log({ appPath });
+
+console.log('here...')
+await new Promise(resolve => setTimeout(resolve, 1000))
 
 let appModule = await import(appPath);
 let render = appModule.render;
