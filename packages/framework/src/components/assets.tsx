@@ -5,8 +5,6 @@ import "server-only";
 export default function Assets() {
   let { assets, env } = getStore();
 
-  console.log('assets', assets)
-
   return (
     <>
       {assets.map((asset) => (

@@ -275,13 +275,10 @@ export class RSCBuilder extends Builder {
         }
         path = `/${path}`;
 
-        // console.log("building page", path);
-        // console.log("css", output.cssBundle);
-
         let rsc = new RSC({
           path,
           css: output.cssBundle
-            ? output.cssBundle.replace(cssPrefix, "")
+            ? output.cssBundle.slice(cssPrefix.length)
             : undefined,
           fileUrl: new URL(key, baseUrl),
         });
@@ -311,10 +308,6 @@ export class RSCBuilder extends Builder {
 
     let keys = Object.keys(outputs);
 
-    console.log('cssUrl', cssUrl);
-    console.log('cssPath', cssPath);
-    console.log('cssPrefix', cssPrefix);
-
     return keys
       .filter((key) => {
         let entryPoint = outputs[key].entryPoint;
@@ -332,18 +325,10 @@ export class RSCBuilder extends Builder {
           .slice(prefix.length)
           .slice(0, -layoutSuffix.length);
 
-          if (output.cssBundle) {
-            console.log('path css', path)
-            console.log('cssBundle', output.cssBundle)
-          }
-
-        // the replace below is wrong because it has a web path,
-        // but on windows we have a \ path
-
         let rsc = new RSC({
           path: `/${path}`,
           css: output.cssBundle
-            ? output.cssBundle.replace(cssPrefix, "")
+            ? output.cssBundle.slice(cssPrefix.length)
             : undefined,
           fileUrl: new URL(key, baseUrl),
         });

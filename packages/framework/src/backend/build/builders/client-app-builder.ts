@@ -108,7 +108,7 @@ export class ClientAppBuilder extends Builder {
               let header = result.code;
 
               build.onLoad(
-                { filter: /react-server-dom-webpack\/client/ },
+                { filter: /react-server-dom-webpack(\/|\\)client/ },
                 async ({ path }) => {
                   let rsdwClientContents = await readFile(path, "utf-8");
                   let newContents = `${header}\n\n${rsdwClientContents}`;
