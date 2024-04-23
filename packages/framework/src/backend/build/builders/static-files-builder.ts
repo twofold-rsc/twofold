@@ -48,10 +48,11 @@ export class StaticFilesBuilder extends Builder {
   }
 
   async addFile(file: File) {
-    let httpPath = file.path.slice(fileURLToPath(this.#staticUrl).length);
+    let filePath = file.path.slice(fileURLToPath(this.#staticUrl).length);
+    let httpPath = filePath.split(path.sep).join('/');
 
     this.#fileMap.set(httpPath, {
-      path: httpPath,
+      path: filePath,
       type: mime.contentType(path.extname(file.path)) || "",
       size: file.stats.size,
       etag: etag(file.stats),
