@@ -9,7 +9,9 @@ framework
 
 builds
 
-- root error boundary: use app, stop server, navigate. need something friendly here
+- test errors on windows
+
+- create twofold app windows
 
 framework
 
