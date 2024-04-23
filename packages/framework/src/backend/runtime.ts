@@ -3,6 +3,7 @@ import { Worker } from "node:worker_threads";
 import { PageRequest } from "./runtime/page-request.js";
 import { create } from "./server.js";
 import { ProdBuild } from "./build/prod-build.js";
+import { pathToFileURL } from "node:url";
 
 export class Runtime {
   #hostname = "localhost";
@@ -97,7 +98,8 @@ export class Runtime {
       throw new Error("Invalid action id");
     }
 
-    let module = await import(action.path);
+    let actionUrl = pathToFileURL(action.path);
+    let module = await import(actionUrl.href);
     let fn = module[action.export];
 
     return fn;
