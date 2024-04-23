@@ -9,8 +9,6 @@ framework
 
 builds
 
-- build error before starting up, start server, then save an unrelated file. server crashes
-
 - root error boundary: use app, stop server, navigate. need something friendly here
 
 framework
@@ -45,6 +43,7 @@ kitchen sink
 - title/meta head tags
 - restart client builder if entries change
 - restart rsc builder if entries change
+- taint examples
 
 - Externals for RSC build (inc react)
   https://github.com/LinbuduLab/esbuild-plugins/tree/main/packages/esbuild-plugin-node-externals

@@ -120,6 +120,10 @@ export class DevBuild extends Build {
   }
 
   get changes() {
+    if (this.error) {
+      return {};
+    }
+
     this.#clientComponentMapSnapshot.latest(
       this.getBuilder("client").clientComponentMap,
     );
