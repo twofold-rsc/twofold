@@ -9,8 +9,6 @@ framework
 
 builds
 
-- http -> public: static files broken windows
-
 - build error before starting up, start server, then save an unrelated file. server crashes
 
 - root error boundary: use app, stop server, navigate. need something friendly here
