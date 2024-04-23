@@ -122,19 +122,11 @@ export class RSCBuilder extends Builder {
             setup(build) {
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
               let storeUrl = new URL("./backend/stores/rsc-store.js", frameworkCompiledDir);
-              let storePath = fileURLToPath(storeUrl);
 
               build.onResolve(
                 { filter: /\/stores\/rsc-store\.js$/ },
                 (args) => {
                   if (args.importer.startsWith(frameworkSrcPath)) {
-                    // does this work on windows and posix? if so
-                    // also change the action module plugin
-
-                    //console.log('path', args.path);
-                    //console.log('storePath', storePath);
-                    //console.log('storeUrl', storeUrl)
-
                     return {
                       external: true,
                       path: storeUrl.href,
