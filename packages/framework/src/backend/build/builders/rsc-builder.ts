@@ -59,6 +59,7 @@ export class RSCBuilder extends Builder {
     let notFoundEntry = await this.notFoundSrcPath();
 
     let serverActionModules = this.#entriesBuilder.serverActionModuleMap.keys();
+    let serverActionEntries = this.#entriesBuilder.serverActionEntryMap.keys();
 
     this.#serverActionMap = new Map();
     this.#metafile = undefined;
@@ -75,6 +76,7 @@ export class RSCBuilder extends Builder {
           "./src/pages/**/layout.tsx",
           ...middlewareEntry,
           ...serverActionModules,
+          ...serverActionEntries,
           notFoundEntry,
           this.innerRootWrapperSrcPath,
         ],
@@ -121,7 +123,10 @@ export class RSCBuilder extends Builder {
             name: "stores",
             setup(build) {
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
-              let storeUrl = new URL("./backend/stores/rsc-store.js", frameworkCompiledDir);
+              let storeUrl = new URL(
+                "./backend/stores/rsc-store.js",
+                frameworkCompiledDir,
+              );
 
               build.onResolve(
                 { filter: /\/stores\/rsc-store\.js$/ },

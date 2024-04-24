@@ -1,12 +1,11 @@
 {
-  "name": "landing-page",
-  "version": "1.0.14",
+  "name": "website",
+  "version": "0.0.1",
   "private": true,
-  "description": "",
+  "description": "The twofold website",
   "type": "module",
   "scripts": {
-    "dev": "NODE_OPTIONS=\"-C react-server\" pnpm twofold",
-    "dev-framework": "nodemon --delay 100ms --exec \"NODE_OPTIONS='-C react-server' pnpm twofold\" --watch $(realpath node_modules/@twofold/framework/dist) -e js"
+    "dev": "twofold dev"
   },
   "keywords": [],
   "author": "Ryan Toronto",
@@ -15,6 +14,7 @@
     "@twofold/framework": "workspace:*",
     "react": "19.0.0-canary-48ec17b86-20240402",
     "react-dom": "19.0.0-canary-48ec17b86-20240402",
+    "react-server-dom-webpack": "19.0.0-canary-48ec17b86-20240402",
     "shiki": "^0.14.7"
   },
   "devDependencies": {

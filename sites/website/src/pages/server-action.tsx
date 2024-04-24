@@ -3,6 +3,8 @@ import { sql } from "./database";
 async function update() {
   "use server";
 
+  console.log("hello running action!");
+
   sql`update analytics set count = count + 1;`;
 }
 

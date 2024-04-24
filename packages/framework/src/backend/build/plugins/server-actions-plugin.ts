@@ -54,7 +54,6 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
         let hasAction = contents.includes('"use server";');
         let actionModule = builder.entries.serverActionModuleMap.get(path);
 
-
         if (actionModule) {
           let { moduleId, exportsAndNames } = actionModule;
           let registerLines = exportsAndNames.map((data) => {

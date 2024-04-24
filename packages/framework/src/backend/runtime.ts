@@ -100,6 +100,7 @@ export class Runtime {
 
     let actionUrl = pathToFileURL(action.path);
     let module = await import(actionUrl.href);
+
     let fn = module[action.export];
 
     return fn;

@@ -22,9 +22,14 @@ type ServerActionModule = {
   exportsAndNames: { export: string; local: string }[];
 };
 
+// RSCs that hold server actions defined in module scope
+type ServerActionEntry = {
+  moduleId: string;
+  path: string;
+};
+
 let clientMarker = '"use client";';
 let serverMarker = '"use server";';
-let markers = [clientMarker, serverMarker];
 
 export class EntriesBuilder extends Builder {
   readonly name = "entries";
@@ -33,6 +38,7 @@ export class EntriesBuilder extends Builder {
 
   #clientComponentModuleMap = new Map<string, ClientComponentModule>();
   #serverActionModuleMap = new Map<string, ServerActionModule>();
+  #serverActionEntryMap = new Map<string, ServerActionEntry>();
 
   get clientComponentModuleMap() {
     return this.#clientComponentModuleMap;
@@ -40,6 +46,10 @@ export class EntriesBuilder extends Builder {
 
   get serverActionModuleMap() {
     return this.#serverActionModuleMap;
+  }
+
+  get serverActionEntryMap() {
+    return this.#serverActionEntryMap;
   }
 
   async setup() {
@@ -54,33 +64,31 @@ export class EntriesBuilder extends Builder {
         `${frameworkComponentsPath}/**/*.tsx`,
       ],
       bundle: true,
-      platform: "neutral",
+      platform: "node",
+      conditions: ["module"],
       logLevel: "error",
       entryNames: "entries/[name]-[hash]",
       metafile: true,
       write: false,
       outdir: "./.twofold/temp/",
       outbase: "src",
-      external: ["react", "react-dom", "node:*", ...externalPackages],
+      external: ["react", "react-dom", ...externalPackages],
       plugins: [
         {
           name: "find-entry-points-plugin",
           setup(build) {
-            let maxBytes = markers
-              .map((marker) => marker.length)
-              .reduce((a, b) => Math.max(a, b), 0);
-
             build.onLoad({ filter: /\.(tsx|ts|jsx|js)$/ }, async ({ path }) => {
-              let contents = await readFirstNBytes(path, maxBytes);
+              let contents = await readFile(path, "utf-8");
 
-              if (contents === clientMarker || contents === serverMarker) {
-                if (contents === clientMarker) {
-                  let module = await pathToClientComponentModule(path);
-                  builder.#clientComponentModuleMap.set(path, module);
-                } else if (contents === serverMarker) {
-                  let module = await pathToServerActionModule(path);
-                  builder.#serverActionModuleMap.set(path, module);
-                }
+              if (contents.startsWith(clientMarker)) {
+                let module = await pathToClientComponentModule(path);
+                builder.#clientComponentModuleMap.set(path, module);
+              } else if (contents.startsWith(serverMarker)) {
+                let module = await pathToServerActionModule(path);
+                builder.#serverActionModuleMap.set(path, module);
+              } else if (contents.includes(serverMarker)) {
+                let module = await pathToServerActionEntry(path);
+                builder.#serverActionEntryMap.set(path, module);
               }
 
               return null;
@@ -154,6 +162,15 @@ async function pathToServerActionModule(path: string) {
     path,
     exports: getExports(ast),
     exportsAndNames: getExportsAndNames(ast),
+  };
+}
+
+async function pathToServerActionEntry(path: string) {
+  let moduleId = getModuleId(path);
+
+  return {
+    moduleId,
+    path,
   };
 }
 

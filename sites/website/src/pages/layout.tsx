@@ -1,13 +1,13 @@
 import { ReactNode } from "react";
-import Assets from "@twofold/framework/assets";
 import "./global.css";
+import TwofoldFramework from "@twofold/framework/twofold-framework";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <html className="bg-gray-50/10">
       <head>
         <title>Landing page</title>
-        <Assets />
+        <TwofoldFramework />
       </head>
       <body>{children}</body>
     </html>

@@ -150,34 +150,6 @@ importers:
         specifier: ^0.5.11
         version: 0.5.11(prettier@3.2.2)
 
-  examples/landing-page:
-    dependencies:
-      '@twofold/framework':
-        specifier: workspace:*
-        version: link:../../packages/framework
-      react:
-        specifier: 19.0.0-canary-48ec17b86-20240402
-        version: 19.0.0-canary-48ec17b86-20240402
-      react-dom:
-        specifier: 19.0.0-canary-48ec17b86-20240402
-        version: 19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402)
-      shiki:
-        specifier: ^0.14.7
-        version: 0.14.7
-    devDependencies:
-      '@types/node':
-        specifier: ^20.10.2
-        version: 20.10.2
-      '@types/react':
-        specifier: ^18.2.41
-        version: 18.2.41
-      '@types/react-dom':
-        specifier: ^18.2.17
-        version: 18.2.17
-      nodemon:
-        specifier: ^3.0.2
-        version: 3.0.2
-
   packages/create-twofold-app:
     dependencies:
       prompts:
@@ -356,6 +328,37 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+
+  sites/website:
+    dependencies:
+      '@twofold/framework':
+        specifier: workspace:*
+        version: link:../../packages/framework
+      react:
+        specifier: 19.0.0-canary-48ec17b86-20240402
+        version: 19.0.0-canary-48ec17b86-20240402
+      react-dom:
+        specifier: 19.0.0-canary-48ec17b86-20240402
+        version: 19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402)
+      react-server-dom-webpack:
+        specifier: 19.0.0-canary-48ec17b86-20240402
+        version: 19.0.0-canary-48ec17b86-20240402(react-dom@19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402))(react@19.0.0-canary-48ec17b86-20240402)(webpack@5.91.0)
+      shiki:
+        specifier: ^0.14.7
+        version: 0.14.7
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.2
+        version: 20.11.30
+      '@types/react':
+        specifier: ^18.2.41
+        version: 18.2.73
+      '@types/react-dom':
+        specifier: ^18.2.17
+        version: 18.2.22
+      nodemon:
+        specifier: ^3.0.2
+        version: 3.1.0
 
 packages:
 
@@ -2531,11 +2534,6 @@ packages:
 
   node-releases@2.0.14:
     resolution: {integrity: sha512-y10wOWt8yZpqXmOgRo77WaHEmhYQYGNA6y421PKsKYWEK8aW+cqAphborZDhqfyKrbZEN92CN1X2KbafY2s7Yw==}
-
-  nodemon@3.0.2:
-    resolution: {integrity: sha512-9qIN2LNTrEzpOPBaWHTm4Asy1LxXLSickZStAQ4IZe7zsoIpD/A7LWxhZV3t4Zu352uBcqVnRsDXSMR2Sc3lTA==}
-    engines: {node: '>=10'}
-    hasBin: true
 
   nodemon@3.0.3:
     resolution: {integrity: sha512-7jH/NXbFPxVaMwmBCC2B9F/V6X1VkEdNgx3iu9jji8WxWcvhMWkmhNWhI5077zknOnZnBzba9hZP6bCPJLSReQ==}
@@ -6106,24 +6104,11 @@ snapshots:
 
   node-abi@3.54.0:
     dependencies:
-      semver: 7.5.4
+      semver: 7.6.0
 
   node-fetch-native@1.4.0: {}
 
   node-releases@2.0.14: {}
-
-  nodemon@3.0.2:
-    dependencies:
-      chokidar: 3.5.3
-      debug: 4.3.4(supports-color@5.5.0)
-      ignore-by-default: 1.0.1
-      minimatch: 3.1.2
-      pstree.remy: 1.1.8
-      semver: 7.5.4
-      simple-update-notifier: 2.0.0
-      supports-color: 5.5.0
-      touch: 3.1.0
-      undefsafe: 2.0.5
 
   nodemon@3.0.3:
     dependencies:

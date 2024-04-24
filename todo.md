@@ -11,9 +11,15 @@ builds
 
 - test errors on windows
 
+- prod builds on windows
+
+- add pnpm version check to create-twofold-app
+
 - create twofold app windows
 
 framework
+
+- bug: files with server actions should be entry points
 
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
