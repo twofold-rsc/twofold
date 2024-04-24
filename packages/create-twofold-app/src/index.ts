@@ -16,18 +16,34 @@ let exec = util.promisify(childProcess.exec);
 async function main() {
   // verify pnpm exists
   let npmUserAgent = process.env.npm_config_user_agent;
-  if (npmUserAgent && !npmUserAgent.includes("pnpm")) {
+  if (
+    !npmUserAgent ||
+    typeof npmUserAgent !== "string" ||
+    !npmUserAgent.includes("pnpm")
+  ) {
     signale.error("You must use pnpm to create a new app:");
     signale.error("$ pnpm create twofold-app@latest");
     process.exit(1);
   }
 
+  let [agentVersion] = npmUserAgent.split(/\s/);
+  let [_, versionString] = agentVersion.split(/\//);
+  let pnpmVersion = versionString.split(".").map(Number);
+  let hasRequiredPnpmVersion = pnpmVersion[0] >= 9;
+  if (!hasRequiredPnpmVersion) {
+    signale.error(
+      "You must use pnpm version 9.0.0 or higher to create a new app.",
+    );
+    process.exit(1);
+  }
+
   // verify node version
-  const [major, minor, patch] = process.versions.node.split(".").map(Number);
-  let hasRequiredNodeVersion = major >= 20 && minor >= 9 && patch >= 0;
+  let nodeVersion = process.versions.node.split(".").map(Number);
+  let hasRequiredNodeVersion =
+    nodeVersion[0] >= 20 && nodeVersion[1] >= 9 && nodeVersion[2] >= 0;
   if (!hasRequiredNodeVersion) {
     signale.error(
-      "You must use Node.js version 20.0.9 or higher to create a new app.",
+      "You must use Node.js version 20.9.0 or higher to create a new app.",
     );
     process.exit(1);
   }
@@ -149,8 +165,8 @@ async function main() {
   let pkg = JSON.parse(json);
   pkg.name = appName;
   pkg.version = "0.0.1";
-  pkg.dependencies["@twofold/framework"] = `^${version}`;
-  pkg.devDependencies["eslint-plugin-twofold"] = `^${version}`;
+  pkg.dependencies["@twofold/framework"] = `${version}`;
+  pkg.devDependencies["eslint-plugin-twofold"] = `${version}`;
 
   let newPackage = JSON.stringify(pkg, null, 2);
   await writeFile(new URL("./package.json", appUrl), newPackage);

@@ -36,13 +36,37 @@ export default async function Page() {
       <section>
         <div>
           <div className="flex">
-            <div className="w-2/5 flex items-center justify-center">
-              <div className="min-w-[320px]">
-                <ServerActionPoll />
+            <div className="w-2/5 flex items-center justify-center relative">
+              <GridLines rows={50} cols={25} color="blue" />
+              <div className="z-10">
+                <h2 className="text-blue-400 text-6xl tracking-tighter font-bold text-center caveat-font">
+                  Server Actions
+                </h2>
+                <div className="min-w-[380px] mt-12 bg-white p-6 rounded border border-blue-300 shadow-lg">
+                  <ServerActionPoll />
+                </div>
               </div>
             </div>
             <div className="w-3/5 bg-[#292D3E]">
               <CodeFromFile file="src/pages/server-action-poll.tsx" />
+            </div>
+          </div>
+
+          <div className="flex">
+            <div className="w-1/2 bg-[#292D3E]">
+              {/* <CodeFromFile file="src/pages/server-action-poll.tsx" /> */}
+            </div>
+
+            <div className="w-1/2 flex items-center justify-center relative">
+              <GridLines rows={50} cols={25} color="blue" />
+              <div className="z-10">
+                <h2 className="text-blue-400 text-6xl tracking-tighter font-bold text-center caveat-font">
+                  Layouts
+                </h2>
+                <div className="mt-12 bg-white p-6 rounded border border-blue-300 shadow-lg">
+                  <iframe src="/examples/email-client" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -55,6 +79,33 @@ export default async function Page() {
           </div> */}
         </div>
       </section>
+    </div>
+  );
+}
+
+function GridLines({
+  rows,
+  cols,
+  color,
+}: {
+  rows: number;
+  cols: number;
+  color: "blue" | "gray";
+}) {
+  let grid = new Array(rows).fill(0).map((_, i) => new Array(cols).fill(false));
+
+  let colors = {
+    blue: "bg-blue-100",
+    gray: "bg-gray-100",
+  };
+
+  return (
+    <div
+      className={`z-0 absolute inset-0 grid grid-cols-[repeat(25,_minmax(0,_1fr))] gap-px ${colors[color]} p-px`}
+    >
+      {grid.map((row, i) =>
+        row.map((_, j) => <div key={`${i}_${j}`} className="bg-white"></div>),
+      )}
     </div>
   );
 }

@@ -1,4 +1,6 @@
-const db = [
+import cookies from "@twofold/framework/cookies";
+
+const defaultDb = [
   {
     id: "mint-chocolate-chip",
     name: "Mint chocolate chip",
@@ -21,13 +23,45 @@ const db = [
   },
 ];
 
-export async function sql(query: TemplateStringsArray, options?: any) {
-  if (query[0].includes("update")) {
-    let id = options;
-    let record = db.find((flavor) => flavor.id === id);
-    if (record) {
-      record.votes += 1;
+function serialize(db: any) {
+  cookies.set("flavors-database", JSON.stringify(db), {
+    expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
+  });
+}
+
+function load(): typeof defaultDb {
+  let cookie = cookies.get("flavors-database");
+
+  if (cookie) {
+    try {
+      return JSON.parse(cookie);
+    } catch (e) {
+      return defaultDb;
     }
+  }
+
+  return defaultDb;
+}
+
+export async function sql(query: TemplateStringsArray, options?: any) {
+  let db = load();
+  if (query[0].includes("update") && options) {
+    let id = options;
+    let newDb = db.map((flavor) => {
+      return {
+        ...flavor,
+        votes: flavor.id === id ? flavor.votes + 1 : flavor.votes,
+      };
+    });
+    serialize(newDb);
+  } else if (query[0].includes("update") && !options) {
+    let newDb = db.map((flavor) => {
+      return {
+        ...flavor,
+        votes: 0,
+      };
+    });
+    serialize(newDb);
   }
   return db;
 }
