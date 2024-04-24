@@ -1,6 +1,7 @@
 # TODO
 
 update deps in base-app + update template
+base app tailwind should be src
 
 publish:
 
@@ -17,9 +18,11 @@ builds
 
 - create twofold app windows
 
-framework
+website
 
-- bug: files with server actions should be entry points
+- layouts
+
+framework
 
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back

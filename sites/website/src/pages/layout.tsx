@@ -7,9 +7,10 @@ export default function Layout({ children }: { children: ReactNode }) {
     <html className="bg-gray-50/10">
       <head>
         <title>Landing page</title>
-        <TwofoldFramework />
+        <meta charSet="utf-8" />
       </head>
       <body>{children}</body>
+      <TwofoldFramework />
     </html>
   );
 }
