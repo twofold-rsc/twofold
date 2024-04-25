@@ -129,6 +129,9 @@ export class EntriesBuilder extends Builder {
       serverActionModuleMap: Object.fromEntries(
         this.#serverActionModuleMap.entries(),
       ),
+      serverActionEntryMap: Object.fromEntries(
+        this.#serverActionEntryMap.entries(),
+      ),
     };
   }
 
@@ -138,6 +141,9 @@ export class EntriesBuilder extends Builder {
     );
     this.#serverActionModuleMap = new Map(
       Object.entries(data.serverActionModuleMap),
+    );
+    this.#serverActionEntryMap = new Map(
+      Object.entries(data.serverActionEntryMap),
     );
   }
 }

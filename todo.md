@@ -7,8 +7,6 @@ framework
 
 builds
 
-put action entries in build data
-
 website
 
 - layouts
