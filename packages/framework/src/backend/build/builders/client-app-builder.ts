@@ -138,7 +138,7 @@ export class ClientAppBuilder extends Builder {
                 process.env.NODE_ENV !== "production";
 
               if (!enabled) {
-                build.onLoad({ filter: /ext\/react-refresh/ }, async (args) => {
+                build.onLoad({ filter: /ext(\/|\\)react-refresh/ }, async (args) => {
                   if (args.path.startsWith(frameworkSrcPath)) {
                     return {
                       contents: "",
