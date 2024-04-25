@@ -14,8 +14,6 @@ builds
 
 - prod builds on windows
 
-- add pnpm version check to create-twofold-app
-
 - create twofold app windows
 
 website

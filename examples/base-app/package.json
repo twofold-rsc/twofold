@@ -19,15 +19,15 @@
     "react": "19.0.0-canary-48ec17b86-20240402",
     "react-dom": "19.0.0-canary-48ec17b86-20240402",
     "react-server-dom-webpack": "19.0.0-canary-48ec17b86-20240402",
-    "tailwindcss": "^3.4.2"
+    "tailwindcss": "^3.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
-    "@types/react": "^18.2.73",
-    "@types/react-dom": "^18.2.22",
+    "@types/react": "^18.2.79",
+    "@types/react-dom": "^18.2.25",
     "eslint": "^8.57.0",
     "eslint-plugin-twofold": "workspace:*",
     "prettier": "^3.2.5",
-    "prettier-plugin-tailwindcss": "^0.5.13"
+    "prettier-plugin-tailwindcss": "^0.5.14"
   }
 }
