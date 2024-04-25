@@ -16,23 +16,25 @@ type Props = {
 export class NotFoundBoundary extends Component<
   Props,
   {
-    hasError: boolean;
-    error: unknown;
+    error: (Error & { digest: string }) | null;
   }
 > {
   constructor(props: Props) {
     super(props);
     this.state = {
-      hasError: false,
       error: null,
     };
   }
 
   static getDerivedStateFromError(error: unknown) {
-    if (error instanceof Error && error.message === "TwofoldNotFoundError") {
+    if (
+      error instanceof Error &&
+      "digest" in error &&
+      typeof error.digest === "string" &&
+      error.digest === "TwofoldNotFoundError"
+    ) {
       return {
         error,
-        hasError: true,
       };
     }
 
@@ -42,12 +44,11 @@ export class NotFoundBoundary extends Component<
   reset() {
     this.setState({
       error: null,
-      hasError: false,
     });
   }
 
   render() {
-    if (this.state.hasError) {
+    if (this.state.error) {
       return <TriggerNotFound reset={() => this.reset()} />;
     } else {
       return this.props.children;
@@ -57,8 +58,6 @@ export class NotFoundBoundary extends Component<
 
 function TriggerNotFound({ reset }: { reset: () => void }) {
   let { notFound } = useContext(Context);
-
-  // use load 404 suspending hook
 
   useEffect(() => {
     startTransition(() => {

@@ -1,7 +1,8 @@
 import { Plugin } from "esbuild";
-import { EntriesBuilder } from "../entries-builder";
+import { EntriesBuilder } from "../builders/entries-builder";
 import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
+import { relative, dirname, sep } from "path";
 
 type Builder = {
   entries: EntriesBuilder;
@@ -39,9 +40,13 @@ export function serverActionClientReferencePlugin({
             }
           });
 
+          let dir = dirname(path);
+          let relativeCallServerPath = relative(dir, callServerPath);
+          let callServerImportPath = relativeCallServerPath.split(sep).join('/')
+
           let newContents = `
             import { createServerReference } from "react-server-dom-webpack/client";
-            import { callServer } from "${callServerPath}";
+            import { callServer } from "${callServerImportPath}";
 
             ${exportLines.join("\n")}
           `;

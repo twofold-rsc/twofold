@@ -38,11 +38,15 @@ export async function create(runtime: Runtime) {
   app.use(globalMiddleware(build));
   app.use(assets(build));
   app.use(staticFiles(build));
-  app.use(devReload(build));
+
+  if (build.env === "development") {
+    app.use(devReload(build));
+  }
+
   app.use(errors(build));
 
   // every request below here should use the store
-  app.use(requestStore());
+  app.use(requestStore(build));
 
   app.get("/__rsc/page", async (ctx) => {
     let url = new URL(ctx.request.url);
@@ -199,7 +203,7 @@ export async function create(runtime: Runtime) {
     // couldn't this be a tree that throws something?
     let actionStream = renderToReadableStream(
       result,
-      build.builders.client.clientComponentMap,
+      build.getBuilder("client").clientComponentMap,
     );
 
     let multipart = new MultipartResponse();
@@ -231,6 +235,7 @@ export async function create(runtime: Runtime) {
   app.get("/**/*", async (ctx) => {
     let url = new URL(ctx.request.url);
     let request = ctx.request;
+
     let pageRequest = runtime.pageRequest(request);
     let response = await pageRequest.ssrResponse();
 

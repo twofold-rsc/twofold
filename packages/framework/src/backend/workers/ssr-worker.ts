@@ -2,8 +2,8 @@ import "../monkey-patch.js";
 import { MessagePort, parentPort, workerData } from "node:worker_threads";
 import { ReadableStream } from "stream/web";
 import { injectResolver } from "../monkey-patch.js";
-import { shell } from "../error-shell.js";
-import { NotFoundError } from "../../errors/not-found-error.js";
+import { errorPage } from "../error-page.js";
+import { pathToFileURL } from "node:url";
 // import { getSSRStore, runSSRStore } from "../stores/ssr-store.js";
 
 if (!parentPort) {
@@ -23,7 +23,7 @@ injectResolver((moduleId) => {
   return clientComponentModuleMap[moduleId]?.path;
 });
 
-let appModule = await import(appPath);
+let appModule = await import(pathToFileURL(appPath).href);
 let render = appModule.render;
 
 parentPort.on("message", async ({ port, pathname }: RenderRequest) => {
@@ -54,7 +54,7 @@ parentPort.on("message", async ({ port, pathname }: RenderRequest) => {
     }
   } catch (e: unknown) {
     let error = e instanceof Error ? e : new Error("Unknown error");
-    let html = shell(error);
+    let html = await errorPage(error);
     let buf = Buffer.from(html);
     port.postMessage(buf, [buf.buffer]);
   } finally {

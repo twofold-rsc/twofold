@@ -76,7 +76,7 @@ export class Layout {
     } else if (canGoUnder(layout, this)) {
       // re-balance my children
       let [move, keep] = partition(this.#children, (child) =>
-        canGoUnder(layout, child),
+        canGoUnder(child, layout),
       );
       this.#children = keep;
 
@@ -148,6 +148,13 @@ export class Layout {
   }
 }
 
+/**
+ * Can child go under parent
+ *
+ * @param child
+ * @param parent
+ * @returns
+ */
 function canGoUnder(child: Layout, parent: Layout) {
   let alreadyHave = parent.children.some(
     (current) => current.rsc.path === child.rsc.path,

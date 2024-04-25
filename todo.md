@@ -1,5 +1,16 @@
 # TODO
 
+publish:
+
+create-app
+framework
+
+builds
+
+website
+
+- layouts
+
 framework
 
 - bug: back cache not working when error thrown
@@ -9,11 +20,11 @@ framework
 
 - does rsdw need to be an external?
 
-- prod builds
+- bundle rsdw
+
+- custom error page for prod (errors/500.html)
 
 kitchen sink
-
-- merge redirects branch
 
 - action return types
 - strings, objects, thrown errors?
@@ -26,6 +37,7 @@ kitchen sink
 - title/meta head tags
 - restart client builder if entries change
 - restart rsc builder if entries change
+- taint examples
 
 - Externals for RSC build (inc react)
   https://github.com/LinbuduLab/esbuild-plugins/tree/main/packages/esbuild-plugin-node-externals
@@ -79,7 +91,6 @@ Form
 - [x] not found
 - [x] browser app rsc cache and query params
 - [ ] don't allow two dynamic routes with the same dynamic identifier ($id)
-- [ ] redirects to static files
 
 ## Build
 
@@ -94,10 +105,25 @@ Form
 - [ ] allow CC to import css
 - [ ] Worker for RSC
 - [ ] come up with way of building all apps (public, error, rsc, client)
-- [ ] static routing should come first
 - [ ] check if middleware export default is a function
 - [ ] image imports (rsc, client)
-- [ ] run server, create a new static files, visit it
+- [ ] Pinned canaries + rsdw
+
+## Static files
+
+- [ ] Redirect to static file
+- [ ] Static files should come first in routing checks
+- [ ] Rebuild static files when dir changes
+- [ ] Prod static files should move into build dir
+
+## Global middleware
+
+- [ ] hasMiddleware shouldn't check for ts file (should look for compiled entry point)
+
+## Create twofold app
+
+- [ ] Ability to install pre-released version of twofold/framework
+- [ ] Verify version of pnpm
 
 ## Layouts
 
@@ -114,6 +140,7 @@ Form
 - Block requests during build
 - Link should only navigate with local urls
 - CSS should reload independent of RSC/CC reload. Possible for CC+CSS to change at same time.
+- Verify version of pnpm
 
 ## Other
 

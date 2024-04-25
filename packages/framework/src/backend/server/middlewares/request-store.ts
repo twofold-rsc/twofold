@@ -1,10 +1,11 @@
 import { RouteHandler } from "@hattip/router";
 import { CookieSerializeOptions } from "cookie";
-import { runStore } from "../../stores/rsc-store.js";
+import { Store, runStore } from "../../stores/rsc-store.js";
+import { Build } from "../../build/base-build.js";
 
 let reqId = 0;
 
-export function requestStore(): RouteHandler {
+export function requestStore(build: Build): RouteHandler {
   return async (ctx) => {
     reqId = reqId + 1;
 
@@ -12,8 +13,9 @@ export function requestStore(): RouteHandler {
       path: "/",
     };
 
-    let store = {
+    let store: Store = {
       reqId,
+      env: build.env,
       cookies: {
         set: (key: string, value: string, options?: CookieSerializeOptions) => {
           let cookieOptions = {

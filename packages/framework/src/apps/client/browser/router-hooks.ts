@@ -15,6 +15,7 @@ type State = {
   cache: Map<string, Tree>;
 };
 
+let fetchCache = new Map<string, Promise<RSCPayload>>();
 let initialState = getInitialRouterState();
 
 export function useRouterReducer() {
@@ -234,7 +235,6 @@ type RSCPayload = {
   path: string;
   tree: Tree;
 };
-let fetchCache = new Map<string, Promise<RSCPayload>>();
 
 type FetchOptions = {
   initiator?: string;
@@ -255,37 +255,56 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
         "x-twofold-initiator": initiator,
       },
     }).then(async (response) => {
-      let contentType = response.headers.get("content-type");
-      if (!response.ok) {
-        if (contentType === "text/x-component") {
-          // there was an error, but we have a valid response, so we're
-          // going to let that response render. most likely 4xx (error but renderable)
-        } else if (contentType === "text/x-serialized-error") {
-          let json = await response.json();
-          let error = deserializeError(json);
-          throw error;
-        } else {
-          throw new Error(response.statusText);
-        }
-      }
-
-      if (contentType === "application/json") {
-        let json = await response.json();
-        if (json.type === "twofold-offsite-redirect") {
-          // should we verify this is offsite?
-          window.location.href = json.url;
-        }
-      }
-
       let url = new URL(response.url);
       let responsePath = url.searchParams.get("path");
+      let contentType = response.headers.get("content-type");
       let fetchedPath = responsePath ?? decodeURIComponent(encodedPath);
-      let tree =
-        contentType === "text/x-component"
-          ? createFromReadableStream(response.body, {
-              callServer,
-            })
-          : { then() {} };
+      let treeOptions = { callServer };
+      let tree;
+
+      if (contentType === "text/x-component") {
+        tree = createFromReadableStream(response.body, treeOptions);
+      } else if (contentType === "text/x-serialized-error") {
+        let json = await response.json();
+        let error = deserializeError(json);
+        let stream = new ReadableStream({
+          start(controller) {
+            controller.error(error);
+          },
+        });
+        tree = createFromReadableStream(stream, treeOptions);
+      } else if (contentType === "application/json") {
+        let json = await response.json();
+        if (json.type === "twofold-offsite-redirect") {
+          window.location.href = json.url;
+          tree = { then: () => {} };
+        } else {
+          let stream = new ReadableStream({
+            start(controller) {
+              let error = new Error("Unexpected response");
+              controller.error(error);
+            },
+          });
+          tree = createFromReadableStream(stream, treeOptions);
+        }
+      } else if (!response.ok) {
+        let stream = new ReadableStream({
+          start(controller) {
+            let error = new Error(response.statusText);
+            controller.error(error);
+          },
+        });
+
+        tree = createFromReadableStream(stream, treeOptions);
+      } else {
+        let stream = new ReadableStream({
+          start(controller) {
+            let error = new Error("Unexpected response");
+            controller.error(error);
+          },
+        });
+        tree = createFromReadableStream(stream, treeOptions);
+      }
 
       return {
         path: fetchedPath,

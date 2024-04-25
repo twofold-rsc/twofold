@@ -1,5 +1,5 @@
 import { Plugin, transform } from "esbuild";
-import { RSCBuilder } from "../rsc-builder";
+import { RSCBuilder } from "../builders/rsc-builder";
 import { readFile } from "fs/promises";
 import type {
   FunctionDeclaration,
@@ -51,7 +51,7 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
 
       build.onLoad({ filter: /\.(ts|tsx|js|jsx)$/ }, async ({ path }) => {
         let contents = await readFile(path, "utf-8");
-        let hasAction = contents.includes('"use server";\n');
+        let hasAction = contents.includes('"use server";');
         let actionModule = builder.entries.serverActionModuleMap.get(path);
 
         if (actionModule) {

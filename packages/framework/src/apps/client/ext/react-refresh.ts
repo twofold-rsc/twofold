@@ -25,11 +25,11 @@ if (process.env.NODE_ENV !== "production") {
     }
 
     window.$RefreshRuntime$ = RefreshRuntime;
+    let refresh = window.$RefreshRuntime$.performReactRefresh;
 
-    window.$RefreshRuntime$.performReactRefresh = debounce(
-      window.$RefreshRuntime$.performReactRefresh,
-      30,
-    );
+    window.$RefreshRuntime$.performReactRefresh = debounce(() => {
+      refresh();
+    }, 30);
 
     // @ts-ignore
     window.$RefreshRuntime$.injectIntoGlobalHook(window);

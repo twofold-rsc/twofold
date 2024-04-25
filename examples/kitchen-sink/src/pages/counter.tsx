@@ -7,22 +7,22 @@ export default function Counter() {
 
   return (
     <div>
-      <p className="text-gray-500 text-xl text-center">Count</p>
-      <p className="tabular-nums text-5xl text-gray-950 font-bold text-center">
+      <p className="text-center text-xl text-gray-500">Count</p>
+      <p className="text-center text-5xl font-bold tabular-nums text-gray-950">
         {count}
       </p>
 
-      <div className="flex space-x-2 items-center mt-4">
+      <div className="mt-4 flex items-center space-x-2">
         <button
           onClick={() => setCount(count - 1)}
-          className="rounded shadow px-3 py-1.5 font-medium text-white bg-gray-950 w-1/2"
+          className="w-1/2 rounded bg-gray-950 px-3 py-1.5 font-medium text-white shadow"
         >
           Decrement
         </button>
 
         <button
           onClick={() => setCount(count + 1)}
-          className="rounded shadow px-3 py-1.5 font-medium text-white bg-gray-950 w-1/2"
+          className="w-1/2 rounded bg-gray-950 px-3 py-1.5 font-medium text-white shadow"
         >
           Increment
         </button>

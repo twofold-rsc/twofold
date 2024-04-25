@@ -256,6 +256,11 @@ export default function Nav() {
                         description="Errors that happen during the SSR pass."
                         href="/error-handling/ssr"
                       />
+                      <ExampleLink
+                        title="Boundary"
+                        description="Add a custom error boundary to your app."
+                        href="/error-handling/boundary"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup name="UIs">

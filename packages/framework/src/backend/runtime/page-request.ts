@@ -12,32 +12,33 @@ import {
   isRedirectError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
+import { randomUUID } from "node:crypto";
 
 export class PageRequest {
   #page: Page;
   #request: Request;
   #runtime: Runtime;
-  #status: number;
+  #conditions: string[];
 
   constructor({
     page,
     request,
     runtime,
-    status = 200,
+    conditions,
   }: {
     page: Page;
     request: Request;
     runtime: Runtime;
-    status?: number;
+    conditions?: string[];
   }) {
     this.#page = page;
     this.#request = request;
     this.#runtime = runtime;
-    this.#status = status;
+    this.#conditions = conditions ?? [];
   }
 
   get isNotFound() {
-    return this.#status === 404;
+    return this.#conditions.includes("not-found");
   }
 
   async rscResponse(): Promise<Response> {
@@ -79,11 +80,24 @@ export class PageRequest {
       this.#runtime.clientComponentMap,
       {
         onError(err: unknown) {
-          // console.log("rsc on error");
-          if (isNotFoundError(err) || isRedirectError(err)) {
-            streamError = err;
+          streamError = err;
+          if (
+            (isNotFoundError(err) || isRedirectError(err)) &&
+            err instanceof Error &&
+            "digest" in err &&
+            typeof err.digest === "string"
+          ) {
+            return err.digest;
           } else if (err instanceof Error) {
+            let digest =
+              process.env.NODE_ENV === "production" ? randomUUID() : undefined;
+
+            if (digest) {
+              console.log(`Error digest: ${digest}`);
+            }
+
             console.error(err);
+            return digest;
           }
         },
       },
@@ -114,9 +128,15 @@ export class PageRequest {
       "Content-type": "text/x-component",
     });
 
+    let status = streamError
+      ? 500
+      : this.#conditions.includes("not-found")
+        ? 404
+        : 200;
+
     // give back the stream wrapped in a response
     return new Response(t2, {
-      status: this.#status,
+      status,
       headers,
     });
   }
