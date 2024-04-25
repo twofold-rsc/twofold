@@ -10,7 +10,8 @@ framework
 
 builds
 
-- test errors on windows
+try to run create-twofold-app on mac
+put action entries in build data
 
 - prod builds on windows
 
