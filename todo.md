@@ -1,8 +1,5 @@
 # TODO
 
-update deps in base-app + update template
-base app tailwind should be src
-
 publish:
 
 create-app
@@ -10,12 +7,7 @@ framework
 
 builds
 
-try to run create-twofold-app on mac
 put action entries in build data
-
-- prod builds on windows
-
-- create twofold app windows
 
 website
 
