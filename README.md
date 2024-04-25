@@ -8,4 +8,4 @@ Currently, there are no docs available. To create a demo application using Twofo
 pnpm create twofold-app@latest
 ```
 
-Note: Twofold requires Node.js `20.9.0` or higher.
+Note: Twofold requires Node.js `20.9.0` and pnpm `9.0.0` (or higher).
