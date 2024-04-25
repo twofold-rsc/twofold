@@ -131,13 +131,13 @@ async function main() {
   await mkdir(appUrl, { recursive: true });
 
   // extract the template app
-  await pipeline(
+  let x = await pipeline(
     downloadStream,
     tar.x({
-      cwd: appUrl.pathname,
+      cwd: appPath,
       strip: 4, // github-repo-name-folder/packages/create-twofold-app/template
       filter: (name) => {
-        let parts = name.split(path.sep);
+        let parts = name.split('/');
         let keep =
           parts[1] === "packages" &&
           parts[2] === "create-twofold-app" &&
