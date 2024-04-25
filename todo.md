@@ -20,15 +20,9 @@ framework
 
 - does rsdw need to be an external?
 
-- prod builds
-
 - bundle rsdw
 
 - custom error page for prod (errors/500.html)
-
-- linux/ubuntu
-
-- windows
 
 kitchen sink
 
