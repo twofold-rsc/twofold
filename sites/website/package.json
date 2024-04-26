@@ -12,9 +12,9 @@
   "license": "ISC",
   "dependencies": {
     "@twofold/framework": "workspace:*",
-    "react": "19.0.0-canary-48ec17b86-20240402",
-    "react-dom": "19.0.0-canary-48ec17b86-20240402",
-    "react-server-dom-webpack": "19.0.0-canary-48ec17b86-20240402",
+    "react": "19.0.0-beta-94eed63c49-20240425",
+    "react-dom": "19.0.0-beta-94eed63c49-20240425",
+    "react-server-dom-webpack": "19.0.0-beta-94eed63c49-20240425",
     "shiki": "^1.3.0"
   },
   "devDependencies": {

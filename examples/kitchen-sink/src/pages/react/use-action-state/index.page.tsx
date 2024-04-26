@@ -30,7 +30,7 @@ async function save(form: FormData): Promise<Success | Error> {
 export default function FormStatePage() {
   return (
     <div>
-      <h1 className="text-4xl font-black tracking-tight">useFormState</h1>
+      <h1 className="text-4xl font-black tracking-tight">useActionState</h1>
       <div className="mt-3">
         <FormWithState action={save} />
       </div>
