@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.16
+
+### Patch Changes
+
+- 19 beta
+
 ## 0.0.15
 
 ### Patch Changes
