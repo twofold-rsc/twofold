@@ -1,10 +1,10 @@
+"use server";
+
 import cookies from "@twofold/framework/cookies";
 import { redirect } from "@twofold/framework/redirect";
 import { z } from "zod";
 
 export async function login(formData: FormData) {
-  "use server";
-
   await new Promise((resolve) => setTimeout(resolve, 750));
 
   let loginSchema = z.object({
