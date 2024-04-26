@@ -21,14 +21,14 @@ importers:
         specifier: workspace:*
         version: link:../../packages/framework
       react:
-        specifier: 19.0.0-canary-48ec17b86-20240402
-        version: 19.0.0-canary-48ec17b86-20240402
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425
       react-dom:
-        specifier: 19.0.0-canary-48ec17b86-20240402
-        version: 19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402)
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425)
       react-server-dom-webpack:
-        specifier: 19.0.0-canary-48ec17b86-20240402
-        version: 19.0.0-canary-48ec17b86-20240402(react-dom@19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402))(react@19.0.0-canary-48ec17b86-20240402)(webpack@5.91.0)
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425(react-dom@19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425))(react@19.0.0-beta-94eed63c49-20240425)(webpack@5.91.0)
       tailwindcss:
         specifier: ^3.4.3
         version: 3.4.3
@@ -64,11 +64,11 @@ importers:
         specifier: ^9.4.1
         version: 9.4.1
       react:
-        specifier: 19.0.0-canary-48ec17b86-20240402
-        version: 19.0.0-canary-48ec17b86-20240402
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425
       react-dom:
-        specifier: 19.0.0-canary-48ec17b86-20240402
-        version: 19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402)
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425)
       tailwindcss:
         specifier: ^3.4.1
         version: 3.4.1
@@ -335,14 +335,14 @@ importers:
         specifier: workspace:*
         version: link:../../packages/framework
       react:
-        specifier: 19.0.0-canary-48ec17b86-20240402
-        version: 19.0.0-canary-48ec17b86-20240402
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425
       react-dom:
-        specifier: 19.0.0-canary-48ec17b86-20240402
-        version: 19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402)
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425)
       react-server-dom-webpack:
-        specifier: 19.0.0-canary-48ec17b86-20240402
-        version: 19.0.0-canary-48ec17b86-20240402(react-dom@19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402))(react@19.0.0-canary-48ec17b86-20240402)(webpack@5.91.0)
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425(react-dom@19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425))(react@19.0.0-beta-94eed63c49-20240425)(webpack@5.91.0)
       shiki:
         specifier: ^1.3.0
         version: 1.3.0
@@ -2966,11 +2966,6 @@ packages:
     peerDependencies:
       react: 19.0.0-beta-94eed63c49-20240425
 
-  react-dom@19.0.0-canary-48ec17b86-20240402:
-    resolution: {integrity: sha512-rMY+Gnu/TRJVnpiBEzvg2/nDwI0TZUGZqTp4VaDL+dmUu87lWMuHnwQZkxo6Hc3F4KM/oEtS4pMTes3WSaccew==}
-    peerDependencies:
-      react: 19.0.0-canary-48ec17b86-20240402
-
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -2986,20 +2981,8 @@ packages:
       react-dom: 19.0.0-beta-94eed63c49-20240425
       webpack: ^5.59.0
 
-  react-server-dom-webpack@19.0.0-canary-48ec17b86-20240402:
-    resolution: {integrity: sha512-1VYf7jI0mNZ+0p1AtEVuqjMdAz83TrxrwdINKlULVbhONpATJNH016VDtWNLHlSFyQCaCBs9YeZUxHrz1Tvgzw==}
-    engines: {node: '>=0.10.0'}
-    peerDependencies:
-      react: 19.0.0-canary-48ec17b86-20240402
-      react-dom: 19.0.0-canary-48ec17b86-20240402
-      webpack: ^5.59.0
-
   react@19.0.0-beta-94eed63c49-20240425:
     resolution: {integrity: sha512-BPPKh5bZwcpw/Dgfh3A0MoU1GSl2edR2JggCq3QPdghQsrFg1aBuMkul5YB4rpII400RYq9VC5eF5Nm3spx0gA==}
-    engines: {node: '>=0.10.0'}
-
-  react@19.0.0-canary-48ec17b86-20240402:
-    resolution: {integrity: sha512-4w4g7qQwy+CEbIAC6XSYOsm+ig3Y/zvAOhpLofFRYcrm2nFGDRJSmzlSqLu7j3NvQf3AFZp2TMjJnK4GhsGF1A==}
     engines: {node: '>=0.10.0'}
 
   read-cache@1.0.0:
@@ -3093,9 +3076,6 @@ packages:
 
   scheduler@0.25.0-beta-94eed63c49-20240425:
     resolution: {integrity: sha512-U8hoOV7uut5E8cMvRSMikEBBqLXfv2BpdxUsG45euaOfnqEgFrCdLLh6ydM+YBJ36+28olXMNmK2PFFzeg4UdQ==}
-
-  scheduler@0.25.0-canary-48ec17b86-20240402:
-    resolution: {integrity: sha512-qBbLjBHad4V6IlvWnTGBOH0UAAP1S0G12GxkKC60UdUkFKZoinAkS9a4LEzeiytNxkRXxyY2L6LNcnxjxK0C5Q==}
 
   schema-utils@3.3.0:
     resolution: {integrity: sha512-pN/yOAvcC+5rQ5nERGuwrjLlYvLTbCibnZ1I7B1LaiAz9BRBlE9GMgE/eqV30P7aJQUf7Ddimy/RsbYO/GrVGg==}
@@ -6515,11 +6495,6 @@ snapshots:
       react: 19.0.0-beta-94eed63c49-20240425
       scheduler: 0.25.0-beta-94eed63c49-20240425
 
-  react-dom@19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402):
-    dependencies:
-      react: 19.0.0-canary-48ec17b86-20240402
-      scheduler: 0.25.0-canary-48ec17b86-20240402
-
   react-is@16.13.1: {}
 
   react-refresh@0.14.0: {}
@@ -6540,17 +6515,7 @@ snapshots:
       react-dom: 19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425)
       webpack: 5.91.0
 
-  react-server-dom-webpack@19.0.0-canary-48ec17b86-20240402(react-dom@19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402))(react@19.0.0-canary-48ec17b86-20240402)(webpack@5.91.0):
-    dependencies:
-      acorn-loose: 8.3.0
-      neo-async: 2.6.2
-      react: 19.0.0-canary-48ec17b86-20240402
-      react-dom: 19.0.0-canary-48ec17b86-20240402(react@19.0.0-canary-48ec17b86-20240402)
-      webpack: 5.91.0
-
   react@19.0.0-beta-94eed63c49-20240425: {}
-
-  react@19.0.0-canary-48ec17b86-20240402: {}
 
   read-cache@1.0.0:
     dependencies:
@@ -6660,8 +6625,6 @@ snapshots:
   safer-buffer@2.1.2: {}
 
   scheduler@0.25.0-beta-94eed63c49-20240425: {}
-
-  scheduler@0.25.0-canary-48ec17b86-20240402: {}
 
   schema-utils@3.3.0:
     dependencies:
