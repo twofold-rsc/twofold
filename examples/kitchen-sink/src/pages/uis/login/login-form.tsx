@@ -1,27 +1,23 @@
 "use client";
 
 import { useActionState } from "react";
+import { login } from "./action";
 
 type FormState = {
+  errors: string[];
   email: string;
   password: string;
-  errors: string[];
 };
 
-export function LoginForm({
-  action,
-}: {
-  action: (formData: FormData) => Promise<FormState>;
-}) {
+export function LoginForm() {
   let [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (state, formData) => {
       let formEntries = {
         email: formData.get("email") as string,
         password: formData.get("password") as string,
       };
-
       try {
-        let response = await action(formData);
+        let response = await login(formData);
         return {
           ...formEntries,
           errors: response.errors,
