@@ -1,8 +1,10 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
 
 type FormState = {
+  email: string;
+  password: string;
   errors: string[];
 };
 
@@ -11,17 +13,31 @@ export function LoginForm({
 }: {
   action: (formData: FormData) => Promise<FormState>;
 }) {
-  //@ts-ignore
-  let [state, formAction] = useFormState<FormState, FormData>(
+  let [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (state, formData) => {
+      let formEntries = {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+      };
+
       try {
         let response = await action(formData);
-        return response;
+        return {
+          ...formEntries,
+          errors: response.errors,
+        };
       } catch (e: unknown) {
-        return { errors: ["An unknown error occurred"] };
+        return {
+          ...formEntries,
+          errors: ["An unknown error occurred"],
+        };
       }
     },
-    { errors: [] },
+    {
+      errors: [],
+      email: "email@example.com",
+      password: "password",
+    },
   );
 
   return (
@@ -45,7 +61,7 @@ export function LoginForm({
           <input
             type="email"
             name="email"
-            defaultValue="email@example.com"
+            defaultValue={state.email}
             placeholder="Email"
             className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 shadow"
             required
@@ -58,29 +74,22 @@ export function LoginForm({
           <input
             type="password"
             name="password"
-            defaultValue="password"
+            defaultValue={state.password}
             required
             placeholder="Password"
             className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 shadow"
           />
         </div>
         <div className="mt-4">
-          <SubmitButton />
+          <button
+            type="submit"
+            disabled={isPending}
+            className="rounded bg-black px-3 py-1.5 font-medium text-white shadow disabled:bg-black/60"
+          >
+            Login
+          </button>
         </div>
       </div>
     </form>
-  );
-}
-
-function SubmitButton() {
-  let status = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={status.pending}
-      className="rounded bg-black px-3 py-1.5 font-medium text-white shadow disabled:bg-black/60"
-    >
-      Login
-    </button>
   );
 }

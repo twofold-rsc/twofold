@@ -64,9 +64,9 @@ export default function Nav() {
                         href="/react/use-id"
                       />
                       <ExampleLink
-                        title="useFormState"
+                        title="useActionState"
                         description="A hook for managing form state."
-                        href="/react/use-form-state"
+                        href="/react/use-action-state"
                       />
                       <ExampleLink
                         title="useOptimistic"

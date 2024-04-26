@@ -2,6 +2,7 @@ let name = "ryan";
 
 async function handleFormArg(form: FormData) {
   "use server";
+
   let formName = form.get("name");
   if (typeof formName === "string") {
     name = formName;

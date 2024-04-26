@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
+import { useActionState } from "react";
 
 type Success = {
   type: "success";
@@ -16,30 +17,19 @@ export default function FormWithState({
 }: {
   action: (form: FormData) => Promise<Success | Error>;
 }) {
-  let [state, formAction] = useFormState<Success | Error | null, FormData>(
-    async (state, payload) => {
-      let result = await action(payload);
-      return result;
-    },
-    null,
-  );
+  let [state, formAction, isPending] = useActionState<
+    Success | Error | null,
+    FormData
+  >(async (state, payload) => {
+    let result = await action(payload);
+    return result;
+  }, null);
 
   return (
     <form action={formAction}>
-      <FormInner state={state} />
-    </form>
-  );
-}
-
-// Need inner component so we can useFormStatus
-function FormInner({ state }: { state: Success | Error | null }) {
-  let status = useFormStatus();
-
-  return (
-    <>
-      {status.pending ? (
+      {isPending ? (
         <div className="border-l-4 border-yellow-500 bg-yellow-50 p-4">
-          Form submitting with "{status.data.get("name") as string}"
+          <FormStatus />
         </div>
       ) : !state ? (
         <div className="border-l-4 border-gray-500 bg-gray-50 p-4">
@@ -65,12 +55,18 @@ function FormInner({ state }: { state: Success | Error | null }) {
         />
         <button
           type="submit"
-          disabled={status.pending}
+          disabled={isPending}
           className="rounded bg-black px-4 py-1.5 font-medium text-white disabled:opacity-50"
         >
           Save
         </button>
       </div>
-    </>
+    </form>
   );
+}
+
+function FormStatus() {
+  let status = useFormStatus();
+
+  return <>Form submitting with "{status.data?.get("name") as string}"</>;
 }

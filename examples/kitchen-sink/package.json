@@ -17,15 +17,15 @@
   "dependencies": {
     "@radix-ui/react-navigation-menu": "^1.1.4",
     "@twofold/framework": "workspace:*",
-    "react": "19.0.0-canary-48ec17b86-20240402",
-    "react-dom": "19.0.0-canary-48ec17b86-20240402",
-    "react-server-dom-webpack": "19.0.0-canary-48ec17b86-20240402",
+    "react": "19.0.0-beta-94eed63c49-20240425",
+    "react-dom": "19.0.0-beta-94eed63c49-20240425",
+    "react-server-dom-webpack": "19.0.0-beta-94eed63c49-20240425",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.10.2",
-    "@types/react": "^18.2.41",
-    "@types/react-dom": "^18.2.17",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
     "eslint": "^8.56.0",
     "eslint-plugin-twofold": "workspace:*",
     "nodemon": "^3.1.0",
