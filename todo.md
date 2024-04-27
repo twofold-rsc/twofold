@@ -1,22 +1,43 @@
 # TODO
 
-react-version
-update template app
+base-app
 
-publish:
-
-create-app
-framework
+- remove title from layout
+- add title to index
 
 website
 
-- layouts
+- Getting started
+- Pages
+- Layouts
+- Data fetching
+- Mutation
+- Styling
+- Interactive components
+
+- Streaming & suspense
+- Cookies
+- Redirects
+- Not found
+- Middleware
+- Error handling
+- Deploying
+
+- Link
+
+- useRouter
+
+- Reasons to not use Twofold
 
 framework
 
-- bug: visit route, rename file, build error
+- sessions
 
-- reset form
+- reload on file changes under pages?
+
+- bug: page invokes notFound using the default not found component
+
+- bug: visit route, rename file, build error
 
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
