@@ -5,7 +5,8 @@
   "description": "The twofold website",
   "type": "module",
   "scripts": {
-    "dev": "twofold dev"
+    "dev": "twofold dev",
+    "dev-framework": "nodemon --delay 100ms --exec \"pnpm twofold dev\" --watch ../../packages/framework/dist -e js"
   },
   "keywords": [],
   "author": "Ryan Toronto",

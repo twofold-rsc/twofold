@@ -51,12 +51,16 @@ type RenderOptions = {
   bootstrapUrl: string;
 };
 
-export async function render({ rscStream, path, bootstrapUrl }: RenderOptions) {
+export async function render({
+  rscStream,
+  path,
+  bootstrapUrl,
+}: RenderOptions): Promise<ReadableStream<Uint8Array>> {
   let [rscStream1, rscStream2] = rscStream.tee();
   let rscTree = createFromReadableStream(rscStream1);
   let rscStreamReader = rscStream2.getReader();
 
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  // await new Promise((resolve) => setTimeout(resolve, 0));
 
   let htmlStream = await renderToReadableStream(
     createElement(SSRApp, {
@@ -85,5 +89,8 @@ export async function render({ rscStream, path, bootstrapUrl }: RenderOptions) {
 }
 
 function isSafeError(err: Error) {
-  return err.message === "TwofoldNotFoundError";
+  return (
+    err.message === "TwofoldNotFoundError" ||
+    err.message.startsWith("TwofoldRedirectError")
+  );
 }

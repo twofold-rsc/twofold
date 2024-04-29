@@ -6,6 +6,8 @@ import Link from "@twofold/framework/link";
 import { ReactNode } from "react";
 
 export default function Nav() {
+  // return null;
+
   let { path } = useRouter();
 
   return (

@@ -60,7 +60,7 @@ function getUrlFromError(error: Error & { digest: string }) {
 }
 
 function TriggerRedirect({ url, reset }: { url: string; reset: () => void }) {
-  let { navigate, replace } = useRouter();
+  let { replace } = useRouter();
 
   useEffect(() => {
     startTransition(() => {
@@ -71,7 +71,7 @@ function TriggerRedirect({ url, reset }: { url: string; reset: () => void }) {
       }
       reset();
     });
-  }, [navigate, replace, url, reset]);
+  }, [replace, url, reset]);
 
   return null;
 }

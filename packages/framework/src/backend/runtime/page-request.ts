@@ -6,13 +6,17 @@ import {
   renderToReadableStream,
   // @ts-ignore
 } from "react-server-dom-webpack/server.edge";
-import { readStream } from "../steams/process-stream.js";
+import {
+  createFromReadableStream,
+  // @ts-ignore
+} from "react-server-dom-webpack/client.edge";
 import {
   isNotFoundError,
   isRedirectError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
 import { randomUUID } from "node:crypto";
+import { deserializeError } from "serialize-error";
 
 export class PageRequest {
   #page: Page;
@@ -58,7 +62,7 @@ export class PageRequest {
     let store = getStore();
     let assets = this.#page.assets.map((asset) => `/_assets/styles/${asset}`);
     if (store) {
-      store.assets = [...store.assets, ...assets];
+      store.assets = assets;
     }
 
     // props that our rsc will get
@@ -78,8 +82,19 @@ export class PageRequest {
     let rscStream = renderToReadableStream(
       reactTree,
       this.#runtime.clientComponentMap,
+      // {
+      //   "link-63a8b9c9cd59152bb0931307b8e22426#default": {
+      //     id: "link-63a8b9c9cd59152bb0931307b8e22426#default",
+      //     chunks: [
+      //       "link-63a8b9c9cd59152bb0931307b8e22426:entries/link:KM6HTJ3G",
+      //       "entries/link-KM6HTJ3G.js",
+      //     ],
+      //     name: "default",
+      //   },
+      // },
       {
         onError(err: unknown) {
+          console.log("got error");
           streamError = err;
           if (
             (isNotFoundError(err) || isRedirectError(err)) &&
@@ -105,13 +120,37 @@ export class PageRequest {
 
     // await the first chunk
     let [t1, t2] = rscStream.tee();
+    // let x = createFromReadableStream(t1, {
+    //   ssrManifest: {
+    //     moduleMap: {
+    //       "link-63a8b9c9cd59152bb0931307b8e22426#default": {
+    //         default: {
+    //           id: "link-63a8b9c9cd59152bb0931307b8e22426#default",
+    //           chunks: [
+    //             "link-63a8b9c9cd59152bb0931307b8e22426:entries/link:KM6HTJ3G",
+    //             "/entries/link-KM6HTJ3G.js",
+    //           ],
+    //           name: "default",
+    //         },
+    //       },
+    //     },
+    //     moduleLoading: {
+    //       prefix: "/",
+    //     },
+    //   },
+    // });
+
+    // let c = await x;
+    // console.log(x);
+    // console.log(c);
+    // console.log(JSON.stringify(c, null, 2));
     let reader = t1.getReader();
     await reader.read();
     reader.releaseLock();
     t1.cancel();
 
-    // if there's a twofold error and the first chunk hasn't been sent
-    // then we can abort
+    // return new Response(null);
+
     if (streamError) {
       if (isNotFoundError(streamError)) {
         t2.cancel();
@@ -141,7 +180,7 @@ export class PageRequest {
     });
   }
 
-  async ssrResponse() {
+  async ssrResponse(): Promise<Response> {
     let rscResponse = await this.rscResponse();
 
     // response is not SSRable
@@ -153,50 +192,53 @@ export class PageRequest {
 
     let { port1, port2 } = new MessageChannel();
 
-    let htmlStream = new ReadableStream({
-      start(controller) {
-        let handle = function (m: Uint8Array | string) {
-          if (typeof m === "string" && m === "DONE") {
-            controller.close();
-            port1.off("message", handle);
-            port1.close();
-          } else {
-            controller.enqueue(m);
-          }
-        };
-        port1.on("message", handle);
-      },
-    });
-
     if (!this.#runtime.ssrWorker) {
       throw new Error("Worker not available");
     }
+
+    let transformStream = new TransformStream();
+    let writeStream = transformStream.writable;
+    let readStream = transformStream.readable;
+
+    let getMessage = new Promise<Record<string, any>>((resolve) => {
+      let handle = function (msg: Record<string, any>) {
+        resolve(msg);
+        port1.off("message", handle);
+        port1.close();
+      };
+      port1.on("message", handle);
+    });
 
     let url = new URL(this.#request.url);
     this.#runtime.ssrWorker.postMessage(
       {
         pathname: url.pathname,
         port: port2,
+        rscStream,
+        writeStream,
       },
-      [port2],
+      // @ts-ignore
+      [port2, rscStream, writeStream],
     );
 
-    readStream(rscStream, {
-      onRead(value) {
-        port1.postMessage(value, [value.buffer]);
-      },
-      onDone() {
-        port1.postMessage("DONE");
-      },
-    });
+    let message = await getMessage;
 
-    let headers = new Headers(rscResponse.headers);
-    headers.set("Content-type", "text/html");
+    if (message.status === "OK") {
+      return new Response(readStream);
+    } else if (message.status === "ERROR") {
+      let error = deserializeError(message.serializedError);
 
-    return new Response(htmlStream, {
-      status: rscResponse.status,
-      headers,
-    });
+      if (isNotFoundError(error)) {
+        return this.notFoundSsrResponse();
+      } else if (isRedirectError(error)) {
+        let { status, url } = redirectErrorInfo(error);
+        return this.redirectResponse(status, url);
+      } else {
+        throw error;
+      }
+    } else {
+      throw new Error("SSR worker failed to render");
+    }
   }
 
   private async runMiddleware() {
@@ -218,6 +260,15 @@ export class PageRequest {
 
     let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
     return notFoundRequest.rscResponse();
+  }
+
+  private notFoundSsrResponse() {
+    if (this.isNotFound) {
+      throw new Error("The not-found page cannot call notFound()");
+    }
+
+    let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
+    return notFoundRequest.ssrResponse();
   }
 
   private redirectResponse(status: number, url: string) {

@@ -1,7 +1,8 @@
 import { RouteHandler } from "@hattip/router";
-import { errorPage } from "../../error-page.js";
 import { serializeError } from "serialize-error";
 import { Build } from "../../build/base-build.js";
+import { readFile } from "fs/promises";
+import { appCompiledDir } from "../../files.js";
 
 export function errors(build: Build): RouteHandler {
   return async (ctx) => {
@@ -70,4 +71,25 @@ export function errors(build: Build): RouteHandler {
       throw build.error;
     }
   };
+}
+
+export async function errorPage(error: Error) {
+  let htmlFile = new URL("./server-files/error.html", appCompiledDir);
+  let contents = await readFile(htmlFile, "utf-8");
+
+  let errorString = JSON.stringify(serializeError(error));
+  let message = error.message;
+  let digest =
+    error instanceof Error &&
+    "digest" in error &&
+    typeof error.digest === "string"
+      ? error.digest
+      : "";
+
+  let html = contents
+    .replace("$error", errorString)
+    .replace("$message", message)
+    .replace("$digest", digest);
+
+  return html;
 }

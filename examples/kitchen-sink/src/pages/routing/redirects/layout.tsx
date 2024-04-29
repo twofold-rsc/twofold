@@ -17,6 +17,22 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/routing/redirects/async-page-redirect"
+              className="text-blue-500 underline"
+            >
+              Async page calls redirect
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/redirects/delayed-page-redirect"
+              className="text-blue-500 underline"
+            >
+              Delayed page calls redirect
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/redirects/permanent-redirect"
               className="text-blue-500 underline"
             >
