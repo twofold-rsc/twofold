@@ -4,7 +4,7 @@ import TwofoldFramework from "@twofold/framework/twofold-framework";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <html className="h-full bg-gray-50/10">
+    <html className="h-full bg-gray-50/10 antialiased">
       <head>
         <meta charSet="utf-8" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

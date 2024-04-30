@@ -15,7 +15,10 @@ website
 - Styling
 - Interactive components
 
+- Server, client, server
+
 - Streaming & suspense
+- Forms
 - Cookies
 - Redirects
 - Not found
@@ -33,6 +36,8 @@ framework
 
 - test ssr-app error handling in prod
 
+- monkey patch console.error for not found/redirect boundaries
+
 - preinit module loading
 - use server.edge client to render
 - get rid of console logs
@@ -40,16 +45,9 @@ framework
 
 - run middleware in RSC
 
-- router hooks doesnt need to be async, can store the fetch promise
-
 - sessions
 
 - reload on file changes under pages?
-
-- bug: page invokes notFound in async RSC (using the default not found component)
-- idea: have client get not found page ready for showing error
-
-- bug: page invokes redirect in async RSC
 
 - bug: visit route, rename file, build error
 

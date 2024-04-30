@@ -87,7 +87,7 @@ export class PageRequest {
       //     id: "link-63a8b9c9cd59152bb0931307b8e22426#default",
       //     chunks: [
       //       "link-63a8b9c9cd59152bb0931307b8e22426:entries/link:KM6HTJ3G",
-      //       "entries/link-KM6HTJ3G.js",
+      //       "/entries/link-KM6HTJ3G.js",
       //     ],
       //     name: "default",
       //   },
@@ -139,6 +139,41 @@ export class PageRequest {
     //     },
     //   },
     // });
+
+    // console.log(x);
+
+    // console.log(Array.from(x._response._chunks.values()).map((p) => p.status));
+    // let c = await x;
+    // let e = c.props.children[1].props.children;
+
+    // console.log(Array.from(x._response._chunks.keys()));
+
+    // let values = Array.from(x._response._chunks.values());
+    // console.log(values.length);
+    // console.log(values.map((p) => p.status));
+    // let pending = values.filter((p) => p.status === "pending");
+
+    // console.log("pending");
+    // console.log(pending);
+
+    // setTimeout(() => {
+    //   console.log("--- RE LOG PENDING ---");
+    //   console.log(pending);
+    //   console.log("--- RE LOG ---");
+    //   let values = Array.from(x._response._chunks.values());
+    //   console.log(values.length);
+    //   console.log(values.map((p) => p.status));
+    //   // console.log(x._response._chunks);
+    // }, 1_000);
+
+    // setTimeout(() => {
+    //   console.log("--- RE LOG ---");
+    //   console.log(
+    //     Array.from(x._response._chunks.values()).map((p) => p.status),
+    //   );
+    //   // console.log(x._response._chunks);
+    // }, 7_000);
+    // console.log(JSON.stringify(c, null, 2));
 
     // let c = await x;
     // console.log(x);
