@@ -12,29 +12,38 @@ website
 - Layouts
 - Data fetching
 - Mutation
+- Interactivity
 - Styling
-- Interactive components
 
-- Server, client, server
+- Loading screens
+- Error handling
+- Deploying
 
-- Streaming & suspense
-- Forms
 - Cookies
 - Redirects
 - Not found
 - Middleware
-- Error handling
-- Deploying
 
 - Link
 
 - useRouter
 
+- One app
+- Server, client, server
 - Reasons to not use Twofold
 
 framework
 
+- Link with hash should not send hash to server
+- useRouter.path should not include hash since server never sees it
+- Expose isTransitioning prop on useRouter
+- Expose transitioningToPath prop on useRouter
+
+- Link should scroll to hash (router effect?)
+
 - test ssr-app error handling in prod
+
+- not found and redirect should be server only
 
 - monkey patch console.error for not found/redirect boundaries
 

@@ -1,6 +1,6 @@
 # Pages
 
-Every page in your application is powered by a page component. These a special React Server Components that serve as the entry points for your application's URLs.
+Every URL in your application is powered by a page component. These a special React Server Components that serve as the entry points into your application.
 
 ## Page components
 

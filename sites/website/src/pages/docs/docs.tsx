@@ -1,5 +1,5 @@
 import "server-only";
-import Markdoc, { Config } from "@markdoc/markdoc";
+import Markdoc, { Config, Tag, Node, Schema, NodeType } from "@markdoc/markdoc";
 import { readFile, readdir } from "fs/promises";
 import * as path from "path";
 import React, { cache } from "react";
@@ -35,7 +35,9 @@ let loadGuide = cache(async (slug: string) => {
         attributes: {},
       },
     },
-    nodes: {},
+    nodes: {
+      heading,
+    },
     variables: {},
   };
 
@@ -88,18 +90,18 @@ export let getHeadingsFromSlug = cache(async (slug: string) => {
 
 function getHeadings(
   node: any,
-  sections: { title: string; level: number }[] = [],
+  sections: { title: string; level: number; id: string }[] = [],
 ) {
   if (node && node.name) {
-    let match = node.name.match(/h(?<level>\d+)/);
-
+    let match = node.name.match(/h\d+/);
     if (match) {
       let title = node.children[0];
 
       if (typeof title === "string") {
         sections.push({
           title,
-          level: parseInt(match.groups.level),
+          id: node.attributes.id,
+          level: node.attributes.level,
         });
       }
     } else if (node.children) {
@@ -111,3 +113,31 @@ function getHeadings(
 
   return sections;
 }
+
+let heading: Schema = {
+  children: ["inline"],
+  attributes: {
+    id: { type: String },
+    level: { type: Number, required: true, default: 1 },
+  },
+  transform(node, config) {
+    let attributes = node.transformAttributes(config);
+    let children = node.transformChildren(config);
+
+    let id =
+      attributes.id && typeof attributes.id === "string"
+        ? attributes.id
+        : children
+            .filter((child) => typeof child === "string")
+            .join(" ")
+            .replace(/[?]/g, "")
+            .replace(/\s+/g, "-")
+            .toLowerCase();
+
+    return new Tag(
+      `h${node.attributes["level"]}`,
+      { ...attributes, id },
+      children,
+    );
+  },
+};

@@ -30,7 +30,7 @@ export default function PostsPage() {
 }
 ```
 
-The posts page will render with a blue background. When visited the Twofold will delay rendering the page until the CSS file has been loaded.
+The posts page will render with a blue background. When visited Twofold will delay rendering the page until the CSS file has been loaded.
 
 Twofold only allows CSS files to be imported in Layout and Page components. These CSS files will be loaded when a user visits the page, but they are not guaranteed to by unloaded when the user navigates away from the page. It is important to scope your CSS to the page to prevent conflicts with other pages.
 

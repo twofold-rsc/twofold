@@ -1,13 +1,20 @@
 "use client";
 
-import { LinkHTMLAttributes, MouseEvent, ReactNode, forwardRef } from "react";
+import {
+  LinkHTMLAttributes,
+  MouseEvent,
+  ReactNode,
+  Ref,
+  forwardRef,
+} from "react";
 import { useRouter } from "../hooks/use-router";
 
-type Props = {
+type Props = LinkHTMLAttributes<HTMLAnchorElement> & {
+  ref?: Ref<HTMLAnchorElement>;
   href: string;
   replace?: boolean;
   children: ReactNode;
-} & LinkHTMLAttributes<HTMLAnchorElement>;
+};
 
 let Link = forwardRef<HTMLAnchorElement, Props>(function LinkWithRef(
   { href, children, replace, onClick, ...props },

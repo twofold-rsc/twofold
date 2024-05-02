@@ -17,6 +17,12 @@ export default function SearchParams({
 
       <div className="mt-8 flex flex-col space-y-4">
         <Link
+          href="/routing/search-params"
+          className="text-blue-500 hover:text-blue-600 hover:underline"
+        >
+          (no search params)
+        </Link>
+        <Link
           href="/routing/search-params?foo=bar"
           className="text-blue-500 hover:text-blue-600 hover:underline"
         >

@@ -10,7 +10,7 @@ type Tree = any;
 
 type State = {
   path: string;
-  action: "none" | "refresh" | "navigate" | "popstate";
+  action: "seed" | "populate" | "refresh" | "navigate" | "popstate";
   history: "none" | "push" | "replace";
   cache: Map<string, Tree>;
 };
@@ -161,7 +161,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
-            action: "none",
+            action: "populate",
             history: "none",
             cache: newCache,
           };
@@ -197,7 +197,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             path: rsc.path,
-            action: "none",
+            action: "populate",
             history: "none",
             cache: newCache,
           };
@@ -343,7 +343,7 @@ async function getInitialRouterState() {
 
   return {
     path,
-    action: "none",
+    action: "seed",
     history: "none",
     cache,
   } as const;

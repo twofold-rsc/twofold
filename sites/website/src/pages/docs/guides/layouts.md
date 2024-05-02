@@ -68,7 +68,7 @@ In addition to the `children` prop, layouts receive the same props passed to pag
 | `searchParams` | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | The query params in the URL             |
 | `request`      | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)                 | The request object for the HTTP request |
 
-## Layout mapping
+## URL mapping
 
 The table below serves as a reference for how URLs map to layout components. Each layout in the `src/pages` directory is listed with the URL it will render.
 

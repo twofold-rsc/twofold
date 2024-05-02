@@ -10,8 +10,6 @@ export default async function GuidesPage({
   let title = await getTitleFromSlug(slug);
   let headings = await getHeadingsFromSlug(slug);
 
-  console.log("headings", headings);
-
   return (
     <>
       <title>{title}</title>
@@ -35,13 +33,19 @@ export default async function GuidesPage({
         </div>
       </div>
       <div className="hidden lg:block">
-        <div className="sticky">
+        <div className="sticky top-8">
           <div className="text-gray-500 text-sm font-semibold">
             On this page
           </div>
           <ul className="space-y-1 mt-1">
             {headings.map((heading) => (
-              <li key={heading.title}>{heading.title}</li>
+              <li key={heading.title}>
+                <Link
+                  href={`/docs/guides/${slug}${heading.level > 1 ? `#${heading.id}` : ""}`}
+                >
+                  {heading.title}
+                </Link>
+              </li>
             ))}
           </ul>
         </div>

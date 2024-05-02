@@ -17,6 +17,8 @@ export function BrowserApp() {
   );
 }
 
+let origin = window.location.origin;
+
 function Router() {
   let [routerState, dispatch] = useRouterReducer();
 
@@ -81,7 +83,8 @@ function Router() {
 
   useLayoutEffect(() => {
     if (routerState.history === "push") {
-      let isOnPath = window.location.pathname === routerState.path;
+      let current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      let isOnPath = current === routerState.path;
       if (!isOnPath) {
         window.history.pushState({}, "", routerState.path);
       }
@@ -91,6 +94,21 @@ function Router() {
       document.documentElement.scrollTop = 0;
     }
   }, [routerState.path, routerState.history]);
+
+  useLayoutEffect(() => {
+    let url = new URL(routerState.path, window.location.href);
+    let hash = url.hash.slice(1);
+    let action = routerState.action;
+    let actionShouldScroll =
+      action === "seed" || action === "navigate" || action === "popstate";
+
+    if (actionShouldScroll && hash) {
+      let element = document.getElementById(hash);
+      if (element) {
+        element.scrollIntoView();
+      }
+    }
+  }, [routerState.path, routerState.action]);
 
   useEffect(() => {
     window.__twofold = {
@@ -121,10 +139,13 @@ function Router() {
     };
   }, [dispatch]);
 
+  let url = new URL(routerState.path, origin);
+  let path = url.pathname;
+
   return (
     <ErrorBoundary>
       <RoutingContext
-        path={routerState.path}
+        path={path}
         navigate={navigate}
         replace={replace}
         refresh={refresh}
