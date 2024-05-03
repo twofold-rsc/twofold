@@ -32,14 +32,18 @@ website
 - Server, client, server
 - Reasons to not use Twofold
 
+- header
+- og image
+- shiki
+- line length in md files
+- getting started install example
+
 framework
 
-- Link with hash should not send hash to server
-- useRouter.path should not include hash since server never sees it
+- clean up page request / ssr error handling
+
 - Expose isTransitioning prop on useRouter
 - Expose transitioningToPath prop on useRouter
-
-- Link should scroll to hash (router effect?)
 
 - test ssr-app error handling in prod
 

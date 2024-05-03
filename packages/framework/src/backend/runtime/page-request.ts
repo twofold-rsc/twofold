@@ -46,6 +46,7 @@ export class PageRequest {
   }
 
   async rscResponse(): Promise<Response> {
+    // middleware
     try {
       await this.runMiddleware();
     } catch (error: unknown) {
@@ -65,20 +66,9 @@ export class PageRequest {
       store.assets = assets;
     }
 
-    // props that our rsc will get
-    let url = new URL(this.#request.url);
-    let execPattern = this.#page.pattern.exec(url);
-    let params = execPattern?.pathname.groups ?? {};
-    let searchParams = url.searchParams;
-
-    let props = {
-      params,
-      searchParams,
-      request: this.#request,
-    };
-
+    // rendering
     let streamError: unknown;
-    let reactTree = await this.#page.reactTree(props);
+    let reactTree = await this.#page.reactTree(this.props);
     let rscStream = renderToReadableStream(
       reactTree,
       this.#runtime.clientComponentMap,
@@ -276,13 +266,28 @@ export class PageRequest {
     }
   }
 
+  private get props() {
+    // props that our rsc will get
+    let url = new URL(this.#request.url);
+    let execPattern = this.#page.pattern.exec(url);
+    let params = execPattern?.pathname.groups ?? {};
+    let searchParams = url.searchParams;
+
+    return {
+      params,
+      searchParams,
+      request: this.#request,
+    };
+  }
+
   private async runMiddleware() {
     let rsc = this.#page.rsc;
     let layouts = this.#page.layouts;
+    let props = this.props;
 
     let promises = [
-      rsc.runMiddleware(this.#request),
-      ...layouts.map((layout) => layout.rsc.runMiddleware(this.#request)),
+      rsc.runMiddleware(props),
+      ...layouts.map((layout) => layout.rsc.runMiddleware(props)),
     ];
 
     await Promise.all(promises);

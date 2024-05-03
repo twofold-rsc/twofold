@@ -17,10 +17,14 @@ export class RSC {
     this.css = css;
   }
 
-  async runMiddleware(request: Request) {
+  async runMiddleware(props: {
+    params: Record<string, string | undefined>;
+    searchParams: URLSearchParams;
+    request: Request;
+  }) {
     let module = await this.loadModule();
     if (module.before) {
-      module.before(request);
+      module.before(props);
     }
   }
 

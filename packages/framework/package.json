@@ -15,6 +15,7 @@
     "src"
   ],
   "exports": {
+    "./types": "./src/types/index.ts",
     "./twofold-framework": "./src/components/twofold-framework.tsx",
     "./link": "./src/components/link.tsx",
     "./use-router": "./src/hooks/use-router.ts",

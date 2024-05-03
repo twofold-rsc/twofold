@@ -155,11 +155,6 @@ export default function Nav() {
                         href="/http/middleware"
                       />
                       <ExampleLink
-                        title="Global middleware"
-                        description="Run code before handling a request."
-                        href="/http/middleware?global-middleware=1"
-                      />
-                      <ExampleLink
                         title="Streaming"
                         description="Stream suspense boundaries as they resolve."
                         href="/http/streaming"
