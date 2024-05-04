@@ -1,12 +1,31 @@
 import { ReactNode } from "react";
 import { DocLink } from "./doc-link";
-import { FadeIn } from "./fade-in";
+import { EnterDocsAnimation } from "../contexts/enter-docs";
+import Link from "@twofold/framework/link";
 
 export default function DocsLayout({ children }: { children: ReactNode }) {
   return (
-    <FadeIn>
-      <div className="px-4 gap-x-12 max-w-6xl w-full mx-auto grid grid-cols-5 mt-8">
-        <div className="">
+    <EnterDocsAnimation>
+      <header className="flex shadow-sm justify-center space-x-10 items-center border-b border-gray-300 py-4">
+        <Link href="/" className="text-gray-500">
+          Home
+        </Link>
+        <Link href="/docs" className="text-black">
+          Docs
+        </Link>
+        <a
+          href="https://github.com/twofold-rsc/twofold"
+          className="text-gray-500"
+        >
+          Github
+        </a>
+        <a href="https://buildui.com" className="text-gray-500">
+          Build UI
+        </a>
+      </header>
+
+      <div className="max-w-6xl w-full mx-auto px-4 gap-x-12 grid grid-cols-5 mt-8">
+        <div className="hidden sm:block">
           <div className="font-bold">Guides</div>
           <ul className="space-y-1 mt-1">
             <li>
@@ -67,6 +86,6 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
 
         {children}
       </div>
-    </FadeIn>
+    </EnterDocsAnimation>
   );
 }

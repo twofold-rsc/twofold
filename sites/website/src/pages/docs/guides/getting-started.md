@@ -12,7 +12,7 @@ You'll need to have [Node.js](https://nodejs.org) (>=20.9.0) and [PNPM](https://
 
 Run the following command to create a new Twofold application:
 
-```shell
+```text
 pnpm create twofold-app@latest
 ```
 
@@ -20,7 +20,7 @@ You'll be prompted to enter a name for your application.
 
 Enter any name you'd like, for this guide we'll use the name: **my-app**.
 
-```shell
+```text
 pnpm create twofold-app@latest
 
 ℹ  info      Welcome to the Twofold app generator!
@@ -44,13 +44,13 @@ Once the installer has finished it will create a new directory with the name of 
 
 Move into the new directory:
 
-```shell
+```text
 cd my-app
 ```
 
 And start the development server:
 
-```shell
+```text
 pnpm dev
 ```
 

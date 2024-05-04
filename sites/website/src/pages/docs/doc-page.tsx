@@ -8,7 +8,8 @@ import Markdoc, {
 import { readFile, readdir } from "fs/promises";
 import * as path from "path";
 import React, { cache } from "react";
-import { Counter } from "./counter";
+import { Counter } from "./components/counter";
+import { Fence } from "./components/fence";
 import { notFound } from "@twofold/framework/not-found";
 import Link from "@twofold/framework/link";
 
@@ -28,7 +29,7 @@ export async function DocPage({
   return (
     <>
       <title>{title}</title>
-      <div className="col-span-4 lg:col-span-3 min-w-0">
+      <div className="col-span-5 sm:col-span-4 lg:col-span-3 min-w-0">
         <div>
           <div className="flex items-center space-x-2 font-medium">
             <span className="text-gray-500">Docs</span>
@@ -74,6 +75,7 @@ export async function DocPage({
 async function MarkdocContent({ content }: { content: RenderableTreeNodes }) {
   let components = {
     Counter,
+    Fence,
   };
 
   return <>{Markdoc.renderers.react(content, React, { components })}</>;
@@ -108,6 +110,7 @@ let loadDocContent = cache(
       },
       nodes: {
         heading,
+        fence,
       },
       variables: {},
     };
@@ -116,6 +119,43 @@ let loadDocContent = cache(
     return content;
   },
 );
+
+let heading: Schema = {
+  children: ["inline"],
+  attributes: {
+    id: { type: String },
+    level: { type: Number, required: true, default: 1 },
+  },
+  transform(node, config) {
+    let attributes = node.transformAttributes(config);
+    let children = node.transformChildren(config);
+
+    let id =
+      attributes.id && typeof attributes.id === "string"
+        ? attributes.id
+        : children
+            .filter((child) => typeof child === "string")
+            .join(" ")
+            .replace(/[?]/g, "")
+            .replace(/\s+/g, "-")
+            .toLowerCase();
+
+    return new Tag(
+      `h${node.attributes["level"]}`,
+      { ...attributes, id },
+      children,
+    );
+  },
+};
+
+let fence: Schema = {
+  render: "Fence",
+  attributes: {
+    language: {
+      type: String,
+    },
+  },
+};
 
 async function getDocSlugs(dir: "guides" | "reference") {
   let directoryPath = path.join(process.cwd(), `./src/pages/docs/${dir}`);
@@ -184,31 +224,3 @@ function getHeadings(
 
   return sections;
 }
-
-let heading: Schema = {
-  children: ["inline"],
-  attributes: {
-    id: { type: String },
-    level: { type: Number, required: true, default: 1 },
-  },
-  transform(node, config) {
-    let attributes = node.transformAttributes(config);
-    let children = node.transformChildren(config);
-
-    let id =
-      attributes.id && typeof attributes.id === "string"
-        ? attributes.id
-        : children
-            .filter((child) => typeof child === "string")
-            .join(" ")
-            .replace(/[?]/g, "")
-            .replace(/\s+/g, "-")
-            .toLowerCase();
-
-    return new Tag(
-      `h${node.attributes["level"]}`,
-      { ...attributes, id },
-      children,
-    );
-  },
-};

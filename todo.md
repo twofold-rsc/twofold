@@ -3,40 +3,28 @@
 base-app
 
 - remove title from layout
+- add: <meta name="viewport" content="width=device-width, initial-scale=1" />
 - add title to index
 
 website
 
-- Getting started
-- Pages
-- Layouts
-- Data fetching
-- Mutation
-- Interactivity
-- Styling
+- Link
+- useRouter
+- Reasons to not use Twofold
 
 - Loading screens
 - Error handling
 - Deploying
 
-- Cookies
-- Redirects
-- Not found
-- Middleware
-
-- Link
-
-- useRouter
-
 - One app
 - Server, client, server
-- Reasons to not use Twofold
 
-- header
 - og image
-- shiki
+- mobile
 - line length in md files
 - getting started install example
+
+- off site icons
 
 framework
 
