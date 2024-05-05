@@ -10,6 +10,7 @@ import * as path from "path";
 import React, { cache } from "react";
 import { Counter } from "./components/counter";
 import { Fence } from "./components/fence";
+import { CreateTwofoldApp } from "./components/create-twofold-app";
 import { notFound } from "@twofold/framework/not-found";
 import Link from "@twofold/framework/link";
 
@@ -82,6 +83,7 @@ async function MarkdocContent({ content }: { content: RenderableTreeNodes }) {
   let components = {
     Counter,
     Fence,
+    CreateTwofoldApp,
   };
 
   return <>{Markdoc.renderers.react(content, React, { components })}</>;
@@ -115,6 +117,11 @@ let loadDocContent = cache(
       tags: {
         counter: {
           render: "Counter",
+          children: [],
+          attributes: {},
+        },
+        ["create-twofold-app"]: {
+          render: "CreateTwofoldApp",
           children: [],
           attributes: {},
         },

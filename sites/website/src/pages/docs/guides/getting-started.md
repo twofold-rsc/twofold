@@ -2,7 +2,7 @@
 
 Welcome to the Twofold documentation! This guide will help you setup your first RSC application.
 
-Before setting up your application it's recommended you read [Reasons you shouldn't use Twofold](/docs/guides/reasons-you-shouldnt-use-twofold).
+Before setting up your application it's recommended you read [Don't use Twofold](/docs/philosophy/dont-use-twofold).
 
 ## Prerequisites
 
@@ -20,25 +20,7 @@ You'll be prompted to enter a name for your application.
 
 Enter any name you'd like, for this guide we'll use the name: **my-app**.
 
-```text
-pnpm create twofold-app@latest
-
-ℹ  info      Welcome to the Twofold app generator!
-
-✔  What is the name of your app?  my-app
-
-☐  pending   Setting up a new Twofold app...
-☒  complete  App created!
-☐  pending   Installing dependencies. This may take a minute...
-☒  complete  Dependencies installed!
-☐  pending   Initializing git repository...
-☒  complete  Git repository created!
-
-✔  success   All set!
-
-ℹ  info      App installed at: ./my-app/
-ℹ  info      Run app: cd my-app && pnpm dev
-```
+{% create-twofold-app /%}
 
 Once the installer has finished it will create a new directory with the name of your application.
 

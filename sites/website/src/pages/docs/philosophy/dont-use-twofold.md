@@ -18,7 +18,7 @@ There is also a significant learning curve when it comes to understanding how to
 - Transitions
 - New React APIs like `useOptimistic`, `useActionState`, and so on.
 
-If you want to focus on other areas of application development instead of learning these new concepts then Twofold is not a good fit for you.
+If you want to focus on other areas of application development instead of learning these new concepts then Twofold is not a good fit.
 
 ## Not production ready
 
