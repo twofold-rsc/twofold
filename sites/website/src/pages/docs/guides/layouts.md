@@ -9,11 +9,11 @@ Layouts are always named `layout.tsx` and are placed in the `src/pages` director
 The root layout in your application is the layout that wraps every page component. It's the first layout that is rendered when visiting a URL.
 
 ```tsx
-import { ReactNode } from "react";
 import "./global.css";
 import TwofoldFramework from "@twofold/framework/twofold-framework";
+import { LayoutProps } from "@twofold/framework/types";
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: LayoutProps) {
   return (
     <html>
       <head>
@@ -37,7 +37,9 @@ Layouts that are nested will create a hierarchy of layouts. When a page componen
 ```tsx
 // src/pages/posts/layout.tsx
 
-export default function PostsLayout({ children }: { children: ReactNode }) {
+import { LayoutProps } from "@twofold/framework/types";
+
+export default function PostsLayout({ children }: LayoutProps) {
   return (
     <div>
       <header>Posts Header</header>
@@ -58,15 +60,30 @@ Layouts receive a `children` prop that contains the child layouts and page compo
 
 Layout components will re-render and receive new children as you navigate around the application.
 
-## Additional props
+## Props
 
 In addition to the `children` prop, layouts receive the same props passed to pages:
 
 | Prop           | Type                                                                                  | Description                             |
 | -------------- | ------------------------------------------------------------------------------------- | --------------------------------------- |
-| `params`       | `Record<string, string>`                                                              | The dynamic params in the URL           |
+| `children`     | `ReactNode`                                                                           | The child layouts and page component    |
+| `params`       | `Record<string, string \| undefined>`                                                 | The dynamic params in the URL           |
 | `searchParams` | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | The query params in the URL             |
 | `request`      | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)                 | The request object for the HTTP request |
+
+## Types
+
+A special `LayoutProps` type can be imported from `@twofold/framework/types` that provides types for the props passed to pages.
+
+```tsx
+// src/pages/posts/layout.tsx
+
+import { LayoutProps } from "@twofold/framework/types";
+
+export default function PostsLayout(props: LayoutProps) {
+  // ...
+}
+```
 
 ## URL mapping
 

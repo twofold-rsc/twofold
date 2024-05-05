@@ -37,28 +37,54 @@ Pages can contain dynamic params in their URLs. These params are denoted by a `$
 ```tsx
 // src/pages/posts/$slug.page.tsx
 
-export default function PostsSlugPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  return <div>You are viewing: {post.slug}</div>;
+import { PageProps } from "@twofold/framework/types";
+
+export default function PostsSlugPage({ params }: PageProps<"slug">) {
+  return <div>You are viewing: {params.slug}</div>;
 }
 ```
 
 The above `PostsSlugPage` component will be rendered when visiting `/posts/hello-world`, `/posts/another-post`, or any other URL that matches the pattern `/posts/:slug`.
 
-## Additional props
+## Props
 
 Every page component is given a handful of props when rendered.
 
 | Prop           | Type                                                                                  | Description                             |
 | -------------- | ------------------------------------------------------------------------------------- | --------------------------------------- |
-| `params`       | `Record<string, string>`                                                              | The dynamic params in the URL           |
+| `params`       | `Record<string, string \| undefined >`                                                | The dynamic params in the URL           |
 | `searchParams` | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | The query params in the URL             |
 | `request`      | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)                 | The request object for the HTTP request |
 
 It is important to note that these params are immutable and should not be modified. Changing these values does not have any effect on the URL or the page's state and can lead to unexpected behavior.
+
+## Types
+
+A special `PageProps` type can be imported from `@twofold/framework/types` that provides types for the props passed to pages.
+
+This type can take a type argument that represents the dynamic params in the URL.
+
+```tsx
+// src/pages/posts/$slug.page.tsx
+
+import { PageProps } from "@twofold/framework/types";
+
+export default function PostsSlugPage(props: PageProps<"slug">) {
+  // ...
+}
+```
+
+And for pages without dynamic params, the `PageProps` type can be used without any type arguments.
+
+```tsx
+// src/pages/posts/index.page.tsx
+
+import { PageProps } from "@twofold/framework/types";
+
+export default function PostsSlugPage(props: PageProps) {
+  // ...
+}
+```
 
 ## URL mapping
 

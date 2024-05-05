@@ -4,12 +4,13 @@ base-app
 
 website
 
+- try using LayoutProps in kitchen sink
 - release
-- improve pages/layout docs
-- getting started install example
+
 - h2 slugs "use client" section of interactivity
 - deploy
 
+- Routing + Pages & Layouts to reference
 - Loading screens
 - Error handling
 - Deploying

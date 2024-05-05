@@ -1,9 +1,9 @@
-import { ReactNode } from "react";
 import "./global.css";
 import Nav from "./nav";
 import TwofoldFramework from "@twofold/framework/twofold-framework";
+import { LayoutProps } from "@twofold/framework/types";
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: LayoutProps) {
   return (
     <html className="bg-gray-50/10">
       <head>

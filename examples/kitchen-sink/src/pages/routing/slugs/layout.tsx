@@ -1,13 +1,7 @@
-import { ReactNode } from "react";
 import Link from "@twofold/framework/link";
+import { LayoutProps } from "@twofold/framework/types";
 
-export default function SlugLayout({
-  params,
-  children,
-}: {
-  params: { slug: string };
-  children: ReactNode;
-}) {
+export default function SlugLayout({ params, children }: LayoutProps) {
   let slug = params.slug;
 
   return (
