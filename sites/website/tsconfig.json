@@ -6,7 +6,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "target": "ESNext",
-    "types": ["react/experimental", "react-dom/experimental", "node"],
+    "types": ["react/experimental", "react-dom/experimental", "node"]
   },
-  "include": ["./src/"],
+  "include": ["./src/"]
 }

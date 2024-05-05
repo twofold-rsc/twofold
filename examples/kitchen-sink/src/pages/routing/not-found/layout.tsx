@@ -25,6 +25,23 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/routing/not-found/async-page-calls-not-found"
+              className="text-blue-500 underline"
+            >
+              Async page calls notFound
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              href="/routing/not-found/delayed-not-found"
+              className="text-blue-500 underline"
+            >
+              Delayed notFound
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/not-found/suspended-not-found"
               className="text-blue-500 underline"
             >

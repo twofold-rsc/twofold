@@ -1,22 +1,55 @@
 # TODO
 
-react-version
-update template app
-
-publish:
-
-create-app
-framework
+base-app
 
 website
 
-- layouts
+- release
+- improve pages/layout docs
+- getting started install example
+- h2 slugs "use client" section of interactivity
+- deploy
+
+- Loading screens
+- Error handling
+- Deploying
+
+- One app
+- Server, client, server
+
+- mobile menu
+
+- line length in md files
+- newsletter signup
+- setup website with eslint, tailwind prettier
+- docs md files should use <Link>
+- final read
 
 framework
 
-- bug: visit route, rename file, build error
+- clean up page request / ssr error handling
 
-- reset form
+- Expose isTransitioning prop on useRouter
+- Expose transitioningToPath prop on useRouter
+
+- test ssr-app error handling in prod
+
+- not found and redirect should be server only
+
+- monkey patch console.error for not found/redirect boundaries
+
+- preinit module loading
+- use server.edge client to render
+- get rid of console logs
+- add 2d chunk array (ssrManifest)
+
+- run middleware in RSC
+
+- sessions
+
+- reload on file changes under pages?
+
+- bug: visit route, rename file, build error
 
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
@@ -167,3 +200,42 @@ Form
 ## Design
 
 - https://twitter.com/jh3yy/status/1712881626969997355
+
+```tsx
+// client component map for rsc server render
+{
+  "link-63a8b9c9cd59152bb0931307b8e22426#default": {
+    id: "link-63a8b9c9cd59152bb0931307b8e22426#default",
+    chunks: [
+      "link-63a8b9c9cd59152bb0931307b8e22426:entries/link:KM6HTJ3G",
+      "/entries/link-KM6HTJ3G.js",
+    ],
+    name: "default",
+  },
+},
+```
+
+```tsx
+// create from readable stream
+let x = createFromReadableStream(t1, {
+  ssrManifest: {
+    moduleMap: {
+      "link-63a8b9c9cd59152bb0931307b8e22426#default": {
+        default: {
+          id: "link-63a8b9c9cd59152bb0931307b8e22426#default",
+          chunks: [
+            "link-63a8b9c9cd59152bb0931307b8e22426:entries/link:KM6HTJ3G",
+            "/entries/link-KM6HTJ3G.js",
+          ],
+          name: "default",
+        },
+      },
+    },
+    moduleLoading: {
+      prefix: "/",
+    },
+  },
+});
+
+console.log(Array.from(x._response._chunks.values()).map((p) => p.status));
+```

@@ -6,13 +6,13 @@ import {
   renderToReadableStream,
   // @ts-ignore
 } from "react-server-dom-webpack/server.edge";
-import { readStream } from "../steams/process-stream.js";
 import {
   isNotFoundError,
   isRedirectError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
 import { randomUUID } from "node:crypto";
+import { deserializeError } from "serialize-error";
 
 export class PageRequest {
   #page: Page;
@@ -42,6 +42,7 @@ export class PageRequest {
   }
 
   async rscResponse(): Promise<Response> {
+    // middleware
     try {
       await this.runMiddleware();
     } catch (error: unknown) {
@@ -58,23 +59,12 @@ export class PageRequest {
     let store = getStore();
     let assets = this.#page.assets.map((asset) => `/_assets/styles/${asset}`);
     if (store) {
-      store.assets = [...store.assets, ...assets];
+      store.assets = assets;
     }
 
-    // props that our rsc will get
-    let url = new URL(this.#request.url);
-    let execPattern = this.#page.pattern.exec(url);
-    let params = execPattern?.pathname.groups ?? {};
-    let searchParams = url.searchParams;
-
-    let props = {
-      params,
-      searchParams,
-      request: this.#request,
-    };
-
+    // rendering
     let streamError: unknown;
-    let reactTree = await this.#page.reactTree(props);
+    let reactTree = await this.#page.reactTree(this.props);
     let rscStream = renderToReadableStream(
       reactTree,
       this.#runtime.clientComponentMap,
@@ -110,8 +100,6 @@ export class PageRequest {
     reader.releaseLock();
     t1.cancel();
 
-    // if there's a twofold error and the first chunk hasn't been sent
-    // then we can abort
     if (streamError) {
       if (isNotFoundError(streamError)) {
         t2.cancel();
@@ -141,7 +129,7 @@ export class PageRequest {
     });
   }
 
-  async ssrResponse() {
+  async ssrResponse(): Promise<Response> {
     let rscResponse = await this.rscResponse();
 
     // response is not SSRable
@@ -153,59 +141,77 @@ export class PageRequest {
 
     let { port1, port2 } = new MessageChannel();
 
-    let htmlStream = new ReadableStream({
-      start(controller) {
-        let handle = function (m: Uint8Array | string) {
-          if (typeof m === "string" && m === "DONE") {
-            controller.close();
-            port1.off("message", handle);
-            port1.close();
-          } else {
-            controller.enqueue(m);
-          }
-        };
-        port1.on("message", handle);
-      },
-    });
-
     if (!this.#runtime.ssrWorker) {
       throw new Error("Worker not available");
     }
+
+    let transformStream = new TransformStream();
+    let writeStream = transformStream.writable;
+    let readStream = transformStream.readable;
+
+    let getMessage = new Promise<Record<string, any>>((resolve) => {
+      let handle = function (msg: Record<string, any>) {
+        resolve(msg);
+        port1.off("message", handle);
+        port1.close();
+      };
+      port1.on("message", handle);
+    });
 
     let url = new URL(this.#request.url);
     this.#runtime.ssrWorker.postMessage(
       {
         pathname: url.pathname,
         port: port2,
+        rscStream,
+        writeStream,
       },
-      [port2],
+      // @ts-ignore - streams should be transferrable
+      [port2, rscStream, writeStream],
     );
 
-    readStream(rscStream, {
-      onRead(value) {
-        port1.postMessage(value, [value.buffer]);
-      },
-      onDone() {
-        port1.postMessage("DONE");
-      },
-    });
+    let message = await getMessage;
 
-    let headers = new Headers(rscResponse.headers);
-    headers.set("Content-type", "text/html");
+    if (message.status === "OK") {
+      return new Response(readStream);
+    } else if (message.status === "ERROR") {
+      let error = deserializeError(message.serializedError);
 
-    return new Response(htmlStream, {
-      status: rscResponse.status,
-      headers,
-    });
+      if (isNotFoundError(error)) {
+        return this.notFoundSsrResponse();
+      } else if (isRedirectError(error)) {
+        let { status, url } = redirectErrorInfo(error);
+        return this.redirectResponse(status, url);
+      } else {
+        throw error;
+      }
+    } else {
+      throw new Error("SSR worker failed to render");
+    }
+  }
+
+  private get props() {
+    // props that our rsc will get
+    let url = new URL(this.#request.url);
+    let execPattern = this.#page.pattern.exec(url);
+    let params = execPattern?.pathname.groups ?? {};
+    let searchParams = url.searchParams;
+
+    return {
+      params,
+      searchParams,
+      request: this.#request,
+    };
   }
 
   private async runMiddleware() {
     let rsc = this.#page.rsc;
     let layouts = this.#page.layouts;
+    let props = this.props;
 
     let promises = [
-      rsc.runMiddleware(this.#request),
-      ...layouts.map((layout) => layout.rsc.runMiddleware(this.#request)),
+      rsc.runMiddleware(props),
+      ...layouts.map((layout) => layout.rsc.runMiddleware(props)),
     ];
 
     await Promise.all(promises);
@@ -218,6 +224,15 @@ export class PageRequest {
 
     let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
     return notFoundRequest.rscResponse();
+  }
+
+  private notFoundSsrResponse() {
+    if (this.isNotFound) {
+      throw new Error("The not-found page cannot call notFound()");
+    }
+
+    let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
+    return notFoundRequest.ssrResponse();
   }
 
   private redirectResponse(status: number, url: string) {

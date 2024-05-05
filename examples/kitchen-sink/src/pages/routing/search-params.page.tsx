@@ -1,10 +1,7 @@
 import Link from "@twofold/framework/link";
+import { PageProps } from "@twofold/framework/types";
 
-export default function SearchParams({
-  searchParams,
-}: {
-  searchParams: URLSearchParams;
-}) {
+export default function SearchParams({ searchParams }: PageProps) {
   return (
     <div>
       <h1 className="text-4xl font-black tracking-tighter">Search params</h1>
@@ -16,6 +13,12 @@ export default function SearchParams({
       </div>
 
       <div className="mt-8 flex flex-col space-y-4">
+        <Link
+          href="/routing/search-params"
+          className="text-blue-500 hover:text-blue-600 hover:underline"
+        >
+          (no search params)
+        </Link>
         <Link
           href="/routing/search-params?foo=bar"
           className="text-blue-500 hover:text-blue-600 hover:underline"

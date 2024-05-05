@@ -3,8 +3,8 @@ export default function middleware(req: Request) {
 
   // match SSR requests as well as RSC client-side navigation requests
   if (
-    url.searchParams.has("global-middleware") ||
-    url.searchParams.get("path")?.match(/global-middleware/)
+    url.pathname.includes("/middleware/global") ||
+    url.searchParams.get("path")?.match(/middleware\/global/)
   ) {
     console.log("running global middleware function!");
   }

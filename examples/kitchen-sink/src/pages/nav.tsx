@@ -6,10 +6,12 @@ import Link from "@twofold/framework/link";
 import { ReactNode } from "react";
 
 export default function Nav() {
+  // return null;
+
   let { path } = useRouter();
 
   return (
-    <NavigationMenu.Root className="relative mt-4 flex w-screen justify-center">
+    <NavigationMenu.Root className="relative z-10 mt-4 flex w-screen justify-center">
       <NavigationMenu.List className="center flex items-center justify-center space-x-12">
         <NavigationMenu.Item>
           <NavigationMenu.Trigger>Twofold</NavigationMenu.Trigger>
@@ -153,11 +155,6 @@ export default function Nav() {
                         href="/http/middleware"
                       />
                       <ExampleLink
-                        title="Global middleware"
-                        description="Run code before handling a request."
-                        href="/http/middleware?global-middleware=1"
-                      />
-                      <ExampleLink
                         title="Streaming"
                         description="Stream suspense boundaries as they resolve."
                         href="/http/streaming"
@@ -202,6 +199,11 @@ export default function Nav() {
                         title="Search params"
                         description="Read query search params from the URL."
                         href="/routing/search-params"
+                      />
+                      <ExampleLink
+                        title="Link fragments"
+                        description="Use fragments to link to different content on the page."
+                        href="/routing/fragments"
                       />
                       <ExampleLink
                         title="Nested layouts"
@@ -271,7 +273,7 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
-                    <NavigationMenu.Indicator className="z-1 -right-5 flex h-6 items-center justify-center overflow-hidden">
+                    <NavigationMenu.Indicator className="-right-5 z-10 flex h-6 items-center justify-center overflow-hidden">
                       <div className="relative -left-[70%] flex h-6 w-6 rotate-45 items-center justify-center rounded-[3px] bg-gray-100">
                         <div className="relative h-4 w-4 rounded-[1.5px] bg-white" />
                       </div>
@@ -287,7 +289,7 @@ export default function Nav() {
           </NavigationMenu.Content>
         </NavigationMenu.Item>
 
-        <NavigationMenu.Indicator className="z-1 top-full flex h-2.5 items-end justify-center overflow-hidden">
+        <NavigationMenu.Indicator className="top-full z-10 flex h-2.5 items-end justify-center overflow-hidden">
           <div className="relative top-[70%] h-2.5 w-2.5 rotate-45 rounded-tl-[2px] bg-gray-300" />
         </NavigationMenu.Indicator>
       </NavigationMenu.List>

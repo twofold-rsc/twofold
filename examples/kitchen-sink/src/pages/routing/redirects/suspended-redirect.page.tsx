@@ -1,4 +1,3 @@
-import { notFound } from "@twofold/framework/not-found";
 import { redirect } from "@twofold/framework/redirect";
 import { Suspense } from "react";
 
