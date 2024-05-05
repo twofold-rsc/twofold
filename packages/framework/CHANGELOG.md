@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.18
+
+### Patch Changes
+
+- Prop fix
+
 ## 0.0.17
 
 ### Patch Changes
