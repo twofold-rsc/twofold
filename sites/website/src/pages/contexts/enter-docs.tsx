@@ -1,14 +1,7 @@
 "use client";
 
 import Link from "@twofold/framework/link";
-import {
-  AnimationSequence,
-  DOMKeyframesDefinition,
-  DOMSegmentWithTransition,
-  DynamicAnimationOptions,
-  Segment,
-  useAnimate,
-} from "framer-motion";
+import { useAnimate } from "framer-motion";
 import { useRouter } from "@twofold/framework/use-router";
 import {
   AnchorHTMLAttributes,
@@ -50,11 +43,12 @@ export function EnterDocs({
       [
         "[data-enter-docs-section='grid']",
         {
-          transform: "scale(26)",
+          scale: 26,
+          // transform: "scale(26)",
           backgroundColor: "rgb(229,231,235)",
         },
         {
-          duration: 1,
+          duration: 0.8,
           ease: [0.5, 0, 0.75, 0],
           at: "<",
         },

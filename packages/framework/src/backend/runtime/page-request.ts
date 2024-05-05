@@ -7,10 +7,6 @@ import {
   // @ts-ignore
 } from "react-server-dom-webpack/server.edge";
 import {
-  createFromReadableStream,
-  // @ts-ignore
-} from "react-server-dom-webpack/client.edge";
-import {
   isNotFoundError,
   isRedirectError,
   redirectErrorInfo,
@@ -72,19 +68,8 @@ export class PageRequest {
     let rscStream = renderToReadableStream(
       reactTree,
       this.#runtime.clientComponentMap,
-      // {
-      //   "link-63a8b9c9cd59152bb0931307b8e22426#default": {
-      //     id: "link-63a8b9c9cd59152bb0931307b8e22426#default",
-      //     chunks: [
-      //       "link-63a8b9c9cd59152bb0931307b8e22426:entries/link:KM6HTJ3G",
-      //       "/entries/link-KM6HTJ3G.js",
-      //     ],
-      //     name: "default",
-      //   },
-      // },
       {
         onError(err: unknown) {
-          console.log("got error");
           streamError = err;
           if (
             (isNotFoundError(err) || isRedirectError(err)) &&
@@ -110,71 +95,10 @@ export class PageRequest {
 
     // await the first chunk
     let [t1, t2] = rscStream.tee();
-    // let x = createFromReadableStream(t1, {
-    //   ssrManifest: {
-    //     moduleMap: {
-    //       "link-63a8b9c9cd59152bb0931307b8e22426#default": {
-    //         default: {
-    //           id: "link-63a8b9c9cd59152bb0931307b8e22426#default",
-    //           chunks: [
-    //             "link-63a8b9c9cd59152bb0931307b8e22426:entries/link:KM6HTJ3G",
-    //             "/entries/link-KM6HTJ3G.js",
-    //           ],
-    //           name: "default",
-    //         },
-    //       },
-    //     },
-    //     moduleLoading: {
-    //       prefix: "/",
-    //     },
-    //   },
-    // });
-
-    // console.log(x);
-
-    // console.log(Array.from(x._response._chunks.values()).map((p) => p.status));
-    // let c = await x;
-    // let e = c.props.children[1].props.children;
-
-    // console.log(Array.from(x._response._chunks.keys()));
-
-    // let values = Array.from(x._response._chunks.values());
-    // console.log(values.length);
-    // console.log(values.map((p) => p.status));
-    // let pending = values.filter((p) => p.status === "pending");
-
-    // console.log("pending");
-    // console.log(pending);
-
-    // setTimeout(() => {
-    //   console.log("--- RE LOG PENDING ---");
-    //   console.log(pending);
-    //   console.log("--- RE LOG ---");
-    //   let values = Array.from(x._response._chunks.values());
-    //   console.log(values.length);
-    //   console.log(values.map((p) => p.status));
-    //   // console.log(x._response._chunks);
-    // }, 1_000);
-
-    // setTimeout(() => {
-    //   console.log("--- RE LOG ---");
-    //   console.log(
-    //     Array.from(x._response._chunks.values()).map((p) => p.status),
-    //   );
-    //   // console.log(x._response._chunks);
-    // }, 7_000);
-    // console.log(JSON.stringify(c, null, 2));
-
-    // let c = await x;
-    // console.log(x);
-    // console.log(c);
-    // console.log(JSON.stringify(c, null, 2));
     let reader = t1.getReader();
     await reader.read();
     reader.releaseLock();
     t1.cancel();
-
-    // return new Response(null);
 
     if (streamError) {
       if (isNotFoundError(streamError)) {
@@ -242,7 +166,7 @@ export class PageRequest {
         rscStream,
         writeStream,
       },
-      // @ts-ignore
+      // @ts-ignore - streams should be transferrable
       [port2, rscStream, writeStream],
     );
 

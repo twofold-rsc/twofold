@@ -19,9 +19,6 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
         >
           Github
         </a>
-        <a href="https://buildui.com" className="text-gray-500">
-          Build UI
-        </a>
       </header>
 
       <div className="max-w-6xl w-full mx-auto px-4 gap-x-12 grid grid-cols-5 mt-8">
@@ -72,14 +69,23 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
           <div className="font-bold mt-6">Components</div>
           <ul className="space-y-1 mt-1">
             <li>
-              <DocLink href="/docs/components/link">Link</DocLink>
+              <DocLink href="/docs/reference/link">Link</DocLink>
             </li>
           </ul>
 
           <div className="font-bold mt-6">Hooks</div>
           <ul className="space-y-1 mt-1">
             <li>
-              <DocLink href="/docs/guides/">useRouter</DocLink>
+              <DocLink href="/docs/reference/use-router">useRouter</DocLink>
+            </li>
+          </ul>
+
+          <div className="font-bold mt-6">Philosophy</div>
+          <ul className="space-y-1 mt-1">
+            <li>
+              <DocLink href="/docs/philosophy/dont-use-twofold">
+                Don't use Twofold
+              </DocLink>
             </li>
           </ul>
         </div>

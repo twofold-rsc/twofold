@@ -1,6 +1,6 @@
 {
   "name": "base-app",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "private": true,
   "description": "",
   "type": "module",
@@ -23,8 +23,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
-    "@types/react": "^18.2.79",
-    "@types/react-dom": "^18.2.25",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
     "eslint": "^8.57.0",
     "eslint-plugin-twofold": "workspace:*",
     "prettier": "^3.2.5",

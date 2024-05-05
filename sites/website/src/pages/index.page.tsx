@@ -8,7 +8,13 @@ export default async function Page() {
 
   return (
     <>
-      <title>Twofold React framework</title>
+      <title>Twofold</title>
+      <meta property="og:title" content="Twofold" />
+      <meta
+        property="og:description"
+        content="A React Server Component framework"
+      />
+
       <div className="relative grow flex flex-col items-center justify-center">
         <div
           data-enter-docs-section="grid"

@@ -2,15 +2,13 @@
 
 base-app
 
-- remove title from layout
-- add: <meta name="viewport" content="width=device-width, initial-scale=1" />
-- add title to index
-
 website
 
-- Link
-- useRouter
-- Reasons to not use Twofold
+- release
+- improve pages/layout docs
+- getting started install example
+- h2 slugs "use client" section of interactivity
+- deploy
 
 - Loading screens
 - Error handling
@@ -19,12 +17,13 @@ website
 - One app
 - Server, client, server
 
-- og image
-- mobile
-- line length in md files
-- getting started install example
+- mobile menu
 
-- off site icons
+- line length in md files
+- newsletter signup
+- setup website with eslint, tailwind prettier
+- docs md files should use <Link>
+- final read
 
 framework
 
@@ -201,3 +200,42 @@ Form
 ## Design
 
 - https://twitter.com/jh3yy/status/1712881626969997355
+
+```tsx
+// client component map for rsc server render
+{
+  "link-63a8b9c9cd59152bb0931307b8e22426#default": {
+    id: "link-63a8b9c9cd59152bb0931307b8e22426#default",
+    chunks: [
+      "link-63a8b9c9cd59152bb0931307b8e22426:entries/link:KM6HTJ3G",
+      "/entries/link-KM6HTJ3G.js",
+    ],
+    name: "default",
+  },
+},
+```
+
+```tsx
+// create from readable stream
+let x = createFromReadableStream(t1, {
+  ssrManifest: {
+    moduleMap: {
+      "link-63a8b9c9cd59152bb0931307b8e22426#default": {
+        default: {
+          id: "link-63a8b9c9cd59152bb0931307b8e22426#default",
+          chunks: [
+            "link-63a8b9c9cd59152bb0931307b8e22426:entries/link:KM6HTJ3G",
+            "/entries/link-KM6HTJ3G.js",
+          ],
+          name: "default",
+        },
+      },
+    },
+    moduleLoading: {
+      prefix: "/",
+    },
+  },
+});
+
+console.log(Array.from(x._response._chunks.values()).map((p) => p.status));
+```

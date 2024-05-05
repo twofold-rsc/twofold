@@ -17,29 +17,35 @@ export async function DocPage({
   type,
   slug,
 }: {
-  type: "guide" | "reference";
+  type: "guide" | "reference" | "philosophy";
   slug: string;
 }) {
   let content = await loadDocContent(type, slug);
   let title = getTitle(content);
   let headings = getHeadings(content);
 
-  let basePath = `/docs/${type === "guide" ? "guides" : "reference"}`;
+  let basePath = `/docs/${type === "guide" ? "guides" : type === "philosophy" ? "philosophy" : "reference"}`;
 
   return (
     <>
       <title>{title}</title>
+      <meta property="og:title" content={title} />
+
       <div className="col-span-5 sm:col-span-4 lg:col-span-3 min-w-0">
         <div>
           <div className="flex items-center space-x-2 font-medium">
             <span className="text-gray-500">Docs</span>
             <span className="text-gray-400 text-xs">/</span>
             <span className="text-gray-500">
-              {type === "guide" ? "Guides" : "Reference"}
+              {type === "guide"
+                ? "Guides"
+                : type === "philosophy"
+                  ? "Philosophy"
+                  : "Reference"}
             </span>
             <span className="text-gray-400 text-xs">/</span>
             <Link
-              href={`/${basePath}/${slug}`}
+              href={`${basePath}/${slug}`}
               className="text-blue-500 hover:underline active:text-blue-600"
             >
               {title}
@@ -82,11 +88,16 @@ async function MarkdocContent({ content }: { content: RenderableTreeNodes }) {
 }
 
 let loadDocContent = cache(
-  async (type: "guide" | "reference", slug: string) => {
+  async (type: "guide" | "reference" | "philosophy", slug: string) => {
     let allDocs = await availableDocs();
     let docs = allDocs[type];
 
-    let basePath = type === "guide" ? "guides" : "reference";
+    let basePath =
+      type === "guide"
+        ? "guides"
+        : type === "philosophy"
+          ? "philosophy"
+          : "reference";
 
     if (!docs.includes(slug)) {
       console.error(`Doc not found: ${type} ${slug}`);
@@ -157,7 +168,7 @@ let fence: Schema = {
   },
 };
 
-async function getDocSlugs(dir: "guides" | "reference") {
+async function getDocSlugs(dir: "guides" | "reference" | "philosophy") {
   let directoryPath = path.join(process.cwd(), `./src/pages/docs/${dir}`);
   let files = await readdir(directoryPath);
   return files
@@ -168,10 +179,12 @@ async function getDocSlugs(dir: "guides" | "reference") {
 let availableDocs = cache(async () => {
   let guide = await getDocSlugs("guides");
   let reference = await getDocSlugs("reference");
+  let philosophy = await getDocSlugs("philosophy");
 
   return {
     guide,
     reference,
+    philosophy,
   };
 });
 
