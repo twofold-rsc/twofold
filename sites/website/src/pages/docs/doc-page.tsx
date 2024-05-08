@@ -13,6 +13,7 @@ import { Fence } from "./components/fence";
 import { CreateTwofoldApp } from "./components/create-twofold-app";
 import { notFound } from "@twofold/framework/not-found";
 import Link from "@twofold/framework/link";
+import slugify from "@sindresorhus/slugify";
 
 export async function DocPage({
   type,
@@ -151,12 +152,9 @@ let heading: Schema = {
     let id =
       attributes.id && typeof attributes.id === "string"
         ? attributes.id
-        : children
-            .filter((child) => typeof child === "string")
-            .join(" ")
-            .replace(/[?]/g, "")
-            .replace(/\s+/g, "-")
-            .toLowerCase();
+        : slugify(
+            children.filter((child) => typeof child === "string").join(" "),
+          );
 
     return new Tag(
       `h${node.attributes["level"]}`,

@@ -1,14 +1,22 @@
 # TODO
 
+release
+
+- 0.0.0.0 server
+- fix 404 status codes
+
+ideas:
+
+gallery app
+trello app
+touch up website
+
 base-app
 
 website
 
-- try using LayoutProps in kitchen sink
-- release
-
-- h2 slugs "use client" section of interactivity
-- deploy
+- read through
+- README
 
 - Routing + Pages & Layouts to reference
 - Loading screens
@@ -24,64 +32,46 @@ website
 - newsletter signup
 - setup website with eslint, tailwind prettier
 - docs md files should use <Link>
-- final read
 
 framework
-
-- clean up page request / ssr error handling
 
 - Expose isTransitioning prop on useRouter
 - Expose transitioningToPath prop on useRouter
 
-- test ssr-app error handling in prod
-
 - not found and redirect should be server only
-
+- bundle error boundaries
 - monkey patch console.error for not found/redirect boundaries
-
-- preinit module loading
-- use server.edge client to render
-- get rid of console logs
-- add 2d chunk array (ssrManifest)
 
 - run middleware in RSC
 
 - sessions
 
-- reload on file changes under pages?
+- reload on file changes under pages? (ex editing an md file)
 
 - bug: visit route, rename file, build error
 
 - bug: back cache not working when error thrown
   go to server action throws error, trigger, then click back
 
-- error responses should update the url (visit an error page, url doesnt change)
-
 - does rsdw need to be an external?
-
 - bundle rsdw
 
 - custom error page for prod (errors/500.html)
 
 kitchen sink
 
-- action return types
-- strings, objects, thrown errors?
+- loading screens
+- dynamic segments as folders
 
-- reload then click a link to the page your on, you get a history entry when you shouldnt
 - action on page with blocking suspense
-- really fast action with slow page (to test streaming parts in order)
 - refresh a blocking suspense page
 - click link to page that suspends, then router.refresh before it loads
-- title/meta head tags
 - restart client builder if entries change
 - restart rsc builder if entries change
 - taint examples
 
 - Externals for RSC build (inc react)
   https://github.com/LinbuduLab/esbuild-plugins/tree/main/packages/esbuild-plugin-node-externals
-
-Docs
 
 Playwright
 Form
@@ -133,20 +123,14 @@ Form
 
 ## Build
 
-- [ ] unload css assets (in live reload)
-- [ ] How to keep rsc and app builder around
-- [ ] Time how long each build takes
 - [ ] Adding a file, deleting a file
 - [ ] Server should pause requests while building
-- [ ] Only run one build at a time
-- [ ] Live reload updates (client component first, make css independent)
 - [ ] List of dependencies that should be external
 - [ ] allow CC to import css
 - [ ] Worker for RSC
 - [ ] come up with way of building all apps (public, error, rsc, client)
 - [ ] check if middleware export default is a function
 - [ ] image imports (rsc, client)
-- [ ] Pinned canaries + rsdw
 
 ## Static files
 
@@ -162,21 +146,16 @@ Form
 ## Create twofold app
 
 - [ ] Ability to install pre-released version of twofold/framework
-- [ ] Verify version of pnpm
 
 ## Layouts
-
-- [ ] Control head/title/meta tags
 
 ## HMR
 
 - [ ] find the file that changed, if all capital then trigger refresh otherwise reload window
-- [ ] Disable fast refresh code for prod builds
 - [ ] Read this: https://bjornlu.com/blog/hot-module-replacement-is-easy#importmetahotaccept
 
 ## DX
 
-- Block requests during build
 - Link should only navigate with local urls
 - CSS should reload independent of RSC/CC reload. Possible for CC+CSS to change at same time.
 - Verify version of pnpm

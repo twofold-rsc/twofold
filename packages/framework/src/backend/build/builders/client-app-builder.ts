@@ -138,14 +138,17 @@ export class ClientAppBuilder extends Builder {
                 process.env.NODE_ENV !== "production";
 
               if (!enabled) {
-                build.onLoad({ filter: /ext(\/|\\)react-refresh/ }, async (args) => {
-                  if (args.path.startsWith(frameworkSrcPath)) {
-                    return {
-                      contents: "",
-                      loader: "empty",
-                    };
-                  }
-                });
+                build.onLoad(
+                  { filter: /ext(\/|\\)react-refresh/ },
+                  async (args) => {
+                    if (args.path.startsWith(frameworkSrcPath)) {
+                      return {
+                        contents: "",
+                        loader: "empty",
+                      };
+                    }
+                  },
+                );
               }
 
               if (enabled) {
@@ -331,14 +334,15 @@ export class ClientAppBuilder extends Builder {
       }
 
       // [moduleId:name:hash]
-      let chunk = `${moduleId}:${output.name}:${output.hash}`;
+      let chunk1 = `${moduleId}:${output.name}:${output.hash}`;
+      let chunk2 = `${output.name}-${output.hash}.js`;
 
       for (let exportName of clientComponent.exports) {
         let id = `${moduleId}#${exportName}`;
 
         clientComponentMap.set(id, {
           id,
-          chunks: [chunk],
+          chunks: [chunk1, chunk2],
           name: exportName,
           async: false,
         });
@@ -346,6 +350,55 @@ export class ClientAppBuilder extends Builder {
     }
 
     return Object.fromEntries(clientComponentMap.entries());
+  }
+
+  get ssrManifestModuleMap() {
+    let outputMap = this.#clientComponentOutputMap;
+
+    if (!outputMap) {
+      return {};
+    }
+
+    let clientComponents = Array.from(
+      this.#entriesBuilder.clientComponentModuleMap.values(),
+    );
+    let ssrManifestModuleMap = new Map<
+      string,
+      {
+        [exportName: string]: {
+          id: string;
+          chunks: string[];
+          name: string;
+        };
+      }
+    >();
+
+    for (let clientComponent of clientComponents) {
+      let { moduleId, path } = clientComponent;
+
+      let output = outputMap.get(path);
+      if (!output) {
+        throw new Error("Missing output");
+      }
+
+      // [moduleId:name:hash]
+      let chunk1 = `${moduleId}:${output.name}:${output.hash}`;
+      let chunk2 = `${output.name}-${output.hash}.js`;
+
+      for (let exportName of clientComponent.exports) {
+        let id = `${moduleId}#${exportName}`;
+
+        ssrManifestModuleMap.set(id, {
+          [exportName]: {
+            id,
+            chunks: [chunk1, chunk2],
+            name: exportName,
+          },
+        });
+      }
+    }
+
+    return Object.fromEntries(ssrManifestModuleMap.entries());
   }
 
   get chunks() {
