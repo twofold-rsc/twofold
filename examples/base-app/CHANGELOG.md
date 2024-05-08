@@ -1,5 +1,12 @@
 # base-app
 
+## 0.0.18
+
+### Patch Changes
+
+- Updated dependencies
+  - @twofold/framework@0.0.19
+
 ## 0.0.17
 
 ### Patch Changes

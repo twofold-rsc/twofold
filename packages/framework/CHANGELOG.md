@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.19
+
+### Patch Changes
+
+- fix a bug with 404 pages
+
 ## 0.0.18
 
 ### Patch Changes
