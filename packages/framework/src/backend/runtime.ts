@@ -6,7 +6,7 @@ import { ProdBuild } from "./build/prod-build.js";
 import { pathToFileURL } from "node:url";
 
 export class Runtime {
-  #hostname = "localhost";
+  #hostname = "0.0.0.0";
   #port = 3000;
   #build: DevBuild | ProdBuild;
   #ssrWorker?: Worker;
@@ -129,6 +129,8 @@ export class Runtime {
           appPath: this.#build.getBuilder("client").SSRAppPath,
           clientComponentModuleMap:
             this.#build.getBuilder("client").clientComponentModuleMap,
+          ssrManifestModuleMap:
+            this.#build.getBuilder("client").ssrManifestModuleMap,
         },
         execArgv: ["-C", "default"],
         env: {

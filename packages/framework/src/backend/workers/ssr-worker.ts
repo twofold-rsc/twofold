@@ -20,6 +20,7 @@ type RenderRequest = {
 let appPath = workerData.appPath;
 let bootstrapUrl = workerData.bootstrapUrl;
 let clientComponentModuleMap = workerData.clientComponentModuleMap;
+let ssrManifestModuleMap = workerData.ssrManifestModuleMap;
 
 injectResolver((moduleId) => {
   return clientComponentModuleMap[moduleId]?.path;
@@ -34,6 +35,7 @@ parentPort.on(
     try {
       let htmlStream = await render({
         rscStream,
+        ssrManifestModuleMap,
         path: pathname,
         bootstrapUrl,
       });

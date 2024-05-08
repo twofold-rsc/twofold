@@ -1,19 +1,19 @@
 import "../ext/react-refresh";
 import { use, createElement } from "react";
 // @ts-ignore
-import { renderToReadableStream } from "react-dom/server.browser";
+import { renderToReadableStream } from "react-dom/server.edge";
 // @ts-ignore
-import { createFromReadableStream } from "react-server-dom-webpack/client.browser";
+import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
 import { RoutingContext } from "../contexts/routing-context";
 import { StreamContext } from "../contexts/stream-context";
 
 export function SSRApp({
   path,
-  tree,
+  getTree,
   rscStreamReader,
 }: {
   path: string;
-  tree: any;
+  getTree: () => any;
   rscStreamReader: ReadableStreamDefaultReader<Uint8Array>;
 }) {
   let navigate = (path: string) => {
@@ -32,6 +32,8 @@ export function SSRApp({
     throw new Error("Cannot call notFound during SSR");
   };
 
+  let tree = getTree();
+
   return (
     <RoutingContext
       path={path}
@@ -47,26 +49,46 @@ export function SSRApp({
 
 type RenderOptions = {
   rscStream: ReadableStream<Uint8Array>;
+  ssrManifestModuleMap: Record<string, any>;
   path: string;
   bootstrapUrl: string;
 };
 
 export async function render({
   rscStream,
+  ssrManifestModuleMap,
   path,
   bootstrapUrl,
 }: RenderOptions): Promise<ReadableStream<Uint8Array>> {
   let [rscStream1, rscStream2] = rscStream.tee();
-  let rscTree = createFromReadableStream(rscStream1);
-  let rscStreamReader = rscStream2.getReader();
 
-  // await new Promise((resolve) => setTimeout(resolve, 0));
+  let tree: Promise<any>;
+  function getTree() {
+    if (!tree) {
+      tree = createFromReadableStream(rscStream1, {
+        ssrManifest: {
+          // before enabling this we need to write our own client
+          // that can load modules
+          // moduleMap: ssrManifestModuleMap,
+          // moduleLoading: {
+          //   prefix: "/_assets/client-app/",
+          // },
+          moduleMap: null,
+          moduleLoading: null,
+        },
+      });
+    }
+
+    return tree;
+  }
+
+  let rscStreamReader = rscStream2.getReader();
 
   let htmlStream = await renderToReadableStream(
     createElement(SSRApp, {
       path,
-      tree: rscTree,
       rscStreamReader,
+      getTree,
     }),
     {
       bootstrapModules: [bootstrapUrl],

@@ -1,0 +1,10 @@
+.git
+**/.gitignore
+
+**/node_modules
+
+**/dist
+**/.twofold
+
+**/.DS_Store
+**/*.log

@@ -173,7 +173,14 @@ export class PageRequest {
     let message = await getMessage;
 
     if (message.status === "OK") {
-      return new Response(readStream);
+      let status = rscResponse.status;
+      let headers = new Headers(rscResponse.headers);
+      headers.set("Content-type", "text/html");
+
+      return new Response(readStream, {
+        status,
+        headers,
+      });
     } else if (message.status === "ERROR") {
       let error = deserializeError(message.serializedError);
 
