@@ -104,6 +104,49 @@ importers:
         specifier: ^0.5.11
         version: 0.5.11(prettier@3.2.4)
 
+  examples/gallery:
+    dependencies:
+      '@twofold/framework':
+        specifier: workspace:*
+        version: link:../../packages/framework
+      framer-motion:
+        specifier: ^11.1.9
+        version: 11.1.9(react-dom@19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425))(react@19.0.0-beta-94eed63c49-20240425)
+      react:
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425
+      react-dom:
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425)
+      react-server-dom-webpack:
+        specifier: 19.0.0-beta-94eed63c49-20240425
+        version: 19.0.0-beta-94eed63c49-20240425(react-dom@19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425))(react@19.0.0-beta-94eed63c49-20240425)(webpack@5.91.0)
+      tailwindcss:
+        specifier: ^3.4.3
+        version: 3.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.24
+        version: 20.12.8
+      '@types/react':
+        specifier: ^18.3.1
+        version: 18.3.1
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.0
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
+      eslint-plugin-twofold:
+        specifier: workspace:*
+        version: link:../../packages/eslint-plugin-twofold
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      prettier-plugin-tailwindcss:
+        specifier: ^0.5.14
+        version: 0.5.14(prettier@3.2.5)
+
   examples/kitchen-sink:
     dependencies:
       '@radix-ui/react-navigation-menu':
@@ -2030,6 +2073,20 @@ packages:
 
   framer-motion@11.1.7:
     resolution: {integrity: sha512-cW11Pu53eDAXUEhv5hEiWuIXWhfkbV32PlgVISn7jRdcAiVrJ1S03YQQ0/DzoswGYYwKi4qYmHHjCzAH52eSdQ==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0
+      react-dom: ^18.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
+  framer-motion@11.1.9:
+    resolution: {integrity: sha512-flECDIPV4QDNcOrDafVFiIazp8X01HFpzc01eDKJsdNH/wrATcYydJSH9JbPWMS8UD5lZlw+J1sK8LG2kICgqw==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0
@@ -5708,6 +5765,13 @@ snapshots:
   fraction.js@4.3.7: {}
 
   framer-motion@11.1.7(react-dom@19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425))(react@19.0.0-beta-94eed63c49-20240425):
+    dependencies:
+      tslib: 2.6.2
+    optionalDependencies:
+      react: 19.0.0-beta-94eed63c49-20240425
+      react-dom: 19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425)
+
+  framer-motion@11.1.9(react-dom@19.0.0-beta-94eed63c49-20240425(react@19.0.0-beta-94eed63c49-20240425))(react@19.0.0-beta-94eed63c49-20240425):
     dependencies:
       tslib: 2.6.2
     optionalDependencies:

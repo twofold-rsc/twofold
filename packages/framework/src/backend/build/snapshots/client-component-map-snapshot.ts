@@ -36,8 +36,8 @@ function getChunkSetFromClientComponentMap(
   let chunks = new Set();
   for (let key of Object.keys(clientComponentMap)) {
     let component = clientComponentMap[key];
-    for (let chunk of component.chunks) {
-      chunks.add(chunk);
+    if (component.chunks) {
+      chunks.add(component.chunks[0]);
     }
   }
   return chunks;

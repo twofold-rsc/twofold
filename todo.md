@@ -2,14 +2,7 @@
 
 release
 
-- 0.0.0.0 server
-- fix 404 status codes
-
-ideas:
-
-gallery app
-trello app
-touch up website
+- new chunks bug
 
 base-app
 
