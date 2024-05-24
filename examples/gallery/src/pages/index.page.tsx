@@ -1,8 +1,10 @@
 import { getGallery, images } from "../data/images";
-import { AnimatePresence } from "./components/animate-presence";
+import { collapseTo } from "../utils/animation";
 import { FadeOut } from "./components/fade-out";
 import { ImageCard } from "./components/image-card";
 import Link from "@twofold/framework/link";
+import { GalleryLink } from "./gallery-link2";
+import { AnimatePresence } from "./components/animate-presence";
 
 export default async function Page() {
   let galleries = Object.keys(images);
@@ -20,31 +22,46 @@ export default async function Page() {
 
       <div className="mt-12 flex p-12">
         {galleries.map((gallery, galleryIndex) => (
-          <FadeOut key={gallery}>
-            <Link
-              href={`/gallery/${gallery}`}
-              className="relative block"
-              key={gallery}
-            >
-              {getGallery(gallery).map((src, imageIndex) => (
-                <div
-                  className={`
-                    absolute inset-0 w-full
-                    ${imageIndex === galleryIndex ? "z-0" : "z-10"}
-                  `}
-                  key={src}
-                >
-                  <ImageCard
-                    src={src}
-                    rotate={rotate(imageIndex)}
-                    delay={imageIndex / 20}
-                  />
-                </div>
-              ))}
-            </Link>
-          </FadeOut>
+          <div className="w-1/3" key={gallery}>
+            <GalleryLink href={`/gallery/${gallery}`}>
+              <Stack gallery={getGallery(gallery)} index={galleryIndex} />
+            </GalleryLink>
+          </div>
         ))}
       </div>
+    </>
+  );
+}
+
+function Stack({ gallery, index }: { gallery: string[]; index: number }) {
+  let order = collapseTo(gallery, index);
+
+  return (
+    <>
+      {gallery.map((src, imageIndex) => (
+        <div
+          key={src}
+          className="absolute inset-0 w-full"
+          style={{
+            zIndex: order.indexOf(src),
+          }}
+        >
+          <img
+            src={src}
+            className="aspect-square w-full object-cover"
+            style={{
+              viewTransitionName: `image-${index}-${imageIndex}`,
+              // @ts-ignore
+              viewTransitionClass: "image",
+            }}
+          />
+          {/* <ImageCard
+            src={src}
+            rotate={rotate(imageIndex)}
+            delay={order.indexOf(src)}
+          /> */}
+        </div>
+      ))}
     </>
   );
 }

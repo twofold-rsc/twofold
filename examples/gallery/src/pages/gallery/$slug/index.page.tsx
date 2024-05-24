@@ -3,6 +3,8 @@ import { PageProps } from "@twofold/framework/types";
 import { getGallery, images } from "../../../data/images";
 import { ImageCard } from "../../components/image-card";
 import { notFound } from "@twofold/framework/not-found";
+import { expandFrom } from "../../../utils/animation";
+import { AnimatePresence } from "../../components/animate-presence";
 
 export default function Page({ params }: PageProps<"slug">) {
   let slug = params.slug;
@@ -16,9 +18,9 @@ export default function Page({ params }: PageProps<"slug">) {
   let galleryIndex = galleries.indexOf(slug);
 
   let name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  let totalImages = gallery.length;
 
-  // z-[0], z-[10], z-[20], z-[30], z-[40], z-[50]
+  let order = expandFrom(gallery, galleryIndex);
+  // let order = collapseTo(gallery, galleryIndex);
 
   return (
     <>
@@ -32,48 +34,25 @@ export default function Page({ params }: PageProps<"slug">) {
       </div>
 
       <div className="relative mt-12 grid grid-cols-3 gap-10">
-        {gallery.map((src, index) => (
+        {gallery.map((src, imageIndex) => (
           <div
-            className={`
-              w-full
-              z-[${
-                index === galleryIndex
-                  ? "0"
-                  : index > galleryIndex
-                    ? `${index}0`
-                    : `${galleryIndex - index}0`
-              }]
-            `}
+            className={"w-full"}
+            style={{
+              zIndex: (order.length - order.indexOf(src)) * 10,
+            }}
             key={src}
           >
-            <div>
-              z-[
-              {index === galleryIndex
-                ? "0"
-                : index > galleryIndex
-                  ? `${index}0`
-                  : `${galleryIndex - index}0`}
-              ]
-            </div>
-            <div>
-              delay:{" "}
-              {index === galleryIndex
-                ? totalImages - 1
-                : index > galleryIndex
-                  ? totalImages - 1 - index
-                  : index + galleryIndex + 2}
-            </div>
-            <ImageCard
+            {/* <div>delay: {order.indexOf(src)}</div>
+            <div>zIndex: {(order.length - order.indexOf(src)) * 10}</div> */}
+            {/* <ImageCard src={src} rotate={0} delay={delay(src, order)} /> */}
+            <img
               src={src}
-              rotate={0}
-              // delay={(totalImages - (index + 1)) / 20}
-              delay={
-                index === galleryIndex
-                  ? totalImages - 1
-                  : index > galleryIndex
-                    ? totalImages - 1 - index
-                    : index + galleryIndex + 1
-              }
+              className="aspect-square w-full object-cover"
+              style={{
+                viewTransitionName: `image-${galleryIndex}-${imageIndex}`,
+                // @ts-ignore
+                viewTransitionClass: "image",
+              }}
             />
           </div>
         ))}
@@ -82,54 +61,15 @@ export default function Page({ params }: PageProps<"slug">) {
   );
 }
 
-// z-index
+function delay(src: string, order: string[]): number {
+  // return order.indexOf(src) / 15;
+  let index = order.indexOf(src);
 
-// galleryIndex=0
-// 0 -> 0
-// 1 -> 1
-// 2 -> 2
-// 3 -> 3
-// 4 -> 4
-// 5 -> 5
-
-// galleryIndex=1
-// 0 -> 1
-// 1 -> 0
-// 2 -> 2
-// 3 -> 3
-// 4 -> 4
-// 5 -> 5
-
-// galleryIndex=2
-// 0 -> 2
-// 1 -> 1
-// 2 -> 0
-// 3 -> 3
-// 4 -> 4
-// 5 -> 5
-
-// delays
-
-// galleryIndex=0
-// 5 -> 0
-// 4 -> 1
-// 3 -> 2
-// 2 -> 3
-// 1 -> 4
-// 0 -> 5
-
-// galleryIndex=1
-// 5 -> 0
-// 4 -> 1
-// 3 -> 2
-// 2 -> 3
-// 1 -> 5
-// 0 -> 4
-
-// galleryIndex=2
-// 5 -> 0
-// 4 -> 1
-// 3 -> 2
-// 2 -> 5
-// 1 -> 4
-// 0 -> 3
+  if (index === 0) {
+    return 0;
+  } else {
+    let len = order.length;
+    let speedUp = len * 6;
+    return len / speedUp / index + delay(order[index - 1], order);
+  }
+}

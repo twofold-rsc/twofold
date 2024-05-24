@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { motion, useAnimationControls } from "framer-motion";
 
 export function FadeOut({ children }: { children: ReactNode }) {
@@ -17,6 +17,11 @@ export function FadeOut({ children }: { children: ReactNode }) {
     await x;
     console.log("done");
   }
+
+  useEffect(() => {
+    // register fadeout
+    // unregister fadeout
+  });
 
   return (
     <motion.div animate={controls} className="w-1/3" exit={{ opacity: 0 }}>

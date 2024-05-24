@@ -3,7 +3,7 @@ import TwofoldFramework from "@twofold/framework/twofold-framework";
 import "./global.css";
 import { SSRSuspenseFallback } from "./ssr-suspense-fallback";
 import { LayoutGroup } from "./components/layout-group";
-import { AnimatePresence } from "./components/animate-presence";
+import { AnimationProvider } from "./providers/animation";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
@@ -16,7 +16,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <body className="h-full bg-blue-100">
         <main className="mx-auto h-full max-w-7xl px-4 py-8">
           <SSRSuspenseFallback fallback={<>Loading</>}>
-            <LayoutGroup>{children}</LayoutGroup>
+            <AnimationProvider>{children}</AnimationProvider>
           </SSRSuspenseFallback>
         </main>
       </body>

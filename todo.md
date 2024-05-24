@@ -3,6 +3,11 @@
 release
 
 - new chunks bug
+- upgrade to rc
+
+gallery
+
+- next up: clicking homepage link should fade out
 
 base-app
 

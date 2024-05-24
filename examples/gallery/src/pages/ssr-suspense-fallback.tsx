@@ -22,8 +22,6 @@ export function SSRSuspenseFallback({
   return forceFallback ? (
     fallback
   ) : (
-    <Suspense unstable_expectedLoadTime={1000} fallback={fallback}>
-      {children}
-    </Suspense>
+    <Suspense fallback={fallback}>{children}</Suspense>
   );
 }

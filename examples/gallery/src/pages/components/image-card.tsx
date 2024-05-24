@@ -51,10 +51,8 @@ export function ImageCard({
     <MotionConfig
       transition={{
         delay,
-        // duration: 0.25,
-        // delay: delay,
-        duration: 5,
-        ease: "easeOut",
+        duration: 0.3,
+        ease: [0.11, 0, 0.5, 0],
       }}
     >
       <motion.div
