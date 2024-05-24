@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  /* animation-duration: 5s; */
+  /* animation: none; */
+}
+
+::view-transition-group(.image) {
+  animation-duration: 5s;
+}
+
+/* ::view-transition-old(.image), */
+::view-transition-new(.image) {
+  animation: none;
+}
+
+/* ::view-transition-group(image-0-0) {
+  animation-delay: 1s;
+}
+
+::view-transition-group(image-0-1) {
+  animation-delay: 2s;
+} */
+
+::view-transition-group(image-0-0) {
+  animation-delay: 5s;
+}
+
+::view-transition-group(image-0-1) {
+  animation-delay: 4s;
+}
+
+::view-transition-group(image-0-2) {
+  animation-delay: 3s;
+}
+
+::view-transition-group(image-0-3) {
+  animation-delay: 2s;
+}
+
+::view-transition-group(image-0-4) {
+  animation-delay: 1s;
+}
+
+::view-transition-group(image-0-5) {
+  animation-delay: 0s;
+}
+
+::view-transition-old(.image):only-child {
+  animation-duration: 1s;
+  /* animation: none; */
+}
+
+/* ::view-transition-old(.image),
+::view-transition-new(.image) {
+  animation: none;
+} */

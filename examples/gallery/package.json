@@ -1,11 +1,12 @@
 {
-  "name": "base-app",
-  "version": "0.0.18",
+  "name": "gallery-example",
+  "version": "0.0.1",
   "private": true,
-  "description": "",
+  "description": "A photo gallery example using Twofold",
   "type": "module",
   "scripts": {
     "dev": "twofold dev",
+    "dev-framework": "nodemon --delay 100ms --exec \"pnpm twofold dev\" --watch ../../packages/framework/dist -e js",
     "build": "twofold build",
     "serve": "twofold serve"
   },
@@ -16,9 +17,10 @@
   },
   "dependencies": {
     "@twofold/framework": "workspace:*",
-    "react": "19.0.0-beta-94eed63c49-20240425",
-    "react-dom": "19.0.0-beta-94eed63c49-20240425",
-    "react-server-dom-webpack": "19.0.0-beta-94eed63c49-20240425",
+    "framer-motion": "^11.2.4",
+    "react": "19.0.0-rc-8f3c0525f9-20240521",
+    "react-dom": "19.0.0-rc-8f3c0525f9-20240521",
+    "react-server-dom-webpack": "19.0.0-rc-8f3c0525f9-20240521",
     "tailwindcss": "^3.4.3"
   },
   "devDependencies": {
@@ -27,6 +29,7 @@
     "@types/react-dom": "^18.3.0",
     "eslint": "^8.57.0",
     "eslint-plugin-twofold": "workspace:*",
+    "nodemon": "^3.1.0",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.14"
   }

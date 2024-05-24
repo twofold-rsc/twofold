@@ -20,7 +20,6 @@ let initialState = getInitialRouterState();
 
 export function useRouterReducer() {
   let [thenableState, dispatch] = useReducer(reducer, initialState);
-
   let finalizedState = use(thenableState);
 
   let { cache, path } = finalizedState;

@@ -2,14 +2,12 @@
 
 release
 
-- 0.0.0.0 server
-- fix 404 status codes
+- new chunks bug
+- upgrade to rc
 
-ideas:
+gallery
 
-gallery app
-trello app
-touch up website
+- next up: clicking homepage link should fade out
 
 base-app
 
