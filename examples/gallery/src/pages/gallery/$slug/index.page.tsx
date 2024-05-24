@@ -3,8 +3,9 @@ import { PageProps } from "@twofold/framework/types";
 import { getGallery, images } from "../../../data/images";
 import { ImageCard } from "../../components/image-card";
 import { notFound } from "@twofold/framework/not-found";
-import { expandFrom } from "../../../utils/animation";
+import { collapseTo, expandFrom } from "../../../utils/animation";
 import { AnimatePresence } from "../../components/animate-presence";
+import { Image } from "../../gallery-link2";
 
 export default function Page({ params }: PageProps<"slug">) {
   let slug = params.slug;
@@ -19,8 +20,8 @@ export default function Page({ params }: PageProps<"slug">) {
 
   let name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  let order = expandFrom(gallery, galleryIndex);
-  // let order = collapseTo(gallery, galleryIndex);
+  // let order = expandFrom(gallery, galleryIndex);
+  let stack = collapseTo(gallery, galleryIndex);
 
   return (
     <>
@@ -36,9 +37,15 @@ export default function Page({ params }: PageProps<"slug">) {
       <div className="relative mt-12 grid grid-cols-3 gap-10">
         {gallery.map((src, imageIndex) => (
           <div
-            className={"w-full"}
+            className={"aspect-square w-full"}
             style={{
-              zIndex: (order.length - order.indexOf(src)) * 10,
+              // zIndex: stack.indexOf(src),
+              // zIndex: stack.length - 1 - stack.indexOf(src),
+              // zIndex: 0,
+              // zIndex: (stack.length - stack.indexOf(src)) * 10,
+              viewTransitionName: `image-stack-${stack.indexOf(src)}`,
+              // @ts-ignore
+              viewTransitionClass: "image-stack",
             }}
             key={src}
           >
@@ -48,11 +55,13 @@ export default function Page({ params }: PageProps<"slug">) {
             <img
               src={src}
               className="aspect-square w-full object-cover"
-              style={{
-                viewTransitionName: `image-${galleryIndex}-${imageIndex}`,
-                // @ts-ignore
-                viewTransitionClass: "image",
-              }}
+              style={
+                {
+                  // viewTransitionName: `image-${galleryIndex}-${imageIndex}`,
+                  // @ts-ignore
+                  // viewTransitionClass: "image",
+                }
+              }
             />
           </div>
         ))}
