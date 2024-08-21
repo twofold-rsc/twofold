@@ -2,53 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-::view-transition-old(root) {
-  animation: 5s fade-out;
+html:active-view-transition-type(navigation) {
+  ::view-transition-old(root) {
+    animation: 5s fade-out;
+  }
+
+  ::view-transition-new(root) {
+    animation: 5s fade-in;
+  }
 }
 
-::view-transition-new(root) {
-  animation: 5s fade-in;
-}
+html:active-view-transition-type(open-gallery) {
+  &::view-transition-old(.image-stack),
+  &::view-transition-new(.image-stack) {
+    animation: none;
+  }
 
-::view-transition-group(image-stack-0) {
-  animation-delay: 5s;
-}
+  &::view-transition-group(.image-stack) {
+    animation-duration: 5s;
+  }
 
-::view-transition-group(image-stack-1) {
-  animation-delay: 4s;
-}
-
-::view-transition-group(image-stack-2) {
-  animation-delay: 3s;
-}
-
-::view-transition-group(image-stack-3) {
-  animation-delay: 2s;
-}
-
-::view-transition-group(image-stack-4) {
-  animation-delay: 1s;
-}
-
-::view-transition-group(image-stack-5) {
-  animation-delay: 0s;
-}
-
-::view-transition-group(.image-stack) {
-  animation-duration: 10s;
-}
-
-/* ::view-transition-image-pair(.image-stack) {
-  animation-duration: 5s;
-} */
-
-::view-transition-new(.image-stack),
-::view-transition-old(.image-stack) {
-  animation: none;
-}
-
-::view-transition-old(.image-card):only-child {
-  animation: 3s forwards fade-out;
+  &::view-transition-old(.image-card):only-child {
+    animation: 3s forwards fade-out;
+  }
 }
 
 @keyframes fade-in {

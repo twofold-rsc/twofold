@@ -13,9 +13,9 @@ import {
 
 type Callback = () => void | Promise<void>;
 
-export let ViewTransitionsContext = createContext<(callback: Callback) => void>(
-  () => {},
-);
+export let ViewTransitionsContext = createContext<
+  (type: string, callback: Callback) => void
+>(() => {});
 
 let storePath: string | undefined;
 let listeners: (() => void)[] = [];
@@ -59,29 +59,23 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
   let { pendingPath } = useViewTransition();
   let { navigate, path } = useRouter();
 
-  let startViewTransition = useCallback((callback: Callback) => {
+  let startViewTransition = useCallback((type: string, callback: Callback) => {
     if ("startViewTransition" in document) {
       // @ts-ignore
-      document.startViewTransition(() => {
-        return new Promise<void>((resolve) => {
-          startTransition(() => {
-            callback();
-            setResolver(() => resolve);
+      document.startViewTransition({
+        types: [type],
+        update: () => {
+          return new Promise<void>((resolve) => {
+            startTransition(async () => {
+              setResolver(() => resolve);
+              let result = callback();
+              if (result && "then" in result) {
+                await result;
+              }
+            });
           });
-        });
+        },
       });
-      // @ts-ignore
-      // document.startViewTransition(() => {
-      //   return new Promise<void>((resolve) => {
-      //     startTransition(async () => {
-      //       setResolver(() => resolve);
-      //       let result = callback();
-      //       if (result && "then" in result) {
-      //         await result;
-      //       }
-      //     });
-      //   });
-      // });
     } else {
       callback();
     }
@@ -89,7 +83,7 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (pendingPath && pendingPath !== path) {
-      startViewTransition(() => {
+      startViewTransition("open-gallery", () => {
         if (pendingPath && pendingPath !== path) {
           console.log("navigating to", pendingPath);
           navigate(pendingPath);
