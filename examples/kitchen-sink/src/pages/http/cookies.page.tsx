@@ -49,20 +49,22 @@ export default function Page() {
       <div className="mt-6">
         <div className="text-sm text-gray-500">Update cookie</div>
         <div className="mt-2 flex items-center">
-          <form action={setCookie} className="flex items-center space-x-4">
-            <input
-              type="text"
-              name="cookie"
-              placeholder="Cookie value"
-              defaultValue={cookie}
-              className="rounded border border-gray-300 px-2 py-1 shadow"
-            />
-            <button
-              type="submit"
-              className="rounded border border-transparent bg-gray-900 px-3.5 py-1 font-medium text-white shadow"
-            >
-              Set cookie
-            </button>
+          <form action={setCookie}>
+            <div className="flex items-center space-x-4">
+              <input
+                type="text"
+                name="cookie"
+                placeholder="Cookie value"
+                defaultValue={cookie}
+                className="rounded border border-gray-300 px-2 py-1 shadow"
+              />
+              <button
+                type="submit"
+                className="rounded border border-transparent bg-gray-900 px-3.5 py-1 font-medium text-white shadow"
+              >
+                Set cookie
+              </button>
+            </div>
           </form>
 
           <form action={destroyCookie} className="ml-auto">

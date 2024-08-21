@@ -15,21 +15,21 @@
   "author": "Ryan Toronto",
   "license": "ISC",
   "dependencies": {
-    "@radix-ui/react-navigation-menu": "^1.1.4",
+    "@radix-ui/react-navigation-menu": "^1.2.0",
     "@twofold/framework": "workspace:*",
-    "react": "19.0.0-rc-8f3c0525f9-20240521",
-    "react-dom": "19.0.0-rc-8f3c0525f9-20240521",
-    "react-server-dom-webpack": "19.0.0-rc-8f3c0525f9-20240521",
-    "zod": "^3.22.4"
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-server-dom-webpack": "catalog:",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.10.2",
-    "@types/react": "^18.3.0",
-    "@types/react-dom": "^18.3.0",
-    "eslint": "^8.56.0",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
     "eslint-plugin-twofold": "workspace:*",
-    "nodemon": "^3.1.0",
-    "prettier": "^3.2.2",
-    "prettier-plugin-tailwindcss": "^0.5.11"
+    "nodemon": "^3.1.4",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.6"
   }
 }

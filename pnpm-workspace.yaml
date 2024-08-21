@@ -2,3 +2,11 @@ packages:
   - "packages/*"
   - "examples/*"
   - "sites/*"
+
+catalog:
+  react: "19.0.0-rc-a960b92c-20240819"
+  react-dom: "19.0.0-rc-a960b92c-20240819"
+  react-server-dom-webpack: "19.0.0-rc-a960b92c-20240819"
+  "@types/react": "^18.3.3"
+  "@types/react-dom": "^18.3.0"
+  eslint: "^8.57.0"

@@ -6,11 +6,9 @@ import { pipeline } from "stream/promises";
 import { ReadableStream } from "stream/web";
 import { fileURLToPath, pathToFileURL } from "url";
 import tar from "tar";
-import path from "path";
 import { remapped } from "./remapped.js";
 import * as childProcess from "child_process";
 import util from "util";
-import os from "os";
 let exec = util.promisify(childProcess.exec);
 
 async function main() {
@@ -126,18 +124,21 @@ async function main() {
     process.exit(1);
   }
 
-  let downloadStream = Readable.fromWeb(res.body as ReadableStream);
+  let [fetchStream1, fetchStream2] = res.body.tee();
+
+  let downloadStream1 = Readable.fromWeb(fetchStream1 as ReadableStream);
+  let downloadStream2 = Readable.fromWeb(fetchStream2 as ReadableStream);
 
   await mkdir(appUrl, { recursive: true });
 
   // extract the template app
-  let x = await pipeline(
-    downloadStream,
+  await pipeline(
+    downloadStream1,
     tar.x({
       cwd: appPath,
       strip: 4, // github-repo-name-folder/packages/create-twofold-app/template
-      filter: (name) => {
-        let parts = name.split('/');
+      filter: (path) => {
+        let parts = path.split("/");
         let keep =
           parts[1] === "packages" &&
           parts[2] === "create-twofold-app" &&
@@ -149,6 +150,31 @@ async function main() {
       },
     }),
   );
+
+  let resolveVersions: (content: string) => void;
+  let readVersions = new Promise((resolve) => {
+    resolveVersions = resolve;
+  });
+
+  await pipeline(
+    downloadStream2,
+    tar.t({
+      filter(path) {
+        let parts = path.split("/");
+        return parts[1] === "pnpm-workspace.yaml";
+      },
+      async onentry(entry) {
+        let buf = await entry.concat();
+        let content = buf.toString();
+        resolveVersions(content);
+      },
+    }),
+  );
+
+  let versions = await readVersions;
+
+  // console.log("---> versions");
+  // console.log(versions);
 
   // rename any remapped files
   for (let file of Object.keys(remapped)) {
