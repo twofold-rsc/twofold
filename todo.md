@@ -1,11 +1,5 @@
 # TODO
 
-create-app
-
-- new release (it upgrades deps)
-- update create-2-app to read catalog (react+eslint)
-- sub catalog package.json refs when creating an app
-
 website
 
 - read through

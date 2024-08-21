@@ -9,6 +9,7 @@ import tar from "tar";
 import { remapped } from "./remapped.js";
 import * as childProcess from "child_process";
 import util from "util";
+import { parse } from "yaml";
 let exec = util.promisify(childProcess.exec);
 
 async function main() {
@@ -30,7 +31,7 @@ async function main() {
   let hasRequiredPnpmVersion = pnpmVersion[0] >= 9;
   if (!hasRequiredPnpmVersion) {
     signale.error(
-      "You must use pnpm version 9.0.0 or higher to create a new app.",
+      "You must use pnpm version 9.0.0 or higher to create a new app."
     );
     process.exit(1);
   }
@@ -41,7 +42,7 @@ async function main() {
     nodeVersion[0] >= 20 && nodeVersion[1] >= 9 && nodeVersion[2] >= 0;
   if (!hasRequiredNodeVersion) {
     signale.error(
-      "You must use Node.js version 20.9.0 or higher to create a new app.",
+      "You must use Node.js version 20.9.0 or higher to create a new app."
     );
     process.exit(1);
   }
@@ -93,7 +94,7 @@ async function main() {
 
   if (appUrlExists) {
     signale.error(
-      `Folder ${appFolderName} already exists. Please choose another name.`,
+      `Folder ${appFolderName} already exists. Please choose another name.`
     );
     process.exit(1);
   }
@@ -102,7 +103,7 @@ async function main() {
 
   // find the latest version of twofold from github
   let latestResp = await fetch(
-    "https://api.github.com/repos/twofold-rsc/twofold/releases/latest",
+    "https://api.github.com/repos/twofold-rsc/twofold/releases/latest"
   );
   let latestJson = await latestResp.json();
 
@@ -148,12 +149,13 @@ async function main() {
             : false;
         return keep;
       },
-    }),
+    })
   );
 
-  let resolveVersions: (content: string) => void;
-  let readVersions = new Promise((resolve) => {
-    resolveVersions = resolve;
+  // get catalog versions
+  let resolveCatalog: (catalog: any) => void;
+  let catalogVersions = new Promise<any>((resolve) => {
+    resolveCatalog = resolve;
   });
 
   await pipeline(
@@ -165,16 +167,13 @@ async function main() {
       },
       async onentry(entry) {
         let buf = await entry.concat();
-        let content = buf.toString();
-        resolveVersions(content);
+        let content = parse(buf.toString());
+        resolveCatalog(content.catalog);
       },
-    }),
+    })
   );
 
-  let versions = await readVersions;
-
-  // console.log("---> versions");
-  // console.log(versions);
+  let catalog = await catalogVersions;
 
   // rename any remapped files
   for (let file of Object.keys(remapped)) {
@@ -182,7 +181,7 @@ async function main() {
     let newName = file;
     await rename(
       new URL(`./${oldName}`, appUrl),
-      new URL(`./${newName}`, appUrl),
+      new URL(`./${newName}`, appUrl)
     );
   }
 
@@ -191,8 +190,24 @@ async function main() {
   let pkg = JSON.parse(json);
   pkg.name = appName;
   pkg.version = "0.0.1";
-  pkg.dependencies["@twofold/framework"] = `${version}`;
-  pkg.devDependencies["eslint-plugin-twofold"] = `${version}`;
+
+  // remap versions
+  let versions: Record<any, any> = {
+    ...catalog,
+    "eslint-plugin-twofold": `${version}`,
+    "@twofold/framework": `${version}`,
+  };
+
+  function modifyVersions(deps: Record<string, string>) {
+    for (let dep of Object.keys(deps)) {
+      if (versions[dep] && typeof versions[dep] === "string") {
+        deps[dep] = versions[dep];
+      }
+    }
+  }
+
+  modifyVersions(pkg.dependencies);
+  modifyVersions(pkg.devDependencies);
 
   let newPackage = JSON.stringify(pkg, null, 2);
   await writeFile(new URL("./package.json", appUrl), newPackage);
