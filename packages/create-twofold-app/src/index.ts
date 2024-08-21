@@ -153,8 +153,8 @@ async function main() {
   );
 
   // get catalog versions
-  let resolveCatalog: (catalog: Record<string, any>) => void;
-  let catalogVersions = new Promise<Record<string, any>>((resolve) => {
+  let resolveCatalog: (catalog: any) => void;
+  let catalogVersions = new Promise<any>((resolve) => {
     resolveCatalog = resolve;
   });
 
@@ -192,7 +192,7 @@ async function main() {
   pkg.version = "0.0.1";
 
   // remap versions
-  let versions: Record<string, string> = {
+  let versions: Record<any, any> = {
     ...catalog,
     "eslint-plugin-twofold": `${version}`,
     "@twofold/framework": `${version}`,
@@ -200,7 +200,7 @@ async function main() {
 
   function modifyVersions(deps: Record<string, string>) {
     for (let dep of Object.keys(deps)) {
-      if (versions[dep]) {
+      if (versions[dep] && typeof versions[dep] === "string") {
         deps[dep] = versions[dep];
       }
     }
