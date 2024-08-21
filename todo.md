@@ -1,15 +1,10 @@
 # TODO
 
-release
+create-app
 
-- new chunks bug
-- upgrade to rc
-
-gallery
-
-- next up: clicking homepage link should fade out
-
-base-app
+- new release (it upgrades deps)
+- update create-2-app to read catalog (react+eslint)
+- sub catalog package.json refs when creating an app
 
 website
 
