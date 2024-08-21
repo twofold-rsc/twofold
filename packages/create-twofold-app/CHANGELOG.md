@@ -1,5 +1,11 @@
 # create-twofold-app
 
+## 0.0.7
+
+### Patch Changes
+
+- dynamic versions
+
 ## 0.0.6
 
 ### Patch Changes
