@@ -1,5 +1,12 @@
 # databases
 
+## 0.0.15
+
+### Patch Changes
+
+- Updated dependencies
+  - @twofold/framework@0.0.22
+
 ## 0.0.14
 
 ### Patch Changes
