@@ -1,6 +1,6 @@
 {
   "name": "base-app",
-  "version": "0.0.18",
+  "version": "0.0.20",
   "private": true,
   "description": "",
   "type": "module",
@@ -16,16 +16,16 @@
   },
   "dependencies": {
     "@twofold/framework": "workspace:*",
-    "react": "19.0.0-rc-a960b92c-20240819",
-    "react-dom": "19.0.0-rc-a960b92c-20240819",
-    "react-server-dom-webpack": "19.0.0-rc-a960b92c-20240819",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-server-dom-webpack": "catalog:",
     "tailwindcss": "^3.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
-    "@types/react": "^18.3.0",
-    "@types/react-dom": "^18.3.0",
-    "eslint": "^8.57.0",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
     "eslint-plugin-twofold": "workspace:*",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.14"

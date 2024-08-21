@@ -185,6 +185,9 @@ importers:
       tar:
         specifier: ^6.2.0
         version: 6.2.1
+      yaml:
+        specifier: ^2.5.0
+        version: 2.5.0
     devDependencies:
       '@types/node':
         specifier: ^20.11.6
