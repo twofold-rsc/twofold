@@ -1,6 +1,6 @@
 {
   "name": "kitchen-sink",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "private": true,
   "description": "",
   "type": "module",
@@ -17,9 +17,9 @@
   "dependencies": {
     "@radix-ui/react-navigation-menu": "^1.1.4",
     "@twofold/framework": "workspace:*",
-    "react": "19.0.0-beta-94eed63c49-20240425",
-    "react-dom": "19.0.0-beta-94eed63c49-20240425",
-    "react-server-dom-webpack": "19.0.0-beta-94eed63c49-20240425",
+    "react": "19.0.0-rc-8f3c0525f9-20240521",
+    "react-dom": "19.0.0-rc-8f3c0525f9-20240521",
+    "react-server-dom-webpack": "19.0.0-rc-8f3c0525f9-20240521",
     "zod": "^3.22.4"
   },
   "devDependencies": {

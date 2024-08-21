@@ -20,9 +20,7 @@ export let images: Record<string, string[] | undefined> = {
     "https://images.unsplash.com/photo-1518548064064-6dd2b811d6fa?q=80&w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1527668752968-14dc70a27c95?q=80&w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1527095655060-4026c4af2b25?q=80&w=800&auto=format&fit=crop",
-
     "https://images.unsplash.com/photo-1517772426385-b95306f095d6?q=80&w=800&auto=format&fit=crop",
-
     "https://images.unsplash.com/photo-1565475668349-0130bea1059b?q=80&w=800&auto=format&fit=crop",
   ],
 };
@@ -30,4 +28,9 @@ export let images: Record<string, string[] | undefined> = {
 export function getGallery(name: string) {
   let gallery = images[name];
   return !gallery ? [] : gallery;
+}
+
+export function getImageId(src: string) {
+  let url = new URL(src);
+  return url.pathname.replace(/[^a-z0-9]/gi, "");
 }

@@ -3,7 +3,7 @@ import { collapseTo } from "../utils/animation";
 import { FadeOut } from "./components/fade-out";
 import { ImageCard } from "./components/image-card";
 import Link from "@twofold/framework/link";
-import { GalleryLink } from "./gallery-link2";
+import { GalleryLinkImage, GalleryLink } from "./gallery-link2";
 import { AnimatePresence } from "./components/animate-presence";
 
 export default async function Page() {
@@ -34,33 +34,12 @@ export default async function Page() {
 }
 
 function Stack({ gallery, index }: { gallery: string[]; index: number }) {
-  let order = collapseTo(gallery, index);
+  let stack = collapseTo(gallery, index);
 
   return (
     <>
-      {gallery.map((src, imageIndex) => (
-        <div
-          key={src}
-          className="absolute inset-0 w-full"
-          style={{
-            zIndex: order.indexOf(src),
-          }}
-        >
-          <img
-            src={src}
-            className="aspect-square w-full object-cover"
-            style={{
-              viewTransitionName: `image-${index}-${imageIndex}`,
-              // @ts-ignore
-              viewTransitionClass: "image",
-            }}
-          />
-          {/* <ImageCard
-            src={src}
-            rotate={rotate(imageIndex)}
-            delay={order.indexOf(src)}
-          /> */}
-        </div>
+      {gallery.map((src) => (
+        <GalleryLinkImage src={src} index={stack.indexOf(src)} key={src} />
       ))}
     </>
   );

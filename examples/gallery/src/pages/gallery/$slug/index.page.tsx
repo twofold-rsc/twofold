@@ -1,10 +1,11 @@
 import Link from "@twofold/framework/link";
 import { PageProps } from "@twofold/framework/types";
-import { getGallery, images } from "../../../data/images";
+import { getGallery, getImageId, images } from "../../../data/images";
 import { ImageCard } from "../../components/image-card";
 import { notFound } from "@twofold/framework/not-found";
-import { expandFrom } from "../../../utils/animation";
+import { collapseTo, expandFrom } from "../../../utils/animation";
 import { AnimatePresence } from "../../components/animate-presence";
+import { Image } from "../../gallery-link2";
 
 export default function Page({ params }: PageProps<"slug">) {
   let slug = params.slug;
@@ -14,13 +15,13 @@ export default function Page({ params }: PageProps<"slug">) {
     notFound();
   }
 
-  let galleries = Object.keys(images);
-  let galleryIndex = galleries.indexOf(slug);
+  // let galleries = Object.keys(images);
+  // let galleryIndex = galleries.indexOf(slug);
 
   let name = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  let order = expandFrom(gallery, galleryIndex);
-  // let order = collapseTo(gallery, galleryIndex);
+  // let order = expandFrom(gallery, galleryIndex);
+  // let stack = collapseTo(gallery, galleryIndex);
 
   return (
     <>
@@ -34,26 +35,17 @@ export default function Page({ params }: PageProps<"slug">) {
       </div>
 
       <div className="relative mt-12 grid grid-cols-3 gap-10">
-        {gallery.map((src, imageIndex) => (
+        {gallery.map((src) => (
           <div
-            className={"w-full"}
+            className={"aspect-square w-full"}
             style={{
-              zIndex: (order.length - order.indexOf(src)) * 10,
+              viewTransitionName: `image-${getImageId(src)}`,
+              // @ts-ignore
+              viewTransitionClass: "image-stack",
             }}
             key={src}
           >
-            {/* <div>delay: {order.indexOf(src)}</div>
-            <div>zIndex: {(order.length - order.indexOf(src)) * 10}</div> */}
-            {/* <ImageCard src={src} rotate={0} delay={delay(src, order)} /> */}
-            <img
-              src={src}
-              className="aspect-square w-full object-cover"
-              style={{
-                viewTransitionName: `image-${galleryIndex}-${imageIndex}`,
-                // @ts-ignore
-                viewTransitionClass: "image",
-              }}
-            />
+            <img src={src} className="aspect-square w-full object-cover" />
           </div>
         ))}
       </div>

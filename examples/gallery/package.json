@@ -1,6 +1,6 @@
 {
   "name": "gallery-example",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "A photo gallery example using Twofold",
   "type": "module",

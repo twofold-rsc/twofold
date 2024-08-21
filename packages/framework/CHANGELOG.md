@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.20
+
+### Patch Changes
+
+- upgrade to react 19 rc
+
 ## 0.0.19
 
 ### Patch Changes
