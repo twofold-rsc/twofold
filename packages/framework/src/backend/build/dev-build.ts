@@ -13,6 +13,7 @@ import { ClientComponentMapSnapshot } from "./snapshots/client-component-map-sna
 import { ClientChunksSnapshot } from "./snapshots/client-chunks-snapshot.js";
 import { RSCSnapshot } from "./snapshots/rsc-snapshot.js";
 import { CSSSnapshot } from "./snapshots/css-snapshot.js";
+import { ConfigBuilder } from "./builders/config-builder.js";
 
 class BuildEvents extends EventEmitter {}
 
@@ -32,8 +33,10 @@ export class DevBuild extends Build {
 
     let entriesBuilder = new EntriesBuilder();
     let errorPageBuilder = new DevErrorPageBuilder();
+    let configBuilder = new ConfigBuilder({ env: "development" });
     let rscBuilder = new RSCBuilder({
       entriesBuilder,
+      configBuilder,
     });
     let clientAppBuilder = new ClientAppBuilder({
       env: "development",
@@ -44,6 +47,7 @@ export class DevBuild extends Build {
 
     this.addBuilder(entriesBuilder);
     this.addBuilder(errorPageBuilder);
+    this.addBuilder(configBuilder);
     this.addBuilder(rscBuilder);
     this.addBuilder(clientAppBuilder);
     this.addBuilder(serverFilesBuilder);
@@ -90,6 +94,14 @@ export class DevBuild extends Build {
     ]);
     frameworkTime.end();
     // frameworkTime.log();
+
+    if (!this.error) {
+      let configTime = time("config build");
+      configTime.start();
+      await this.getBuilder("config").build();
+      configTime.end();
+      // configTime.log();
+    }
 
     if (!this.error) {
       let rscBuild = this.getBuilder("rsc").build();
@@ -143,7 +155,7 @@ export class DevBuild extends Build {
   }
 
   async watch() {
-    let dirs = ["./src", "./public"];
+    let dirs = ["./src", "./public", "./config"];
     dirs.forEach(async (dir) => {
       let url = new URL(dir, cwdUrl);
       let canWatch = false;

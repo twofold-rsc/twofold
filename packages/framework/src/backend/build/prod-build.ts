@@ -5,6 +5,7 @@ import { EntriesBuilder } from "./builders/entries-builder.js";
 import { time } from "./helpers/time.js";
 import { ServerFilesBuilder } from "./builders/server-files-builder.js";
 import { Build } from "./base-build.js";
+import { ConfigBuilder } from "./builders/config-builder.js";
 
 export class ProdBuild extends Build {
   readonly env = "production";
@@ -13,8 +14,10 @@ export class ProdBuild extends Build {
     super();
 
     let entriesBuilder = new EntriesBuilder();
+    let configBuilder = new ConfigBuilder({ env: "production" });
     let rscBuilder = new RSCBuilder({
       entriesBuilder,
+      configBuilder,
     });
     let clientAppBuilder = new ClientAppBuilder({
       env: "production",
@@ -24,6 +27,7 @@ export class ProdBuild extends Build {
     let staticFilesBuilder = new StaticFilesBuilder();
 
     this.addBuilder(entriesBuilder);
+    this.addBuilder(configBuilder);
     this.addBuilder(rscBuilder);
     this.addBuilder(clientAppBuilder);
     this.addBuilder(serverFilesBuilder);
@@ -43,6 +47,14 @@ export class ProdBuild extends Build {
     await Promise.all([entriesBuild, serverFilesBuild, staticFilesBuild]);
     frameworkTime.end();
     // frameworkTime.log();
+
+    if (!this.error) {
+      let configTime = time("config build");
+      configTime.start();
+      await this.getBuilder("config").build();
+      configTime.end();
+      // configTime.log();
+    }
 
     if (!this.error) {
       let rscBuild = this.getBuilder("rsc").build();

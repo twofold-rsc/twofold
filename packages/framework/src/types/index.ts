@@ -12,3 +12,7 @@ export type LayoutProps = {
   request: Request;
   children: ReactNode;
 };
+
+export type Config = {
+  externalPackages: string[];
+};
