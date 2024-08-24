@@ -6,8 +6,6 @@ import Link from "@twofold/framework/link";
 import { ReactNode } from "react";
 
 export default function Nav() {
-  // return null;
-
   let { path } = useRouter();
 
   return (
@@ -181,6 +179,11 @@ export default function Nav() {
                         title="HMR"
                         description="Hot module reloading of client components."
                         href="/build/hmr"
+                      />
+                      <ExampleLink
+                        title="Externals"
+                        description="External packages that should not be bundled."
+                        href="/build/config/external-packages"
                       />
                     </ExampleGroup>
 

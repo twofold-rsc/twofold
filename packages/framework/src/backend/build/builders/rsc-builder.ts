@@ -21,6 +21,7 @@ import { Page } from "../rsc/page.js";
 import { Wrapper } from "../rsc/wrapper.js";
 import { fileExists } from "../helpers/file.js";
 import { Builder } from "./base-builder.js";
+import { ConfigBuilder } from "./config-builder.js";
 
 type CompiledAction = {
   id: string;
@@ -33,11 +34,19 @@ export class RSCBuilder extends Builder {
 
   #metafile?: Metafile;
   #entriesBuilder: EntriesBuilder;
+  #configBuilder: ConfigBuilder;
   #serverActionMap = new Map<string, CompiledAction>();
 
-  constructor({ entriesBuilder }: { entriesBuilder: EntriesBuilder }) {
+  constructor({
+    entriesBuilder,
+    configBuilder,
+  }: {
+    entriesBuilder: EntriesBuilder;
+    configBuilder: ConfigBuilder;
+  }) {
     super();
     this.#entriesBuilder = entriesBuilder;
+    this.#configBuilder = configBuilder;
   }
 
   get serverActionMap() {
@@ -66,6 +75,9 @@ export class RSCBuilder extends Builder {
     this.clearError();
 
     try {
+      let config = await this.#configBuilder.loadAppConfig();
+      let userDefinedExternalPackages = config?.externalPackages ?? [];
+
       let result = await build({
         bundle: true,
         format: "esm",
@@ -83,7 +95,12 @@ export class RSCBuilder extends Builder {
         outdir: "./.twofold/rsc/",
         outbase: "src",
         entryNames: "[ext]/[name]-[hash]",
-        external: ["react", "react-server-dom-webpack", ...externalPackages],
+        external: [
+          "react",
+          "react-server-dom-webpack",
+          ...externalPackages,
+          ...userDefinedExternalPackages,
+        ],
         conditions: ["react-server", "module"],
         platform: "node",
         splitting: true,

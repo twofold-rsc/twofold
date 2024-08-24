@@ -1,5 +1,10 @@
 # TODO
 
+framework
+
+- rename src to app
+- eslint upgrade
+
 website
 
 - read through

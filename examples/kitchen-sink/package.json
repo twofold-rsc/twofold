@@ -17,6 +17,7 @@
   "dependencies": {
     "@radix-ui/react-navigation-menu": "^1.2.0",
     "@twofold/framework": "workspace:*",
+    "open-graph-scraper": "^6.8.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-server-dom-webpack": "catalog:",

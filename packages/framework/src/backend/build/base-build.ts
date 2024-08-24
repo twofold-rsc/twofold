@@ -8,6 +8,7 @@ import { ServerFilesBuilder } from "./builders/server-files-builder";
 import { RSCBuilder } from "./builders/rsc-builder";
 import { ClientAppBuilder } from "./builders/client-app-builder";
 import { DevErrorPageBuilder } from "./builders/dev-error-page-builder";
+import { ConfigBuilder } from "./builders/config-builder";
 
 export abstract class Build {
   abstract env: "development" | "production";
@@ -38,6 +39,7 @@ export abstract class Build {
   getBuilder(name: "client"): ClientAppBuilder;
   getBuilder(name: "static-files"): StaticFilesBuilder;
   getBuilder(name: "server-files"): ServerFilesBuilder;
+  getBuilder(name: "config"): ConfigBuilder;
   getBuilder(name: string): never;
   getBuilder(name: string) {
     if (!this.builders[name]) {
