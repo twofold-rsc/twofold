@@ -2,6 +2,10 @@ import { Suspense, cache } from "react";
 
 export default async function CachePage() {
   await fetchData();
+  await fetchData();
+  await fetchData();
+  await fetchMoreData();
+  await fetchMoreData();
   await fetchMoreData();
 
   return (
@@ -20,6 +24,8 @@ export default async function CachePage() {
 }
 
 async function WaterfallComponent() {
+  await fetchData();
+  await fetchData();
   await fetchData();
   await fetchMoreData();
 

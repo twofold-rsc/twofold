@@ -1,16 +1,20 @@
 // import { getSSRStore } from "./stores/ssr-store.js";
-import { AsyncLocalStorage as NodeAsyncLocalStorage } from "node:async_hooks";
+import node_async_hooks, {
+  AsyncLocalStorage as NodeAsyncLocalStorage,
+} from "node:async_hooks";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 
 declare global {
   var AsyncLocalStorage: typeof NodeAsyncLocalStorage;
+  var async_hooks: typeof node_async_hooks;
   var __webpack_chunk_load__: (chunkId: string) => Promise<any>;
   var __webpack_require__: (id: string) => any;
   var __non_webpack_require__: ReturnType<typeof createRequire>;
 }
 
 globalThis.AsyncLocalStorage = NodeAsyncLocalStorage;
+globalThis.async_hooks = node_async_hooks;
 
 type Resolvers = {
   moduleIdToPath: (moduleId: string) => string | undefined;

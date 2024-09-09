@@ -1,3 +1,4 @@
+import "./monkey-patch.js";
 import { DevBuild } from "./build/dev-build.js";
 import { Worker } from "node:worker_threads";
 import { PageRequest } from "./runtime/page-request.js";

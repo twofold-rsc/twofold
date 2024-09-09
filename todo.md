@@ -2,6 +2,7 @@
 
 framework
 
+- add cheerio as external
 - rename src to app
 - eslint upgrade
 
