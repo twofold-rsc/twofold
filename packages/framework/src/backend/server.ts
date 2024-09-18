@@ -266,7 +266,6 @@ export async function create(runtime: Runtime) {
     let url = new URL(ctx.request.url);
     let request = ctx.request;
 
-    // return null if no page found
     let pageRequest = runtime.pageRequest(request);
     let response = await pageRequest.ssrResponse();
 
