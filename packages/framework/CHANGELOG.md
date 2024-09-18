@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.25
+
+### Patch Changes
+
+- api routes
+
 ## 0.0.24
 
 ### Patch Changes
