@@ -52,7 +52,7 @@ export class APIRequest {
           response = new Response(null, {
             status,
             headers: {
-              Location: decodeURIComponent(url),
+              Location: url,
             },
           });
         } else {
