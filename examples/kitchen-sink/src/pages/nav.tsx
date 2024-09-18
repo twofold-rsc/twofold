@@ -162,6 +162,11 @@ export default function Nav() {
                         description="Public folder for static assets"
                         href="/http/public"
                       />
+                      <ExampleLink
+                        title="API routes"
+                        description="API for lower-level access to the server."
+                        href="/http/api"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup name="Build">

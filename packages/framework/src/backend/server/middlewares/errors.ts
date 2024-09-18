@@ -3,12 +3,16 @@ import { serializeError } from "serialize-error";
 import { Build } from "../../build/base-build.js";
 import { readFile } from "fs/promises";
 import { appCompiledDir } from "../../files.js";
+import { parseHeaderValue } from "@hattip/headers";
 
 export function errors(build: Build): RouteHandler {
   return async (ctx) => {
     ctx.handleError = async (e: unknown) => {
       let request = ctx.request;
-      let isRSCFetch = request.headers.get("accept") === "text/x-component";
+
+      let accepts = parseHeaderValue(request.headers.get("accept"));
+      let isRSCFetch = accepts.some((a) => a.value === "text/x-component");
+      let isHTMLFetch = accepts.some((a) => a.value === "text/html");
 
       let error = e instanceof Error ? e : new Error("Internal server error");
 
@@ -20,19 +24,27 @@ export function errors(build: Build): RouteHandler {
           : 500;
 
       if (isRSCFetch) {
-        let text = JSON.stringify(serializeError(error));
-        return new Response(text, {
+        let json = JSON.stringify(serializeError(error));
+        return new Response(json, {
           status,
           headers: {
             "content-type": "text/x-serialized-error",
           },
         });
-      } else {
+      } else if (isHTMLFetch) {
         let html = await errorPage(error);
         return new Response(html, {
           status,
           headers: {
             "content-type": "text/html",
+          },
+        });
+      } else {
+        let text = `${error.message}\n\n${error.stack}`;
+        return new Response(text, {
+          status,
+          headers: {
+            "content-type": "text/plain",
           },
         });
       }

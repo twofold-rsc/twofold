@@ -5,6 +5,7 @@ import { PageRequest } from "./runtime/page-request.js";
 import { create } from "./server.js";
 import { ProdBuild } from "./build/prod-build.js";
 import { pathToFileURL } from "node:url";
+import { APIRequest } from "./runtime/api-request.js";
 
 export class Runtime {
   #hostname = "0.0.0.0";
@@ -57,6 +58,20 @@ export class Runtime {
   private async server() {
     let server = await create(this);
     await server.start();
+  }
+
+  // api endpoints
+
+  apiRequest(request: Request) {
+    let url = new URL(request.url);
+
+    let api = this.#build
+      .getBuilder("rsc")
+      .apiEndpoints.find((api) => api.pattern.test(url.pathname, this.baseUrl));
+
+    if (api) {
+      return new APIRequest({ api, request, runtime: this });
+    }
   }
 
   // pages

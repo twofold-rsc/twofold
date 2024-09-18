@@ -13,6 +13,12 @@ export type LayoutProps = {
   children: ReactNode;
 };
 
+export type APIProps<T extends string | never = never> = {
+  params: Record<T, string>;
+  searchParams: URLSearchParams;
+  request: Request;
+};
+
 export type Config = {
   externalPackages: string[];
 };
