@@ -22,6 +22,7 @@ import { Wrapper } from "../rsc/wrapper.js";
 import { fileExists } from "../helpers/file.js";
 import { Builder } from "./base-builder.js";
 import { ConfigBuilder } from "./config-builder.js";
+import { API } from "../rsc/api.js";
 
 type CompiledAction = {
   id: string;
@@ -86,6 +87,7 @@ export class RSCBuilder extends Builder {
         entryPoints: [
           "./src/pages/**/*.page.tsx",
           "./src/pages/**/layout.tsx",
+          "./src/pages/**/*.api.ts",
           ...middlewareEntry,
           ...serverActionModules,
           ...serverActionEntries,
@@ -348,6 +350,45 @@ export class RSCBuilder extends Builder {
         });
 
         return new Layout({ rsc });
+      });
+  }
+
+  get apiEndpoints() {
+    let metafile = this.#metafile;
+
+    if (!metafile) {
+      return [];
+    }
+
+    let outputs = metafile.outputs;
+    let cwd = process.cwd();
+    let baseUrl = pathToFileURL(`${cwd}/`);
+    let prefix = "src/pages/";
+    let apiSuffix = ".api.ts";
+
+    let keys = Object.keys(outputs);
+    return keys
+      .filter((key) => {
+        let entryPoint = outputs[key].entryPoint;
+        return entryPoint && entryPoint.endsWith(apiSuffix);
+      })
+      .map((key) => {
+        let entryPoint = outputs[key].entryPoint;
+
+        if (!entryPoint) {
+          throw new Error("No entry point");
+        }
+
+        let path = entryPoint.slice(prefix.length).slice(0, -apiSuffix.length);
+        if (path === "index" || path.endsWith("/index")) {
+          path = path.slice(0, -6);
+        }
+        path = `/${path}`;
+
+        return new API({
+          path,
+          fileUrl: new URL(key, baseUrl),
+        });
       });
   }
 

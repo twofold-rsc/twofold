@@ -231,6 +231,37 @@ export async function create(runtime: Runtime) {
     return multipart.response();
   });
 
+  app.use("/**/*", async (ctx) => {
+    let request = ctx.request;
+    let requestUrl = new URL(request.url);
+
+    let apiRequest = runtime.apiRequest(request);
+    if (apiRequest) {
+      let pageRequest = runtime.pageRequest(request);
+
+      let pageExists = !pageRequest.isNotFound;
+      let accepts = parseHeaderValue(request.headers.get("accept"));
+      let acceptsHTML = accepts.some((a) => a.value === "text/html");
+      let skipAPI = pageExists && acceptsHTML;
+
+      if (!skipAPI) {
+        let response = await apiRequest.response();
+
+        if (response.status === 404) {
+          console.log("🔴 Not found", requestUrl.pathname);
+        } else if (response.status === 307 || response.status === 308) {
+          let location = response.headers.get("location");
+          console.log("🔵 Redirecting to", location);
+        } else {
+          let method = request.method.toUpperCase();
+          console.log(`🟢 API ${method}`, requestUrl.pathname);
+        }
+
+        return response;
+      }
+    }
+  });
+
   app.get("/**/*", async (ctx) => {
     let url = new URL(ctx.request.url);
     let request = ctx.request;
@@ -240,7 +271,7 @@ export async function create(runtime: Runtime) {
 
     if (response.status === 404) {
       console.log("🔴 Not found", url.pathname);
-    } else if (response.status === 307) {
+    } else if (response.status === 307 || response.status === 308) {
       console.log("🔵 Redirecting to", response.headers.get("location"));
     } else {
       console.log("🟢 Serving", url.pathname);

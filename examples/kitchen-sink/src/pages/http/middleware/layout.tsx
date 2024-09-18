@@ -5,7 +5,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex space-x-12">
       <div>
-        <h2 className="text-lg font-semibold">Redirects</h2>
+        <h2 className="text-lg font-semibold">Middleware</h2>
         <ul>
           <li>
             <Link href="/http/middleware" className="text-blue-500 underline">
