@@ -5,7 +5,7 @@ export default function SlugLayout({ params, children, request }: LayoutProps) {
   let slug = params.slug;
 
   let url = new URL(request.url);
-  console.log(url);
+  let pathname = url.pathname;
 
   return (
     <div>
@@ -15,7 +15,7 @@ export default function SlugLayout({ params, children, request }: LayoutProps) {
           <li>
             <Link
               href="/routing/slugs"
-              className={`text-blue-500 ${!slug ? "underline" : ""}`}
+              className={`text-blue-500 ${pathname === "/routing/slugs" ? "underline" : ""}`}
             >
               Home
             </Link>
@@ -39,7 +39,7 @@ export default function SlugLayout({ params, children, request }: LayoutProps) {
           <li>
             <Link
               href="/routing/slugs/fixed"
-              className={`text-blue-500 ${slug === "123" ? "underline" : ""}`}
+              className={`text-blue-500 ${pathname === "/routing/slugs/fixed" ? "underline" : ""} whitespace-nowrap`}
             >
               Fixed sibling
             </Link>
