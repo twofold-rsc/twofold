@@ -1,8 +1,9 @@
 import { BuildContext, context, Metafile } from "esbuild";
 import { Builder } from "./base-builder.js";
 import { cwdUrl } from "../../files.js";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
+import { url } from "inspector";
 
 export class ConfigBuilder extends Builder {
   readonly name = "config";
@@ -69,7 +70,8 @@ export class ConfigBuilder extends Builder {
 
   async loadAppConfig() {
     let path = getCompiledEntrypoint(this.appConfigPath, this.metafile);
-    let mod = await import(path);
+    let pathUrl = pathToFileURL(path);
+    let mod = await import(pathUrl.href);
     return mod.default;
   }
 
