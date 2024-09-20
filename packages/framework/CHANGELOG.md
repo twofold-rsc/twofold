@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.26
+
+### Patch Changes
+
+- Route precedence
+
 ## 0.0.25
 
 ### Patch Changes
