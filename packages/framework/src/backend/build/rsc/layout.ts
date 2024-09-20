@@ -38,6 +38,10 @@ export class Layout {
   }
 
   findPage(f: (page: Page) => boolean): Page | undefined {
+    // let [ dynamicPages, fixedPages ] = partition(this.#pages, (page) => page.isDynamic);
+    // fixedPages.find(f) ||
+    // dynamicPages.find(f) ||
+
     let page =
       this.#pages.find(f) ||
       this.#children.map((child) => child.findPage(f)).find(Boolean);

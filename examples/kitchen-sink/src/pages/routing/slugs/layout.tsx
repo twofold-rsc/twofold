@@ -1,8 +1,11 @@
 import Link from "@twofold/framework/link";
 import { LayoutProps } from "@twofold/framework/types";
 
-export default function SlugLayout({ params, children }: LayoutProps) {
+export default function SlugLayout({ params, children, request }: LayoutProps) {
   let slug = params.slug;
+
+  let url = new URL(request.url);
+  console.log(url);
 
   return (
     <div>
@@ -31,6 +34,14 @@ export default function SlugLayout({ params, children }: LayoutProps) {
               className={`text-blue-500 ${slug === "123" ? "underline" : ""}`}
             >
               Slug 123
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/slugs/fixed"
+              className={`text-blue-500 ${slug === "123" ? "underline" : ""}`}
+            >
+              Fixed sibling
             </Link>
           </li>
         </ul>
