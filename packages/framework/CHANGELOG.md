@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.27
+
+### Patch Changes
+
+- fix windows 11
+
 ## 0.0.26
 
 ### Patch Changes
