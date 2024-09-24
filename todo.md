@@ -2,6 +2,8 @@
 
 framework
 
+- server, hold requests if building
+
 - entries builder should use app defined externals
 - add --log=debug flag to show debug logs
 
@@ -13,6 +15,8 @@ website
 
 - read through
 - README
+
+- API handlers
 
 - Routing + Pages & Layouts to reference
 - Loading screens
