@@ -1,5 +1,6 @@
 import { RequestContextExtensions } from "@hattip/compose";
 import { AsyncLocalStorage } from "node:async_hooks";
+import { ReactNode } from "react";
 
 export type Store = {
   reqId: number;
@@ -11,6 +12,10 @@ export type Store = {
     outgoingCookies: RequestContextExtensions["outgoingCookies"];
   };
   assets: string[];
+  render: {
+    toHtml: (tree: ReactNode) => ReadableStream<Uint8Array>;
+    toRSC: (tree: ReactNode) => ReadableStream<Uint8Array>;
+  };
 };
 
 let asyncLocalStorage = new AsyncLocalStorage<Store>();
