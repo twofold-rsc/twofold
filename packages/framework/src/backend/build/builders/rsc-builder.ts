@@ -365,7 +365,6 @@ export class RSCBuilder extends Builder {
     let cwd = process.cwd();
     let baseUrl = pathToFileURL(`${cwd}/`);
     let prefix = "src/pages/";
-    // let apiSuffix = ".api.ts";
     let apiSuffix = /\.api\.tsx?$/;
 
     let keys = Object.keys(outputs);
