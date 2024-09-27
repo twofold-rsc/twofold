@@ -198,8 +198,8 @@ export class Runtime {
 
   async renderHtmlStreamFromRSCStream(
     rscStream: ReadableStream<Uint8Array>,
-    method: "stream" | "page",
-    data: Record<string, any>,
+    method: "stream" | "page" | "static",
+    data: Record<string, any> = {},
   ) {
     let { port1, port2 } = new MessageChannel();
 
@@ -241,12 +241,13 @@ export class Runtime {
 
       if (isNotFoundError(error)) {
         return {
-          notFound: true,
           stream: readStream,
+          notFound: true,
         };
       } else if (isRedirectError(error)) {
         let { status, url } = redirectErrorInfo(error);
         return {
+          stream: readStream,
           redirect: {
             status,
             url,

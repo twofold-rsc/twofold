@@ -21,7 +21,8 @@
     "./use-router": "./src/hooks/use-router.ts",
     "./cookies": "./src/http/cookies.ts",
     "./not-found": "./src/http/not-found.ts",
-    "./redirect": "./src/http/redirect.ts"
+    "./redirect": "./src/http/redirect.ts",
+    "./render": "./src/render.ts"
   },
   "keywords": [],
   "author": "Ryan Toronto",

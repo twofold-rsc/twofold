@@ -13,8 +13,9 @@ export type Store = {
   };
   assets: string[];
   render: {
-    toHtml: (tree: ReactNode) => ReadableStream<Uint8Array>;
-    toRSC: (tree: ReactNode) => ReadableStream<Uint8Array>;
+    treeToStaticHtml: (tree: ReactNode) => Promise<string>;
+    // htmlStream: (tree: ReactNode) => Promise<ReadableStream<Uint8Array>>;
+    // rscStream: (tree: ReactNode) => Promise<ReadableStream<Uint8Array>>;
   };
 };
 

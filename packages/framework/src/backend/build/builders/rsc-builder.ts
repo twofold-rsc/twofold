@@ -88,6 +88,7 @@ export class RSCBuilder extends Builder {
           "./src/pages/**/*.page.tsx",
           "./src/pages/**/layout.tsx",
           "./src/pages/**/*.api.ts",
+          "./src/pages/**/*.api.tsx",
           ...middlewareEntry,
           ...serverActionModules,
           ...serverActionEntries,
@@ -364,13 +365,14 @@ export class RSCBuilder extends Builder {
     let cwd = process.cwd();
     let baseUrl = pathToFileURL(`${cwd}/`);
     let prefix = "src/pages/";
-    let apiSuffix = ".api.ts";
+    // let apiSuffix = ".api.ts";
+    let apiSuffix = /\.api\.tsx?$/;
 
     let keys = Object.keys(outputs);
     return keys
       .filter((key) => {
         let entryPoint = outputs[key].entryPoint;
-        return entryPoint && entryPoint.endsWith(apiSuffix);
+        return entryPoint && apiSuffix.test(entryPoint);
       })
       .map((key) => {
         let entryPoint = outputs[key].entryPoint;
@@ -379,7 +381,15 @@ export class RSCBuilder extends Builder {
           throw new Error("No entry point");
         }
 
-        let path = entryPoint.slice(prefix.length).slice(0, -apiSuffix.length);
+        let suffixMatch = apiSuffix.exec(entryPoint);
+        if (!suffixMatch) {
+          throw new Error("No suffix match");
+        }
+
+        // either api.ts or api.tsx
+        let suffix = suffixMatch[0];
+
+        let path = entryPoint.slice(prefix.length).slice(0, -suffix.length);
         if (path === "index" || path.endsWith("/index")) {
           path = path.slice(0, -6);
         }

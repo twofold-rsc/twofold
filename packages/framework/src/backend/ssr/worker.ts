@@ -4,6 +4,7 @@ import { ReadableStream } from "stream/web";
 import { injectResolver } from "../monkey-patch.js";
 import { serializeError } from "serialize-error";
 import { pageSSR } from "./page-ssr.js";
+import { staticSSR } from "./static-ssr.js";
 
 if (!parentPort) {
   throw new Error("Must be run as a worker");
@@ -22,7 +23,9 @@ export type RenderRequest = {
     }
   | {
       method: "stream";
-      data: undefined;
+    }
+  | {
+      method: "static";
     }
 );
 
@@ -41,6 +44,9 @@ parentPort.on("message", async (request: RenderRequest) => {
       htmlStream = await pageSSR(request);
     } else if (request.method === "stream") {
       // htmlStream = await streamSSR(request);
+      throw new Error("Not implemented");
+    } else if (request.method === "static") {
+      htmlStream = await staticSSR(request);
     } else {
       throw new Error("Invalid ssr render request");
     }
