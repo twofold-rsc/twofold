@@ -49,7 +49,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
             "static",
           );
 
-          // buffer everything from the "static" stream into a string, then
+          // buffer everything from the static "stream" into a string, then
           // resolve the promise when the stream ends.
           return new Promise<string>((resolve, reject) => {
             let content = "";
