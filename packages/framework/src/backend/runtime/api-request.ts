@@ -4,7 +4,6 @@ import {
   isNotFoundError,
   isRedirectError,
   redirectErrorInfo,
-  redirectErrorToResponse,
 } from "./helpers/errors.js";
 
 export class APIRequest {

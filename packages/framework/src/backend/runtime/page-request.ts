@@ -1,18 +1,11 @@
-import { MessageChannel } from "node:worker_threads";
 import { Runtime } from "../runtime";
 import { Page } from "../build/rsc/page";
 import { getStore } from "../stores/rsc-store.js";
-import {
-  renderToReadableStream,
-  // @ts-ignore
-} from "react-server-dom-webpack/server.edge";
 import {
   isNotFoundError,
   isRedirectError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
-import { randomUUID } from "node:crypto";
-import { deserializeError } from "serialize-error";
 
 export class PageRequest {
   #page: Page;
@@ -62,53 +55,17 @@ export class PageRequest {
       store.assets = assets;
     }
 
-    // rendering
-    let streamError: unknown;
     let reactTree = await this.#page.reactTree(this.props);
-    let rscStream = renderToReadableStream(
-      reactTree,
-      this.#runtime.clientComponentMap,
-      {
-        onError(err: unknown) {
-          streamError = err;
-          if (
-            (isNotFoundError(err) || isRedirectError(err)) &&
-            err instanceof Error &&
-            "digest" in err &&
-            typeof err.digest === "string"
-          ) {
-            return err.digest;
-          } else if (err instanceof Error) {
-            let digest =
-              process.env.NODE_ENV === "production" ? randomUUID() : undefined;
 
-            if (digest) {
-              console.log(`Error digest: ${digest}`);
-            }
+    let { stream, error, redirect, notFound } =
+      await this.#runtime.renderRSCStreamFromTree(reactTree);
 
-            console.error(err);
-            return digest;
-          }
-        },
-      },
-    );
-
-    // await the first chunk
-    let [t1, t2] = rscStream.tee();
-    let reader = t1.getReader();
-    await reader.read();
-    reader.releaseLock();
-    t1.cancel();
-
-    if (streamError) {
-      if (isNotFoundError(streamError)) {
-        t2.cancel();
-        return this.notFoundRscResponse();
-      } else if (isRedirectError(streamError)) {
-        t2.cancel();
-        let { status, url } = redirectErrorInfo(streamError);
-        return this.redirectResponse(status, url);
-      }
+    if (notFound) {
+      stream.cancel();
+      return this.notFoundRscResponse();
+    } else if (redirect) {
+      stream.cancel();
+      return this.redirectResponse(redirect.status, redirect.url);
     }
 
     // merge headers
@@ -116,14 +73,14 @@ export class PageRequest {
       "Content-type": "text/x-component",
     });
 
-    let status = streamError
+    let status = error
       ? 500
       : this.#conditions.includes("not-found")
         ? 404
         : 200;
 
     // give back the stream wrapped in a response
-    return new Response(t2, {
+    return new Response(stream, {
       status,
       headers,
     });
@@ -138,63 +95,28 @@ export class PageRequest {
     }
 
     let rscStream = rscResponse.body;
-
-    let { port1, port2 } = new MessageChannel();
-
-    if (!this.#runtime.ssrWorker) {
-      throw new Error("Worker not available");
-    }
-
-    let transformStream = new TransformStream();
-    let writeStream = transformStream.writable;
-    let readStream = transformStream.readable;
-
-    let getMessage = new Promise<Record<string, any>>((resolve) => {
-      let handle = function (msg: Record<string, any>) {
-        resolve(msg);
-        port1.off("message", handle);
-        port1.close();
-      };
-      port1.on("message", handle);
-    });
-
     let url = new URL(this.#request.url);
-    this.#runtime.ssrWorker.postMessage(
-      {
-        pathname: url.pathname,
-        port: port2,
-        rscStream,
-        writeStream,
-      },
-      // @ts-ignore - streams should be transferrable
-      [port2, rscStream, writeStream],
-    );
 
-    let message = await getMessage;
-
-    if (message.status === "OK") {
-      let status = rscResponse.status;
-      let headers = new Headers(rscResponse.headers);
-      headers.set("Content-type", "text/html");
-
-      return new Response(readStream, {
-        status,
-        headers,
+    let { stream, notFound, redirect } =
+      await this.#runtime.renderHtmlStreamFromRSCStream(rscStream, "page", {
+        path: url.pathname,
       });
-    } else if (message.status === "ERROR") {
-      let error = deserializeError(message.serializedError);
 
-      if (isNotFoundError(error)) {
-        return this.notFoundSsrResponse();
-      } else if (isRedirectError(error)) {
-        let { status, url } = redirectErrorInfo(error);
-        return this.redirectResponse(status, url);
-      } else {
-        throw error;
-      }
-    } else {
-      throw new Error("SSR worker failed to render");
+    if (notFound) {
+      return this.notFoundSsrResponse();
+    } else if (redirect) {
+      let { status, url } = redirect;
+      return this.redirectResponse(status, url);
     }
+
+    let status = rscResponse.status;
+    let headers = new Headers(rscResponse.headers);
+    headers.set("Content-type", "text/html");
+
+    return new Response(stream, {
+      status,
+      headers,
+    });
   }
 
   private get props() {

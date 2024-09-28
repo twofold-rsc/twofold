@@ -45,7 +45,7 @@ export async function create(runtime: Runtime) {
   app.use(errors(build));
 
   // every request below here should use the store
-  app.use(requestStore(build));
+  app.use(requestStore(runtime));
 
   app.get("/__rsc/page", async (ctx) => {
     let url = new URL(ctx.request.url);
@@ -199,7 +199,6 @@ export async function create(runtime: Runtime) {
       });
     }
 
-    // couldn't this be a tree that throws something?
     let actionStream = renderToReadableStream(
       result,
       build.getBuilder("client").clientComponentMap,
