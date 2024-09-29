@@ -2,10 +2,14 @@
 
 framework
 
+- not found async middleware fix
+- redirect async middleware fix
 - server, hold requests if building
 
 - entries builder should use app defined externals
 - add --log=debug flag to show debug logs
+
+- request passed to pages and api should use x-forwarded-for headers
 
 - add cheerio as external
 - rename src to app
