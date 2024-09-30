@@ -58,6 +58,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/routing/not-found/async-middleware-not-found"
+              className="text-blue-500 underline"
+            >
+              Async middleware notFound
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/not-found/action-calls-not-found"
               className="text-blue-500 underline"
             >

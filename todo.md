@@ -2,12 +2,9 @@
 
 framework
 
-- server, hold requests if building
-
 - entries builder should use app defined externals
 - add --log=debug flag to show debug logs
 
-- add cheerio as external
 - rename src to app
 - eslint upgrade
 

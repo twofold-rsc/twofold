@@ -5,6 +5,7 @@ import {
   isRedirectError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
+import { forwardedRequest } from "./helpers/request.js";
 
 export class APIRequest {
   #api: API;
@@ -70,11 +71,12 @@ export class APIRequest {
     let execPattern = this.#api.pattern.exec(url);
     let params = execPattern?.pathname.groups ?? {};
     let searchParams = url.searchParams;
+    let request = forwardedRequest(this.#request);
 
     return {
       params,
       searchParams,
-      request: this.#request,
+      request,
     };
   }
 }

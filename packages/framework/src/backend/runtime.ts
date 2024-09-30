@@ -269,6 +269,9 @@ export class Runtime {
       this.#ssrWorker = undefined;
     }
 
+    // only create if the build is done
+    // emit some event with ssr is ready
+
     if (!this.#build.error) {
       let bootstrapUrl = `/_assets/client-app/bootstrap/${this.#build.getBuilder("client").bootstrapHash}.js`;
       let workerUrl = new URL("./ssr/worker.js", import.meta.url);

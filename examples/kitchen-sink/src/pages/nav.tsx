@@ -167,6 +167,11 @@ export default function Nav() {
                         description="API for lower-level access to the server."
                         href="/http/api"
                       />
+                      <ExampleLink
+                        title="Request forwarding"
+                        description="Request normalization for proxies and load balancers."
+                        href="/http/request-forwarding"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup name="Build">

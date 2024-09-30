@@ -6,6 +6,7 @@ import {
   isRedirectError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
+import { forwardedRequest } from "./helpers/request.js";
 
 export class PageRequest {
   #page: Page;
@@ -125,15 +126,16 @@ export class PageRequest {
     let execPattern = this.#page.pattern.exec(url);
     let params = execPattern?.pathname.groups ?? {};
     let searchParams = url.searchParams;
+    let request = forwardedRequest(this.#request);
 
     return {
       params,
       searchParams,
-      request: this.#request,
+      request,
     };
   }
 
-  private async runMiddleware() {
+  private runMiddleware() {
     let rsc = this.#page.rsc;
     let layouts = this.#page.layouts;
     let props = this.props;
@@ -143,7 +145,7 @@ export class PageRequest {
       ...layouts.map((layout) => layout.rsc.runMiddleware(props)),
     ];
 
-    await Promise.all(promises);
+    return Promise.all(promises);
   }
 
   private notFoundRscResponse() {

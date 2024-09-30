@@ -23,6 +23,7 @@ export const externalPackages = [
   "bcrypt",
   "better-sqlite3",
   "canvas",
+  "cheerio",
   "cpu-features",
   "cypress",
   "dd-trace",
