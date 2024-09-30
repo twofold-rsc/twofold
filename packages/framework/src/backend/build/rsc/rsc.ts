@@ -24,7 +24,7 @@ export class RSC {
   }) {
     let module = await this.loadModule();
     if (module.before) {
-      module.before(props);
+      await module.before(props);
     }
   }
 

@@ -135,7 +135,7 @@ export class PageRequest {
     };
   }
 
-  private async runMiddleware() {
+  private runMiddleware() {
     let rsc = this.#page.rsc;
     let layouts = this.#page.layouts;
     let props = this.props;
@@ -145,7 +145,7 @@ export class PageRequest {
       ...layouts.map((layout) => layout.rsc.runMiddleware(props)),
     ];
 
-    await Promise.all(promises);
+    return Promise.all(promises);
   }
 
   private notFoundRscResponse() {
