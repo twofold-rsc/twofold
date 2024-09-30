@@ -18,6 +18,7 @@ import { pathNormalization } from "./server/middlewares/path-normalization.js";
 import { session } from "./server/middlewares/session.js";
 import { globalMiddleware } from "./server/middlewares/global-middleware.js";
 import { requestStore } from "./server/middlewares/request-store.js";
+import { waitForBuild } from "./server/middlewares/wait-for-build.js";
 import {
   isNotFoundError,
   isRedirectError,
@@ -33,6 +34,10 @@ export async function create(runtime: Runtime) {
 
   app.use(cookie());
   app.use(await session());
+
+  if (build.env === "development") {
+    app.use(waitForBuild(build));
+  }
 
   app.use(globalMiddleware(build));
   app.use(assets(build));
