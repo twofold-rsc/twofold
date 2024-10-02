@@ -293,7 +293,17 @@ export async function create(runtime: Runtime) {
         runtime.port,
         runtime.hostname,
         () => {
-          console.log(`🚀 Server listening on ${runtime.baseUrl}/`);
+          console.log(
+            `🚀 Server listening on ${runtime.hostname}:${runtime.port}`,
+          );
+
+          if (process.env.NODE_ENV !== "production") {
+            let cyan = "\x1b[0;36m";
+            let reset = "\x1b[0m";
+            console.log(
+              `🌎 Visit ${cyan}${runtime.baseUrl}/ ${reset}to see your app!`,
+            );
+          }
           r();
         },
       );

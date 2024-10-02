@@ -23,7 +23,7 @@ export async function pageSSR(request: PageRenderRequest) {
   return await render({
     rscStream: request.rscStream,
     ssrManifestModuleMap,
-    path: request.data.path,
+    urlString: request.data.urlString,
     bootstrapUrl,
   });
 }
