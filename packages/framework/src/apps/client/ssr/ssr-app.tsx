@@ -8,11 +8,11 @@ import { RoutingContext } from "../contexts/routing-context";
 import { StreamContext } from "../contexts/stream-context";
 
 export function SSRApp({
-  path,
+  url,
   getTree,
   rscStreamReader,
 }: {
-  path: string;
+  url: URL;
   getTree: () => any;
   rscStreamReader: ReadableStreamDefaultReader<Uint8Array>;
 }) {
@@ -36,7 +36,8 @@ export function SSRApp({
 
   return (
     <RoutingContext
-      path={path}
+      path={url.pathname}
+      searchParams={url.searchParams}
       navigate={navigate}
       replace={replace}
       refresh={refresh}
@@ -50,14 +51,14 @@ export function SSRApp({
 type RenderOptions = {
   rscStream: ReadableStream<Uint8Array>;
   ssrManifestModuleMap: Record<string, any>;
-  path: string;
+  urlString: string;
   bootstrapUrl: string;
 };
 
 export async function render({
   rscStream,
   ssrManifestModuleMap,
-  path,
+  urlString,
   bootstrapUrl,
 }: RenderOptions): Promise<ReadableStream<Uint8Array>> {
   let [rscStream1, rscStream2] = rscStream.tee();
@@ -84,9 +85,11 @@ export async function render({
 
   let rscStreamReader = rscStream2.getReader();
 
+  let url = new URL(urlString);
+
   let htmlStream = await renderToReadableStream(
     createElement(SSRApp, {
-      path,
+      url,
       rscStreamReader,
       getTree,
     }),
@@ -100,7 +103,7 @@ export async function render({
           console.error(err);
         } else {
           console.error(
-            `An unknown error occurred while SSR rendering: ${path}`,
+            `An unknown error occurred while SSR rendering: ${url.pathname}`,
           );
         }
       },

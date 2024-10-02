@@ -100,7 +100,7 @@ export class PageRequest {
 
     let { stream, notFound, redirect } =
       await this.#runtime.renderHtmlStreamFromRSCStream(rscStream, "page", {
-        path: url.pathname,
+        urlString: url.toString(),
       });
 
     if (notFound) {

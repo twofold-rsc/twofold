@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
 } from "react";
 import { RoutingContext } from "../contexts/routing-context";
 import { useRouterReducer } from "./router-hooks";
@@ -139,13 +140,18 @@ function Router() {
     };
   }, [dispatch]);
 
-  let url = new URL(routerState.path, origin);
+  let url = useMemo(
+    () => new URL(routerState.path, origin),
+    [routerState.path],
+  );
   let path = url.pathname;
+  let searchParams = url.searchParams;
 
   return (
     <ErrorBoundary>
       <RoutingContext
         path={path}
+        searchParams={searchParams}
         navigate={navigate}
         replace={replace}
         refresh={refresh}

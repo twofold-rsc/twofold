@@ -18,7 +18,7 @@ export type RenderRequest = {
   | {
       method: "page";
       data: {
-        path: string;
+        urlString: string;
       };
     }
   | {

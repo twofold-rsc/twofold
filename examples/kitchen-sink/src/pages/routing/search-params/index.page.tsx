@@ -1,5 +1,7 @@
 import Link from "@twofold/framework/link";
 import { PageProps } from "@twofold/framework/types";
+import { ClientSideParams } from "./client-side-params";
+import { VerifySearchParams } from "./verify-search-params";
 
 export default function SearchParams({ searchParams }: PageProps) {
   return (
@@ -11,6 +13,13 @@ export default function SearchParams({ searchParams }: PageProps) {
         </span>{" "}
         is: {searchParams.toString()}
       </div>
+      <div className="mt-3">
+        <ClientSideParams />
+      </div>
+
+      <VerifySearchParams
+        serializedServerSearchParams={Object.fromEntries(searchParams)}
+      />
 
       <div className="mt-8 flex flex-col space-y-4">
         <Link

@@ -2,6 +2,7 @@ import { ReactNode, createContext } from "react";
 
 export const Context = createContext({
   path: "/",
+  searchParams: new URLSearchParams(),
   navigate: (path: string) => {},
   replace: (path: string) => {},
   refresh: () => {},
@@ -10,6 +11,7 @@ export const Context = createContext({
 
 export function RoutingContext({
   path,
+  searchParams,
   navigate,
   replace,
   refresh,
@@ -17,6 +19,7 @@ export function RoutingContext({
   children,
 }: {
   path: string;
+  searchParams: URLSearchParams;
   navigate: (path: string) => void;
   replace: (path: string) => void;
   refresh: () => void;
@@ -27,6 +30,7 @@ export function RoutingContext({
     <Context.Provider
       value={{
         path,
+        searchParams,
         notFound,
         navigate,
         replace,

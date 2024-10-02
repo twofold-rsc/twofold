@@ -38,7 +38,8 @@ export class Runtime {
   }
 
   get baseUrl() {
-    return `http://${this.hostname}:${this.port}`;
+    let domain = this.hostname === "0.0.0.0" ? "localhost" : this.hostname;
+    return `http://${domain}:${this.port}`;
   }
 
   get hostname() {
