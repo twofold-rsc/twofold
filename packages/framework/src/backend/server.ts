@@ -297,7 +297,7 @@ export async function create(runtime: Runtime) {
             `🚀 Server listening on ${runtime.hostname}:${runtime.port}`,
           );
 
-          if (build.env === "development") {
+          if (process.env.NODE_ENV !== "production") {
             let cyan = "\x1b[0;36m";
             let reset = "\x1b[0m";
             console.log(
