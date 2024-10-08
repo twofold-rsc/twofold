@@ -4,6 +4,7 @@ let cwd = pathToFileURL(process.cwd());
 
 export const cwdUrl = new URL(`${cwd}/`);
 export const appSrcDir = new URL("./src/", cwdUrl);
+export const appConfigDir = new URL("./config/", cwdUrl);
 export const appCompiledDir = new URL("./.twofold/", cwdUrl);
 
 export const frameworkCompiledDir = new URL("../../dist/", import.meta.url);

@@ -21,8 +21,8 @@ import { Page } from "../rsc/page.js";
 import { Wrapper } from "../rsc/wrapper.js";
 import { fileExists } from "../helpers/file.js";
 import { Builder } from "./base-builder.js";
-import { ConfigBuilder } from "./config-builder.js";
 import { API } from "../rsc/api.js";
+import { getAppConfig } from "../helpers/config.js";
 
 type CompiledAction = {
   id: string;
@@ -35,19 +35,11 @@ export class RSCBuilder extends Builder {
 
   #metafile?: Metafile;
   #entriesBuilder: EntriesBuilder;
-  #configBuilder: ConfigBuilder;
   #serverActionMap = new Map<string, CompiledAction>();
 
-  constructor({
-    entriesBuilder,
-    configBuilder,
-  }: {
-    entriesBuilder: EntriesBuilder;
-    configBuilder: ConfigBuilder;
-  }) {
+  constructor({ entriesBuilder }: { entriesBuilder: EntriesBuilder }) {
     super();
     this.#entriesBuilder = entriesBuilder;
-    this.#configBuilder = configBuilder;
   }
 
   get serverActionMap() {
@@ -76,8 +68,8 @@ export class RSCBuilder extends Builder {
     this.clearError();
 
     try {
-      let config = await this.#configBuilder.loadAppConfig();
-      let userDefinedExternalPackages = config?.externalPackages ?? [];
+      let appConfig = await getAppConfig();
+      let userDefinedExternalPackages = appConfig.externalPackages ?? [];
 
       let result = await build({
         bundle: true,
@@ -145,7 +137,7 @@ export class RSCBuilder extends Builder {
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
               let storeUrl = new URL(
                 "./backend/stores/rsc-store.js",
-                frameworkCompiledDir,
+                frameworkCompiledDir
               );
 
               build.onResolve(
@@ -157,7 +149,7 @@ export class RSCBuilder extends Builder {
                       path: storeUrl.href,
                     };
                   }
-                },
+                }
               );
             },
           },
@@ -221,7 +213,7 @@ export class RSCBuilder extends Builder {
     return path.join(
       fileURLToPath(frameworkSrcDir),
       "components",
-      "inner-root-wrapper.tsx",
+      "inner-root-wrapper.tsx"
     );
   }
 
@@ -233,7 +225,7 @@ export class RSCBuilder extends Builder {
     }
 
     let page = this.tree.findPage(
-      (p) => p.pattern.pathname === "/errors/not-found",
+      (p) => p.pattern.pathname === "/errors/not-found"
     );
 
     if (!page) {
@@ -410,7 +402,7 @@ export class RSCBuilder extends Builder {
 
     let outputFilePath = getCompiledEntrypoint(
       this.innerRootWrapperSrcPath,
-      metafile,
+      metafile
     );
     let outputFileUrl = pathToFileURL(outputFilePath);
 
