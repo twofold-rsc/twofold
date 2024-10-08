@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.31
+
+### Patch Changes
+
+- better config loading
+
 ## 0.0.30
 
 ### Patch Changes

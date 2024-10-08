@@ -2,12 +2,9 @@
 
 framework
 
-- entries builder should use app defined externals
-- test config-to-js on windows
 - add --log=debug flag to show debug logs
-
-- rename src to app
 - eslint upgrade
+- rename src to app
 
 website
 
