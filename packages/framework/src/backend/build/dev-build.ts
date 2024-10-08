@@ -13,7 +13,6 @@ import { ClientComponentMapSnapshot } from "./snapshots/client-component-map-sna
 import { ClientChunksSnapshot } from "./snapshots/client-chunks-snapshot.js";
 import { RSCSnapshot } from "./snapshots/rsc-snapshot.js";
 import { CSSSnapshot } from "./snapshots/css-snapshot.js";
-import { ConfigBuilder } from "./builders/config-builder.js";
 
 class BuildEvents extends EventEmitter {}
 
@@ -33,10 +32,8 @@ export class DevBuild extends Build {
 
     let entriesBuilder = new EntriesBuilder();
     let errorPageBuilder = new DevErrorPageBuilder();
-    let configBuilder = new ConfigBuilder({ env: "development" });
     let rscBuilder = new RSCBuilder({
       entriesBuilder,
-      configBuilder,
     });
     let clientAppBuilder = new ClientAppBuilder({
       env: "development",
@@ -47,7 +44,6 @@ export class DevBuild extends Build {
 
     this.addBuilder(entriesBuilder);
     this.addBuilder(errorPageBuilder);
-    this.addBuilder(configBuilder);
     this.addBuilder(rscBuilder);
     this.addBuilder(clientAppBuilder);
     this.addBuilder(serverFilesBuilder);
@@ -72,7 +68,7 @@ export class DevBuild extends Build {
     // stash old chunks so we can see what changed
     if (!this.error) {
       this.#clientComponentMapSnapshot.take(
-        this.getBuilder("client").clientComponentMap,
+        this.getBuilder("client").clientComponentMap
       );
       this.#clientChunksSnapshot.take(this.getBuilder("client").chunks);
       this.#rscSnapshot.take(this.getBuilder("rsc").files);
@@ -96,14 +92,6 @@ export class DevBuild extends Build {
     // frameworkTime.log();
 
     if (!this.error) {
-      let configTime = time("config build");
-      configTime.start();
-      await this.getBuilder("config").build();
-      configTime.end();
-      // configTime.log();
-    }
-
-    if (!this.error) {
       let rscBuild = this.getBuilder("rsc").build();
       let clientBuild = this.getBuilder("client").build();
 
@@ -119,7 +107,9 @@ export class DevBuild extends Build {
     buildTime.end();
 
     console.log(
-      `🏗️  Built app in ${buildTime.duration.toFixed(2)}ms [version: ${this.key}]`,
+      `🏗️  Built app in ${buildTime.duration.toFixed(2)}ms [version: ${
+        this.key
+      }]`
     );
 
     this.#isBuilding = false;
@@ -137,7 +127,7 @@ export class DevBuild extends Build {
     }
 
     this.#clientComponentMapSnapshot.latest(
-      this.getBuilder("client").clientComponentMap,
+      this.getBuilder("client").clientComponentMap
     );
 
     this.#clientChunksSnapshot.latest(this.getBuilder("client").chunks);
@@ -155,8 +145,10 @@ export class DevBuild extends Build {
   }
 
   async watch() {
-    let dirs = ["./src", "./public", "./config"];
-    dirs.forEach(async (dir) => {
+    let buildDirs = ["./src", "./public"];
+    let setupDirs = ["./config"];
+
+    [...buildDirs, ...setupDirs].forEach(async (dir) => {
       let url = new URL(dir, cwdUrl);
       let canWatch = false;
       try {
@@ -169,7 +161,13 @@ export class DevBuild extends Build {
       if (canWatch) {
         let watched = watch(dir, { recursive: true });
         for await (let _event of watched) {
-          await this.build();
+          if (buildDirs.includes(dir)) {
+            await this.build();
+          } else if (setupDirs.includes(dir)) {
+            await this.stop();
+            await this.setup();
+            await this.build();
+          }
         }
       }
     });

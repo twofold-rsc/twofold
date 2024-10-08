@@ -5,9 +5,11 @@ import { createHash } from "crypto";
 import { basename, extname } from "path";
 import { readFile } from "fs/promises";
 import { ParseResult, parseAsync } from "@babel/core";
-import { frameworkSrcDir } from "../../files.js";
+import { appConfigDir, frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
 import { Builder } from "./base-builder.js";
+import { Jiti } from "jiti/lib/types.js";
+import { getAppConfig } from "../helpers/config.js";
 
 type ClientComponentModule = {
   moduleId: string;
@@ -55,6 +57,9 @@ export class EntriesBuilder extends Builder {
   async setup() {
     let frameworkComponentsUrl = new URL("./components/", frameworkSrcDir);
     let frameworkComponentsPath = fileURLToPath(frameworkComponentsUrl);
+
+    let appConfig = await getAppConfig();
+    let externalPackages = appConfig.externalPackages ?? [];
 
     let builder = this;
     this.#context = await context({
@@ -124,26 +129,26 @@ export class EntriesBuilder extends Builder {
   serialize() {
     return {
       clientComponentModuleMap: Object.fromEntries(
-        this.#clientComponentModuleMap.entries(),
+        this.#clientComponentModuleMap.entries()
       ),
       serverActionModuleMap: Object.fromEntries(
-        this.#serverActionModuleMap.entries(),
+        this.#serverActionModuleMap.entries()
       ),
       serverActionEntryMap: Object.fromEntries(
-        this.#serverActionEntryMap.entries(),
+        this.#serverActionEntryMap.entries()
       ),
     };
   }
 
   load(data: any) {
     this.#clientComponentModuleMap = new Map(
-      Object.entries(data.clientComponentModuleMap),
+      Object.entries(data.clientComponentModuleMap)
     );
     this.#serverActionModuleMap = new Map(
-      Object.entries(data.serverActionModuleMap),
+      Object.entries(data.serverActionModuleMap)
     );
     this.#serverActionEntryMap = new Map(
-      Object.entries(data.serverActionEntryMap),
+      Object.entries(data.serverActionEntryMap)
     );
   }
 }
@@ -210,7 +215,7 @@ function getExports(ast: ParseResult | null) {
           ...node.specifiers.map((specifier) =>
             specifier.exported.type === "Identifier"
               ? specifier.exported.name
-              : specifier.exported.value,
+              : specifier.exported.value
           ),
         ];
       } else if (node.type === "ExportDefaultDeclaration") {
@@ -247,7 +252,7 @@ function getExportsAndNames(ast: ParseResult | null) {
 
         return exports;
       },
-      [],
+      []
     ) ?? [];
 
   return exports;
