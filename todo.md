@@ -2,9 +2,13 @@
 
 framework
 
+- live reload should reconnect when disconnected
+
 - add --log=debug flag to show debug logs
 - eslint upgrade
 - rename src to app
+
+- useOptimisticRoute -> path and params
 
 website
 
