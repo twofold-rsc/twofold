@@ -4,6 +4,7 @@ import { useRouter } from "@twofold/framework/use-router";
 
 export function ClientSideParams() {
   let { searchParams } = useRouter();
+
   return (
     <div>
       <div className="text-sm text-gray-500">Client side search params</div>
