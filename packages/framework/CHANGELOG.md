@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.32
+
+### Patch Changes
+
+- eslint v9 flat config
+
 ## 0.0.31
 
 ### Patch Changes
