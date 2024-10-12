@@ -1,54 +1,53 @@
-module.exports = {
+let eslint = require("@eslint/js");
+let tseslint = require("typescript-eslint");
+let eslintPluginReact = require("eslint-plugin-react");
+let eslintPluginReactHooks = require("eslint-plugin-react-hooks");
+let globals = require("globals");
+let fs = require("fs");
+let path = require("path");
+
+let packageJsonPath = path.join(__dirname, "package.json");
+let packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+let version = packageJson.version;
+
+let plugin = {
   meta: {
     name: "eslint-plugin-twofold",
+    version,
   },
   configs: {
-    recommended: {
-      env: {
-        browser: true,
-        es2021: true,
-        node: true,
+    recommended: [
+      eslint.configs.recommended,
+      ...tseslint.configs.recommended,
+      {
+        ignores: [".twofold/"],
       },
-      extends: [
-        "eslint:recommended",
-        "plugin:react/recommended",
-        "plugin:react-hooks/recommended",
-        "plugin:react/jsx-runtime",
-      ],
-      overrides: [
-        {
-          files: [".eslintrc.json"],
-        },
-      ],
-      parser: "@typescript-eslint/parser",
-      parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
-      },
-      plugins: ["@typescript-eslint", "react"],
-      rules: {
-        "no-unused-vars": ["off", { args: "none", varsIgnorePattern: "^_" }],
-        "react/no-unescaped-entities": [
-          "error",
-          {
-            forbid: [
-              {
-                char: ">",
-                alternatives: ["&gt;"],
-              },
-              {
-                char: "}",
-                alternatives: ["&#125;"],
-              },
-            ],
+      {
+        files: ["**/*.{js,ts,jsx,tsx}"],
+        languageOptions: {
+          parserOptions: {
+            ecmaFeatures: {
+              jsx: true,
+            },
           },
-        ],
-      },
-      settings: {
-        react: {
-          version: "detect",
+          globals: {
+            ...globals.browser,
+            ...globals.node,
+          },
+        },
+        plugins: {
+          react: eslintPluginReact,
+          "react-hooks": eslintPluginReactHooks,
+        },
+        rules: {
+          ...eslintPluginReactHooks.configs.recommended.rules,
+          "no-unused-vars": "off",
         },
       },
-    },
+    ],
   },
+  rules: {},
+  processors: {},
 };
+
+module.exports = plugin;

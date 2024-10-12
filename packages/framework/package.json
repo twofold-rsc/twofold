@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --exec \"pnpm run compile\" --watch src -e ts,tsx",
-    "compile": "pnpm node compile.js"
+    "compile": "pnpm node compile.js",
+    "lint": "eslint ."
   },
   "bin": {
     "twofold": "./dist/backend/bin.js"
@@ -31,6 +32,7 @@
     "node": ">=20.9.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.12.0",
     "@types/babel__core": "^7.20.5",
     "@types/estree": "^1.0.5",
     "@types/etag": "^1.8.3",
@@ -38,14 +40,14 @@
     "@types/node": "^20.10.2",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.19.0",
     "concurrently": "^8.2.2",
-    "eslint": "^8.56.0",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint": "^9.12.0",
+    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react-hooks": "5.1.0-beta-26f2496093-20240514",
+    "globals": "^15.11.0",
     "nodemon": "^3.1.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "typescript-eslint": "^8.8.1"
   },
   "peerDependencies": {
     "react": "catalog:",

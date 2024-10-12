@@ -88,7 +88,7 @@ export class Page {
   }
 }
 
-export function componentsToTree<T extends {}>({
+export function componentsToTree<T extends object>({
   components,
   props,
 }: {
@@ -104,7 +104,7 @@ export function componentsToTree<T extends {}>({
       componentsToTree({
         components: components.slice(1),
         props,
-      }),
+      })
     );
   }
 }

@@ -1,8 +1,8 @@
 import "../ext/react-refresh";
 import { use, createElement } from "react";
-// @ts-ignore
+// @ts-expect-error: Could not find a declaration file for module 'react-dom/server.edge'.
 import { renderToReadableStream } from "react-dom/server.edge";
-// @ts-ignore
+// @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client.edge'.
 import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
 import { RoutingContext } from "../contexts/routing-context";
 import { StreamContext } from "../contexts/stream-context";
@@ -103,11 +103,11 @@ export async function render({
           console.error(err);
         } else {
           console.error(
-            `An unknown error occurred while SSR rendering: ${url.pathname}`,
+            `An unknown error occurred while SSR rendering: ${url.pathname}`
           );
         }
       },
-    },
+    }
   );
 
   return htmlStream;

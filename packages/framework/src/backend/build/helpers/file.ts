@@ -13,7 +13,7 @@ export async function fileExists(path: PathLike) {
   try {
     let stats = await stat(path);
     return stats.isFile();
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }

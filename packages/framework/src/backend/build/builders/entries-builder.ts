@@ -1,14 +1,13 @@
-import { readFirstNBytes } from "../helpers/file.js";
+// import { readFirstNBytes } from "../helpers/file.js";
 import { externalPackages } from "../externals.js";
 import { BuildContext, context, transform } from "esbuild";
 import { createHash } from "crypto";
 import { basename, extname } from "path";
 import { readFile } from "fs/promises";
 import { ParseResult, parseAsync } from "@babel/core";
-import { appConfigDir, frameworkSrcDir } from "../../files.js";
+import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
 import { Builder } from "./base-builder.js";
-import { Jiti } from "jiti/lib/types.js";
 import { getAppConfig } from "../helpers/config.js";
 
 type ClientComponentModule = {
@@ -59,7 +58,7 @@ export class EntriesBuilder extends Builder {
     let frameworkComponentsPath = fileURLToPath(frameworkComponentsUrl);
 
     let appConfig = await getAppConfig();
-    let externalPackages = appConfig.externalPackages ?? [];
+    let userDefinedExternalPackages = appConfig.externalPackages ?? [];
 
     let builder = this;
     this.#context = await context({
@@ -77,7 +76,12 @@ export class EntriesBuilder extends Builder {
       write: false,
       outdir: "./.twofold/temp/",
       outbase: "src",
-      external: ["react", "react-dom", ...externalPackages],
+      external: [
+        "react",
+        "react-dom",
+        ...externalPackages,
+        ...userDefinedExternalPackages,
+      ],
       plugins: [
         {
           name: "find-entry-points-plugin",

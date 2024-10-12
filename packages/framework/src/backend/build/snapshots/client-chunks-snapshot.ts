@@ -1,6 +1,3 @@
-import { fileURLToPath } from "url";
-import { appCompiledDir } from "../../files.js";
-
 type Chunk = { file: string };
 
 export class ClientChunksSnapshot {

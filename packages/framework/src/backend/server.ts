@@ -4,7 +4,7 @@ import { createRouter } from "@hattip/router";
 import {
   renderToReadableStream,
   decodeReply,
-  // @ts-ignore
+  // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/server.edge'.
 } from "react-server-dom-webpack/server.edge";
 import { getStore } from "./stores/rsc-store.js";
 import { cookie } from "@hattip/cookie";
@@ -134,7 +134,7 @@ export async function create(runtime: Runtime) {
 
     let result;
     try {
-      result = await actionFn.apply(null, args);
+      result = await actionFn(...args);
     } catch (err: unknown) {
       if (isNotFoundError(err) || isRedirectError(err)) {
         result = err;
@@ -206,7 +206,7 @@ export async function create(runtime: Runtime) {
 
     let actionStream = renderToReadableStream(
       result,
-      build.getBuilder("client").clientComponentMap,
+      build.getBuilder("client").clientComponentMap
     );
 
     let multipart = new MultipartResponse();
@@ -294,18 +294,18 @@ export async function create(runtime: Runtime) {
         runtime.hostname,
         () => {
           console.log(
-            `🚀 Server listening on ${runtime.hostname}:${runtime.port}`,
+            `🚀 Server listening on ${runtime.hostname}:${runtime.port}`
           );
 
           if (process.env.NODE_ENV !== "production") {
             let cyan = "\x1b[0;36m";
             let reset = "\x1b[0m";
             console.log(
-              `🌎 Visit ${cyan}${runtime.baseUrl}/ ${reset}to see your app!`,
+              `🌎 Visit ${cyan}${runtime.baseUrl}/ ${reset}to see your app!`
             );
           }
           r();
-        },
+        }
       );
 
       return promise;
