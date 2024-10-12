@@ -1,11 +1,12 @@
 {
   "name": "base-app",
-  "version": "0.0.21",
+  "version": "0.0.30",
   "private": true,
   "description": "",
   "type": "module",
   "scripts": {
     "dev": "twofold dev",
+    "lint": "eslint .",
     "build": "twofold build",
     "serve": "twofold serve"
   },

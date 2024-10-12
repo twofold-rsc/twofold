@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "twofold dev",
+    "lint": "eslint .",
     "build": "twofold build",
     "serve": "twofold serve"
   },

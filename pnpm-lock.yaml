@@ -103,9 +103,6 @@ importers:
         specifier: ^3.23.8
         version: 3.23.8
     devDependencies:
-      '@eslint/js':
-        specifier: ^9.12.0
-        version: 9.12.0
       '@types/node':
         specifier: ^20.10.2
         version: 20.16.1
@@ -133,9 +130,6 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.6.6
         version: 0.6.6(prettier@3.3.3)
-      typescript-eslint:
-        specifier: ^8.8.1
-        version: 8.8.1(eslint@9.12.0(jiti@2.3.3))(typescript@5.5.4)
 
   packages/create-twofold-app:
     dependencies:
@@ -170,8 +164,11 @@ importers:
 
   packages/eslint-plugin-twofold:
     dependencies:
+      '@eslint/js':
+        specifier: ^9.12.0
+        version: 9.12.0
       eslint:
-        specifier: '>=8.56.0'
+        specifier: '>=9.12.0'
         version: 9.12.0(jiti@2.3.3)
       eslint-plugin-react:
         specifier: ^7.37.1
@@ -182,6 +179,9 @@ importers:
       globals:
         specifier: ^15.11.0
         version: 15.11.0
+      typescript-eslint:
+        specifier: ^8.8.1
+        version: 8.8.1(eslint@9.12.0(jiti@2.3.3))(typescript@5.5.4)
 
   packages/framework:
     dependencies:
