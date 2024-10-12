@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --exec \"pnpm run compile\" --watch src -e ts,tsx",
     "compile": "pnpm node compile.js",
-    "lint": "pnpm eslint ."
+    "lint": "eslint ."
   },
   "bin": {
     "twofold": "./dist/backend/bin.js"
