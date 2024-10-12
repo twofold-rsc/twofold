@@ -2,7 +2,7 @@ import { use, useEffect, useReducer } from "react";
 import { deserializeError } from "serialize-error";
 import {
   createFromReadableStream,
-  // @ts-expect-error
+  // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client'.
 } from "react-server-dom-webpack/client";
 import { callServer } from "../actions/call-server";
 

@@ -1,7 +1,7 @@
 import {
   encodeReply,
   createFromReadableStream,
-  // @ts-expect-error
+  // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client'.
 } from "react-server-dom-webpack/client";
 import { deserializeError } from "serialize-error";
 import { MultipartResponse } from "./multipart-response";

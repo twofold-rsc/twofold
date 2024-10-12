@@ -8,7 +8,7 @@ export class ErrorBoundary extends Component<
     error: unknown;
   }
 > {
-  constructor(props: {}) {
+  constructor(props: object) {
     super(props);
     this.state = {
       hasError: false,

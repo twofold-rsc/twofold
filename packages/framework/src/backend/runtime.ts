@@ -9,7 +9,7 @@ import { APIRequest } from "./runtime/api-request.js";
 import { ReactNode } from "react";
 import {
   renderToReadableStream,
-  // @ts-ignore
+  // @ts-expect-error: TypeScript cannot find type declarations for this module
 } from "react-server-dom-webpack/server.edge";
 import {
   isNotFoundError,
@@ -131,9 +131,9 @@ export class Runtime {
     return fn;
   }
 
-  async runAction(id: string, args: any[]) {
+  async runAction(id: string, args: unknown[]) {
     let fn = await this.getAction(id);
-    return fn.apply(null, args);
+    return fn(...args);
   }
 
   // renders
@@ -200,7 +200,7 @@ export class Runtime {
   async renderHtmlStreamFromRSCStream(
     rscStream: ReadableStream<Uint8Array>,
     method: "stream" | "page" | "static",
-    data: Record<string, any> = {},
+    data: Record<string, any> = {}
   ) {
     let { port1, port2 } = new MessageChannel();
 
@@ -229,8 +229,8 @@ export class Runtime {
         rscStream,
         writeStream,
       },
-      // @ts-ignore - streams should be transferrable
-      [port2, rscStream, writeStream],
+      // @ts-expect-error: Type 'ReadableStream<Uint8Array>' is not assignable to type 'TransferListItem'.
+      [port2, rscStream, writeStream]
     );
 
     let message = await getMessage;
@@ -274,7 +274,9 @@ export class Runtime {
     // emit some event with ssr is ready
 
     if (!this.#build.error) {
-      let bootstrapUrl = `/_assets/client-app/bootstrap/${this.#build.getBuilder("client").bootstrapHash}.js`;
+      let bootstrapUrl = `/_assets/client-app/bootstrap/${
+        this.#build.getBuilder("client").bootstrapHash
+      }.js`;
       let workerUrl = new URL("./ssr/worker.js", import.meta.url);
 
       this.#ssrWorker = new Worker(workerUrl, {

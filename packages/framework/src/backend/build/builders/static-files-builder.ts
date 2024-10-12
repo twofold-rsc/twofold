@@ -18,7 +18,7 @@ export class StaticFilesBuilder extends Builder {
     try {
       await access(this.#staticUrl);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -49,7 +49,7 @@ export class StaticFilesBuilder extends Builder {
 
   async addFile(file: File) {
     let filePath = file.path.slice(fileURLToPath(this.#staticUrl).length);
-    let httpPath = filePath.split(path.sep).join('/');
+    let httpPath = filePath.split(path.sep).join("/");
 
     this.#fileMap.set(httpPath, {
       path: filePath,

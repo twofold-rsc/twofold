@@ -17,8 +17,7 @@ export default function Assets() {
 
 function Stylesheet({ href }: { href: string }) {
   return (
-    /* @ts-ignore */
-    // eslint-disable-next-line react/no-unknown-property
+    // @ts-expect-error: Type '{ rel: string; href: string; precedence: string; }' is not assignable to type 'DetailedHTMLProps<LinkHTMLAttributes<HTMLLinkElement>, HTMLLinkElement>'.
     <link rel="stylesheet" href={href} precedence="high" />
   );
 }
