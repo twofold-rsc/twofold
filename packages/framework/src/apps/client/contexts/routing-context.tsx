@@ -3,6 +3,9 @@ import { ReactNode, createContext } from "react";
 export const Context = createContext({
   path: "/",
   searchParams: new URLSearchParams(),
+  optimisticPath: "/",
+  optimisticSearchParams: new URLSearchParams(),
+  isTransitioning: false,
   navigate: (path: string) => {},
   replace: (path: string) => {},
   refresh: () => {},
@@ -12,6 +15,9 @@ export const Context = createContext({
 export function RoutingContext({
   path,
   searchParams,
+  optimisticPath,
+  optimisticSearchParams,
+  isTransitioning,
   navigate,
   replace,
   refresh,
@@ -20,6 +26,9 @@ export function RoutingContext({
 }: {
   path: string;
   searchParams: URLSearchParams;
+  optimisticPath: string;
+  optimisticSearchParams: URLSearchParams;
+  isTransitioning: boolean;
   navigate: (path: string) => void;
   replace: (path: string) => void;
   refresh: () => void;
@@ -31,6 +40,9 @@ export function RoutingContext({
       value={{
         path,
         searchParams,
+        optimisticPath,
+        optimisticSearchParams,
+        isTransitioning,
         notFound,
         navigate,
         replace,

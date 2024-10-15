@@ -2,11 +2,13 @@
 
 framework
 
-- live reload should reconnect when disconnected
-
-- add --log=debug flag to show debug logs
-- eslint upgrade
 - rename src to app
+- i think typescript should be in devDeps
+- use es6 tailwind
+
+- live reload should reconnect when disconnected
+- add --log=debug flag to show debug logs
+- tailwind v4/lightening css
 
 - useOptimisticRoute -> path and params
 

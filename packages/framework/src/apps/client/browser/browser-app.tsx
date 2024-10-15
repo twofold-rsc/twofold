@@ -1,9 +1,10 @@
 import {
-  startTransition,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
+  useOptimistic,
+  useTransition,
 } from "react";
 import { RoutingContext } from "../contexts/routing-context";
 import { useRouterReducer } from "./router-hooks";
@@ -22,6 +23,8 @@ let origin = window.location.origin;
 
 function Router() {
   let [routerState, dispatch] = useRouterReducer();
+  let [optimisticPath, setOptimisticPath] = useOptimistic(routerState.path);
+  let [isTransitioning, startTransition] = useTransition();
 
   let navigate = useCallback(
     (
@@ -38,6 +41,7 @@ function Router() {
       let newPath = `${pathname}${url.search}${url.hash}`;
 
       startTransition(() => {
+        setOptimisticPath(newPath);
         dispatch({
           type: "NAVIGATE",
           path: newPath,
@@ -46,7 +50,7 @@ function Router() {
         });
       });
     },
-    [dispatch],
+    [dispatch, setOptimisticPath],
   );
 
   let replace = useCallback(
@@ -72,6 +76,7 @@ function Router() {
     function onPopState(_event: PopStateEvent) {
       let path = `${location.pathname}${location.search}${location.hash}`;
       startTransition(() => {
+        setOptimisticPath(path);
         dispatch({ type: "POP", path });
       });
     }
@@ -80,7 +85,7 @@ function Router() {
     return () => {
       window.removeEventListener("popstate", onPopState);
     };
-  }, [dispatch]);
+  }, [dispatch, setOptimisticPath]);
 
   useLayoutEffect(() => {
     if (routerState.history === "push") {
@@ -115,6 +120,7 @@ function Router() {
     window.__twofold = {
       updateTree(path: string, tree: any) {
         startTransition(() => {
+          setOptimisticPath(path);
           dispatch({
             type: "UPDATE",
             path,
@@ -125,6 +131,7 @@ function Router() {
       },
       navigate(path: string) {
         startTransition(() => {
+          setOptimisticPath(path);
           dispatch({
             type: "NAVIGATE",
             path,
@@ -138,20 +145,19 @@ function Router() {
     return () => {
       window.__twofold = undefined;
     };
-  }, [dispatch]);
+  }, [dispatch, setOptimisticPath]);
 
-  let url = useMemo(
-    () => new URL(routerState.path, origin),
-    [routerState.path],
-  );
-  let path = url.pathname;
-  let searchParams = url.searchParams;
+  let url = useURLFromPath(routerState.path);
+  let optimisticURL = useURLFromPath(optimisticPath);
 
   return (
     <ErrorBoundary>
       <RoutingContext
-        path={path}
-        searchParams={searchParams}
+        path={url.pathname}
+        searchParams={url.searchParams}
+        optimisticPath={optimisticURL.pathname}
+        optimisticSearchParams={optimisticURL.searchParams}
+        isTransitioning={isTransitioning}
         navigate={navigate}
         replace={replace}
         refresh={refresh}
@@ -161,4 +167,14 @@ function Router() {
       </RoutingContext>
     </ErrorBoundary>
   );
+}
+
+/**
+ * Turns a router path into a URL object.
+ *
+ * @param path Path is a Twofold router path: `/path?query#hash`.
+ * @returns
+ */
+function useURLFromPath(path: string) {
+  return useMemo(() => new URL(path, origin), [path]);
 }

@@ -204,6 +204,11 @@ export default function Nav() {
                         href="/routing/use-router"
                       />
                       <ExampleLink
+                        title="useOptimisticRoute"
+                        description="The hook that sees the router's future."
+                        href="/routing/use-optimistic-route"
+                      />
+                      <ExampleLink
                         title="Navigation"
                         description="Navigation between different pages"
                         href="/routing/navigation"
