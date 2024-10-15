@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.33
+
+### Patch Changes
+
+- Add useOptimisticRoute
+
 ## 0.0.32
 
 ### Patch Changes
