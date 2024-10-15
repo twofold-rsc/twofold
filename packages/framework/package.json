@@ -20,6 +20,7 @@
     "./twofold-framework": "./src/components/twofold-framework.tsx",
     "./link": "./src/components/link.tsx",
     "./use-router": "./src/hooks/use-router.ts",
+    "./use-optimistic-route": "./src/hooks/use-optimistic-route.ts",
     "./cookies": "./src/http/cookies.ts",
     "./not-found": "./src/http/not-found.ts",
     "./redirect": "./src/http/redirect.ts",

@@ -38,6 +38,9 @@ export function SSRApp({
     <RoutingContext
       path={url.pathname}
       searchParams={url.searchParams}
+      optimisticPath={url.pathname}
+      optimisticSearchParams={url.searchParams}
+      isTransitioning={false}
       navigate={navigate}
       replace={replace}
       refresh={refresh}
@@ -103,11 +106,11 @@ export async function render({
           console.error(err);
         } else {
           console.error(
-            `An unknown error occurred while SSR rendering: ${url.pathname}`
+            `An unknown error occurred while SSR rendering: ${url.pathname}`,
           );
         }
       },
-    }
+    },
   );
 
   return htmlStream;
