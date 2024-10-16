@@ -118,9 +118,6 @@ importers:
       eslint-plugin-twofold:
         specifier: workspace:*
         version: link:../../packages/eslint-plugin-twofold
-      globals:
-        specifier: ^15.11.0
-        version: 15.11.0
       nodemon:
         specifier: ^3.1.4
         version: 3.1.4

@@ -1,6 +1,6 @@
 # useOptimisticRoute
 
-The `useOptimisticRoute` hook lets client components to peek into the future state of the router. This hook is used to check if the router is transitioning, and if so what page is being loaded.
+The `useOptimisticRoute` hook lets client components peek into the future state of the router. This hook is used to check if the router is transitioning, and if so what page is being loaded.
 
 ## Usage
 
@@ -74,7 +74,7 @@ In the example above, the `Settings` link will pulse when the user clicks the li
 
 ## Settled state
 
-When the router is not transitioning, the `path` and `searchParams` properties will reflect the current path and search params.
+When the router is not transitioning, the `path` and `searchParams` properties will reflect the current path and search params of the router.
 
 ```tsx
 // src/pages/client-component.tsx
