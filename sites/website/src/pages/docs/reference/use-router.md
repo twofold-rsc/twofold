@@ -98,7 +98,7 @@ The functions and values returned by `useRouter`:
 import { useRouter } from "@twofold/framework/use-router";
 
 function ClientComponent() {
-  let { path, navigate, replace, refresh } = useRouter();
+  let { path, searchParams, navigate, replace, refresh } = useRouter();
 
   // ...
 }
@@ -106,9 +106,10 @@ function ClientComponent() {
 
 The `useRouter` hook returns an object with the following properties:
 
-| Property   | Type                     | Description                                                  |
-| ---------- | ------------------------ | ------------------------------------------------------------ |
-| `path`     | `string`                 | The current path of the router.                              |
-| `navigate` | `(path: string) => void` | A function to navigate to a new page.                        |
-| `replace`  | `(path: string) => void` | A function to replace the current page in the history stack. |
-| `refresh`  | `() => void`             | A function to refresh the current page and its layouts.      |
+| Property       | Type                     | Description                                                  |
+| -------------- | ------------------------ | ------------------------------------------------------------ |
+| `path`         | `string`                 | The current path of the router.                              |
+| `searchParams` | `URLSearchParams`        | The current search params of the router.                     |
+| `navigate`     | `(path: string) => void` | A function to navigate to a new page.                        |
+| `replace`      | `(path: string) => void` | A function to replace the current page in the history stack. |
+| `refresh`      | `() => void`             | A function to refresh the current page and its layouts.      |

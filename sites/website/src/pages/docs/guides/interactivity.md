@@ -84,7 +84,7 @@ Server components can import and render client components, but client components
 
 Twofold's architecture first executes server components in a special server process that has access to databases and other server-side resources. During this execution phase only server components are run, client components are not executed.
 
-What's left is a tree that contains the output of server components and unexecuted client components. You can think of this like a partially render React application. The server components have been run, their output captured, but the client components have yet to be executed.
+What's left is a tree that contains the output of server components and unexecuted client components. You can think of this like a partially rendered React application. The server components have been run, their output captured, but the client components have yet to be executed.
 
 This half rendered React tree is then sent to the client where it can finish rendering. The client executes all of the remaining client components and we are left with output from an application that was initially run on the server, but finished by the client.
 

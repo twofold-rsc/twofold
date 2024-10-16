@@ -4,7 +4,7 @@ Twofold is an opinionated framework that is designed to be used in a specific wa
 
 ## Beta features
 
-Server components and actions are a new concept to React that are currently only available in a beta release. Therefore any application built using Twofold is being built on the bleeding edge of React.
+Server components, server functions, and actions are a new concepts to React that are only available in a special release candidate of React. Therefore any application built using Twofold is being built on the bleeding edge of React.
 
 Personally, I believe architecture behind React Server Components is so powerful that it will change the future of React development over the upcoming years. Twofold is my bet on that, a bet on RSC and the future of React, but if I'm wrong then applications built with Twofold will suffer and be left behind.
 

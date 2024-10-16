@@ -150,13 +150,19 @@ function Router() {
   let url = useURLFromPath(routerState.path);
   let optimisticURL = useURLFromPath(optimisticPath);
 
+  // make sure search params and optimistic search params have identity when paths are the same
+  let optimisticSearchParams =
+    routerState.path === optimisticPath
+      ? url.searchParams
+      : optimisticURL.searchParams;
+
   return (
     <ErrorBoundary>
       <RoutingContext
         path={url.pathname}
         searchParams={url.searchParams}
         optimisticPath={optimisticURL.pathname}
-        optimisticSearchParams={optimisticURL.searchParams}
+        optimisticSearchParams={optimisticSearchParams}
         isTransitioning={isTransitioning}
         navigate={navigate}
         replace={replace}

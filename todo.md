@@ -10,11 +10,8 @@ framework
 - add --log=debug flag to show debug logs
 - tailwind v4/lightening css
 
-- useOptimisticRoute -> path and params
-
 website
 
-- read through
 - README
 
 - API handlers
