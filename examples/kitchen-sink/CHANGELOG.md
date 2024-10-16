@@ -1,5 +1,12 @@
 # kitchen-sink
 
+## 1.0.33
+
+### Patch Changes
+
+- Updated dependencies
+  - @twofold/framework@0.0.34
+
 ## 1.0.32
 
 ### Patch Changes

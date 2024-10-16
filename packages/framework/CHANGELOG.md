@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.34
+
+### Patch Changes
+
+- identity for optimistic search params
+
 ## 0.0.33
 
 ### Patch Changes
