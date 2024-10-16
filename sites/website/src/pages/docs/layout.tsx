@@ -78,6 +78,11 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             <li>
               <DocLink href="/docs/reference/use-router">useRouter</DocLink>
             </li>
+            <li>
+              <DocLink href="/docs/reference/use-optimistic-route">
+                useOptimisticRoute
+              </DocLink>
+            </li>
           </ul>
 
           <div className="font-bold mt-6">Philosophy</div>

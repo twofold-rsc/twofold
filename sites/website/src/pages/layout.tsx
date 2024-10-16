@@ -19,8 +19,12 @@ export default function Layout({
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" type="image/png" href="/favicon.png" />
+
+        <meta property="og:site_name" content="Twofold" />
+        <meta property="og:title" content="Twofold" />
         <meta property="og:image" content={ogImageUrl.href} />
         <meta property="og:type" content="website" />
+
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
