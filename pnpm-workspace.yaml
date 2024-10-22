@@ -4,8 +4,8 @@ packages:
   - "sites/*"
 
 catalog:
-  react: "19.0.0-rc-e210d081-20240909"
-  react-dom: "19.0.0-rc-e210d081-20240909"
-  react-server-dom-webpack: "19.0.0-rc-e210d081-20240909"
-  "@types/react": "^18.3.3"
-  "@types/react-dom": "^18.3.0"
+  react: "19.0.0-rc-69d4b800-20241021"
+  react-dom: "19.0.0-rc-69d4b800-20241021"
+  react-server-dom-webpack: "19.0.0-rc-69d4b800-20241021"
+  "@types/react": "^18.3.11"
+  "@types/react-dom": "^18.3.1"

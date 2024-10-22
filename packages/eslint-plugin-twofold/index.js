@@ -2,6 +2,7 @@ let eslint = require("@eslint/js");
 let tseslint = require("typescript-eslint");
 let eslintPluginReact = require("eslint-plugin-react");
 let eslintPluginReactHooks = require("eslint-plugin-react-hooks");
+let eslintPluginReactCompiler = require("eslint-plugin-react-compiler");
 let globals = require("globals");
 let fs = require("fs");
 let path = require("path");
@@ -38,9 +39,11 @@ let plugin = {
         plugins: {
           react: eslintPluginReact,
           "react-hooks": eslintPluginReactHooks,
+          "react-compiler": eslintPluginReactCompiler,
         },
         rules: {
           ...eslintPluginReactHooks.configs.recommended.rules,
+          "react-compiler/react-compiler": "error",
           "no-unused-vars": "off",
         },
       },

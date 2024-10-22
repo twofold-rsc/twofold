@@ -4,9 +4,8 @@ import { ErrorBoundary } from "./error-boundary";
 export default function BoundaryLayout({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
-      <Suspense>
-        <div>{children}</div>
-      </Suspense>
+      {/* Suspense is needed for ssr */}
+      <Suspense>{children}</Suspense>
     </ErrorBoundary>
   );
 }
