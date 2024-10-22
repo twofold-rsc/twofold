@@ -7,9 +7,10 @@ import { ReactNode, useState } from "react";
 
 export default function Nav() {
   let { path } = useRouter();
-  let initial = path.split("/").slice(0, 2).join("/");
+  let currentSectionPath = path.split("/").slice(0, 2).join("/");
+  let initial = currentSectionPath === "/" ? "/react" : currentSectionPath;
 
-  let [sectionPath, setSectionPath] = useState(initial);
+  let [selectedSectionPath, setSelectedSectionPath] = useState(initial);
 
   return (
     <NavigationMenu.Root className="relative z-10 mt-4 flex w-screen justify-center">
@@ -53,8 +54,8 @@ export default function Nav() {
           <NavigationMenu.Trigger>Examples</NavigationMenu.Trigger>
           <NavigationMenu.Content className="absolute left-0 top-0">
             <NavigationMenu.Sub
-              value={sectionPath}
-              onValueChange={(value) => setSectionPath(value)}
+              value={selectedSectionPath}
+              onValueChange={(value) => setSelectedSectionPath(value)}
               orientation="vertical"
               className="w-[650px]"
             >

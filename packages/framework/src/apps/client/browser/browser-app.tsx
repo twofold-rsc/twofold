@@ -1,4 +1,5 @@
 import {
+  StrictMode,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -29,7 +30,7 @@ function Router() {
   let navigate = useCallback(
     (
       toPath: string,
-      options: { addHistory: boolean } = { addHistory: true },
+      options: { addHistory: boolean } = { addHistory: true }
     ) => {
       let url = new URL(toPath, window.location.href);
 
@@ -50,14 +51,14 @@ function Router() {
         });
       });
     },
-    [dispatch, setOptimisticPath],
+    [dispatch, setOptimisticPath]
   );
 
   let replace = useCallback(
     (toPath: string) => {
       navigate(toPath, { addHistory: false });
     },
-    [navigate],
+    [navigate]
   );
 
   let refresh = useCallback(() => {
