@@ -12,26 +12,26 @@ import * as path from "path";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder";
 import { serverActionClientReferencePlugin } from "../plugins/server-action-client-reference-plugin.js";
-import { Builder } from "./base-builder.js";
+import { Builder } from "./builder.js";
+import { Environment } from "../environments/environment.js";
 
 export class ClientAppBuilder extends Builder {
   readonly name = "client";
 
   #metafile?: Metafile;
+  #environment: Environment;
   #entriesBuilder: EntriesBuilder;
   #clientComponentOutputMap = new Map<string, ClientComponentOutput>();
 
-  #env: "development" | "production";
-
   constructor({
+    environment,
     entriesBuilder,
-    env,
   }: {
+    environment: Environment;
     entriesBuilder: EntriesBuilder;
-    env: "development" | "production";
   }) {
     super();
-    this.#env = env;
+    this.#environment = environment;
     this.#entriesBuilder = entriesBuilder;
   }
 
@@ -41,6 +41,10 @@ export class ClientAppBuilder extends Builder {
 
   get entries() {
     return this.#entriesBuilder;
+  }
+
+  get #env() {
+    return this.#environment.name;
   }
 
   async setup() {}
@@ -81,7 +85,7 @@ export class ClientAppBuilder extends Builder {
 
                 let errorHtml = await readFile(
                   new URL("./server-files/error.html", appCompiledDir),
-                  "utf-8",
+                  "utf-8"
                 );
 
                 let encodedHtml = JSON.stringify(errorHtml);
@@ -96,7 +100,7 @@ export class ClientAppBuilder extends Builder {
             async setup(build) {
               let loadersUrl = new URL(
                 "./apps/client/ext/webpack-loaders.ts",
-                frameworkSrcDir,
+                frameworkSrcDir
               );
               let loadersPath = fileURLToPath(loadersUrl);
               let loadersContents = await readFile(loadersPath, "utf-8");
@@ -117,7 +121,7 @@ export class ClientAppBuilder extends Builder {
                     contents: newContents,
                     loader: "js",
                   };
-                },
+                }
               );
             },
           },
@@ -129,15 +133,17 @@ export class ClientAppBuilder extends Builder {
             },
           }),
           {
-            name: "react-refresh",
-            setup(build) {
+            name: "react-babel-transforms",
+            async setup(build) {
               let appSrcPath = fileURLToPath(appSrcDir);
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
-              let enabled =
+              let appConfig = await builder.#environment.getAppConfig();
+              let refreshEnabled =
                 builder.#env === "development" &&
                 process.env.NODE_ENV !== "production";
+              let compilerEnabled = appConfig.reactCompiler;
 
-              if (!enabled) {
+              if (!refreshEnabled) {
                 build.onLoad(
                   { filter: /ext(\/|\\)react-refresh/ },
                   async (args) => {
@@ -147,64 +153,89 @@ export class ClientAppBuilder extends Builder {
                         loader: "empty",
                       };
                     }
-                  },
+                  }
                 );
               }
 
-              if (enabled) {
-                build.onLoad({ filter: /\.tsx$/ }, async ({ path }) => {
-                  if (path.startsWith(appSrcPath)) {
-                    let contents = await readFile(path, "utf-8");
+              let shouldRunBabel = refreshEnabled || compilerEnabled;
 
+              build.onLoad({ filter: /\.(tsx|ts)$/ }, async ({ path }) => {
+                if (shouldRunBabel && path.startsWith(appSrcPath)) {
+                  let contents = await readFile(path, "utf-8");
+
+                  // esbuild transform ts to js
+                  let { code } = await transform(contents, {
+                    loader: "tsx",
+                    jsx: "automatic",
+                    format: "esm",
+                  });
+
+                  let plugins = [];
+
+                  if (compilerEnabled) {
+                    plugins.push([
+                      "babel-plugin-react-compiler",
+                      { sources: null },
+                    ]);
+                  }
+
+                  if (refreshEnabled) {
+                    plugins.push("react-refresh/babel");
+                  }
+
+                  // babel transform
+                  let result = await transformAsync(code, {
+                    plugins,
+                    configFile: false,
+                    babelrc: false,
+                  });
+
+                  let newContents = result?.code;
+
+                  // add refresh
+                  if (
+                    refreshEnabled &&
+                    newContents &&
+                    /\$RefreshReg\$\(/.test(newContents)
+                  ) {
                     let moduleName = path
                       .slice(appSrcPath.length)
                       .replace(/\.tsx$/, "");
 
-                    // esbuild transform ts to js
-                    let { code } = await transform(contents, {
-                      loader: "tsx",
-                      jsx: "automatic",
-                      format: "esm",
-                    });
-
-                    // babel transform
-                    let result = await transformAsync(code, {
-                      plugins: ["react-refresh/babel"],
-                      configFile: false,
-                      babelrc: false,
-                    });
-
-                    if (result?.code && /\$RefreshReg\$\(/.test(result.code)) {
-                      let start = `
+                    let start = `
                       let prevRefreshReg = undefined;
                       let prevRefreshSig = undefined;
                       if (typeof window !== 'undefined') {
                         prevRefreshReg = window.$RefreshReg$;
                         prevRefreshSig = window.$RefreshSig$;
                         window.$RefreshReg$ = (type, refreshId) => {
-                          let registerId = \`${encodeURIComponent(moduleName)} \${refreshId}\`;
+                          let registerId = \`${encodeURIComponent(
+                            moduleName
+                          )} \${refreshId}\`;
                           window.$RefreshRuntime$.register(type, registerId);
                         };
                         window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
                       }
                     `;
 
-                      let end = `
+                    let end = `
                       if (typeof window !== 'undefined') {
                         window.$RefreshReg$ = prevRefreshReg;
                         window.$RefreshSig$ = prevRefreshSig;
                       }
                     `;
-
-                      return {
-                        contents: `${start}\n${result.code}\n${end}`,
-                        loader: "tsx",
-                        resolveDir: dirname(path),
-                      };
-                    }
+                    newContents = `${start}\n${newContents}\n${end}`;
                   }
-                });
-              }
+
+                  if (newContents) {
+                    return {
+                      contents: newContents,
+                      loader: "js",
+                      resolveDir: dirname(path),
+                    };
+                  }
+                }
+              });
             },
           },
         ],
@@ -223,7 +254,7 @@ export class ClientAppBuilder extends Builder {
     return {
       metafile: this.#metafile,
       clientComponentOutputMap: Object.fromEntries(
-        this.#clientComponentOutputMap.entries(),
+        this.#clientComponentOutputMap.entries()
       ),
     };
   }
@@ -231,13 +262,13 @@ export class ClientAppBuilder extends Builder {
   load(data: any) {
     this.#metafile = data.metafile;
     this.#clientComponentOutputMap = new Map(
-      Object.entries(data.clientComponentOutputMap),
+      Object.entries(data.clientComponentOutputMap)
     );
   }
 
   private get initializeBrowserPath() {
     let initializeBrowser = fileURLToPath(
-      new URL("./apps/client/browser/initialize-browser.tsx", frameworkSrcDir),
+      new URL("./apps/client/browser/initialize-browser.tsx", frameworkSrcDir)
     );
 
     return initializeBrowser;
@@ -245,7 +276,7 @@ export class ClientAppBuilder extends Builder {
 
   private get srcSSRAppPath() {
     let initializeBrowser = fileURLToPath(
-      new URL("./apps/client/ssr/ssr-app.tsx", frameworkSrcDir),
+      new URL("./apps/client/ssr/ssr-app.tsx", frameworkSrcDir)
     );
 
     return initializeBrowser;
@@ -286,7 +317,7 @@ export class ClientAppBuilder extends Builder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentModuleMap.values(),
+      this.#entriesBuilder.clientComponentModuleMap.values()
     );
     let clientComponentModuleMap = new Map<
       string,
@@ -313,7 +344,7 @@ export class ClientAppBuilder extends Builder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentModuleMap.values(),
+      this.#entriesBuilder.clientComponentModuleMap.values()
     );
     let clientComponentMap = new Map<
       string,
@@ -360,7 +391,7 @@ export class ClientAppBuilder extends Builder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentModuleMap.values(),
+      this.#entriesBuilder.clientComponentModuleMap.values()
     );
     let ssrManifestModuleMap = new Map<
       string,

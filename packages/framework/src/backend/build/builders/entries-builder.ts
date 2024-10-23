@@ -7,8 +7,8 @@ import { readFile } from "fs/promises";
 import { ParseResult, parseAsync } from "@babel/core";
 import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
-import { Builder } from "./base-builder.js";
-import { getAppConfig } from "../helpers/config.js";
+import { Builder } from "./builder.js";
+import { Environment } from "../environments/environment.js";
 
 type ClientComponentModule = {
   moduleId: string;
@@ -36,10 +36,17 @@ export class EntriesBuilder extends Builder {
   readonly name = "entries";
 
   #context?: BuildContext;
+  #environment: Environment;
 
   #clientComponentModuleMap = new Map<string, ClientComponentModule>();
   #serverActionModuleMap = new Map<string, ServerActionModule>();
   #serverActionEntryMap = new Map<string, ServerActionEntry>();
+
+  constructor({ environment }: { environment: Environment }) {
+    super();
+
+    this.#environment = environment;
+  }
 
   get clientComponentModuleMap() {
     return this.#clientComponentModuleMap;
@@ -57,8 +64,8 @@ export class EntriesBuilder extends Builder {
     let frameworkComponentsUrl = new URL("./components/", frameworkSrcDir);
     let frameworkComponentsPath = fileURLToPath(frameworkComponentsUrl);
 
-    let appConfig = await getAppConfig();
-    let userDefinedExternalPackages = appConfig.externalPackages ?? [];
+    let appConfig = await this.#environment.getAppConfig();
+    let userDefinedExternalPackages = appConfig.externalPackages;
 
     let builder = this;
     this.#context = await context({

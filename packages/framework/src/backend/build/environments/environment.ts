@@ -1,20 +1,54 @@
 import { randomBytes } from "crypto";
-import { Builder } from "./builders/base-builder";
-import { appCompiledDir } from "../files.js";
+import { Builder } from "../builders/builder";
+import { appCompiledDir, appConfigDir } from "../../files.js";
 import { readFile, rm, writeFile } from "fs/promises";
-import { EntriesBuilder } from "./builders/entries-builder";
-import { StaticFilesBuilder } from "./builders/static-files-builder";
-import { ServerFilesBuilder } from "./builders/server-files-builder";
-import { RSCBuilder } from "./builders/rsc-builder";
-import { ClientAppBuilder } from "./builders/client-app-builder";
-import { DevErrorPageBuilder } from "./builders/dev-error-page-builder";
+import { EntriesBuilder } from "../builders/entries-builder";
+import { StaticFilesBuilder } from "../builders/static-files-builder";
+import { ServerFilesBuilder } from "../builders/server-files-builder";
+import { RSCBuilder } from "../builders/rsc-builder";
+import { ClientAppBuilder } from "../builders/client-app-builder";
+import { DevErrorPageBuilder } from "../builders/dev-error-page-builder";
+import { z } from "zod";
+import { createJiti } from "jiti";
 
-export abstract class Build {
-  abstract env: "development" | "production";
+let jiti = createJiti(import.meta.url, {
+  debug: false,
+  moduleCache: false,
+});
+
+export const configSchema = z.object({
+  externalPackages: z.array(z.string()).optional(),
+  reactCompiler: z.boolean().optional(),
+});
+
+export abstract class Environment {
+  abstract name: "development" | "production";
   abstract build(): Promise<void>;
 
   #key = randomBytes(6).toString("hex");
   #builders: Builder[] = [];
+
+  async getAppConfig() {
+    let defaultConfig: Required<z.infer<typeof configSchema>> = {
+      externalPackages: [],
+      reactCompiler: false,
+    };
+
+    let appConfigFileUrl = new URL("./application.ts", appConfigDir);
+    let configMod: any = await jiti.import(appConfigFileUrl.href);
+    let appConfig = configMod.default ?? {};
+
+    let { data, error } = configSchema.safeParse(appConfig);
+
+    if (error) {
+      throw new Error("Invalid configuration: config/application.ts");
+    }
+
+    return {
+      ...defaultConfig,
+      ...data,
+    };
+  }
 
   addBuilder(builder: Builder) {
     this.#builders.push(builder);
@@ -92,7 +126,7 @@ export abstract class Build {
 
     return {
       key: this.key,
-      env: this.env,
+      name: this.name,
       builders: builderOutputs,
     };
   }
@@ -100,19 +134,19 @@ export abstract class Build {
   async save() {
     let data = this.serialize();
     let json = JSON.stringify(data, null, 2);
-    let buildJsonUrl = new URL("./build.json", appCompiledDir);
-    await writeFile(buildJsonUrl, json, "utf-8");
+    let jsonUrl = new URL("./environment.json", appCompiledDir);
+    await writeFile(jsonUrl, json, "utf-8");
   }
 
   async load() {
-    let buildJsonUrl = new URL("./build.json", appCompiledDir);
-    let json = await readFile(buildJsonUrl, "utf-8");
-    let buildData = JSON.parse(json);
+    let jsonUrl = new URL("./environment.json", appCompiledDir);
+    let json = await readFile(jsonUrl, "utf-8");
+    let data = JSON.parse(json);
 
-    let builderKeys = Object.keys(buildData.builders);
+    let builderKeys = Object.keys(data.builders);
     builderKeys.forEach((key) => {
-      let name = buildData.builders[key].name;
-      this.getBuilder(name).load(buildData.builders[key]);
+      let name = data.builders[key].name;
+      this.getBuilder(name).load(data.builders[key]);
     });
   }
 }

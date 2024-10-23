@@ -1,23 +1,23 @@
 import { stat, watch } from "node:fs/promises";
-import { cwdUrl } from "../files.js";
+import { cwdUrl } from "../../files.js";
 import { EventEmitter } from "node:events";
-import { ClientAppBuilder } from "./builders/client-app-builder.js";
-import { RSCBuilder } from "./builders/rsc-builder.js";
-import { DevErrorPageBuilder } from "./builders/dev-error-page-builder.js";
-import { StaticFilesBuilder } from "./builders/static-files-builder.js";
-import { EntriesBuilder } from "./builders/entries-builder.js";
-import { ServerFilesBuilder } from "./builders/server-files-builder.js";
-import { Build } from "./base-build.js";
-import { time } from "./helpers/time.js";
-import { ClientComponentMapSnapshot } from "./snapshots/client-component-map-snapshot.js";
-import { ClientChunksSnapshot } from "./snapshots/client-chunks-snapshot.js";
-import { RSCSnapshot } from "./snapshots/rsc-snapshot.js";
-import { CSSSnapshot } from "./snapshots/css-snapshot.js";
+import { ClientAppBuilder } from "../builders/client-app-builder.js";
+import { RSCBuilder } from "../builders/rsc-builder.js";
+import { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
+import { StaticFilesBuilder } from "../builders/static-files-builder.js";
+import { EntriesBuilder } from "../builders/entries-builder.js";
+import { ServerFilesBuilder } from "../builders/server-files-builder.js";
+import { time } from "../helpers/time.js";
+import { ClientComponentMapSnapshot } from "../snapshots/client-component-map-snapshot.js";
+import { ClientChunksSnapshot } from "../snapshots/client-chunks-snapshot.js";
+import { RSCSnapshot } from "../snapshots/rsc-snapshot.js";
+import { CSSSnapshot } from "../snapshots/css-snapshot.js";
+import { Environment } from "./environment.js";
 
 class BuildEvents extends EventEmitter {}
 
-export class DevBuild extends Build {
-  readonly env = "development";
+export class DevelopmentEnvironment extends Environment {
+  readonly name = "development";
 
   #isBuilding = false;
   #events = new BuildEvents();
@@ -30,16 +30,21 @@ export class DevBuild extends Build {
   constructor() {
     super();
 
-    let entriesBuilder = new EntriesBuilder();
+    let entriesBuilder = new EntriesBuilder({
+      environment: this,
+    });
     let errorPageBuilder = new DevErrorPageBuilder();
     let rscBuilder = new RSCBuilder({
+      environment: this,
       entriesBuilder,
     });
     let clientAppBuilder = new ClientAppBuilder({
-      env: "development",
+      environment: this,
       entriesBuilder,
     });
-    let serverFilesBuilder = new ServerFilesBuilder({ env: "development" });
+    let serverFilesBuilder = new ServerFilesBuilder({
+      environment: this,
+    });
     let staticFilesBuilder = new StaticFilesBuilder();
 
     this.addBuilder(entriesBuilder);

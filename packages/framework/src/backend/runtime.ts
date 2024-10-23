@@ -1,9 +1,9 @@
 import "./monkey-patch.js";
-import { DevBuild } from "./build/dev-build.js";
 import { MessageChannel, Worker } from "node:worker_threads";
 import { PageRequest } from "./runtime/page-request.js";
 import { create } from "./server.js";
-import { ProdBuild } from "./build/prod-build.js";
+import { DevelopmentEnvironment } from "./build/environments/development.js";
+import { ProductionEnvironment } from "./build/environments/production.js";
 import { pathToFileURL } from "node:url";
 import { APIRequest } from "./runtime/api-request.js";
 import { ReactNode } from "react";
@@ -19,22 +19,24 @@ import {
 import { randomUUID } from "node:crypto";
 import { deserializeError } from "serialize-error";
 
+type Environment = DevelopmentEnvironment | ProductionEnvironment;
+
 export class Runtime {
   #hostname = "0.0.0.0";
   #port = 3000;
-  #build: DevBuild | ProdBuild;
+  #environment: Environment;
   #ssrWorker?: Worker;
 
-  constructor(build: DevBuild | ProdBuild) {
-    this.#build = build;
+  constructor(environment: Environment) {
+    this.#environment = environment;
   }
 
-  get build() {
-    return this.#build;
+  get environment() {
+    return this.#environment;
   }
 
   get clientComponentMap() {
-    return this.#build.getBuilder("client").clientComponentMap;
+    return this.#environment.getBuilder("client").clientComponentMap;
   }
 
   get baseUrl() {
@@ -51,9 +53,9 @@ export class Runtime {
   }
 
   async start() {
-    if (this.#build.env === "development") {
-      this.#build.watch();
-      this.#build.events.on("complete", async () => {
+    if (this.#environment.name === "development") {
+      this.#environment.watch();
+      this.#environment.events.on("complete", async () => {
         this.createSSRWorker();
       });
     }
@@ -74,7 +76,7 @@ export class Runtime {
   apiRequest(request: Request) {
     let url = new URL(request.url);
 
-    let api = this.#build
+    let api = this.#environment
       .getBuilder("rsc")
       .apiEndpoints.find((api) => api.pattern.test(url.pathname, this.baseUrl));
 
@@ -88,7 +90,7 @@ export class Runtime {
   pageRequest(request: Request) {
     let url = new URL(request.url);
 
-    let page = this.#build
+    let page = this.#environment
       .getBuilder("rsc")
       .tree.findPage((page) => page.pattern.test(url.pathname, this.baseUrl));
 
@@ -101,7 +103,7 @@ export class Runtime {
 
   notFoundPageRequest(request: Request) {
     return new PageRequest({
-      page: this.#build.getBuilder("rsc").notFoundPage,
+      page: this.#environment.getBuilder("rsc").notFoundPage,
       request,
       runtime: this,
       conditions: ["not-found"],
@@ -111,12 +113,12 @@ export class Runtime {
   // actions
 
   isAction(id: string) {
-    let serverActionMap = this.#build.getBuilder("rsc").serverActionMap;
+    let serverActionMap = this.#environment.getBuilder("rsc").serverActionMap;
     return serverActionMap.has(id);
   }
 
   async getAction(id: string) {
-    let serverActionMap = this.#build.getBuilder("rsc").serverActionMap;
+    let serverActionMap = this.#environment.getBuilder("rsc").serverActionMap;
     let action = serverActionMap.get(id);
 
     if (!action) {
@@ -140,7 +142,7 @@ export class Runtime {
 
   async renderRSCStreamFromTree(tree: ReactNode) {
     let clientComponentMap =
-      this.#build.getBuilder("client").clientComponentMap;
+      this.#environment.getBuilder("client").clientComponentMap;
 
     let streamError: unknown;
 
@@ -273,25 +275,25 @@ export class Runtime {
     // only create if the build is done
     // emit some event with ssr is ready
 
-    if (!this.#build.error) {
+    if (!this.#environment.error) {
       let bootstrapUrl = `/_assets/client-app/bootstrap/${
-        this.#build.getBuilder("client").bootstrapHash
+        this.#environment.getBuilder("client").bootstrapHash
       }.js`;
       let workerUrl = new URL("./ssr/worker.js", import.meta.url);
 
       this.#ssrWorker = new Worker(workerUrl, {
         workerData: {
           bootstrapUrl,
-          appPath: this.#build.getBuilder("client").SSRAppPath,
+          appPath: this.#environment.getBuilder("client").SSRAppPath,
           clientComponentModuleMap:
-            this.#build.getBuilder("client").clientComponentModuleMap,
+            this.#environment.getBuilder("client").clientComponentModuleMap,
           ssrManifestModuleMap:
-            this.#build.getBuilder("client").ssrManifestModuleMap,
+            this.#environment.getBuilder("client").ssrManifestModuleMap,
         },
         execArgv: ["-C", "default"],
         env: {
           NODE_OPTIONS: "",
-          NODE_ENV: this.#build.env,
+          NODE_ENV: this.#environment.name,
         },
       });
     }

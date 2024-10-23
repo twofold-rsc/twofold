@@ -1,11 +1,11 @@
 import { RouteHandler } from "@hattip/router";
 import { serializeError } from "serialize-error";
-import { Build } from "../../build/base-build.js";
+import { Environment } from "../../build/environments/environment";
 import { readFile } from "fs/promises";
 import { appCompiledDir } from "../../files.js";
 import { parseHeaderValue } from "@hattip/headers";
 
-export function errors(build: Build): RouteHandler {
+export function errors(environment: Environment): RouteHandler {
   return async (ctx) => {
     ctx.handleError = async (e: unknown) => {
       let request = ctx.request;
@@ -50,7 +50,7 @@ export function errors(build: Build): RouteHandler {
       }
     };
 
-    if (build.env === "development") {
+    if (environment.name === "development") {
       let request = ctx.request;
       let url = new URL(request.url);
 
@@ -58,7 +58,7 @@ export function errors(build: Build): RouteHandler {
         request.method === "GET" &&
         url.pathname === "/_twofold/errors/app.js"
       ) {
-        let contents = await build.getBuilder("dev-error-page").js();
+        let contents = await environment.getBuilder("dev-error-page").js();
         return new Response(contents, {
           headers: {
             "content-type": "application/javascript",
@@ -70,7 +70,7 @@ export function errors(build: Build): RouteHandler {
         request.method === "GET" &&
         url.pathname === "/_twofold/errors/app.css"
       ) {
-        let contents = await build.getBuilder("dev-error-page").css();
+        let contents = await environment.getBuilder("dev-error-page").css();
         return new Response(contents, {
           headers: {
             "content-type": "text/css",
@@ -79,8 +79,8 @@ export function errors(build: Build): RouteHandler {
       }
     }
 
-    if (build.error) {
-      throw build.error;
+    if (environment.error) {
+      throw environment.error;
     }
   };
 }

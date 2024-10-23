@@ -1,5 +1,5 @@
 import { RouteHandler } from "@hattip/router";
-import { DevBuild } from "../../build/dev-build";
+import { DevelopmentEnvironment } from "../../build/environments/development";
 import { ServerSentEventSink, serverSentEvents } from "@hattip/response";
 
 type Connection = {
@@ -9,7 +9,7 @@ type Connection = {
 
 let activeConnections: Connection[] = [];
 
-export function devReload(build: DevBuild): RouteHandler {
+export function devReload(environment: DevelopmentEnvironment): RouteHandler {
   return async ({ request }) => {
     let url = new URL(request.url);
     let pathname = url.pathname;
@@ -22,12 +22,12 @@ export function devReload(build: DevBuild): RouteHandler {
         onOpen(sink) {
           handler = () => {
             // console.log(build.changes);
-            sink.sendMessage(JSON.stringify(build.changes));
+            sink.sendMessage(JSON.stringify(environment.changes));
           };
 
           let close = () => {
             sink.close();
-            build.events.off("complete", handler);
+            environment.events.off("complete", handler);
           };
 
           if (activeConnections.length > 8) {
@@ -38,10 +38,10 @@ export function devReload(build: DevBuild): RouteHandler {
           }
 
           activeConnections.push({ close, sink });
-          build.events.on("complete", handler);
+          environment.events.on("complete", handler);
         },
         onClose() {
-          build.events.off("complete", handler);
+          environment.events.off("complete", handler);
         },
       });
     }

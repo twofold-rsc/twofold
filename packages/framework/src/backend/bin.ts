@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { DevBuild } from "./build/dev-build.js";
-import { ProdBuild } from "./build/prod-build.js";
+import { DevelopmentEnvironment } from "./build/environments/development.js";
+import { ProductionEnvironment } from "./build/environments/production.js";
 import { Runtime } from "./runtime.js";
 
 import { Command } from "commander";
@@ -13,7 +13,7 @@ if (!hasRequiredNodeVersion) {
   process.exit(1);
 }
 
-let env = process.env.NODE_ENV ?? "development";
+let nodeEnv = process.env.NODE_ENV ?? "development";
 
 let program = new Command();
 
@@ -23,14 +23,17 @@ program
   .command("dev")
   .description("Run the development server")
   .action(async () => {
-    let build = env === "production" ? new ProdBuild() : new DevBuild();
+    let environment =
+      nodeEnv === "production"
+        ? new ProductionEnvironment()
+        : new DevelopmentEnvironment();
 
     // start build
-    await build.setup();
-    await build.build();
+    await environment.setup();
+    await environment.build();
 
     // create runtime
-    let runtime = new Runtime(build);
+    let runtime = new Runtime(environment);
 
     // start runtime
     await runtime.start();
@@ -40,28 +43,34 @@ program
   .command("build")
   .description("Build the project for production")
   .action(async () => {
-    let build = env === "production" ? new ProdBuild() : new DevBuild();
+    let environment =
+      nodeEnv === "production"
+        ? new ProductionEnvironment()
+        : new DevelopmentEnvironment();
 
     // start build
-    await build.setup();
-    await build.build();
-    await build.stop();
+    await environment.setup();
+    await environment.build();
+    await environment.stop();
 
     // stash the build
-    await build.save();
+    await environment.save();
   });
 
 program
   .command("serve")
   .description("Serve a production build")
   .action(async () => {
-    let build = env === "production" ? new ProdBuild() : new DevBuild();
+    let environment =
+      nodeEnv === "production"
+        ? new ProductionEnvironment()
+        : new DevelopmentEnvironment();
 
     // load build
-    await build.load();
+    await environment.load();
 
     // create runtime
-    let runtime = new Runtime(build);
+    let runtime = new Runtime(environment);
 
     // start runtime
     await runtime.start();

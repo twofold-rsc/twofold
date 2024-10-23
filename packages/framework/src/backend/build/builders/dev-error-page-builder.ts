@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { cwdUrl, frameworkSrcDir } from "../../files.js";
 import { postcssTailwind } from "../plugins/postcss-tailwind.js";
 import { readFile } from "fs/promises";
-import { Builder } from "./base-builder.js";
+import { Builder } from "./builder.js";
 
 export class DevErrorPageBuilder extends Builder {
   readonly name = "dev-error-page";
@@ -56,7 +56,7 @@ export class DevErrorPageBuilder extends Builder {
 
   private get appPath() {
     let appPath = fileURLToPath(
-      new URL("./apps/errors/app.tsx", frameworkSrcDir),
+      new URL("./apps/errors/app.tsx", frameworkSrcDir)
     );
     return appPath;
   }

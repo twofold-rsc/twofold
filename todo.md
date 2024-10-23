@@ -2,6 +2,10 @@
 
 framework
 
+- compiler: make sure it works in prod (and react refresh is disabled)
+- config page on website that mentions externals and compiler
+- test run through
+
 - rename src to app
 - i think typescript should be in devDeps
 - use es6 tailwind

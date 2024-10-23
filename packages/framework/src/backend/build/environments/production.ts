@@ -1,26 +1,31 @@
-import { ClientAppBuilder } from "./builders/client-app-builder.js";
-import { RSCBuilder } from "./builders/rsc-builder.js";
-import { StaticFilesBuilder } from "./builders/static-files-builder.js";
-import { EntriesBuilder } from "./builders/entries-builder.js";
-import { time } from "./helpers/time.js";
-import { ServerFilesBuilder } from "./builders/server-files-builder.js";
-import { Build } from "./base-build.js";
+import { ClientAppBuilder } from "../builders/client-app-builder.js";
+import { RSCBuilder } from "../builders/rsc-builder.js";
+import { StaticFilesBuilder } from "../builders/static-files-builder.js";
+import { EntriesBuilder } from "../builders/entries-builder.js";
+import { time } from "../helpers/time.js";
+import { ServerFilesBuilder } from "../builders/server-files-builder.js";
+import { Environment } from "./environment.js";
 
-export class ProdBuild extends Build {
-  readonly env = "production";
+export class ProductionEnvironment extends Environment {
+  readonly name = "production";
 
   constructor() {
     super();
 
-    let entriesBuilder = new EntriesBuilder();
+    let entriesBuilder = new EntriesBuilder({
+      environment: this,
+    });
     let rscBuilder = new RSCBuilder({
+      environment: this,
       entriesBuilder,
     });
     let clientAppBuilder = new ClientAppBuilder({
-      env: "production",
+      environment: this,
       entriesBuilder,
     });
-    let serverFilesBuilder = new ServerFilesBuilder({ env: "production" });
+    let serverFilesBuilder = new ServerFilesBuilder({
+      environment: this,
+    });
     let staticFilesBuilder = new StaticFilesBuilder();
 
     this.addBuilder(entriesBuilder);

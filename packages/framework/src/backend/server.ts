@@ -26,7 +26,7 @@ import {
 } from "./runtime/helpers/errors.js";
 
 export async function create(runtime: Runtime) {
-  let build = runtime.build;
+  let environment = runtime.environment;
 
   let app = createRouter();
 
@@ -35,19 +35,19 @@ export async function create(runtime: Runtime) {
   app.use(cookie());
   app.use(await session());
 
-  if (build.env === "development") {
-    app.use(waitForBuild(build));
+  if (environment.name === "development") {
+    app.use(waitForBuild(environment));
   }
 
-  app.use(globalMiddleware(build));
-  app.use(assets(build));
-  app.use(staticFiles(build));
+  app.use(globalMiddleware(environment));
+  app.use(assets(environment));
+  app.use(staticFiles(environment));
 
-  if (build.env === "development") {
-    app.use(devReload(build));
+  if (environment.name === "development") {
+    app.use(devReload(environment));
   }
 
-  app.use(errors(build));
+  app.use(errors(environment));
 
   // every request below here should use the store
   app.use(requestStore(runtime));
@@ -206,7 +206,7 @@ export async function create(runtime: Runtime) {
 
     let actionStream = renderToReadableStream(
       result,
-      build.getBuilder("client").clientComponentMap
+      environment.getBuilder("client").clientComponentMap
     );
 
     let multipart = new MultipartResponse();

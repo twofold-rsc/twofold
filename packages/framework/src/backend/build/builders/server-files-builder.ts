@@ -1,6 +1,7 @@
 import { copyFile, mkdir } from "fs/promises";
 import { appCompiledDir, frameworkSrcDir } from "../../files.js";
-import { Builder } from "./base-builder.js";
+import { Builder } from "./builder.js";
+import { Environment } from "../environments/environment.js";
 
 let devFile = new URL("./apps/errors/index.html", frameworkSrcDir);
 let prodFile = new URL("./backend/server/internal-error.html", frameworkSrcDir);
@@ -8,11 +9,15 @@ let prodFile = new URL("./backend/server/internal-error.html", frameworkSrcDir);
 export class ServerFilesBuilder extends Builder {
   readonly name = "server-files";
 
-  #env: "development" | "production";
+  #environment: Environment;
 
-  constructor({ env }: { env: "development" | "production" }) {
+  constructor({ environment }: { environment: Environment }) {
     super();
-    this.#env = env;
+    this.#environment = environment;
+  }
+
+  get #env() {
+    return this.#environment.name;
   }
 
   async setup() {
@@ -24,7 +29,7 @@ export class ServerFilesBuilder extends Builder {
     let errorFile = this.#env === "development" ? devFile : prodFile;
     await copyFile(
       errorFile,
-      new URL("./server-files/error.html", appCompiledDir),
+      new URL("./server-files/error.html", appCompiledDir)
     );
   }
 
