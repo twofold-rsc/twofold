@@ -20,6 +20,7 @@ export class DevelopmentEnvironment extends Environment {
   readonly name = "development";
 
   #isBuilding = false;
+  #watch = true;
   #events = new BuildEvents();
 
   #clientComponentMapSnapshot = new ClientComponentMapSnapshot();
@@ -27,8 +28,12 @@ export class DevelopmentEnvironment extends Environment {
   #rscSnapshot = new RSCSnapshot();
   #cssSnapshot = new CSSSnapshot();
 
-  constructor() {
+  constructor({ watch }: { watch?: boolean } = { watch: true }) {
     super();
+
+    if (typeof watch === "boolean") {
+      this.#watch = watch;
+    }
 
     let entriesBuilder = new EntriesBuilder({
       environment: this,
@@ -150,6 +155,8 @@ export class DevelopmentEnvironment extends Environment {
   }
 
   async watch() {
+    if (!this.#watch) return;
+
     let buildDirs = ["./src", "./public"];
     let setupDirs = ["./config"];
 

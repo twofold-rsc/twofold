@@ -46,7 +46,7 @@ program
     let environment =
       nodeEnv === "production"
         ? new ProductionEnvironment()
-        : new DevelopmentEnvironment();
+        : new DevelopmentEnvironment({ watch: false });
 
     // start build
     await environment.setup();
@@ -64,7 +64,7 @@ program
     let environment =
       nodeEnv === "production"
         ? new ProductionEnvironment()
-        : new DevelopmentEnvironment();
+        : new DevelopmentEnvironment({ watch: false });
 
     // load build
     await environment.load();
