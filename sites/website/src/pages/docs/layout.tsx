@@ -85,6 +85,15 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             </li>
           </ul>
 
+          <div className="font-bold mt-6">Configuration</div>
+          <ul className="space-y-1 mt-1">
+            <li>
+              <DocLink href="/docs/reference/application-config">
+                Application
+              </DocLink>
+            </li>
+          </ul>
+
           <div className="font-bold mt-6">Philosophy</div>
           <ul className="space-y-1 mt-1">
             <li>

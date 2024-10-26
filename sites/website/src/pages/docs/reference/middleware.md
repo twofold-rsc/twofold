@@ -2,7 +2,7 @@
 
 Middleware allows you to run code before rendering layouts and pages.
 
-## Before middleware
+## Before
 
 A page or layout can export a `before` function to run middleware before rendering:
 
