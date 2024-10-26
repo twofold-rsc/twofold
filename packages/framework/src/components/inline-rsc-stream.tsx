@@ -99,19 +99,21 @@ async function Inline({
 
 // From https://github.com/cyco130/vite-rsc/blob/2e3d0ad9915e57c4b2eaa3ea24b46c1b477a4cce/packages/fully-react/src/server/htmlescape.ts#L25C1-L38C2
 
-const TERMINATORS_LOOKUP: Record<string, string> = {
+let ESCAPE_LOOKUP: Record<string, string> = {
+  ">": "\\u003e",
+  "<": "\\u003c",
   "\u2028": "\\u2028",
   "\u2029": "\\u2029",
 };
 
-const TERMINATORS_REGEX = /[\u2028\u2029]/g;
+let ESCAPE_REGEX = /[><\u2028\u2029]/g;
 
-function sanitizer(match: string | number) {
-  return TERMINATORS_LOOKUP[match];
+function escaper(match: string | number) {
+  return ESCAPE_LOOKUP[match];
 }
 
 function sanitize(str: string) {
-  return str.replace(TERMINATORS_REGEX, sanitizer);
+  return str.replace(ESCAPE_REGEX, escaper);
 }
 
 export class TeardownOnError extends Component<

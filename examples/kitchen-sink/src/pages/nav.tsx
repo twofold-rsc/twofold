@@ -88,6 +88,11 @@ export default function Nav() {
                         description="Dedupe data requests with React's cache helper."
                         href="/react/cache"
                       />
+                      <ExampleLink
+                        title="Logging"
+                        description="RSC server to client logging."
+                        href="/react/logging"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup name="Server actions" path="/server-actions">
