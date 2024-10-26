@@ -2,7 +2,7 @@
 
 import Link from "@twofold/framework/link";
 import { useRouter } from "@twofold/framework/use-router";
-import { MouseEvent, ReactNode, SVGProps, useTransition } from "react";
+import { MouseEvent, ReactNode, useTransition } from "react";
 
 export function LinkWithNavigation({
   href,

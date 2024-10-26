@@ -70,15 +70,15 @@ export async function render({
   function getTree() {
     if (!tree) {
       tree = createFromReadableStream(rscStream1, {
-        ssrManifest: {
-          // before enabling this we need to write our own client
-          // that can load modules
-          // moduleMap: ssrManifestModuleMap,
+        serverConsumerManifest: {
+          moduleMap: null,
+          serverModuleMap: null,
+          moduleLoading: null,
+          // moduleMap: ?? i think this allows lookup from the ssrManifestModuleMap
+          // serverModuleMap: ssrManifestModuleMap,
           // moduleLoading: {
           //   prefix: "/_assets/client-app/",
           // },
-          moduleMap: null,
-          moduleLoading: null,
         },
       });
     }
@@ -106,11 +106,11 @@ export async function render({
           console.error(err);
         } else {
           console.error(
-            `An unknown error occurred while SSR rendering: ${url.pathname}`,
+            `An unknown error occurred while SSR rendering: ${url.pathname}`
           );
         }
       },
-    },
+    }
   );
 
   return htmlStream;

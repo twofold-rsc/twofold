@@ -15,14 +15,14 @@ import { externalPackages } from "../externals.js";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder";
 import path from "path";
-import { Layout } from "../rsc/layout.js";
 import { RSC } from "../rsc/rsc.js";
 import { Page } from "../rsc/page.js";
 import { Wrapper } from "../rsc/wrapper.js";
 import { fileExists } from "../helpers/file.js";
-import { Builder } from "./base-builder.js";
+import { Builder } from "./builder.js";
+import { Environment } from "../environments/environment.js";
+import { Layout } from "../rsc/layout.js";
 import { API } from "../rsc/api.js";
-import { getAppConfig } from "../helpers/config.js";
 
 type CompiledAction = {
   id: string;
@@ -35,11 +35,19 @@ export class RSCBuilder extends Builder {
 
   #metafile?: Metafile;
   #entriesBuilder: EntriesBuilder;
+  #environment: Environment;
   #serverActionMap = new Map<string, CompiledAction>();
 
-  constructor({ entriesBuilder }: { entriesBuilder: EntriesBuilder }) {
+  constructor({
+    entriesBuilder,
+    environment,
+  }: {
+    entriesBuilder: EntriesBuilder;
+    environment: Environment;
+  }) {
     super();
     this.#entriesBuilder = entriesBuilder;
+    this.#environment = environment;
   }
 
   get serverActionMap() {
@@ -68,8 +76,8 @@ export class RSCBuilder extends Builder {
     this.clearError();
 
     try {
-      let appConfig = await getAppConfig();
-      let userDefinedExternalPackages = appConfig.externalPackages ?? [];
+      let appConfig = await this.#environment.getAppConfig();
+      let userDefinedExternalPackages = appConfig.externalPackages;
 
       let result = await build({
         bundle: true,

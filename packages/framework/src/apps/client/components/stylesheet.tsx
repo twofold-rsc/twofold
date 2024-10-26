@@ -42,9 +42,25 @@ export function Stylesheet({ href }: { href: string }) {
   use(promise);
 
   useEffect(() => {
-    return () => {
-      cache.delete(href);
+    let head = document.getElementsByTagName("head")[0];
+    let shouldAdd = true;
 
+    let links = document.getElementsByTagName("link");
+    for (let i = 0; i < links.length; i++) {
+      let link = links[i];
+      if (link.getAttribute("href") === href) {
+        shouldAdd = false;
+      }
+    }
+
+    if (shouldAdd) {
+      let link = document.createElement("link");
+      link.href = href;
+      link.rel = "stylesheet";
+      head.appendChild(link);
+    }
+
+    return () => {
       let links = document.getElementsByTagName("link");
       for (let i = 0; i < links.length; i++) {
         let link = links[i];

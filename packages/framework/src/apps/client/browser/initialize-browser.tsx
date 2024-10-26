@@ -2,6 +2,7 @@ import "../ext/react-refresh";
 import "../ext/webpack-loaders";
 import { hydrateRoot } from "react-dom/client";
 import { BrowserApp } from "./browser-app";
+import { StrictMode } from "react";
 
 declare global {
   interface Window {
@@ -17,7 +18,12 @@ declare global {
 }
 
 function main() {
-  hydrateRoot(document, <BrowserApp />);
+  hydrateRoot(
+    document,
+    <StrictMode>
+      <BrowserApp />
+    </StrictMode>
+  );
 }
 
 main();

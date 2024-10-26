@@ -3,10 +3,14 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { useRouter } from "@twofold/framework/use-router";
 import Link from "@twofold/framework/link";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 
 export default function Nav() {
   let { path } = useRouter();
+  let currentSectionPath = path.split("/").slice(0, 2).join("/");
+  let initial = currentSectionPath === "/" ? "/react" : currentSectionPath;
+
+  let [selectedSectionPath, setSelectedSectionPath] = useState(initial);
 
   return (
     <NavigationMenu.Root className="relative z-10 mt-4 flex w-screen justify-center">
@@ -50,14 +54,15 @@ export default function Nav() {
           <NavigationMenu.Trigger>Examples</NavigationMenu.Trigger>
           <NavigationMenu.Content className="absolute left-0 top-0">
             <NavigationMenu.Sub
-              defaultValue="React"
+              value={selectedSectionPath}
+              onValueChange={(value) => setSelectedSectionPath(value)}
               orientation="vertical"
               className="w-[650px]"
             >
               <div className="flex overflow-hidden rounded border-4 border-gray-100 bg-gray-100 shadow-2xl">
                 <div className="w-1/4">
                   <NavigationMenu.List className="space-y-1 bg-gray-100 pr-1">
-                    <ExampleGroup name="React">
+                    <ExampleGroup name="React" path="/react">
                       <ExampleLink
                         title="useId"
                         description="The useId hook from React"
@@ -85,7 +90,7 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
-                    <ExampleGroup name="Server actions">
+                    <ExampleGroup name="Server actions" path="/server-actions">
                       <ExampleLink
                         title="Server action"
                         description="A function that runs on the server."
@@ -128,7 +133,10 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
-                    <ExampleGroup name="Client components">
+                    <ExampleGroup
+                      name="Client components"
+                      path="/client-components"
+                    >
                       <ExampleLink
                         title="Client component"
                         description="A component that runs on the client."
@@ -141,7 +149,7 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
-                    <ExampleGroup name="HTTP">
+                    <ExampleGroup name="HTTP" path="/http">
                       <ExampleLink
                         title="Cookies"
                         description="Read, set, and destroy cookies."
@@ -174,7 +182,7 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
-                    <ExampleGroup name="Build">
+                    <ExampleGroup name="Build" path="/build">
                       <ExampleLink
                         title="CSS"
                         description="A page with custom css."
@@ -197,7 +205,7 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
-                    <ExampleGroup name="Routing">
+                    <ExampleGroup name="Routing" path="/routing">
                       <ExampleLink
                         title="useRouter"
                         description="The hook that controls the router."
@@ -255,7 +263,7 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
-                    <ExampleGroup name="Errors">
+                    <ExampleGroup name="Errors" path="/error-handling">
                       <ExampleLink
                         title="Client component errors"
                         description="Errors that happen in client components."
@@ -283,7 +291,7 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
-                    <ExampleGroup name="UIs">
+                    <ExampleGroup name="UIs" path="/uis">
                       <ExampleLink
                         title="Login"
                         description="A login form using client components, server actions, cookies, and redirects."
@@ -321,13 +329,15 @@ export default function Nav() {
 
 function ExampleGroup({
   name,
+  path,
   children,
 }: {
   name: string;
+  path: string;
   children: ReactNode;
 }) {
   return (
-    <NavigationMenu.Item value={name}>
+    <NavigationMenu.Item value={path}>
       <NavigationMenu.Trigger className="w-full rounded-[3px] px-1.5 py-0.5 text-left font-medium text-gray-900 data-[state=open]:bg-white">
         {name}
       </NavigationMenu.Trigger>

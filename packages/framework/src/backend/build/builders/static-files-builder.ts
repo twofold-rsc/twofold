@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import { Stats } from "fs";
 import * as mime from "mime-types";
 import etag from "etag";
-import { Builder } from "./base-builder.js";
+import { Builder } from "./builder.js";
 
 export class StaticFilesBuilder extends Builder {
   readonly name = "static-files";

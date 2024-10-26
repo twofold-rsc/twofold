@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export default function ClientComponent() {
   let [count, setCount] = useState(0);
+
   return (
     <div>
       <div className="-mb-0.5 inline-flex rounded-t bg-sky-500 px-2 py-1 text-white">

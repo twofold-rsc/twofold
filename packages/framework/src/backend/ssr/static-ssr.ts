@@ -10,8 +10,9 @@ export async function staticSSR(
     async start(controller) {
       try {
         let tree = await createFromReadableStream(request.rscStream, {
-          ssrManifest: {
+          serverConsumerManifest: {
             moduleMap: null,
+            serverModuleMap: null,
             moduleLoading: null,
           },
         });

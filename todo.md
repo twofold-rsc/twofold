@@ -10,11 +10,9 @@ framework
 - add --log=debug flag to show debug logs
 - tailwind v4/lightening css
 
+- rename api handlers
+
 website
-
-- README
-
-- API handlers
 
 - Routing + Pages & Layouts to reference
 - Loading screens
@@ -27,17 +25,13 @@ website
 - mobile menu
 
 - line length in md files
-- newsletter signup
 - setup website with eslint, tailwind prettier
 - docs md files should use <Link>
 
 framework
 
-- Expose isTransitioning prop on useRouter
-- Expose transitioningToPath prop on useRouter
-
 - not found and redirect should be server only
-- bundle error boundaries
+- put all error boundaries in same client component
 - monkey patch console.error for not found/redirect boundaries
 
 - run middleware in RSC
