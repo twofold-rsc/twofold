@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.36
+
+### Patch Changes
+
+- better ssr inlining
+
 ## 0.0.35
 
 ### Patch Changes
