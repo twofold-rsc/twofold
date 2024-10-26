@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.35
+
+### Patch Changes
+
+- Add react compiler + strict mode
+
 ## 0.0.34
 
 ### Patch Changes
