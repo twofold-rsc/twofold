@@ -2,8 +2,6 @@
 
 framework
 
-- config page on website that mentions externals and compiler
-
 - rename src to app
 - i think typescript should be in devDeps
 - use es6 tailwind
