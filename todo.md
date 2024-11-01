@@ -2,9 +2,17 @@
 
 framework
 
+- trustProxy
+  https://github.com/hattipjs/hattip/blob/d633cb8b54ffca134ba430ef264c04a6c7e3ca27/packages/adapter/adapter-node/src/request.ts#L118
+
+- abort
+  https://github.com/hattipjs/hattip/issues/161
+
+- cancel unused streams in ssr response page-request.ts?
+
+- i think typescript should be in base app devDeps
+
 - rename src to app
-- i think typescript should be in devDeps
-- use es6 tailwind
 
 - live reload should reconnect when disconnected
 - add --log=debug flag to show debug logs

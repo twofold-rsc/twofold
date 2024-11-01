@@ -210,6 +210,14 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
+                    <ExampleGroup name="Runtime" path="/runtime">
+                      <ExampleLink
+                        title="ENVs"
+                        description="Environment variables loaded from .env files."
+                        href="/runtime/env"
+                      />
+                    </ExampleGroup>
+
                     <ExampleGroup name="Routing" path="/routing">
                       <ExampleLink
                         title="useRouter"

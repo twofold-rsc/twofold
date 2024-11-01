@@ -13,7 +13,6 @@ let templateDir = new URL("./template/", cwdUrl);
 let examplesDir = new URL("../../examples/", cwdUrl);
 let baseAppDir = new URL("./base-app", examplesDir);
 
-// maps .gitignore to gitignore
 function destinationFile<K extends keyof typeof remapped>(key: K) {
   return remapped[key] ?? key;
 }
@@ -37,10 +36,10 @@ async function copy(source: string, destination: string) {
           } else {
             await copyFile(sourcePath, destinationPath);
             console.log(
-              `*** ${source.slice(fileURLToPath(examplesDir).length)}/${file}`,
+              `*** ${source.slice(fileURLToPath(examplesDir).length)}/${file}`
             );
           }
-        }),
+        })
     );
   } catch (err) {
     console.error("Error copying directory:", err);

@@ -1,8 +1,8 @@
-import { ReactNode } from "react";
 import TwofoldFramework from "@twofold/framework/twofold-framework";
+import { LayoutProps } from "@twofold/framework/types";
 import "./global.css";
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: LayoutProps) {
   return (
     <html>
       <head>

@@ -1,6 +1,6 @@
 # Pages
 
-Every URL in your application is powered by a page component. These a special React Server Components that serve as the entry points into your application.
+Every URL in your application is powered by a page component. These are special React Server Components that serve as entry points into your application.
 
 ## Page components
 
@@ -18,7 +18,7 @@ Visiting `/about` renders the above `AboutPage` component.
 
 ## Index pages
 
-Pages nested under directories create a hierarchy of URLs. When a directory contains an `index.page.tsx` file, the page will be rendered when visiting the directory's URL.
+Pages nested under directories create a hierarchy of URLs. When a directory contains an `index.page.tsx` file it is used to render the URL of the directory.
 
 ```tsx
 // src/pages/posts/index.page.tsx

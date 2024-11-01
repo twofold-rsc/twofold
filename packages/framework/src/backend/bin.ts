@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+import 'dotenv/config'
 import { DevelopmentEnvironment } from "./build/environments/development.js";
 import { ProductionEnvironment } from "./build/environments/production.js";
 import { Runtime } from "./runtime.js";
