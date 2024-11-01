@@ -1,5 +1,11 @@
 # create-twofold-app
 
+## 0.0.9
+
+### Patch Changes
+
+- fix version check
+
 ## 0.0.8
 
 ### Patch Changes
