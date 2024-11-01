@@ -1,5 +1,11 @@
 # create-twofold-app
 
+## 0.0.8
+
+### Patch Changes
+
+- env file support
+
 ## 0.0.7
 
 ### Patch Changes

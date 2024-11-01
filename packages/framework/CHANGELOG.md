@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.37
+
+### Patch Changes
+
+- env file support
+
 ## 0.0.36
 
 ### Patch Changes
