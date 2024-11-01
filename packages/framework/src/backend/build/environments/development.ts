@@ -13,6 +13,7 @@ import { ClientChunksSnapshot } from "../snapshots/client-chunks-snapshot.js";
 import { RSCSnapshot } from "../snapshots/rsc-snapshot.js";
 import { CSSSnapshot } from "../snapshots/css-snapshot.js";
 import { Environment } from "./environment.js";
+import { watchFile } from "node:fs";
 
 class BuildEvents extends EventEmitter {}
 
@@ -159,6 +160,7 @@ export class DevelopmentEnvironment extends Environment {
 
     let buildDirs = ["./src", "./public"];
     let setupDirs = ["./config"];
+    let watchEnvFiles = [".env"];
 
     [...buildDirs, ...setupDirs].forEach(async (dir) => {
       let url = new URL(dir, cwdUrl);
@@ -181,6 +183,26 @@ export class DevelopmentEnvironment extends Environment {
             await this.build();
           }
         }
+      }
+    });
+
+    [...watchEnvFiles].forEach(async (file) => {
+      let url = new URL(file, cwdUrl);
+
+      let canWatch = false;
+      try {
+        let stats = await stat(url);
+        canWatch = stats.isFile();
+      } catch (_e) {
+        canWatch = false;
+      }
+
+      if (canWatch) {
+        watchFile(url, () => {
+          import("dotenv").then((dotenv) => {
+            dotenv.config();
+          });
+        });
       }
     });
   }

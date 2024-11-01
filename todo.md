@@ -2,9 +2,26 @@
 
 framework
 
-- rename src to app
+- env
+- add env to kitchen sink .gitignore
+- no env
+- update base app gitignore + env
+- update create-twofold-app to unpack
+- docs page
+
+- trustProxy
+  https://github.com/hattipjs/hattip/blob/d633cb8b54ffca134ba430ef264c04a6c7e3ca27/packages/adapter/adapter-node/src/request.ts#L118
+
+- abort
+  https://github.com/hattipjs/hattip/issues/161
+
+- cancel unused streams in ssr response page-request.ts?
+
+- base app should layout should use layout props
 - i think typescript should be in devDeps
 - use es6 tailwind
+
+- rename src to app
 
 - live reload should reconnect when disconnected
 - add --log=debug flag to show debug logs
