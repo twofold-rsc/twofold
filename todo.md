@@ -3,8 +3,6 @@
 framework
 
 - env
-- add env to kitchen sink .gitignore
-- no env
 - update base app gitignore + env
 - update create-twofold-app to unpack
 - docs page
@@ -17,9 +15,7 @@ framework
 
 - cancel unused streams in ssr response page-request.ts?
 
-- base app should layout should use layout props
-- i think typescript should be in devDeps
-- use es6 tailwind
+- i think typescript should be in base app devDeps
 
 - rename src to app
 
