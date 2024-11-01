@@ -92,6 +92,11 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
                 Application
               </DocLink>
             </li>
+            <li>
+              <DocLink href="/docs/reference/environment-variables">
+                Environment variables
+              </DocLink>
+            </li>
           </ul>
 
           <div className="font-bold mt-6">Philosophy</div>

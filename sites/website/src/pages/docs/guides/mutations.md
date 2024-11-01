@@ -62,7 +62,7 @@ export async function PostsPage() {
 
 The above example will create a new post whenever the form is submitted and then re-render the lists of posts with the new post included.
 
-## Server action modules
+## Server modules
 
 Server actions can be defined in separate modules and imported into your components. A server action module is any module that begins with the `"use server"` directive.
 
@@ -189,4 +189,4 @@ It's recommended to use hidden form inputs when working with dynamic data. This 
 
 ## Limitations
 
-Server actions in Twofold are only allowed to be defined in the top-level scope of a module. This means that you cannot define server actions inside of components, other functions, or closures. This is a limitation of the current implementation and may change in the future.
+Server actions in Twofold are only allowed to be defined in the top-level scope of a module. This means that you cannot define server actions inside of components, other functions, or closures. This is a limitation of the current implementation and will improve in the future.

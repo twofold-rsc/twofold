@@ -1,0 +1,83 @@
+# Environment variables
+
+Twofold applications use environment variables to manage settings that change between development and production environments.
+
+## Env files
+
+The `.env` file in the root of your project is automatically loaded when running Twofold. You can use this file to set environment specific variables.
+
+```dotenv
+# .env
+MY_ENV_VAR="hello-world"
+```
+
+Server-side application code can access these variables using Node's built in `process.env`:
+
+```ts
+console.log(process.env.MY_ENV_VAR);
+// prints hello-world
+```
+
+### Recommendations
+
+- Do not check the `.env` file into git.
+- Only put configuration that changes per environment in the `.env` file.
+
+## Clients cannot access ENVs
+
+In Twofold only server-side code can access environment variables. This is because the `.env` file is only loaded on the server to avoid leaking sensitive information to the client.
+
+```tsx
+"use client";
+
+export function ClientComponent() {
+  return (
+    <div>
+      {/* This won't work */}
+      {process.env.HOSTNAME}
+    </div>
+  );
+}
+```
+
+If you need to access environment variables on the client then you should pass them as props from a server component into a client component.
+
+```tsx
+// src/pages/index.tsx
+import { ClientComponent } from "./client-component";
+
+export default function IndexPage() {
+  return (
+    <div>
+      {/* Now the client component can access HOSTNAME */}
+      <ClientComponent hostname={process.env.HOSTNAME} />
+    </div>
+  );
+}
+```
+
+In the above example, the `ClientComponent` receives the `HOSTNAME` environment variable as a prop from the server.
+
+Be careful when passing environment variables to client components. Avoid passing sensitive information like API keys or database credentials.
+
+### NODE_ENV exception
+
+Client components do have access to the `NODE_ENV` environment variable. This is a safe to expose variable that is often used for dead-code elimination.
+
+```tsx
+"use client";
+
+export function ClientComponent() {
+  return (
+    <div>
+      {process.env.NODE_ENV === "development" && (
+        <p>This component is running in development mode</p>
+      )}
+    </div>
+  );
+}
+```
+
+In the example above the client component can safely access `NODE_ENV` to conditionally render a message if the app is running in development mode.
+
+In non-development environments, the `<p>` tag will be stripped from the component at build time.

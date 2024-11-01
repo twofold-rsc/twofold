@@ -1,6 +1,6 @@
 # Data fetching
 
-In Twofold, data fetching is done in React Server Components, namely [Pages](/docs/guides/pages) and [Layouts](/docs/guides/layouts).
+In Twofold, data fetching is done in React Server Components.
 
 At the moment, Twofold does not have a built-in data fetching library. This guide will show you how to fetch data using a made up `./database` module. You can substitute this with an ORM or database client of your choice.
 
@@ -27,13 +27,9 @@ export default async function SalesPage() {
 
 Twofold will wait for the total count of sales to be fetched from the database before rendering the above page.
 
-## List detail UIs
+## Fetching data in layouts
 
-Similar to pages, layouts can also fetch data. This useful for data that is shared across multiple pages.
-
-A common UI pattern is to fetch a list of items and then display an item's details once it's selected. In Twofold, this is done by fetching the list in a layout and the details of a specific item in a dynamic page.
-
-Let's go ahead and build a list-detail UI using a layout and page. First, we'll start with the layout:
+Similar to pages, layouts can also fetch data. This useful for data that is rendered across multiple pages.
 
 ```tsx
 // src/pages/posts/layout.tsx
@@ -65,41 +61,8 @@ export default async function PostsLayout({
 }
 ```
 
-And next we'll create an index page that instructs the user to select a post.
+In the above example, a list of all blog posts will be displayed on every page alongside the content of the selected post.
 
-```tsx
-// src/pages/posts/index.page.tsx
+## Navigation and data fetching
 
-import { db } from "./database";
-
-export default async function PostsIndexPage() {
-  return <p>Select a post from the list to read it!</p>;
-}
-```
-
-When visiting `/posts` both the layout and index page will be rendered. A user will see a list of posts and a message to select a post.
-
-Finally, we'll create a page component that renders the details of a post whenever a link is clicked.
-
-```tsx
-// src/pages/posts/$slug.page.tsx
-
-import { db } from "./database";
-
-export default async function PostPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  let post = await db.exec("SELECT * FROM posts where slug = ?", params.slug);
-
-  return (
-    <div>
-      <h1>{post.title}</h1>
-      <article>{post.content}</article>
-    </div>
-  );
-}
-```
-
-Now a user that clicks on a post in the list will see the details of the post. The list of all posts will remain visible as the user navigates between post pages.
+Whe users navigate between pages Twofold will always rerun any rendered layouts and refetch their data. This is helpful for keeping data up to date as users move through your site.
