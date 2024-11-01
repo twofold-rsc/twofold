@@ -5,6 +5,7 @@
 
 **/dist
 **/.twofold
+**/.env
 
 **/.DS_Store
 **/*.log

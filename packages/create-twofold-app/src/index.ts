@@ -39,7 +39,10 @@ async function main() {
   // verify node version
   let nodeVersion = process.versions.node.split(".").map(Number);
   let hasRequiredNodeVersion =
-    nodeVersion[0] >= 20 && nodeVersion[1] >= 9 && nodeVersion[2] >= 0;
+    nodeVersion[0] > 20 ||
+    (nodeVersion[0] === 20 &&
+      (nodeVersion[1] > 9 || (nodeVersion[1] === 9 && nodeVersion[2] >= 0)));
+
   if (!hasRequiredNodeVersion) {
     signale.error(
       "You must use Node.js version 20.9.0 or higher to create a new app."

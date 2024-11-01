@@ -2,6 +2,9 @@
 
 framework
 
+- fix website og
+- upgrade tailwind, prettier, prettier plugin
+
 - trustProxy
   https://github.com/hattipjs/hattip/blob/d633cb8b54ffca134ba430ef264c04a6c7e3ca27/packages/adapter/adapter-node/src/request.ts#L118
 

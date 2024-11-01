@@ -1,13 +1,17 @@
 #!/usr/bin/env node
-import 'dotenv/config'
+import "dotenv/config";
 import { DevelopmentEnvironment } from "./build/environments/development.js";
 import { ProductionEnvironment } from "./build/environments/production.js";
 import { Runtime } from "./runtime.js";
 
 import { Command } from "commander";
 
-let [major, minor, patch] = process.versions.node.split(".").map(Number);
-let hasRequiredNodeVersion = major >= 20 && minor >= 9 && patch >= 0;
+let nodeVersion = process.versions.node.split(".").map(Number);
+let hasRequiredNodeVersion =
+  nodeVersion[0] > 20 ||
+  (nodeVersion[0] === 20 &&
+    (nodeVersion[1] > 9 || (nodeVersion[1] === 9 && nodeVersion[2] >= 0)));
+
 if (!hasRequiredNodeVersion) {
   console.log("You must use Node.js version 20.9.0 or higher to run twofold.");
   process.exit(1);
