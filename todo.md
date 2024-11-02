@@ -2,9 +2,6 @@
 
 framework
 
--test ks
--test cta
-
 - fix website og
 
 - trustProxy
