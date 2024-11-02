@@ -10,6 +10,6 @@
   "license": "ISC",
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
-    "typescript": "^5.2.2"
+    "typescript": "catalog:"
   }
 }

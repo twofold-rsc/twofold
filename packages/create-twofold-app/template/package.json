@@ -23,7 +23,7 @@
     "tailwindcss": "^3.4.3"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "eslint": "^9.12.0",

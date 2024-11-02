@@ -90,9 +90,17 @@ export function assets(build: Environment): RouteHandler {
   let handler = router.buildHandler();
 
   return async (ctx) => {
-    let response = await handler(ctx);
-    if (response.status !== 404) {
-      return response;
-    }
+    let passThroughCalled = false;
+
+    let subContext = {
+      ...ctx,
+      passThrough: async () => {
+        passThroughCalled = true;
+      },
+    };
+
+    let response = await handler(subContext);
+
+    return response.status === 404 && passThroughCalled ? ctx.next() : response;
   };
 }

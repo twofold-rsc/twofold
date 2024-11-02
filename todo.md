@@ -2,8 +2,10 @@
 
 framework
 
+-test ks
+-test cta
+
 - fix website og
-- upgrade tailwind, prettier, prettier plugin
 
 - trustProxy
   https://github.com/hattipjs/hattip/blob/d633cb8b54ffca134ba430ef264c04a6c7e3ca27/packages/adapter/adapter-node/src/request.ts#L118
@@ -12,8 +14,6 @@ framework
   https://github.com/hattipjs/hattip/issues/161
 
 - cancel unused streams in ssr response page-request.ts?
-
-- i think typescript should be in base app devDeps
 
 - rename src to app
 
