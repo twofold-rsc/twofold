@@ -1,5 +1,11 @@
 # create-twofold-app
 
+## 0.0.10
+
+### Patch Changes
+
+- Upgrade dependencies
+
 ## 0.0.9
 
 ### Patch Changes

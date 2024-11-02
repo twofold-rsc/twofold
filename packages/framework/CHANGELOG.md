@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.39
+
+### Patch Changes
+
+- Upgrade dependencies
+
 ## 0.0.38
 
 ### Patch Changes
