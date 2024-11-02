@@ -1,5 +1,5 @@
 import { RouteHandler } from "@hattip/router";
-import { CookieSerializeOptions } from "cookie";
+import { SerializeOptions } from "cookie";
 import { Store, runStore } from "../../stores/rsc-store.js";
 import { Runtime } from "../../runtime.js";
 
@@ -11,7 +11,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
   return async (ctx) => {
     reqId = reqId + 1;
 
-    let defaultCookieOptions: CookieSerializeOptions = {
+    let defaultCookieOptions: SerializeOptions = {
       path: "/",
     };
 
@@ -19,7 +19,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
       reqId,
       env: environment.name,
       cookies: {
-        set: (key: string, value: string, options?: CookieSerializeOptions) => {
+        set: (key: string, value: string, options?: SerializeOptions) => {
           let cookieOptions = {
             ...defaultCookieOptions,
             ...options,
@@ -30,7 +30,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
         get: (key: string) => {
           return ctx.cookie[key];
         },
-        destroy: (key: string, options?: CookieSerializeOptions) => {
+        destroy: (key: string, options?: SerializeOptions) => {
           let cookieOptions = {
             ...defaultCookieOptions,
             ...options,

@@ -1,6 +1,6 @@
 {
   "name": "base-app",
-  "version": "0.0.35",
+  "version": "0.0.37",
   "private": true,
   "description": "",
   "type": "module",
@@ -23,12 +23,13 @@
     "tailwindcss": "^3.4.3"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "eslint": "^9.12.0",
     "eslint-plugin-twofold": "workspace:*",
     "prettier": "^3.2.5",
-    "prettier-plugin-tailwindcss": "^0.5.14"
+    "prettier-plugin-tailwindcss": "^0.6.8",
+    "typescript": "catalog:"
   }
 }

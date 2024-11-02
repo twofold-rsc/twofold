@@ -5,7 +5,7 @@ import { Readable } from "stream";
 import { pipeline } from "stream/promises";
 import { ReadableStream } from "stream/web";
 import { fileURLToPath, pathToFileURL } from "url";
-import tar from "tar";
+import * as tar from "tar";
 import { remapped } from "./remapped.js";
 import * as childProcess from "child_process";
 import util from "util";
@@ -31,7 +31,7 @@ async function main() {
   let hasRequiredPnpmVersion = pnpmVersion[0] >= 9;
   if (!hasRequiredPnpmVersion) {
     signale.error(
-      "You must use pnpm version 9.0.0 or higher to create a new app."
+      "You must use pnpm version 9.0.0 or higher to create a new app.",
     );
     process.exit(1);
   }
@@ -45,7 +45,7 @@ async function main() {
 
   if (!hasRequiredNodeVersion) {
     signale.error(
-      "You must use Node.js version 20.9.0 or higher to create a new app."
+      "You must use Node.js version 20.9.0 or higher to create a new app.",
     );
     process.exit(1);
   }
@@ -97,7 +97,7 @@ async function main() {
 
   if (appUrlExists) {
     signale.error(
-      `Folder ${appFolderName} already exists. Please choose another name.`
+      `Folder ${appFolderName} already exists. Please choose another name.`,
     );
     process.exit(1);
   }
@@ -106,7 +106,7 @@ async function main() {
 
   // find the latest version of twofold from github
   let latestResp = await fetch(
-    "https://api.github.com/repos/twofold-rsc/twofold/releases/latest"
+    "https://api.github.com/repos/twofold-rsc/twofold/releases/latest",
   );
   let latestJson = await latestResp.json();
 
@@ -152,7 +152,7 @@ async function main() {
             : false;
         return keep;
       },
-    })
+    }),
   );
 
   // get catalog versions
@@ -173,7 +173,7 @@ async function main() {
         let content = parse(buf.toString());
         resolveCatalog(content.catalog);
       },
-    })
+    }),
   );
 
   let catalog = await catalogVersions;
@@ -184,7 +184,7 @@ async function main() {
     let newName = file;
     await rename(
       new URL(`./${oldName}`, appUrl),
-      new URL(`./${newName}`, appUrl)
+      new URL(`./${newName}`, appUrl),
     );
   }
 
