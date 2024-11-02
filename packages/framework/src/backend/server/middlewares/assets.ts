@@ -101,6 +101,6 @@ export function assets(build: Environment): RouteHandler {
 
     let response = await handler(subContext);
 
-    return response.status === 404 && passThroughCalled ? ctx.next() : response;
+    return response.status === 404 || passThroughCalled ? ctx.next() : response;
   };
 }
