@@ -4,15 +4,18 @@ framework
 
 - fix website og
 
+- fix node 23
+
+- long cache headers for production
+
+- rsc error handling
+
 - trustProxy
   https://github.com/hattipjs/hattip/blob/d633cb8b54ffca134ba430ef264c04a6c7e3ca27/packages/adapter/adapter-node/src/request.ts#L118
-
-- abort
-  https://github.com/hattipjs/hattip/issues/161
-
-- cancel unused streams in ssr response page-request.ts?
+- config builder -> be able to load and serialize it
 
 - rename src to app
+- add /app/components?
 
 - live reload should reconnect when disconnected
 - add --log=debug flag to show debug logs

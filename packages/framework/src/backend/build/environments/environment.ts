@@ -19,7 +19,10 @@ let jiti = createJiti(import.meta.url, {
 export const configSchema = z.object({
   externalPackages: z.array(z.string()).optional(),
   reactCompiler: z.boolean().optional(),
+  trustProxy: z.boolean().optional(),
 });
+
+type Config = z.infer<typeof configSchema>;
 
 export abstract class Environment {
   abstract name: "development" | "production";
@@ -27,27 +30,39 @@ export abstract class Environment {
 
   #key = randomBytes(6).toString("hex");
   #builders: Builder[] = [];
+  #appConfig?: Config;
 
   async getAppConfig() {
-    let defaultConfig: Required<z.infer<typeof configSchema>> = {
+    let defaultConfig: Required<Config> = {
       externalPackages: [],
       reactCompiler: false,
+      trustProxy: false,
     };
 
-    let appConfigFileUrl = new URL("./application.ts", appConfigDir);
-    let configMod: any = await jiti.import(appConfigFileUrl.href);
-    let appConfig = configMod.default ?? {};
+    if (!this.#appConfig) {
+      console.log("reading app config");
+      let appConfigContents = await this.readAppConfig();
+      let parsedConfig = configSchema.safeParse(appConfigContents);
 
-    let { data, error } = configSchema.safeParse(appConfig);
+      if (parsedConfig.error) {
+        throw new Error("Invalid configuration: config/application.ts");
+      }
 
-    if (error) {
-      throw new Error("Invalid configuration: config/application.ts");
+      this.#appConfig = parsedConfig.data;
     }
+
+    console.log("using app config", this.#appConfig);
 
     return {
       ...defaultConfig,
-      ...data,
+      ...this.#appConfig,
     };
+  }
+
+  private async readAppConfig() {
+    let appConfigFileUrl = new URL("./application.ts", appConfigDir);
+    let configMod: any = await jiti.import(appConfigFileUrl.href);
+    return configMod.default ?? {};
   }
 
   addBuilder(builder: Builder) {
@@ -62,7 +77,7 @@ export abstract class Environment {
           [builder.name]: builder,
         };
       },
-      {}
+      {},
     );
   }
 
@@ -96,6 +111,7 @@ export abstract class Environment {
   }
 
   async setup() {
+    this.#appConfig = undefined;
     await rm(appCompiledDir, { recursive: true, force: true });
     await Promise.all(this.#builders.map((builder) => builder.setup()));
   }
@@ -104,7 +120,14 @@ export abstract class Environment {
     await Promise.all(this.#builders.map((builder) => builder.stop()));
   }
 
-  serialize() {
+  async save() {
+    let data = await this.serialize();
+    let json = JSON.stringify(data, null, 2);
+    let jsonUrl = new URL("./environment.json", appCompiledDir);
+    await writeFile(jsonUrl, json, "utf-8");
+  }
+
+  private async serialize() {
     if (this.error) {
       throw new Error("Cannot serialize build with error", {
         cause: this.error,
@@ -121,21 +144,17 @@ export abstract class Environment {
         };
         return outputs;
       },
-      {}
+      {},
     );
+
+    let config = await this.getAppConfig();
 
     return {
       key: this.key,
       name: this.name,
+      config,
       builders: builderOutputs,
     };
-  }
-
-  async save() {
-    let data = this.serialize();
-    let json = JSON.stringify(data, null, 2);
-    let jsonUrl = new URL("./environment.json", appCompiledDir);
-    await writeFile(jsonUrl, json, "utf-8");
   }
 
   async load() {
@@ -143,6 +162,19 @@ export abstract class Environment {
     let json = await readFile(jsonUrl, "utf-8");
     let data = JSON.parse(json);
 
+    // load key
+    this.#key = data.key;
+
+    // load config
+    let parsedConfig = configSchema.safeParse(data.config);
+    if (parsedConfig.error) {
+      throw new Error(
+        "Invalid configuration. This is most likely a bug in Twofold.",
+      );
+    }
+    this.#appConfig = parsedConfig.data;
+
+    // load builders
     let builderKeys = Object.keys(data.builders);
     builderKeys.forEach((key) => {
       let name = data.builders[key].name;

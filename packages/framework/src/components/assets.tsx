@@ -8,16 +8,9 @@ export default function Assets() {
   return (
     <>
       {assets.map((asset) => (
-        <Stylesheet href={asset} key={asset} />
+        <link rel="stylesheet" href={asset} key={asset} precedence="high" />
       ))}
       {env === "development" && <DevReload />}
     </>
-  );
-}
-
-function Stylesheet({ href }: { href: string }) {
-  return (
-    // @ts-expect-error: Type '{ rel: string; href: string; precedence: string; }' is not assignable to type 'DetailedHTMLProps<LinkHTMLAttributes<HTMLLinkElement>, HTMLLinkElement>'.
-    <link rel="stylesheet" href={href} precedence="high" />
   );
 }

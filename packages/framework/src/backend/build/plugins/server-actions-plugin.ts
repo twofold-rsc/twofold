@@ -218,7 +218,10 @@ async function decorateActionFunctions({
 
       let isExported = specifiers.some((specifier) => {
         return (
-          specifier.exported.name === name && specifier.local.name === name
+          specifier.exported.type === "Identifier" &&
+          specifier.local.type === "Identifier" &&
+          specifier.exported.name === name &&
+          specifier.local.name === name
         );
       });
 

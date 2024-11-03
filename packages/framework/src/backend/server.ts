@@ -206,7 +206,7 @@ export async function create(runtime: Runtime) {
 
     let actionStream = renderToReadableStream(
       result,
-      environment.getBuilder("client").clientComponentMap
+      environment.getBuilder("client").clientComponentMap,
     );
 
     let multipart = new MultipartResponse();
@@ -289,24 +289,24 @@ export async function create(runtime: Runtime) {
       let r: () => void = () => {};
       let promise = new Promise<void>((resolve) => (r = resolve));
 
-      createServer(app.buildHandler()).listen(
-        runtime.port,
-        runtime.hostname,
-        () => {
-          console.log(
-            `🚀 Server listening on ${runtime.hostname}:${runtime.port}`
-          );
+      let config = await environment.getAppConfig();
 
-          if (process.env.NODE_ENV !== "production") {
-            let cyan = "\x1b[0;36m";
-            let reset = "\x1b[0m";
-            console.log(
-              `🌎 Visit ${cyan}${runtime.baseUrl}/ ${reset}to see your app!`
-            );
-          }
-          r();
+      createServer(app.buildHandler(), {
+        trustProxy: config.trustProxy ?? false,
+      }).listen(runtime.port, runtime.hostname, () => {
+        console.log(
+          `🚀 Server listening on ${runtime.hostname}:${runtime.port}`,
+        );
+
+        if (process.env.NODE_ENV !== "production") {
+          let cyan = "\x1b[0;36m";
+          let reset = "\x1b[0m";
+          console.log(
+            `🌎 Visit ${cyan}${runtime.baseUrl}/ ${reset}to see your app!`,
+          );
         }
-      );
+        r();
+      });
 
       return promise;
     },
