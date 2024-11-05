@@ -1,5 +1,12 @@
 # @twofold/framework
 
+## 0.0.40
+
+### Patch Changes
+
+- proxy config setting
+  fix memory leak with unclosed stream
+
 ## 0.0.39
 
 ### Patch Changes
