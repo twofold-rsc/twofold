@@ -15,6 +15,7 @@ let config: Config = {
   // default configuration
   externalPackages: [],
   reactCompiler: false,
+  trustProxy: false,
 };
 
 export default config;
@@ -51,5 +52,20 @@ When enabled Twofold will use the React Compiler to optimize your application's 
 let config: Config = {
   // turn on the React Compiler
   reactCompiler: true,
+};
+```
+
+### `trustProxy`
+
+A boolean that determines whether to trust `X-Forwarded` headers.
+
+Defaults to `false`.
+
+When enabled Twofold will use the `X-Forwarded` headers from the request object. This option should be set to `true` if you are running Twofold behind a proxy, load balancer, or CDN.
+
+```tsx
+let config: Config = {
+  // trust X-Forwarded headers
+  trustProxy: true,
 };
 ```

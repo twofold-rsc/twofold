@@ -6,7 +6,6 @@ import {
   isRedirectError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
-import { forwardedRequest } from "./helpers/request.js";
 
 export class PageRequest {
   #page: Page;
@@ -126,7 +125,7 @@ export class PageRequest {
     let execPattern = this.#page.pattern.exec(url);
     let params = execPattern?.pathname.groups ?? {};
     let searchParams = url.searchParams;
-    let request = forwardedRequest(this.#request);
+    let request = this.#request;
 
     return {
       params,

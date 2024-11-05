@@ -2,9 +2,9 @@ import { RouteHandler, createRouter } from "@hattip/router";
 import { appCompiledDir } from "../../files.js";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
-import { Environment } from "../../build/environments/environment.js";
+import { Build } from "../../build/build/build.js";
 
-export function assets(build: Environment): RouteHandler {
+export function assets(build: Build): RouteHandler {
   let router = createRouter();
 
   router.get("/_assets/client-app/bootstrap/:hash.js", async () => {
@@ -35,7 +35,7 @@ export function assets(build: Environment): RouteHandler {
           },
         });
       }
-    }
+    },
   );
 
   router.get(
@@ -53,7 +53,7 @@ export function assets(build: Environment): RouteHandler {
       // crappy O(n) lookup, change this
       let keys = Object.keys(clientComponentModuleMap);
       let moduleKey = keys.find(
-        (key) => clientComponentModuleMap[key].path === filePath
+        (key) => clientComponentModuleMap[key].path === filePath,
       );
       let module = moduleKey ? clientComponentModuleMap[moduleKey] : null;
 
@@ -66,7 +66,7 @@ export function assets(build: Environment): RouteHandler {
           },
         });
       }
-    }
+    },
   );
 
   router.get("/_assets/styles/**/*", async ({ request }) => {

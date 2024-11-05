@@ -4,7 +4,8 @@ import { ReactNode } from "react";
 
 export type Store = {
   reqId: number;
-  env: "development" | "production";
+  build: "development" | "production";
+  canReload: boolean;
   cookies: {
     get: (key: string) => string | undefined;
     set: RequestContextExtensions["setCookie"];
@@ -13,6 +14,7 @@ export type Store = {
   };
   assets: string[];
   render: {
+    // this needs to move to an API store, its not callable from rsc
     treeToStaticHtml: (tree: ReactNode) => Promise<string>;
     // htmlStream: (tree: ReactNode) => Promise<ReadableStream<Uint8Array>>;
     // rscStream: (tree: ReactNode) => Promise<ReadableStream<Uint8Array>>;

@@ -1,4 +1,4 @@
-import { createServer } from "@hattip/adapter-node";
+import { createServer } from "@hattip/adapter-node/native-fetch";
 import { parseHeaderValue } from "@hattip/headers";
 import { createRouter } from "@hattip/router";
 import {
@@ -10,7 +10,6 @@ import { getStore } from "./stores/rsc-store.js";
 import { cookie } from "@hattip/cookie";
 import { MultipartResponse } from "./multipart-response.js";
 import { devReload } from "./server/middlewares/dev-reload.js";
-import { Runtime } from "./runtime.js";
 import { errors } from "./server/middlewares/errors.js";
 import { staticFiles } from "./server/middlewares/static-files.js";
 import { assets } from "./server/middlewares/assets.js";
@@ -19,14 +18,17 @@ import { session } from "./server/middlewares/session.js";
 import { globalMiddleware } from "./server/middlewares/global-middleware.js";
 import { requestStore } from "./server/middlewares/request-store.js";
 import { waitForBuild } from "./server/middlewares/wait-for-build.js";
+import { waitForSSR } from "./server/middlewares/wait-for-ssr-worker.js";
 import {
   isNotFoundError,
   isRedirectError,
   redirectErrorInfo,
 } from "./runtime/helpers/errors.js";
+import { Server as NodeHttpServer } from "http";
+import { Runtime } from "./runtime.js";
 
-export async function create(runtime: Runtime) {
-  let environment = runtime.environment;
+async function createHandler(runtime: Runtime) {
+  let build = runtime.build;
 
   let app = createRouter();
 
@@ -35,19 +37,17 @@ export async function create(runtime: Runtime) {
   app.use(cookie());
   app.use(await session());
 
-  if (environment.name === "development") {
-    app.use(waitForBuild(environment));
+  app.use(waitForBuild(runtime));
+
+  app.use(globalMiddleware(build));
+  app.use(assets(build));
+  app.use(staticFiles(build));
+
+  if (build.canReload) {
+    app.use(devReload(build));
   }
 
-  app.use(globalMiddleware(environment));
-  app.use(assets(environment));
-  app.use(staticFiles(environment));
-
-  if (environment.name === "development") {
-    app.use(devReload(environment));
-  }
-
-  app.use(errors(environment));
+  app.use(errors(build));
 
   // every request below here should use the store
   app.use(requestStore(runtime));
@@ -206,7 +206,7 @@ export async function create(runtime: Runtime) {
 
     let actionStream = renderToReadableStream(
       result,
-      environment.getBuilder("client").clientComponentMap
+      build.getBuilder("client").clientComponentMap,
     );
 
     let multipart = new MultipartResponse();
@@ -234,6 +234,8 @@ export async function create(runtime: Runtime) {
 
     return multipart.response();
   });
+
+  app.use(waitForSSR(runtime));
 
   app.use("/**/*", async (ctx) => {
     let request = ctx.request;
@@ -284,31 +286,58 @@ export async function create(runtime: Runtime) {
     return response;
   });
 
-  return {
-    async start() {
-      let r: () => void = () => {};
-      let promise = new Promise<void>((resolve) => (r = resolve));
+  return app.buildHandler();
+}
 
-      createServer(app.buildHandler()).listen(
-        runtime.port,
-        runtime.hostname,
-        () => {
-          console.log(
-            `🚀 Server listening on ${runtime.hostname}:${runtime.port}`
-          );
+export class Server {
+  #runtime: Runtime;
+  #server?: NodeHttpServer;
 
-          if (process.env.NODE_ENV !== "production") {
-            let cyan = "\x1b[0;36m";
-            let reset = "\x1b[0m";
-            console.log(
-              `🌎 Visit ${cyan}${runtime.baseUrl}/ ${reset}to see your app!`
-            );
-          }
-          r();
-        }
-      );
+  constructor(runtime: Runtime) {
+    this.#runtime = runtime;
+  }
 
-      return promise;
-    },
-  };
+  private get build() {
+    return this.#runtime.build;
+  }
+
+  private get runtime() {
+    return this.#runtime;
+  }
+
+  async start() {
+    if (!this.#server) {
+      let runtime = this.runtime;
+      let handler = await createHandler(runtime);
+      let config = await this.build.getAppConfig();
+
+      let server = createServer(handler, {
+        trustProxy: config.trustProxy ?? false,
+      });
+
+      this.#server = server;
+
+      return new Promise<void>((resolve) => {
+        server.listen(runtime.port, runtime.hostname, () => {
+          resolve();
+        });
+      });
+    }
+  }
+
+  async stop() {
+    return new Promise<void>((resolve) => {
+      let server = this.#server;
+
+      if (server) {
+        server.close(() => {
+          this.#server = undefined;
+          resolve();
+        });
+        server.closeAllConnections();
+      } else {
+        resolve();
+      }
+    });
+  }
 }

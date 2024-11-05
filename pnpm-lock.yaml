@@ -204,29 +204,29 @@ importers:
         specifier: ^7.23.9
         version: 7.26.0
       '@hattip/adapter-node':
-        specifier: ^0.0.48
-        version: 0.0.48
+        specifier: ^0.0.49
+        version: 0.0.49
       '@hattip/compose':
-        specifier: ^0.0.48
-        version: 0.0.48
+        specifier: ^0.0.49
+        version: 0.0.49
       '@hattip/cookie':
-        specifier: ^0.0.48
-        version: 0.0.48
+        specifier: ^0.0.49
+        version: 0.0.49
       '@hattip/headers':
-        specifier: ^0.0.48
-        version: 0.0.48
+        specifier: ^0.0.49
+        version: 0.0.49
       '@hattip/response':
-        specifier: ^0.0.48
-        version: 0.0.48
+        specifier: ^0.0.49
+        version: 0.0.49
       '@hattip/router':
-        specifier: ^0.0.48
-        version: 0.0.48
+        specifier: ^0.0.49
+        version: 0.0.49
       '@hattip/session':
-        specifier: ^0.0.48
-        version: 0.0.48
+        specifier: ^0.0.49
+        version: 0.0.49
       '@hattip/static':
-        specifier: ^0.0.48
-        version: 0.0.48
+        specifier: ^0.0.49
+        version: 0.0.49
       acorn:
         specifier: ^8.11.3
         version: 8.14.0
@@ -995,38 +995,38 @@ packages:
     resolution: {integrity: sha512-vH9PiIMMwvhCx31Af3HiGzsVNULDbyVkHXwlemn/B0TFj/00ho3y55efXrUZTfQipxoHC5u4xq6zblww1zm1Ig==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@hattip/adapter-node@0.0.48':
-    resolution: {integrity: sha512-4Oblq0NOOmjjbI6Di9Gb9dEtjaLEIfWnT5aDZIODnvT8/EjRTTylHzJPCXTXoNyFg73ehjlNWAgs8ZPbH9wLcQ==}
+  '@hattip/adapter-node@0.0.49':
+    resolution: {integrity: sha512-BE+Y8Q4U0YcH34FZUYU4DssGKOaZLbNL0zK57Z41UZp0m9kS79ZIolBmjjpPhTVpIlRY3Rs+uhXbVXKk7mUcJA==}
 
-  '@hattip/compose@0.0.48':
-    resolution: {integrity: sha512-4Hdk6JBk7Cb65BpgodcK69OdiXqBQ0CM4WRRzzcA1gPRkfBucmv06Wx/q5v6ZtkfwCIqTP09KSi+HmIPj7935A==}
+  '@hattip/compose@0.0.49':
+    resolution: {integrity: sha512-jEJGi6EdHpLJGxpFMqcF2J6cNYKGhkDyepXtR7Esxthk5rWC37lFQEl19rWsYOqByn4zpwq87W8qGgsl940dWQ==}
 
-  '@hattip/cookie@0.0.48':
-    resolution: {integrity: sha512-ZbQ4PaJgR7uUjF2Lw/LQv1nbSyxFxAqM7ezFjcXUIGN/Dc+xC+v3CJbz/cGKNfgNyfLoXuRY0R1FmOFUylZOxA==}
+  '@hattip/cookie@0.0.49':
+    resolution: {integrity: sha512-//8E/Iu85JRg4la28Wy2id/WpqFWdYBBmTfOq96MxlI0WNIIsqIAJZ9848tybmO3UGQoAUXCxuYoO3zm1V/I6Q==}
 
-  '@hattip/core@0.0.48':
-    resolution: {integrity: sha512-rx28E2Ofl2GpJ73Uw011d1kM3kLyuFTijcBZjRWZn6cZ6qmFI194BZLtsvvO3ocBgyUUVv4JPC9PdH5FGA/ZoA==}
+  '@hattip/core@0.0.49':
+    resolution: {integrity: sha512-3/ZJtC17cv8m6Sph8+nw4exUp9yhEf2Shi7HK6AHSUSBtaaQXZ9rJBVxTfZj3PGNOR/P49UBXOym/52WYKFTJQ==}
 
-  '@hattip/headers@0.0.48':
-    resolution: {integrity: sha512-mvw5L4VFaKS3ug/QiTq+MJovzhH2kr4Pso1LdH1UnY4sjkcrAtFoe7g2AZRYfodPem4NQQCTI35CWKT+/KbvcQ==}
+  '@hattip/headers@0.0.49':
+    resolution: {integrity: sha512-rrB2lEhTf0+MNVt5WdW184Ky706F1Ze9Aazn/R8c+/FMUYF9yjem2CgXp49csPt3dALsecrnAUOHFiV0LrrHXA==}
 
-  '@hattip/polyfills@0.0.48':
-    resolution: {integrity: sha512-r9Q5cGpAyN/2HL3UI1z1prrIok3kopnszgXFIP1Ns4lMsukc9bYosrDVH2ZKIJ4Zowzi6kzH0/kE6VsUgfuESQ==}
+  '@hattip/polyfills@0.0.49':
+    resolution: {integrity: sha512-5g7W5s6Gq+HDxwULGFQ861yAnEx3yd9V8GDwS96HBZ1nM1u93vN+KTuwXvNsV7Z3FJmCrD/pgU8WakvchclYuA==}
 
-  '@hattip/response@0.0.48':
-    resolution: {integrity: sha512-eoIXJV3FdrU+iL33T9d593w3BhTCE6fHirUr/19FzuBRqMON3R6nMyRblgdC/Kx7IRV4+yZD91Dl4OXAxsyYfQ==}
+  '@hattip/response@0.0.49':
+    resolution: {integrity: sha512-Cnm1cgfsRsHGf7ycSAOVJ5FYxDo3Xe3JCdjxeK7z/sPn178LjqNyAy4reucRhDx7T06mrpidL1UxlqSOZo5jKw==}
 
-  '@hattip/router@0.0.48':
-    resolution: {integrity: sha512-wrax8vHmyCZHAaf7w5GU0OdMMk4M2kjQrpkDTjC77xnr3DFvDBmSJ4EKiz6k3bQkzzW48fFdsS2ELx338Gc6og==}
+  '@hattip/router@0.0.49':
+    resolution: {integrity: sha512-DcPTUdEFHATUK71kBgjuz4kNpvGqsIIvp391t5fiERbsR0oAKUSRzpI6rVQGJo3WwX64sFd9eHr7P/h4UgxGYg==}
 
-  '@hattip/session@0.0.48':
-    resolution: {integrity: sha512-JqOvKpFxuwwiOLgzpEK61/8TE9bWvSWd75yYBMkdc3eKcXpOcL2enKMFosrwGibox5o9joPe1wF96fdT5pq2qQ==}
+  '@hattip/session@0.0.49':
+    resolution: {integrity: sha512-1AOz6Mhh9XjzQtiIAGU26QoizDAe1LMxyOFYoXovBbuXUKetsEn2moTmWdSl09u4zWtfe8JpYhRBQ45Ikq6lXg==}
 
-  '@hattip/static@0.0.48':
-    resolution: {integrity: sha512-6UbeASR58RVAMKf09/ewjYYXiPLAKTCj06St51rGio/eE342i8O2AJMZ5GdqoL6ga53Ts2IGo4zgDUp9c6751w==}
+  '@hattip/static@0.0.49':
+    resolution: {integrity: sha512-86+xnm/SJdMvZE4F4pQcfYlysxV9THWfsoNSpkuLaNqEGAxCtm+3w8PMwt01hfsyNUp0vnOLhHwz4WtZgBdzsA==}
 
-  '@hattip/walk@0.0.48':
-    resolution: {integrity: sha512-S97D+m2khXM4x8p7laLERE+rZAhJXc8joZGxLUSU5WEtBD1Br5BlFL9DPBYKtSX7joLE104TpIjjquJjPZtpQw==}
+  '@hattip/walk@0.0.49':
+    resolution: {integrity: sha512-AgJgKLooZyQnzMfoFg5Mo/aHM+HGBC9ExpXIjNqGimYTRgNbL/K7X5EM1kR2JY90BNKk9lo6Usq1T/nWFdT7TQ==}
     hasBin: true
 
   '@heroicons/react@2.1.5':
@@ -1469,9 +1469,6 @@ packages:
 
   '@types/babel__traverse@7.20.4':
     resolution: {integrity: sha512-mSM/iKUk5fDDrEV/e83qY+Cr3I1+Q3qqTuEn++HAWYjEa1+NxZr6CNrcJGf2ZTnq4HoFGC3zaTPZTobCzCFukA==}
-
-  '@types/cookie@0.6.0':
-    resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
 
   '@types/eslint-scope@3.7.7':
     resolution: {integrity: sha512-MzMFlSLBqNF2gcHWO0G1vP/YQyfvrxZ0bF+u7mzUdZ1/xK4A4sru+nraZz5i3iEIk1l1uyicaDVTB4QbbEkAYg==}
@@ -1949,10 +1946,6 @@ packages:
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
-
-  cookie@0.6.0:
-    resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
-    engines: {node: '>= 0.6'}
 
   cookie@1.0.1:
     resolution: {integrity: sha512-Xd8lFX4LM9QEEwxQpF9J9NTUh8pmdJO0cyRJhFiDoLTk2eH8FXlRv2IFGYVadZpqI3j8fhNrSdKCeYPxiAhLXw==}
@@ -4491,57 +4484,56 @@ snapshots:
     dependencies:
       levn: 0.4.1
 
-  '@hattip/adapter-node@0.0.48':
+  '@hattip/adapter-node@0.0.49':
     dependencies:
-      '@hattip/core': 0.0.48
-      '@hattip/polyfills': 0.0.48
-      '@hattip/walk': 0.0.48
+      '@hattip/core': 0.0.49
+      '@hattip/polyfills': 0.0.49
+      '@hattip/walk': 0.0.49
 
-  '@hattip/compose@0.0.48':
+  '@hattip/compose@0.0.49':
     dependencies:
-      '@hattip/core': 0.0.48
+      '@hattip/core': 0.0.49
 
-  '@hattip/cookie@0.0.48':
+  '@hattip/cookie@0.0.49':
     dependencies:
-      '@hattip/compose': 0.0.48
-      '@hattip/core': 0.0.48
-      '@types/cookie': 0.6.0
-      cookie: 0.6.0
+      '@hattip/compose': 0.0.49
+      '@hattip/core': 0.0.49
+      cookie: 1.0.1
 
-  '@hattip/core@0.0.48': {}
+  '@hattip/core@0.0.49': {}
 
-  '@hattip/headers@0.0.48':
+  '@hattip/headers@0.0.49':
     dependencies:
-      '@hattip/core': 0.0.48
+      '@hattip/core': 0.0.49
 
-  '@hattip/polyfills@0.0.48':
+  '@hattip/polyfills@0.0.49':
     dependencies:
-      '@hattip/core': 0.0.48
+      '@hattip/core': 0.0.49
       '@whatwg-node/fetch': 0.9.22
       node-fetch-native: 1.6.4
 
-  '@hattip/response@0.0.48':
+  '@hattip/response@0.0.49':
     dependencies:
-      '@hattip/core': 0.0.48
+      '@hattip/core': 0.0.49
 
-  '@hattip/router@0.0.48':
+  '@hattip/router@0.0.49':
     dependencies:
-      '@hattip/compose': 0.0.48
-      '@hattip/core': 0.0.48
+      '@hattip/compose': 0.0.49
+      '@hattip/core': 0.0.49
 
-  '@hattip/session@0.0.48':
+  '@hattip/session@0.0.49':
     dependencies:
-      '@hattip/compose': 0.0.48
-      '@hattip/cookie': 0.0.48
-      '@hattip/core': 0.0.48
+      '@hattip/compose': 0.0.49
+      '@hattip/cookie': 0.0.49
+      '@hattip/core': 0.0.49
 
-  '@hattip/static@0.0.48':
+  '@hattip/static@0.0.49':
     dependencies:
-      '@hattip/headers': 0.0.48
+      '@hattip/headers': 0.0.49
 
-  '@hattip/walk@0.0.48':
+  '@hattip/walk@0.0.49':
     dependencies:
-      '@hattip/headers': 0.0.48
+      '@hattip/headers': 0.0.49
       cac: 6.7.14
       mime-types: 2.1.35
 
@@ -4950,8 +4942,6 @@ snapshots:
   '@types/babel__traverse@7.20.4':
     dependencies:
       '@babel/types': 7.23.5
-
-  '@types/cookie@0.6.0': {}
 
   '@types/eslint-scope@3.7.7':
     dependencies:
@@ -5539,8 +5529,6 @@ snapshots:
   concat-map@0.0.1: {}
 
   convert-source-map@2.0.0: {}
-
-  cookie@0.6.0: {}
 
   cookie@1.0.1: {}
 

@@ -8,7 +8,7 @@ import { ParseResult, parseAsync } from "@babel/core";
 import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
 import { Builder } from "./builder.js";
-import { Environment } from "../environments/environment.js";
+import { Build } from "../build/build.js";
 
 type ClientComponentModule = {
   moduleId: string;
@@ -36,16 +36,16 @@ export class EntriesBuilder extends Builder {
   readonly name = "entries";
 
   #context?: BuildContext;
-  #environment: Environment;
+  #build: Build;
 
   #clientComponentModuleMap = new Map<string, ClientComponentModule>();
   #serverActionModuleMap = new Map<string, ServerActionModule>();
   #serverActionEntryMap = new Map<string, ServerActionEntry>();
 
-  constructor({ environment }: { environment: Environment }) {
+  constructor({ build }: { build: Build }) {
     super();
 
-    this.#environment = environment;
+    this.#build = build;
   }
 
   get clientComponentModuleMap() {
@@ -64,7 +64,7 @@ export class EntriesBuilder extends Builder {
     let frameworkComponentsUrl = new URL("./components/", frameworkSrcDir);
     let frameworkComponentsPath = fileURLToPath(frameworkComponentsUrl);
 
-    let appConfig = await this.#environment.getAppConfig();
+    let appConfig = await this.#build.getAppConfig();
     let userDefinedExternalPackages = appConfig.externalPackages;
 
     let builder = this;
@@ -140,26 +140,26 @@ export class EntriesBuilder extends Builder {
   serialize() {
     return {
       clientComponentModuleMap: Object.fromEntries(
-        this.#clientComponentModuleMap.entries()
+        this.#clientComponentModuleMap.entries(),
       ),
       serverActionModuleMap: Object.fromEntries(
-        this.#serverActionModuleMap.entries()
+        this.#serverActionModuleMap.entries(),
       ),
       serverActionEntryMap: Object.fromEntries(
-        this.#serverActionEntryMap.entries()
+        this.#serverActionEntryMap.entries(),
       ),
     };
   }
 
   load(data: any) {
     this.#clientComponentModuleMap = new Map(
-      Object.entries(data.clientComponentModuleMap)
+      Object.entries(data.clientComponentModuleMap),
     );
     this.#serverActionModuleMap = new Map(
-      Object.entries(data.serverActionModuleMap)
+      Object.entries(data.serverActionModuleMap),
     );
     this.#serverActionEntryMap = new Map(
-      Object.entries(data.serverActionEntryMap)
+      Object.entries(data.serverActionEntryMap),
     );
   }
 }
@@ -226,7 +226,7 @@ function getExports(ast: ParseResult | null) {
           ...node.specifiers.map((specifier) =>
             specifier.exported.type === "Identifier"
               ? specifier.exported.name
-              : specifier.exported.value
+              : specifier.exported.value,
           ),
         ];
       } else if (node.type === "ExportDefaultDeclaration") {
@@ -263,7 +263,7 @@ function getExportsAndNames(ast: ParseResult | null) {
 
         return exports;
       },
-      []
+      [],
     ) ?? [];
 
   return exports;
