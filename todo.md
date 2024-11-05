@@ -2,6 +2,8 @@
 
 framework
 
+- deploy website
+
 - deterministic build
 - fix node 23
 - long cache headers for production
