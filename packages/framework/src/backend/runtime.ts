@@ -1,9 +1,6 @@
 import "./monkey-patch.js";
 import { MessageChannel, Worker } from "node:worker_threads";
 import { PageRequest } from "./runtime/page-request.js";
-import { create } from "./server.js";
-import { DevelopmentEnvironment } from "./build/environments/development.js";
-import { ProductionEnvironment } from "./build/environments/production.js";
 import { pathToFileURL } from "node:url";
 import { APIRequest } from "./runtime/api-request.js";
 import { ReactNode } from "react";
@@ -18,25 +15,27 @@ import {
 } from "./runtime/helpers/errors.js";
 import { randomUUID } from "node:crypto";
 import { deserializeError } from "serialize-error";
+import { ProductionBuild } from "./build/build/production.js";
+import { DevelopmentBuild } from "./build/build/development.js";
 
-type Environment = DevelopmentEnvironment | ProductionEnvironment;
+type Build = DevelopmentBuild | ProductionBuild;
 
 export class Runtime {
   #hostname = "0.0.0.0";
   #port = 3000;
-  #environment: Environment;
+  #build: Build;
   #ssrWorker?: Worker;
 
-  constructor(environment: Environment) {
-    this.#environment = environment;
+  constructor(build: Build) {
+    this.#build = build;
   }
 
-  get environment() {
-    return this.#environment;
+  get build() {
+    return this.#build;
   }
 
   get clientComponentMap() {
-    return this.#environment.getBuilder("client").clientComponentMap;
+    return this.build.getBuilder("client").clientComponentMap;
   }
 
   get baseUrl() {
@@ -52,31 +51,12 @@ export class Runtime {
     return this.#port;
   }
 
-  async start() {
-    if (this.#environment.name === "development") {
-      this.#environment.watch();
-      this.#environment.events.on("complete", async () => {
-        this.createSSRWorker();
-      });
-    }
-
-    this.createSSRWorker();
-    await this.server();
-  }
-
-  // server
-
-  private async server() {
-    let server = await create(this);
-    await server.start();
-  }
-
   // api endpoints
 
   apiRequest(request: Request) {
     let url = new URL(request.url);
 
-    let api = this.#environment
+    let api = this.build
       .getBuilder("rsc")
       .apiEndpoints.find((api) => api.pattern.test(url.pathname, this.baseUrl));
 
@@ -90,7 +70,7 @@ export class Runtime {
   pageRequest(request: Request) {
     let url = new URL(request.url);
 
-    let page = this.#environment
+    let page = this.build
       .getBuilder("rsc")
       .tree.findPage((page) => page.pattern.test(url.pathname, this.baseUrl));
 
@@ -103,7 +83,7 @@ export class Runtime {
 
   notFoundPageRequest(request: Request) {
     return new PageRequest({
-      page: this.#environment.getBuilder("rsc").notFoundPage,
+      page: this.build.getBuilder("rsc").notFoundPage,
       request,
       runtime: this,
       conditions: ["not-found"],
@@ -113,12 +93,12 @@ export class Runtime {
   // actions
 
   isAction(id: string) {
-    let serverActionMap = this.#environment.getBuilder("rsc").serverActionMap;
+    let serverActionMap = this.build.getBuilder("rsc").serverActionMap;
     return serverActionMap.has(id);
   }
 
   async getAction(id: string) {
-    let serverActionMap = this.#environment.getBuilder("rsc").serverActionMap;
+    let serverActionMap = this.build.getBuilder("rsc").serverActionMap;
     let action = serverActionMap.get(id);
 
     if (!action) {
@@ -141,8 +121,7 @@ export class Runtime {
   // renders
 
   async renderRSCStreamFromTree(tree: ReactNode) {
-    let clientComponentMap =
-      this.#environment.getBuilder("client").clientComponentMap;
+    let clientComponentMap = this.build.getBuilder("client").clientComponentMap;
 
     let streamError: unknown;
 
@@ -202,7 +181,7 @@ export class Runtime {
   async renderHtmlStreamFromRSCStream(
     rscStream: ReadableStream<Uint8Array>,
     method: "stream" | "page" | "static",
-    data: Record<string, any> = {}
+    data: Record<string, any> = {},
   ) {
     let { port1, port2 } = new MessageChannel();
 
@@ -232,7 +211,7 @@ export class Runtime {
         writeStream,
       },
       // @ts-expect-error: Type 'ReadableStream<Uint8Array>' is not assignable to type 'TransferListItem'.
-      [port2, rscStream, writeStream]
+      [port2, rscStream, writeStream],
     );
 
     let message = await getMessage;
@@ -266,34 +245,41 @@ export class Runtime {
 
   // workers
 
-  private async createSSRWorker() {
+  async start() {
+    await this.createSSRWorker();
+  }
+
+  async stop() {
     if (this.#ssrWorker) {
       await this.#ssrWorker.terminate();
       this.#ssrWorker = undefined;
     }
+  }
 
-    // only create if the build is done
-    // emit some event with ssr is ready
+  get hasSSRWorker() {
+    return !!this.#ssrWorker;
+  }
 
-    if (!this.#environment.error) {
+  private async createSSRWorker() {
+    if (!this.build.error) {
       let bootstrapUrl = `/_assets/client-app/bootstrap/${
-        this.#environment.getBuilder("client").bootstrapHash
+        this.build.getBuilder("client").bootstrapHash
       }.js`;
       let workerUrl = new URL("./ssr/worker.js", import.meta.url);
 
       this.#ssrWorker = new Worker(workerUrl, {
         workerData: {
           bootstrapUrl,
-          appPath: this.#environment.getBuilder("client").SSRAppPath,
+          appPath: this.build.getBuilder("client").SSRAppPath,
           clientComponentModuleMap:
-            this.#environment.getBuilder("client").clientComponentModuleMap,
+            this.build.getBuilder("client").clientComponentModuleMap,
           ssrManifestModuleMap:
-            this.#environment.getBuilder("client").ssrManifestModuleMap,
+            this.build.getBuilder("client").ssrManifestModuleMap,
         },
         execArgv: ["-C", "default"],
         env: {
           NODE_OPTIONS: "",
-          NODE_ENV: this.#environment.name,
+          NODE_ENV: this.build.name,
         },
       });
     }

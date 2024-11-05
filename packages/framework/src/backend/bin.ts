@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import "dotenv/config";
-import { DevelopmentEnvironment } from "./build/environments/development.js";
-import { ProductionEnvironment } from "./build/environments/production.js";
-import { Runtime } from "./runtime.js";
-
+import { DevelopmentBuild } from "./build/build/development.js";
+import { ProductionBuild } from "./build/build/production.js";
 import { Command } from "commander";
+import { DevTask } from "./tasks/dev.js";
+import { ServeTask } from "./tasks/serve.js";
 
 let nodeVersion = process.versions.node.split(".").map(Number);
 let hasRequiredNodeVersion =
@@ -27,57 +27,39 @@ program
   .command("dev")
   .description("Run the development server")
   .action(async () => {
-    let environment =
-      nodeEnv === "production"
-        ? new ProductionEnvironment()
-        : new DevelopmentEnvironment();
+    let build =
+      nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
 
-    // start build
-    await environment.setup();
-    await environment.build();
-
-    // create runtime
-    let runtime = new Runtime(environment);
-
-    // start runtime
-    await runtime.start();
+    let task = new DevTask({ build });
+    task.start();
   });
 
 program
   .command("build")
   .description("Build the project for production")
   .action(async () => {
-    let environment =
-      nodeEnv === "production"
-        ? new ProductionEnvironment()
-        : new DevelopmentEnvironment({ watch: false });
+    let build =
+      nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
 
-    // start build
-    await environment.setup();
-    await environment.build();
-    await environment.stop();
+    // build
+    await build.setup();
+    let { time, key } = await build.build();
+    console.log(`Build complete in ${time.toFixed(2)}ms [version: ${key}]`);
+    await build.stop();
 
     // stash the build
-    await environment.save();
+    await build.save();
   });
 
 program
   .command("serve")
   .description("Serve a production build")
   .action(async () => {
-    let environment =
-      nodeEnv === "production"
-        ? new ProductionEnvironment()
-        : new DevelopmentEnvironment({ watch: false });
+    let build =
+      nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
 
-    // load build
-    await environment.load();
-
-    // create runtime
-    let runtime = new Runtime(environment);
-
-    // start runtime
-    await runtime.start();
+    let task = new ServeTask({ build });
+    task.start();
   });
 
 program.parse();

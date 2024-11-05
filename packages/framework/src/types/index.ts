@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { z } from "zod";
-import { configSchema } from "../backend/build/environments/environment";
+import { configSchema } from "../backend/build/build/build";
 
 export type PageProps<T extends string | never = never> = {
   params: Record<T, string>;

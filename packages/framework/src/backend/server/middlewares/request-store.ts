@@ -6,7 +6,7 @@ import { Runtime } from "../../runtime.js";
 let reqId = 0;
 
 export function requestStore(runtime: Runtime): RouteHandler {
-  let environment = runtime.environment;
+  let build = runtime.build;
 
   return async (ctx) => {
     reqId = reqId + 1;
@@ -17,7 +17,8 @@ export function requestStore(runtime: Runtime): RouteHandler {
 
     let store: Store = {
       reqId,
-      env: environment.name,
+      build: build.name,
+      canReload: build.canReload,
       cookies: {
         set: (key: string, value: string, options?: SerializeOptions) => {
           let cookieOptions = {
@@ -46,7 +47,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
           let rsc = await runtime.renderRSCStreamFromTree(tree);
           let html = await runtime.renderHtmlStreamFromRSCStream(
             rsc.stream,
-            "static"
+            "static",
           );
 
           // buffer everything from the static "stream" into a string, then
@@ -64,7 +65,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
                 abort(reason) {
                   reject(reason);
                 },
-              })
+              }),
             );
           });
         },

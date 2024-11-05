@@ -20,7 +20,7 @@ import { Page } from "../rsc/page.js";
 import { Wrapper } from "../rsc/wrapper.js";
 import { fileExists } from "../helpers/file.js";
 import { Builder } from "./builder.js";
-import { Environment } from "../environments/environment.js";
+import { Build } from "../build/build.js";
 import { Layout } from "../rsc/layout.js";
 import { API } from "../rsc/api.js";
 
@@ -35,19 +35,19 @@ export class RSCBuilder extends Builder {
 
   #metafile?: Metafile;
   #entriesBuilder: EntriesBuilder;
-  #environment: Environment;
+  #build: Build;
   #serverActionMap = new Map<string, CompiledAction>();
 
   constructor({
     entriesBuilder,
-    environment,
+    build,
   }: {
     entriesBuilder: EntriesBuilder;
-    environment: Environment;
+    build: Build;
   }) {
     super();
     this.#entriesBuilder = entriesBuilder;
-    this.#environment = environment;
+    this.#build = build;
   }
 
   get serverActionMap() {
@@ -76,7 +76,7 @@ export class RSCBuilder extends Builder {
     this.clearError();
 
     try {
-      let appConfig = await this.#environment.getAppConfig();
+      let appConfig = await this.#build.getAppConfig();
       let userDefinedExternalPackages = appConfig.externalPackages;
 
       let result = await build({
@@ -145,7 +145,7 @@ export class RSCBuilder extends Builder {
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
               let storeUrl = new URL(
                 "./backend/stores/rsc-store.js",
-                frameworkCompiledDir
+                frameworkCompiledDir,
               );
 
               build.onResolve(
@@ -157,7 +157,7 @@ export class RSCBuilder extends Builder {
                       path: storeUrl.href,
                     };
                   }
-                }
+                },
               );
             },
           },
@@ -221,7 +221,7 @@ export class RSCBuilder extends Builder {
     return path.join(
       fileURLToPath(frameworkSrcDir),
       "components",
-      "inner-root-wrapper.tsx"
+      "inner-root-wrapper.tsx",
     );
   }
 
@@ -233,7 +233,7 @@ export class RSCBuilder extends Builder {
     }
 
     let page = this.tree.findPage(
-      (p) => p.pattern.pathname === "/errors/not-found"
+      (p) => p.pattern.pathname === "/errors/not-found",
     );
 
     if (!page) {
@@ -410,7 +410,7 @@ export class RSCBuilder extends Builder {
 
     let outputFilePath = getCompiledEntrypoint(
       this.innerRootWrapperSrcPath,
-      metafile
+      metafile,
     );
     let outputFileUrl = pathToFileURL(outputFilePath);
 

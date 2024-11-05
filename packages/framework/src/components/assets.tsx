@@ -3,14 +3,14 @@ import DevReload from "./dev-reload.js";
 import "server-only";
 
 export default function Assets() {
-  let { assets, env } = getStore();
+  let { assets, canReload } = getStore();
 
   return (
     <>
       {assets.map((asset) => (
         <link rel="stylesheet" href={asset} key={asset} precedence="high" />
       ))}
-      {env === "development" && <DevReload />}
+      {canReload && <DevReload />}
     </>
   );
 }

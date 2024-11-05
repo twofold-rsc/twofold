@@ -25,6 +25,10 @@ export default function Layout({
         <meta property="og:image" content={ogImageUrl.href} />
         <meta property="og:type" content="website" />
 
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Twofold" />
+        <meta name="twitter:image" content={ogImageUrl.href} />
+
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -36,8 +40,8 @@ export default function Layout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col">
-        <EnterDocs className="flex flex-col grow">{children}</EnterDocs>
+      <body className="flex min-h-full flex-col">
+        <EnterDocs className="flex grow flex-col">{children}</EnterDocs>
       </body>
       <TwofoldFramework />
     </html>

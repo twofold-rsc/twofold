@@ -10,6 +10,8 @@ import { ClientAppBuilder } from "../builders/client-app-builder";
 import { DevErrorPageBuilder } from "../builders/dev-error-page-builder";
 import { z } from "zod";
 import { createJiti } from "jiti";
+import { time } from "./time.js";
+import EventEmitter from "events";
 
 let jiti = createJiti(import.meta.url, {
   debug: false,
@@ -24,13 +26,26 @@ export const configSchema = z.object({
 
 type Config = z.infer<typeof configSchema>;
 
-export abstract class Environment {
-  abstract name: "development" | "production";
-  abstract build(): Promise<void>;
+type Complete = {
+  key: string;
+  time: number;
+};
+
+class BuildEvents extends EventEmitter {}
+
+export abstract class Build {
+  abstract readonly name: "development" | "production";
+  abstract readonly canReload: boolean;
+  abstract build(): Promise<Complete>;
 
   #key = randomBytes(6).toString("hex");
   #builders: Builder[] = [];
   #appConfig?: Config;
+
+  #lock?: Promise<Complete>;
+  #hasBuilt = false;
+
+  #events = new BuildEvents();
 
   async getAppConfig() {
     let defaultConfig: Required<Config> = {
@@ -40,7 +55,6 @@ export abstract class Environment {
     };
 
     if (!this.#appConfig) {
-      console.log("reading app config");
       let appConfigContents = await this.readAppConfig();
       let parsedConfig = configSchema.safeParse(appConfigContents);
 
@@ -50,8 +64,6 @@ export abstract class Environment {
 
       this.#appConfig = parsedConfig.data;
     }
-
-    console.log("using app config", this.#appConfig);
 
     return {
       ...defaultConfig,
@@ -96,8 +108,16 @@ export abstract class Environment {
     return this.builders[name];
   }
 
-  generateKey() {
-    this.#key = randomBytes(6).toString("hex");
+  get isBuilding() {
+    return !!this.#lock;
+  }
+
+  get lock() {
+    return this.#lock;
+  }
+
+  get hasBuilt() {
+    return this.#hasBuilt;
   }
 
   get key() {
@@ -110,6 +130,10 @@ export abstract class Environment {
     }, null);
   }
 
+  get events() {
+    return this.#events;
+  }
+
   async setup() {
     this.#appConfig = undefined;
     await rm(appCompiledDir, { recursive: true, force: true });
@@ -120,10 +144,43 @@ export abstract class Environment {
     await Promise.all(this.#builders.map((builder) => builder.stop()));
   }
 
+  // this is a work in progress, not really fully complete
+  async createNewBuild(fn: () => Promise<void>) {
+    if (this.#lock) {
+      // should we be returning a lock, or cancelling and creating
+      // a new build
+      let result = await this.#lock;
+      return result;
+    }
+
+    let lock = createPromiseWithResolvers<Complete>();
+    this.#lock = lock.promise;
+
+    let buildTime = time("build");
+
+    buildTime.start();
+    await fn();
+    buildTime.end();
+
+    this.#key = randomBytes(6).toString("hex");
+    this.#hasBuilt = true;
+    this.#lock = undefined;
+    this.#events.emit("complete");
+
+    let result = {
+      key: this.key,
+      time: buildTime.duration,
+    };
+
+    lock.resolve(result);
+
+    return result;
+  }
+
   async save() {
     let data = await this.serialize();
     let json = JSON.stringify(data, null, 2);
-    let jsonUrl = new URL("./environment.json", appCompiledDir);
+    let jsonUrl = new URL("./build.json", appCompiledDir);
     await writeFile(jsonUrl, json, "utf-8");
   }
 
@@ -132,6 +189,10 @@ export abstract class Environment {
       throw new Error("Cannot serialize build with error", {
         cause: this.error,
       });
+    }
+
+    if (!this.#hasBuilt) {
+      throw new Error("Cannot serialize build that has not been built");
     }
 
     let builders = this.builders;
@@ -158,7 +219,7 @@ export abstract class Environment {
   }
 
   async load() {
-    let jsonUrl = new URL("./environment.json", appCompiledDir);
+    let jsonUrl = new URL("./build.json", appCompiledDir);
     let json = await readFile(jsonUrl, "utf-8");
     let data = JSON.parse(json);
 
@@ -180,5 +241,18 @@ export abstract class Environment {
       let name = data.builders[key].name;
       this.getBuilder(name).load(data.builders[key]);
     });
+
+    // mark as built
+    this.#hasBuilt = true;
   }
+}
+
+function createPromiseWithResolvers<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: any) => void;
+  let promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
 }

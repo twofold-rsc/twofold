@@ -2,17 +2,17 @@
 
 framework
 
-- fix website og
-
+- deterministic build
 - fix node 23
-
 - long cache headers for production
-
 - rsc error handling
 
-- trustProxy
-  https://github.com/hattipjs/hattip/blob/d633cb8b54ffca134ba430ef264c04a6c7e3ca27/packages/adapter/adapter-node/src/request.ts#L118
-- config builder -> be able to load and serialize it
+- editing env file should trigger some sort of change so live reload works
+- editing config file should trigger reload
+- if build changes (stale browser, whatever) we should live reload
+- production build should live reload in dev. live reload is really about the task, not the build environment
+
+- errors when editing files + SSE closing
 
 - rename src to app
 - add /app/components?

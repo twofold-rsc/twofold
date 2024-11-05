@@ -1,20 +1,17 @@
 import { RouteHandler } from "@hattip/router";
 import { Runtime } from "../../runtime.js";
 
-export function waitForBuild(runtime: Runtime): RouteHandler {
+export function waitForSSR(runtime: Runtime): RouteHandler {
   let build = runtime.build;
 
-  let buildIsReady = () => !build.isBuilding && build.hasBuilt;
+  let ssrWorkerIsReady = () =>
+    !build.isBuilding && build.hasBuilt && runtime.hasSSRWorker;
 
   return async () => {
-    if (build.lock) {
-      await build.lock;
-    }
-
-    if (!buildIsReady()) {
+    if (!ssrWorkerIsReady()) {
       await new Promise<void>((resolve) => {
         let timerId = setInterval(() => {
-          if (buildIsReady()) {
+          if (ssrWorkerIsReady()) {
             resolve();
             clearInterval(timerId);
           }
