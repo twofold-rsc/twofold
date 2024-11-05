@@ -12,8 +12,8 @@ export function waitForSSR(runtime: Runtime): RouteHandler {
       await new Promise<void>((resolve) => {
         let timerId = setInterval(() => {
           if (ssrWorkerIsReady()) {
-            resolve();
             clearInterval(timerId);
+            resolve();
           }
         }, 120);
       });

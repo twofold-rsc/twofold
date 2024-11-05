@@ -15,8 +15,8 @@ export function waitForBuild(runtime: Runtime): RouteHandler {
       await new Promise<void>((resolve) => {
         let timerId = setInterval(() => {
           if (buildIsReady()) {
-            resolve();
             clearInterval(timerId);
+            resolve();
           }
         }, 120);
       });
