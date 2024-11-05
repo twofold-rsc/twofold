@@ -104,13 +104,16 @@ export async function render({
         } else if (err instanceof Error) {
           // do something useful here
           console.error(err);
+        } else if (err === null) {
+          // think we can ignore this case, happens when stream
+          // is cancelled on the react-server side
         } else {
           console.error(
-            `An unknown error occurred while SSR rendering: ${url.pathname}`
+            `An unknown error occurred while SSR rendering: ${url.pathname}`,
           );
         }
       },
-    }
+    },
   );
 
   return htmlStream;
