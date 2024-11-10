@@ -2,13 +2,17 @@
 
 framework
 
-- deploy website
+- create app w/ secret
 
-- deterministic build
-- fix node 23
+- rename src to app, add /app/components
+- actions
+- dont auto bundle (maybe only bundle things that depend on react?)
+
 - long cache headers for production
-- rsc error handling
 
+- (layout) routing
+
+- tailwind v4
 - editing env file should trigger some sort of change so live reload works
 - editing config file should trigger reload
 - if build changes (stale browser, whatever) we should live reload
@@ -24,6 +28,7 @@ framework
 - tailwind v4/lightening css
 
 - rename api handlers
+- only allow function exports from server modules. you dont want to import a non function call server on the client
 
 website
 
@@ -62,6 +67,10 @@ framework
 - bundle rsdw
 
 - custom error page for prod (errors/500.html)
+
+create twofold app
+
+- show version
 
 kitchen sink
 

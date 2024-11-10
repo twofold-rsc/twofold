@@ -36,7 +36,12 @@ export class ClientAppBuilder extends Builder {
   }
 
   get clientEntryPoints() {
-    return Array.from(this.#entriesBuilder.clientComponentModuleMap.keys());
+    let files = Array.from(
+      this.#entriesBuilder.clientComponentModuleMap.keys(),
+    );
+
+    // entry point order matters for deterministic builds
+    return files.sort();
   }
 
   get entries() {

@@ -68,8 +68,13 @@ export class RSCBuilder extends Builder {
 
     let notFoundEntry = await this.notFoundSrcPath();
 
-    let serverActionModules = this.#entriesBuilder.serverActionModuleMap.keys();
-    let serverActionEntries = this.#entriesBuilder.serverActionEntryMap.keys();
+    // files need to be sorted for deterministic builds
+    let serverActionModules = Array.from(
+      this.#entriesBuilder.serverActionModuleMap.keys(),
+    ).sort();
+    let serverActionEntries = Array.from(
+      this.#entriesBuilder.serverActionEntryMap.keys(),
+    ).sort();
 
     this.#serverActionMap = new Map();
     this.#metafile = undefined;
