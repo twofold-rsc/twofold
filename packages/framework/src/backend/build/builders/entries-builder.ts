@@ -1,4 +1,4 @@
-// import { readFirstNBytes } from "../helpers/file.js";
+import { readFirstNBytes } from "../helpers/file.js";
 import { externalPackages } from "../externals.js";
 import { BuildContext, context, transform } from "esbuild";
 import { createHash } from "crypto";
@@ -29,8 +29,8 @@ type ServerActionEntry = {
   path: string;
 };
 
-let clientMarker = '"use client";';
-let serverMarker = '"use server";';
+let clientMarkers = ['"use client"', "'use client'"];
+let serverMarkers = ['"use server"', "'use server'"];
 
 export class EntriesBuilder extends Builder {
   readonly name = "entries";
@@ -70,8 +70,10 @@ export class EntriesBuilder extends Builder {
     let builder = this;
     this.#context = await context({
       entryPoints: [
-        "./src/**/*.ts",
-        "./src/**/*.tsx",
+        "./src/pages/**/*.page.tsx",
+        "./src/pages/**/layout.tsx",
+        "./src/pages/**/*.api.ts",
+        "./src/pages/**/*.api.tsx",
         `${frameworkComponentsPath}/**/*.tsx`,
       ],
       bundle: true,
@@ -95,14 +97,25 @@ export class EntriesBuilder extends Builder {
           setup(build) {
             build.onLoad({ filter: /\.(tsx|ts|jsx|js)$/ }, async ({ path }) => {
               let contents = await readFile(path, "utf-8");
+              // let contents = await readFirstNBytes(path, 12);
 
-              if (contents.startsWith(clientMarker)) {
+              let contentsStartsWithMarker = (marker: string) =>
+                contents.startsWith(marker);
+              let contentsHasMarker = (marker: string) =>
+                contents.includes(marker);
+
+              if (path.match(/unformatted/)) {
+                console.log("unformatted", path);
+                console.log(contents);
+              }
+
+              if (clientMarkers.some(contentsStartsWithMarker)) {
                 let module = await pathToClientComponentModule(path);
                 builder.#clientComponentModuleMap.set(path, module);
-              } else if (contents.startsWith(serverMarker)) {
+              } else if (serverMarkers.some(contentsStartsWithMarker)) {
                 let module = await pathToServerActionModule(path);
                 builder.#serverActionModuleMap.set(path, module);
-              } else if (contents.includes(serverMarker)) {
+              } else if (serverMarkers.some(contentsHasMarker)) {
                 let module = await pathToServerActionEntry(path);
                 builder.#serverActionEntryMap.set(path, module);
               }
