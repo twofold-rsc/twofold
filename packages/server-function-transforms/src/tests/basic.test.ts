@@ -120,11 +120,39 @@ describe("transforms", () => {
       moduleId: "test",
     });
 
-    console.log(result.code);
-
     expect(result.serverFunctions).toHaveLength(2);
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx, jsxs } from "react/jsx-runtime";
+      let count = 0;
+      function tf$serverFunction0() {
+        "use server";
 
-    // expect(result.code).toMatchInlineSnapshot();
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      const increment = tf$serverFunction0;
+      function tf$serverFunction1() {
+        "use server";
+
+        count = count - 1;
+      }
+      registerServerReference(tf$serverFunction1, "test", "tf$serverFunction1");
+      const decrement = tf$serverFunction1;
+      function Page() {
+        return /* @__PURE__ */jsxs("form", {
+          children: [/* @__PURE__ */jsx("button", {
+            formAction: increment,
+            children: "Increment"
+          }), /* @__PURE__ */jsx("button", {
+            formAction: decrement,
+            children: "Decrement"
+          })]
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction0, tf$serverFunction1 };"
+    `);
   });
 
   test("it should transform a 'use server' function defined in a function expression", async () => {
