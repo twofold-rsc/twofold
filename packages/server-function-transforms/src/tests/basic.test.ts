@@ -443,6 +443,14 @@ describe("closures and captured variables", () => {
       export { tf$serverFunction0 };"
     `);
   });
+
+  test("it should not move closed over variables that are in module scope", async () => {});
+
+  test("it should not move closed over variables that are imported", async () => {});
+
+  test("it should move multiple closed over variables", async () => {});
+
+  // what happens if we close over functions?
 });
 
 // function within function
