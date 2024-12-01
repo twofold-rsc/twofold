@@ -377,7 +377,7 @@ describe("hoisting", () => {
 describe("closures and captured variables", () => {
   test("it should move closed over variables to hoisted function arguments", async () => {
     let code = await rsc`
-      export default function Page(name) {
+      export default function Page({ name }) {
         function greet() {
           "use server";
           console.log("hello", name)
@@ -402,7 +402,9 @@ describe("closures and captured variables", () => {
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
-      function Page(name) {
+      function Page({
+        name
+      }) {
         const tf$serverFunction0$binding = tf$serverFunction0.bind(null, name);
         const greet = tf$serverFunction0$binding;
         return /* @__PURE__ */jsx("form", {
