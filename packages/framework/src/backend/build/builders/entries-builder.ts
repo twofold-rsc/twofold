@@ -104,11 +104,6 @@ export class EntriesBuilder extends Builder {
               let contentsHasMarker = (marker: string) =>
                 contents.includes(marker);
 
-              if (path.match(/unformatted/)) {
-                console.log("unformatted", path);
-                console.log(contents);
-              }
-
               if (clientMarkers.some(contentsStartsWithMarker)) {
                 let module = await pathToClientComponentModule(path);
                 builder.#clientComponentModuleMap.set(path, module);
