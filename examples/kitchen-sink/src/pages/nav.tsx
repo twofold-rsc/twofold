@@ -152,6 +152,11 @@ export default function Nav() {
                         description="A file that exports multiple client components."
                         href="/client-components/named-exports"
                       />
+                      <ExampleLink
+                        title="Unformatted files"
+                        description="A file that exports an unformatted client component."
+                        href="/client-components/unformatted"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup name="HTTP" path="/http">

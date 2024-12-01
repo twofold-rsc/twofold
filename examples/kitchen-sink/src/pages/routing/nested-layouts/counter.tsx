@@ -8,7 +8,7 @@ export default function Counter() {
   return (
     <div className="border border-dashed border-purple-500 p-4">
       <h3 className="text-sm text-purple-500">Client component</h3>
-      <div className="mt-2 flex items-center space-x-4 ">
+      <div className="mt-2 flex items-center space-x-4">
         <span className="text-lg font-bold tabular-nums tracking-wide text-gray-700">
           {count}
         </span>

@@ -20,9 +20,9 @@ export default function ActionThrowClientCatchCC({
 
   return (
     <form action={clientSideAction} className="space-y-2">
-      {didCatch && <p className="text-red-500 text-sm">Caught an error...</p>}
+      {didCatch && <p className="text-sm text-red-500">Caught an error...</p>}
       <div>
-        <button type="submit" className="bg-black text-white px-2.5 py-1">
+        <button type="submit" className="bg-black px-2.5 py-1 text-white">
           Fire action
         </button>
       </div>
