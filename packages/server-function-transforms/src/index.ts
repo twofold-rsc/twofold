@@ -289,36 +289,6 @@ function hasUseServerDirective(body: t.BlockStatement | undefined) {
   );
 }
 
-function hoistFunctionToModuleScope(path: NodePath<t.FunctionDeclaration>) {
-  let parentPath = path.parentPath;
-  let topFunction = path.findParent((p) => p.parentPath?.isProgram() ?? false);
-
-  if (!topFunction) {
-    return path;
-  }
-
-  let programPath = topFunction?.parentPath;
-  if (!programPath || !programPath.isProgram() || programPath === parentPath) {
-    return path;
-  }
-
-  let siblings = programPath.get("body");
-  let topFunctionIndex = siblings.findIndex(
-    (sibling) => sibling.node === topFunction.node,
-  );
-
-  if (topFunctionIndex === -1) {
-    return path;
-  }
-
-  let hoistedFunction = t.cloneNode(path.node, true);
-  let [newPath] = siblings[topFunctionIndex].insertBefore(hoistedFunction);
-
-  path.remove();
-
-  return newPath;
-}
-
 function findParentUnderProgram(path: NodePath) {
   if (path.parentPath?.isProgram()) {
     return path;
@@ -329,58 +299,6 @@ function findParentUnderProgram(path: NodePath) {
   );
 
   return underProgramPath;
-}
-
-function findProgramPath(path: NodePath) {
-  let underProgramPath = findParentUnderProgram(path);
-  let programPath = underProgramPath?.parentPath;
-  return programPath;
-}
-
-function hoistFunctionDeclarationToModuleScope(
-  path: NodePath<t.FunctionExpression> | NodePath<t.ArrowFunctionExpression>,
-) {
-  let parentPath = path.parentPath;
-  let topFunction = path.findParent((p) => p.parentPath?.isProgram() ?? false);
-
-  if (!topFunction) {
-    return path;
-  }
-
-  let programPath = topFunction?.parentPath;
-  if (!programPath || !programPath.isProgram() || programPath === parentPath) {
-    return path;
-  }
-
-  let siblings = programPath.get("body");
-  let topFunctionIndex = siblings.findIndex(
-    (sibling) => sibling.node === topFunction.node,
-  );
-
-  if (topFunctionIndex === -1) {
-    return path;
-  }
-
-  // find the variable declaration for the path
-  let declaratorPath = path.findParent(
-    (p) => t.isVariableDeclarator(p.node) || t.isAssignmentExpression(p.node),
-  );
-
-  // this is probably too aggressive because it looks for
-  // let x =, or const x =, but ignores x =
-  let declaratorParentPath = declaratorPath?.parentPath;
-  if (!t.isVariableDeclaration(declaratorParentPath?.node)) {
-    return path;
-  }
-
-  let hoistedFunctionDeclaration = t.cloneNode(declaratorParentPath.node, true);
-  let [newPath] = siblings[topFunctionIndex].insertBefore(
-    hoistedFunctionDeclaration,
-  );
-
-  declaratorParentPath.remove();
-
-  return newPath;
 }
 
 function insertRegisterServerReference(
@@ -397,31 +315,6 @@ function insertRegisterServerReference(
   );
 
   path.insertAfter(callExpression);
-}
-
-function insertRegisterServerReferenceAfterVariableDeclaration(
-  path: NodePath,
-  functionName: string,
-  moduleId: string,
-) {
-  let parentPath = path.findParent(
-    (p) => t.isVariableDeclarator(p.node) || t.isAssignmentExpression(p.node),
-  );
-
-  if (
-    parentPath?.parentPath &&
-    t.isVariableDeclaration(parentPath.parentPath.node)
-  ) {
-    parentPath.parentPath.insertAfter(
-      t.expressionStatement(
-        t.callExpression(t.identifier("registerServerReference"), [
-          t.identifier(functionName),
-          t.stringLiteral(moduleId),
-          t.stringLiteral(functionName),
-        ]),
-      ),
-    );
-  }
 }
 
 function getFunctionName(
@@ -467,34 +360,4 @@ function getCapturedVariables(path: NodePath<t.FunctionDeclaration>): string[] {
   });
 
   return Array.from(capturedVariables);
-}
-
-function transformFunctionWithCapturedVariables(
-  path: NodePath<t.FunctionDeclaration>,
-  functionName: string,
-  capturedVars: string[],
-) {
-  if (capturedVars.length === 0) {
-    return;
-  }
-
-  // add captured variables as params
-  let params = path.node.params.map((param) => t.cloneNode(param));
-  let newParams = [
-    ...capturedVars.map((varName) => t.identifier(varName)),
-    ...params,
-  ];
-  path.node.params = newParams;
-
-  // insert .bind calls for all the captured variables
-  // let bindCall = t.expressionStatement(
-  //   t.callExpression(
-  //     t.memberExpression(t.identifier(functionName), t.identifier("bind")),
-  //     [
-  //       t.nullLiteral(),
-  //       ...capturedVars.map((varName) => t.identifier(varName)), // Pass captured variables to bind
-  //     ],
-  //   ),
-  // );
-  // path.insertAfter(bindCall);
 }
