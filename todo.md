@@ -2,7 +2,8 @@
 
 framework
 
-- create app w/ secret
+- create app w/ secrets
+- sessions
 
 - rename src to app, add /app/components
 - actions
