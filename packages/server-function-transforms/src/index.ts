@@ -95,59 +95,48 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               moduleId,
             );
 
+            let assignTo: t.CallExpression | t.Identifier;
             if (capturedVariables.length > 0) {
-              let binding = t.variableDeclaration("const", [
-                t.variableDeclarator(
-                  t.identifier(`${functionName}$binding`),
-                  t.callExpression(
-                    t.memberExpression(
-                      t.identifier(functionName),
-                      t.identifier("bind"),
-                    ),
-                    [
-                      t.nullLiteral(),
-                      ...capturedVariables.map((varName) =>
-                        t.identifier(varName),
-                      ),
-                    ],
-                  ),
-                ),
-              ]);
-
-              let assignToBinding = t.variableDeclaration("const", [
-                t.variableDeclarator(
-                  t.identifier(name),
-                  t.identifier(`${functionName}$binding`),
-                ),
-              ]);
-
-              path.replaceWithMultiple([binding, assignToBinding]);
-            } else {
-              let assignToServerFunction = t.variableDeclaration("const", [
-                t.variableDeclarator(
-                  t.identifier(name),
+              let binding = t.callExpression(
+                t.memberExpression(
                   t.identifier(functionName),
+                  t.identifier("bind"),
                 ),
-              ]);
-
-              path.replaceWith(assignToServerFunction);
+                [
+                  t.nullLiteral(),
+                  ...capturedVariables.map((varName) => t.identifier(varName)),
+                ],
+              );
+              assignTo = binding;
+            } else {
+              assignTo = t.identifier(functionName);
             }
+
+            let assignToServerFunction = t.variableDeclaration("const", [
+              t.variableDeclarator(t.identifier(name), assignTo),
+            ]);
+
+            path.replaceWith(assignToServerFunction);
 
             state.serverFunctions.add(functionName);
           }
         }
       },
       FunctionExpression(path: NodePath<t.FunctionExpression>, state: State) {
-        // function expressions that are assigned to a variable
         if (
-          t.isVariableDeclarator(path.parent) &&
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
         ) {
+          let capturedVariables = getCapturedVariables(path);
+          let params = path.node.params.map((param) => t.cloneNode(param));
+          let newParams = [
+            ...capturedVariables.map((varName) => t.identifier(varName)),
+            ...params,
+          ];
           let functionName = state.getUniqueFunctionName();
           let functionDeclaration = t.functionDeclaration(
             t.identifier(functionName),
-            path.node.params,
+            newParams,
             path.node.body,
           );
 
@@ -164,7 +153,24 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
             moduleId,
           );
 
-          path.replaceWith(t.identifier(functionName));
+          let assignTo: t.CallExpression | t.Identifier;
+          if (capturedVariables.length > 0) {
+            let binding = t.callExpression(
+              t.memberExpression(
+                t.identifier(functionName),
+                t.identifier("bind"),
+              ),
+              [
+                t.nullLiteral(),
+                ...capturedVariables.map((varName) => t.identifier(varName)),
+              ],
+            );
+            assignTo = binding;
+          } else {
+            assignTo = t.identifier(functionName);
+          }
+
+          path.replaceWith(assignTo);
 
           state.serverFunctions.add(functionName);
         }
@@ -173,16 +179,20 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
         path: NodePath<t.ArrowFunctionExpression>,
         state: State,
       ) {
-        // block arrow functions that are assigned to a variable
         if (
-          t.isVariableDeclarator(path.parent) &&
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
         ) {
+          let capturedVariables = getCapturedVariables(path);
+          let params = path.node.params.map((param) => t.cloneNode(param));
+          let newParams = [
+            ...capturedVariables.map((varName) => t.identifier(varName)),
+            ...params,
+          ];
           let functionName = state.getUniqueFunctionName();
           let functionDeclaration = t.functionDeclaration(
             t.identifier(functionName),
-            path.node.params,
+            newParams,
             path.node.body,
           );
 
@@ -199,25 +209,45 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
             moduleId,
           );
 
-          path.replaceWith(t.identifier(functionName));
+          let assignTo: t.CallExpression | t.Identifier;
+          if (capturedVariables.length > 0) {
+            let binding = t.callExpression(
+              t.memberExpression(
+                t.identifier(functionName),
+                t.identifier("bind"),
+              ),
+              [
+                t.nullLiteral(),
+                ...capturedVariables.map((varName) => t.identifier(varName)),
+              ],
+            );
+            assignTo = binding;
+          } else {
+            assignTo = t.identifier(functionName);
+          }
+
+          path.replaceWith(assignTo);
 
           state.serverFunctions.add(functionName);
         }
       },
-      ObjectProperty(path: NodePath<t.ObjectProperty>, state: State) {
-        let { value } = path.node;
-
-        // block arrow functions that are assigned to an object property
+      ObjectMethod(path: NodePath<t.ObjectMethod>, state: State) {
         if (
-          t.isArrowFunctionExpression(value) &&
-          t.isBlockStatement(value.body) &&
-          hasUseServerDirective(value.body)
+          t.isIdentifier(path.node.key) &&
+          t.isBlockStatement(path.node.body) &&
+          hasUseServerDirective(path.node.body)
         ) {
+          let capturedVariables = getCapturedVariables(path);
+          let params = path.node.params.map((param) => t.cloneNode(param));
+          let newParams = [
+            ...capturedVariables.map((varName) => t.identifier(varName)),
+            ...params,
+          ];
           let functionName = state.getUniqueFunctionName();
           let functionDeclaration = t.functionDeclaration(
             t.identifier(functionName),
-            value.params,
-            value.body,
+            newParams,
+            path.node.body,
           );
 
           let underProgramPath = findParentUnderProgram(path);
@@ -232,7 +262,30 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
             functionName,
             moduleId,
           );
-          path.node.value = t.identifier(functionName);
+
+          let assignTo: t.CallExpression | t.Identifier;
+          if (capturedVariables.length > 0) {
+            let binding = t.callExpression(
+              t.memberExpression(
+                t.identifier(functionName),
+                t.identifier("bind"),
+              ),
+              [
+                t.nullLiteral(),
+                ...capturedVariables.map((varName) => t.identifier(varName)),
+              ],
+            );
+            assignTo = binding;
+          } else {
+            assignTo = t.identifier(functionName);
+          }
+
+          let newProperty = t.objectProperty(
+            t.identifier(path.node.key.name),
+            assignTo,
+          );
+
+          path.replaceWith(newProperty);
 
           state.serverFunctions.add(functionName);
         }
@@ -331,7 +384,14 @@ function getFunctionName(
   }
 }
 
-function getCapturedVariables(path: NodePath<t.FunctionDeclaration>): string[] {
+function getCapturedVariables(
+  path: NodePath<
+    | t.FunctionDeclaration
+    | t.FunctionExpression
+    | t.ArrowFunctionExpression
+    | t.ObjectMethod
+  >,
+): string[] {
   const capturedVariables = new Set<string>();
 
   path.traverse({
