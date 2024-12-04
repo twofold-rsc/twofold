@@ -47,7 +47,7 @@ describe("transforms", () => {
     `);
   });
 
-  test.only("it should transform a 'use server' function defined in module scope", async () => {
+  test("it should transform a 'use server' function defined in module scope", async () => {
     let code = await rsc`
       let count = 0;
 
@@ -66,9 +66,10 @@ describe("transforms", () => {
       moduleId: "test",
     });
 
-    // register the original name of the function
-    // track name->export pair
-    console.log(result.code);
+    expect(result.serverFunctions).toHaveLength(1);
+    expect(result.serverFunctions).toContainEqual(
+      expect.stringMatching(/increment$/),
+    );
 
     expect(result.code).toContain(
       'import { registerServerReference } from "react-server-dom-webpack/server.edge";',
@@ -78,20 +79,20 @@ describe("transforms", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$increment() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
-      const increment = tf$serverFunction0;
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
+      const increment = tf$serverFunction$0$increment;
       function Page() {
         return /* @__PURE__ */jsx("form", {
           action: increment
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$increment };"
     `);
   });
 
@@ -125,24 +126,31 @@ describe("transforms", () => {
     });
 
     expect(result.serverFunctions).toHaveLength(2);
+    expect(result.serverFunctions).toContainEqual(
+      expect.stringMatching(/increment$/),
+    );
+    expect(result.serverFunctions).toContainEqual(
+      expect.stringMatching(/decrement$/),
+    );
+
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx, jsxs } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$increment() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
-      const increment = tf$serverFunction0;
-      function tf$serverFunction1() {
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
+      const increment = tf$serverFunction$0$increment;
+      function tf$serverFunction$0$decrement() {
         "use server";
 
         count = count - 1;
       }
-      registerServerReference(tf$serverFunction1, "test", "tf$serverFunction1");
-      const decrement = tf$serverFunction1;
+      registerServerReference(tf$serverFunction$0$decrement, "test", "tf$serverFunction$0$decrement");
+      const decrement = tf$serverFunction$0$decrement;
       function Page() {
         return /* @__PURE__ */jsxs("form", {
           children: [/* @__PURE__ */jsx("button", {
@@ -155,7 +163,7 @@ describe("transforms", () => {
         });
       }
       export { Page as default };
-      export { tf$serverFunction0, tf$serverFunction1 };"
+      export { tf$serverFunction$0$increment, tf$serverFunction$0$decrement };"
     `);
   });
 
@@ -179,24 +187,27 @@ describe("transforms", () => {
     });
 
     expect(result.serverFunctions).toHaveLength(1);
+    expect(result.serverFunctions).toContainEqual(
+      expect.stringMatching(/increment$/),
+    );
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$increment() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
-      let increment = tf$serverFunction0;
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
+      let increment = tf$serverFunction$0$increment;
       function Page() {
         return /* @__PURE__ */jsx("form", {
           action: increment
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$increment };"
     `);
   });
 
@@ -220,24 +231,27 @@ describe("transforms", () => {
     });
 
     expect(result.serverFunctions).toHaveLength(1);
+    expect(result.serverFunctions).toContainEqual(
+      expect.stringMatching(/increment$/),
+    );
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$increment() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
-      let increment = tf$serverFunction0;
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
+      let increment = tf$serverFunction$0$increment;
       function Page() {
         return /* @__PURE__ */jsx("form", {
           action: increment
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$increment };"
     `);
   });
 
@@ -263,18 +277,21 @@ describe("transforms", () => {
     });
 
     expect(result.serverFunctions).toHaveLength(1);
+    expect(result.serverFunctions).toContainEqual(
+      expect.stringMatching(/increment$/),
+    );
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$increment() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
       let obj = {
-        increment: tf$serverFunction0
+        increment: tf$serverFunction$0$increment
       };
       function Page() {
         return /* @__PURE__ */jsx("form", {
@@ -282,7 +299,7 @@ describe("transforms", () => {
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$increment };"
     `);
   });
 });
@@ -312,20 +329,20 @@ describe("hoisting", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$increment() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
       function Page() {
-        const increment = tf$serverFunction0;
+        const increment = tf$serverFunction$0$increment;
         return /* @__PURE__ */jsx("form", {
           action: increment
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$increment };"
     `);
   });
 
@@ -353,20 +370,20 @@ describe("hoisting", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$increment() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
       function Page() {
-        let increment = tf$serverFunction0;
+        let increment = tf$serverFunction$0$increment;
         return /* @__PURE__ */jsx("form", {
           action: increment
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$increment };"
     `);
   });
 
@@ -394,20 +411,20 @@ describe("hoisting", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$increment() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
       function Page() {
-        let increment = tf$serverFunction0;
+        let increment = tf$serverFunction$0$increment;
         return /* @__PURE__ */jsx("form", {
           action: increment
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$increment };"
     `);
   });
 
@@ -437,22 +454,22 @@ describe("hoisting", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$increment() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
       function Page() {
         let obj = {
-          increment: tf$serverFunction0
+          increment: tf$serverFunction$0$increment
         };
         return /* @__PURE__ */jsx("form", {
           action: obj.increment
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$increment };"
     `);
   });
 
@@ -479,19 +496,19 @@ describe("hoisting", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$action() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
       function Page() {
         return /* @__PURE__ */jsx("form", {
-          action: tf$serverFunction0
+          action: tf$serverFunction$0$action
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$action };"
     `);
   });
 
@@ -515,24 +532,27 @@ describe("hoisting", () => {
     });
 
     expect(result.serverFunctions).toHaveLength(1);
+    expect(result.serverFunctions).toContainEqual(
+      expect.stringMatching(/anonymous$/),
+    );
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$anonymous() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$anonymous, "test", "tf$serverFunction$0$anonymous");
       function Page() {
-        let list = [1, 2, tf$serverFunction0];
+        let list = [1, 2, tf$serverFunction$0$anonymous];
         return /* @__PURE__ */jsx("form", {
           action: list[2]
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$anonymous };"
     `);
   });
 
@@ -562,22 +582,22 @@ describe("hoisting", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$prop() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$prop, "test", "tf$serverFunction$0$prop");
       function Page() {
         let myObject = {
-          prop: tf$serverFunction0
+          prop: tf$serverFunction$0$prop
         };
         return /* @__PURE__ */jsx("form", {
           action: myObject.prop
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$prop };"
     `);
   });
 
@@ -607,22 +627,22 @@ describe("hoisting", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$prop() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$prop, "test", "tf$serverFunction$0$prop");
       function Page() {
         let myObject = {
-          prop: tf$serverFunction0
+          prop: tf$serverFunction$0$prop
         };
         return /* @__PURE__ */jsx("form", {
           action: myObject.prop
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$prop };"
     `);
   });
 
@@ -652,22 +672,22 @@ describe("hoisting", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let count = 0;
-      function tf$serverFunction0() {
+      function tf$serverFunction$0$anonymous() {
         "use server";
 
         count = count + 1;
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$anonymous, "test", "tf$serverFunction$0$anonymous");
       function Page() {
         function getIncrement() {
-          return tf$serverFunction0;
+          return tf$serverFunction$0$anonymous;
         }
         return /* @__PURE__ */jsx("form", {
           action: getIncrement()
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$anonymous };"
     `);
   });
 });
@@ -693,22 +713,22 @@ describe("closures and captured variables", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction0(name) {
+      function tf$serverFunction$0$greet(name) {
         "use server";
 
         console.log("hello", name);
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction0.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, name);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$greet };"
     `);
   });
 
@@ -735,22 +755,22 @@ describe("closures and captured variables", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let greeting = "hello";
-      function tf$serverFunction0(name) {
+      function tf$serverFunction$0$greet(name) {
         "use server";
 
         console.log(greeting, name);
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction0.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, name);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$greet };"
     `);
   });
 
@@ -778,22 +798,22 @@ describe("closures and captured variables", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       import { db } from "./db";
-      function tf$serverFunction0(name) {
+      function tf$serverFunction$0$greet(name) {
         "use server";
 
         db.query("INSERT INTO users (name) VALUES ($1)", [name]);
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction0.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, name);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$greet };"
     `);
   });
 
@@ -823,24 +843,24 @@ describe("closures and captured variables", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       import { db } from "./db";
-      function tf$serverFunction0(greeting, name) {
+      function tf$serverFunction$0$greet(greeting, name) {
         "use server";
 
         console.log(greeting, name);
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       async function Page({
         name
       }) {
         let result = await db.query("SELECT greeting FROM greetings WHERE name = $1", [name]);
         let greeting = result.rows[0].greeting;
-        const greet = tf$serverFunction0.bind(null, greeting, name);
+        const greet = tf$serverFunction$0$greet.bind(null, greeting, name);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$greet };"
     `);
   });
 
@@ -864,22 +884,22 @@ describe("closures and captured variables", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction0(name) {
+      function tf$serverFunction$0$greet(name) {
         "use server";
 
         console.log("hello", name);
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction0.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, name);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$greet };"
     `);
   });
 
@@ -901,21 +921,21 @@ describe("closures and captured variables", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction0(name) {
+      function tf$serverFunction$0$action(name) {
         "use server";
 
         console.log("hello", name);
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
       function Page({
         name
       }) {
         return /* @__PURE__ */jsx("form", {
-          action: tf$serverFunction0.bind(null, name)
+          action: tf$serverFunction$0$action.bind(null, name)
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$action };"
     `);
   });
 
@@ -941,24 +961,24 @@ describe("closures and captured variables", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction0(name) {
+      function tf$serverFunction$0$greet(name) {
         "use server";
 
         console.log("hello", name);
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
         let obj = {
-          greet: tf$serverFunction0.bind(null, name)
+          greet: tf$serverFunction$0$greet.bind(null, name)
         };
         return /* @__PURE__ */jsx("form", {
           action: obj.greet
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$greet };"
     `);
   });
 
@@ -988,25 +1008,25 @@ describe("closures and captured variables", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction0(greet) {
+      function tf$serverFunction$0$action(greet) {
         "use server";
 
         greet();
       }
-      registerServerReference(tf$serverFunction0, "test", "tf$serverFunction0");
+      registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
       function Page({
         name
       }) {
         function greet() {
           console.log("hello", name);
         }
-        const action = tf$serverFunction0.bind(null, greet);
+        const action = tf$serverFunction$0$action.bind(null, greet);
         return /* @__PURE__ */jsx("form", {
           action
         });
       }
       export { Page as default };
-      export { tf$serverFunction0 };"
+      export { tf$serverFunction$0$action };"
     `);
   });
 });

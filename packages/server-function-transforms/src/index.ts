@@ -49,18 +49,21 @@ type Options = {
 
 type State = {
   serverFunctions: Set<string>;
-  getUniqueFunctionName: () => string;
+  getUniqueFunctionName: (name: string) => string;
 };
 
 export function Plugin(babel: any, options: Options): PluginObj<State> {
   let moduleId = options.moduleId;
-  let functionNameCounter = 0;
 
   return {
     pre() {
-      this.serverFunctions = new Set<string>(); // Track "use server" function names
-      this.getUniqueFunctionName = () => {
-        return `tf$serverFunction${functionNameCounter++}`;
+      let functionNameCounter = new Map<string, number>();
+
+      this.serverFunctions = new Set<string>();
+      this.getUniqueFunctionName = (name: string) => {
+        let count = functionNameCounter.get(name) ?? 0;
+        functionNameCounter.set(name, count + 1);
+        return `tf$serverFunction$${count}$${name}`;
       };
     },
 
@@ -69,13 +72,13 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
         if (hasUseServerDirective(path.node.body)) {
           let name = path.node.id?.name;
           if (name && !state.serverFunctions.has(name)) {
+            let functionName = state.getUniqueFunctionName(name);
             let capturedVariables = getCapturedVariables(path);
             let params = path.node.params.map((param) => t.cloneNode(param));
             let newParams = [
               ...capturedVariables.map((varName) => t.identifier(varName)),
               ...params,
             ];
-            let functionName = state.getUniqueFunctionName();
             let functionDeclaration = t.functionDeclaration(
               t.identifier(functionName),
               newParams,
@@ -133,7 +136,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
             ...capturedVariables.map((varName) => t.identifier(varName)),
             ...params,
           ];
-          let functionName = state.getUniqueFunctionName();
+          let functionName = state.getUniqueFunctionName(getFunctionName(path));
           let functionDeclaration = t.functionDeclaration(
             t.identifier(functionName),
             newParams,
@@ -189,7 +192,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
             ...capturedVariables.map((varName) => t.identifier(varName)),
             ...params,
           ];
-          let functionName = state.getUniqueFunctionName();
+          let functionName = state.getUniqueFunctionName(getFunctionName(path));
           let functionDeclaration = t.functionDeclaration(
             t.identifier(functionName),
             newParams,
@@ -243,7 +246,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
             ...capturedVariables.map((varName) => t.identifier(varName)),
             ...params,
           ];
-          let functionName = state.getUniqueFunctionName();
+          let functionName = state.getUniqueFunctionName(path.node.key.name);
           let functionDeclaration = t.functionDeclaration(
             t.identifier(functionName),
             newParams,
@@ -312,10 +315,10 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           if (hasServerFunction) {
             let exportDeclaration = t.exportNamedDeclaration(
               null,
-              Array.from(state.serverFunctions).map((funcName) =>
+              Array.from(state.serverFunctions).map((serverFunction) =>
                 t.exportSpecifier(
-                  t.identifier(funcName),
-                  t.identifier(funcName),
+                  t.identifier(serverFunction),
+                  t.identifier(serverFunction),
                 ),
               ),
             );
@@ -326,10 +329,9 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
     },
 
     post(file) {
-      let serverFunctionsList = Array.from(this.serverFunctions);
       file.metadata = file.metadata || {};
       file.metadata = {
-        serverFunctions: serverFunctionsList,
+        serverFunctions: this.serverFunctions,
       };
     },
   };
@@ -382,6 +384,8 @@ function getFunctionName(
   if (t.isObjectProperty(parent) && t.isIdentifier(parent.key)) {
     return parent.key.name;
   }
+
+  return "anonymous";
 }
 
 function getCapturedVariables(
