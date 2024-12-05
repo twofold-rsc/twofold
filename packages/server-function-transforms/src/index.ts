@@ -1,7 +1,6 @@
-import { NodePath, PluginObj, Node, PluginPass } from "@babel/core";
+import { NodePath, PluginObj, Node } from "@babel/core";
 import { transformAsync } from "@babel/core";
 import generate from "@babel/generator";
-import { GeneratorOptions, GeneratorResult } from "@babel/generator";
 import * as t from "@babel/types";
 
 export async function transform({
@@ -11,6 +10,8 @@ export async function transform({
   code: string;
   moduleId: string;
 }) {
+  // use esbuild to transform the code into js
+
   let codeAst = await transformAsync(code, {
     plugins: [[Plugin, { moduleId }]],
     ast: true,
@@ -18,9 +19,11 @@ export async function transform({
   });
 
   let ast = codeAst?.ast;
-  let serverFunctions =
-    codeAst?.metadata && "serverFunctions" in codeAst.metadata
-      ? codeAst.metadata.serverFunctions
+  let serverFunctions: string[] =
+    codeAst?.metadata &&
+    "serverFunctions" in codeAst.metadata &&
+    codeAst.metadata.serverFunctions instanceof Set
+      ? Array.from(codeAst.metadata.serverFunctions)
       : [];
 
   if (!ast) {
@@ -30,17 +33,12 @@ export async function transform({
     };
   }
 
-  let result = generateCode(ast, { compact: false });
+  let result = generate.default(ast, { compact: false });
 
   return {
     code: result.code,
     serverFunctions,
   };
-}
-
-function generateCode(ast: Node, options?: GeneratorOptions): GeneratorResult {
-  // @ts-ignore
-  return generate(ast, options);
 }
 
 type Options = {
@@ -83,6 +81,8 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               t.identifier(functionName),
               newParams,
               path.node.body,
+              false, // generator
+              path.node.async, // async
             );
 
             let underProgramPath = findParentUnderProgram(path);
@@ -294,6 +294,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
         }
       },
       Program: {
+        // find module decorator and transform functions
         exit(path: NodePath<t.Program>, state: State) {
           let hasServerFunction = state.serverFunctions.size > 0;
 

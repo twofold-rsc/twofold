@@ -14,6 +14,7 @@ import { cwdUrl } from "../../files.js";
 import { createHash } from "crypto";
 import { basename, extname } from "path";
 import * as path from "path";
+import { transform as serverFunctionTransform } from "@twofold/server-function-transforms";
 
 type ModuleState = {
   actions: FunctionDeclaration[];
@@ -50,12 +51,12 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
       });
 
       build.onLoad({ filter: /\.(ts|tsx|js|jsx)$/ }, async ({ path }) => {
-        let contents = await readFile(path, "utf-8");
-        let hasAction = contents.includes("use server");
         let actionModule = builder.entries.serverActionModuleMap.get(path);
+        let actionEntry = builder.entries.serverActionEntryMap.get(path);
 
         if (actionModule) {
           let { moduleId, exportsAndNames } = actionModule;
+          let contents = await readFile(path, "utf-8");
           let registerLines = exportsAndNames.map((data) => {
             return `registerServerReference(${data.local}, "${moduleId}", "${data.export}");`;
           });
@@ -79,14 +80,31 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
             contents: newContents,
             loader: "tsx",
           };
-        } else if (hasAction) {
-          let result = await decorateActionFunctions({ contents, path });
-          for (let action of result.serverActions) {
-            serverActions.add(action);
+        } else if (actionEntry) {
+          let contents = await readFile(path, "utf-8");
+          let { moduleId } = actionEntry;
+
+          let { code } = await transform(contents, {
+            loader: "tsx",
+            jsx: "automatic",
+            format: "esm",
+          });
+
+          let transformed = await serverFunctionTransform({
+            code,
+            moduleId,
+          });
+
+          for (let serverFunction of transformed.serverFunctions) {
+            serverActions.add({
+              id: `${moduleId}#${serverFunction}`,
+              path,
+              export: serverFunction,
+            });
           }
 
           return {
-            contents: result.contents,
+            contents: transformed.code,
             loader: "js",
           };
         }

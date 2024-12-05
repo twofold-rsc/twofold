@@ -1,4 +1,4 @@
-import ClientAction from "./client-action";
+import Client from "./client";
 
 let text = "hello world";
 
@@ -23,7 +23,7 @@ export default function Page() {
         </span>
       </p>
       <div className="mt-4">
-        <ClientAction action={handleTextArg} />
+        <Client action={handleTextArg} />
       </div>
     </div>
   );

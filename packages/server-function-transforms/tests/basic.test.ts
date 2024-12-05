@@ -1,5 +1,5 @@
 import { expect, test, describe } from "vitest";
-import { transform } from "../index.js";
+import { transform } from "../src/index.js";
 import { transform as esbuildTransform } from "esbuild";
 import dedent from "dedent";
 
@@ -164,6 +164,49 @@ describe("transforms", () => {
       }
       export { Page as default };
       export { tf$serverFunction$0$increment, tf$serverFunction$0$decrement };"
+    `);
+  });
+
+  test("it should keep the function async if it was given an async function", async () => {
+    let code = await rsc`
+      let count = 0;
+
+      async function increment() {
+        "use server";
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        count = count + 1;
+      }
+        
+      export default function Page() {
+        return <form action={increment} />;
+      }
+    `;
+
+    let result = await transform({
+      code,
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toHaveLength(1);
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      let count = 0;
+      async function tf$serverFunction$0$increment() {
+        "use server";
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
+      const increment = tf$serverFunction$0$increment;
+      function Page() {
+        return /* @__PURE__ */jsx("form", {
+          action: increment
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$increment };"
     `);
   });
 
@@ -345,6 +388,8 @@ describe("hoisting", () => {
       export { tf$serverFunction$0$increment };"
     `);
   });
+
+  test.todo("multiple functions with the same name");
 
   test("it should hoist a 'use server' function defined as a function expression to the top of the module", async () => {
     let code = await rsc`
@@ -600,6 +645,8 @@ describe("hoisting", () => {
       export { tf$serverFunction$0$prop };"
     `);
   });
+
+  test.todo("multiple anonymous functions");
 
   test("it should hoist a 'use server' function used as an object property to the top of the module", async () => {
     let code = await rsc`

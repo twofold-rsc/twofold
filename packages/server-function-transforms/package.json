@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "compile": "node compile.js",
+    "compile": "node compile.js && tsc --emitDeclarationOnly --declaration --outDir ./dist",
     "test": "vitest"
   },
   "keywords": [],
