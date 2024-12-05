@@ -130,6 +130,10 @@ async function createHandler(runtime: Runtime) {
     let actionFn = await runtime.getAction(id);
 
     let [, name] = id.split("#");
+    if (name.startsWith("tf$serverFunction$")) {
+      let parts = name.split("$");
+      name = parts[3];
+    }
     console.log(`🟣 Running action ${name}`);
 
     let result;

@@ -1,6 +1,6 @@
 "use client";
 
-export default function ClientAction({
+export default function Client({
   action,
 }: {
   action: (newText: string) => Promise<string>;

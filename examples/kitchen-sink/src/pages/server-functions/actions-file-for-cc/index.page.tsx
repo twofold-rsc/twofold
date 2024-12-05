@@ -1,4 +1,5 @@
 import CCInvokesAction from "./action-file-for-cc-client-component";
+import { bucket } from "./shared";
 
 export default function Page() {
   return (
@@ -7,7 +8,7 @@ export default function Page() {
         Server actions file CC
       </h1>
       <div className="mt-3 space-y-3">
-        <CCInvokesAction />
+        <CCInvokesAction count={bucket.count} />
       </div>
     </div>
   );

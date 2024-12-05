@@ -95,46 +95,54 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
-                    <ExampleGroup name="Server actions" path="/server-actions">
+                    <ExampleGroup
+                      name="Server functions"
+                      path="/server-functions"
+                    >
                       <ExampleLink
-                        title="Server action"
+                        title="Server function"
                         description="A function that runs on the server."
-                        href="/server-actions"
+                        href="/server-functions"
+                      />
+                      <ExampleLink
+                        title="Slow function"
+                        description="A server function that is very slow."
+                        href="/server-functions/slow-function"
                       />
                       <ExampleLink
                         title="Client action"
-                        description="A client component that invokes a server action."
-                        href="/server-actions/client-action"
+                        description="A client component that invokes a server function."
+                        href="/server-functions/client"
                       />
                       <ExampleLink
                         title="Form data"
-                        description="A server action that works with forms and form data."
-                        href="/server-actions/form-data"
+                        description="A server function that works with forms and form data."
+                        href="/server-functions/form-data"
                       />
                       <ExampleLink
-                        title="Bound action"
-                        description="A server action that binds to a component prop."
-                        href="/server-actions/bind"
+                        title="Manual binding"
+                        description="A server function that manually binds to a component prop."
+                        href="/server-functions/manual-bind"
+                      />
+                      <ExampleLink
+                        title="Automatic binding"
+                        description="A server function that automatically binds to a component prop."
+                        href="/server-functions/automatic-bind"
                       />
                       <ExampleLink
                         title="Actions file RSC"
                         description="A server action imported into an RSC."
-                        href="/server-actions/actions-file-for-rsc"
+                        href="/server-functions/actions-file-for-rsc"
                       />
                       <ExampleLink
                         title="Actions file CC"
                         description="A server action imported into a client component."
-                        href="/server-actions/actions-file-for-cc"
+                        href="/server-functions/actions-file-for-cc"
                       />
                       <ExampleLink
                         title="Action returns CC"
                         description="A server action that returns a client component."
-                        href="/server-actions/action-returns-cc"
-                      />
-                      <ExampleLink
-                        title="Slow action"
-                        description="A server action that is very slow."
-                        href="/server-actions/slow-action"
+                        href="/server-functions/action-returns-cc"
                       />
                     </ExampleGroup>
 

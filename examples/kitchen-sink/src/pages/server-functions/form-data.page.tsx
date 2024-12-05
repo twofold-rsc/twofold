@@ -14,8 +14,8 @@ export default function Page() {
     <div>
       <h1 className="text-4xl font-black tracking-tighter">Form data</h1>
       <p className="mt-3 max-w-prose">
-        In this example a server action is passed to a client component. The
-        client component invokes the action passing in text data.
+        In this example a server function is passed to a form element. The form
+        invokes the function passing with the form's data.
       </p>
 
       <p className="mt-3">

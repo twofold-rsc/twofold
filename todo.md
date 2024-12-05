@@ -31,6 +31,10 @@ framework
 - rename api handlers
 - only allow function exports from server modules. you dont want to import a non function call server on the client
 
+- eslints
+- https://bsky.app/profile/tkdodo.eu/post/3lbn55t5d5s24
+- https://eslint-react.xyz/docs/rules/hooks-extra-no-direct-set-state-in-use-effect
+
 website
 
 - Routing + Pages & Layouts to reference
