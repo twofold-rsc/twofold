@@ -1,5 +1,13 @@
 # @twofold/framework
 
+## 0.0.43
+
+### Patch Changes
+
+- server functions can how close over props and variables
+- Updated dependencies
+  - @twofold/server-function-transforms@0.0.2
+
 ## 0.0.42
 
 ### Patch Changes
