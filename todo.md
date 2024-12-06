@@ -6,8 +6,13 @@ framework
 - sessions
 
 - rename src to app, add /app/components
-- actions
+- encrypted actions
 - dont auto bundle (maybe only bundle things that depend on react?)
+- entries builder needs to crawl \*.ts,tsx so that it can find conditional imports
+- both entries builder and server function builder need to read contents
+  - entries so it can discover paths
+  - server function so it can discover externals
+- cleanup estree/acorn deps
 
 - long cache headers for production
 

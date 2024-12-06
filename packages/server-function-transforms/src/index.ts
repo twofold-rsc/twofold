@@ -2,18 +2,44 @@ import { NodePath, PluginObj, Node } from "@babel/core";
 import { transformAsync } from "@babel/core";
 import generate from "@babel/generator";
 import * as t from "@babel/types";
+import { transform as esbuildTransform } from "esbuild";
 
 export async function transform({
-  code,
+  input: { code, language },
+  encryption,
   moduleId,
 }: {
-  code: string;
+  input: {
+    code: string;
+    language: "js" | "jsx" | "ts" | "tsx";
+  };
+  encryption?: {
+    key: t.Node;
+  };
   moduleId: string;
 }) {
-  // use esbuild to transform the code into js
+  let jsCode;
+  if (language !== "js") {
+    let esResult = await esbuildTransform(code, {
+      loader: language,
+      jsx: "automatic",
+      format: "esm",
+    });
+    jsCode = esResult.code;
+  } else {
+    jsCode = code;
+  }
 
-  let codeAst = await transformAsync(code, {
-    plugins: [[Plugin, { moduleId }]],
+  let codeAst = await transformAsync(jsCode, {
+    plugins: [
+      [
+        Plugin,
+        {
+          moduleId,
+          key: encryption?.key,
+        },
+      ],
+    ],
     ast: true,
     code: false,
   });
@@ -27,10 +53,9 @@ export async function transform({
       : [];
 
   if (!ast) {
-    return {
-      code,
-      serverFunctions,
-    };
+    throw new Error(
+      "Failed to transform code. This is probably a bug in @twofold/server-function-transforms.",
+    );
   }
 
   let result = generate.default(ast, { compact: false });
@@ -43,21 +68,25 @@ export async function transform({
 
 type Options = {
   moduleId: string;
+  key?: t.ArgumentPlaceholder | t.Expression;
 };
 
 type State = {
   serverFunctions: Set<string>;
+  hasEncryptedVariables: boolean;
   getUniqueFunctionName: (name: string) => string;
 };
 
 export function Plugin(babel: any, options: Options): PluginObj<State> {
   let moduleId = options.moduleId;
+  let key = options.key;
 
   return {
     pre() {
       let functionNameCounter = new Map<string, number>();
 
       this.serverFunctions = new Set<string>();
+      this.hasEncryptedVariables = false;
       this.getUniqueFunctionName = (name: string) => {
         let count = functionNameCounter.get(name) ?? 0;
         functionNameCounter.set(name, count + 1);
@@ -67,6 +96,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
 
     visitor: {
       FunctionDeclaration(path: NodePath<t.FunctionDeclaration>, state: State) {
+        // TODO encrypt and decrypt should use key
         if (hasUseServerDirective(path.node.body)) {
           let name = path.node.id?.name;
           if (name && !state.serverFunctions.has(name)) {
@@ -74,7 +104,9 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
             let capturedVariables = getCapturedVariables(path);
             let params = path.node.params.map((param) => t.cloneNode(param));
             let newParams = [
-              ...capturedVariables.map((varName) => t.identifier(varName)),
+              ...capturedVariables.map((varName) =>
+                t.identifier(`${key ? "tf$encrypted$" : ""}${varName}`),
+              ),
               ...params,
             ];
             let functionDeclaration = t.functionDeclaration(
@@ -84,6 +116,14 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               false, // generator
               path.node.async, // async
             );
+
+            if (!!key && capturedVariables.length > 0) {
+              for (let varName of capturedVariables) {
+                insertDecryptedVariable(functionDeclaration, varName, key);
+              }
+
+              state.hasEncryptedVariables = true;
+            }
 
             let underProgramPath = findParentUnderProgram(path);
             if (!underProgramPath) {
@@ -107,7 +147,14 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
                 ),
                 [
                   t.nullLiteral(),
-                  ...capturedVariables.map((varName) => t.identifier(varName)),
+                  ...capturedVariables.map((varName) =>
+                    key
+                      ? t.callExpression(t.identifier("encrypt"), [
+                          t.identifier(varName),
+                          key,
+                        ])
+                      : t.identifier(varName),
+                  ),
                 ],
               );
               assignTo = binding;
@@ -297,6 +344,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
         // find module decorator and transform functions
         exit(path: NodePath<t.Program>, state: State) {
           let hasServerFunction = state.serverFunctions.size > 0;
+          let hasEncryptedVariables = state.hasEncryptedVariables;
 
           // import registerServerReference
           if (hasServerFunction) {
@@ -308,6 +356,24 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
                 ),
               ],
               t.stringLiteral("react-server-dom-webpack/server.edge"),
+            );
+            path.unshiftContainer("body", importDeclaration);
+          }
+
+          // import encryption functions
+          if (hasEncryptedVariables) {
+            let importDeclaration = t.importDeclaration(
+              [
+                t.importSpecifier(
+                  t.identifier("encrypt"),
+                  t.identifier("encrypt"),
+                ),
+                t.importSpecifier(
+                  t.identifier("decrypt"),
+                  t.identifier("decrypt"),
+                ),
+              ],
+              t.stringLiteral("@twofold/server-function-transforms/encryption"),
             );
             path.unshiftContainer("body", importDeclaration);
           }
@@ -371,6 +437,41 @@ function insertRegisterServerReference(
   );
 
   path.insertAfter(callExpression);
+}
+
+function insertDecryptedVariable(
+  node: t.FunctionDeclaration,
+  variable: string,
+  key: t.ArgumentPlaceholder | t.Expression,
+) {
+  let body = node.body;
+
+  if (!body || !body.directives) {
+    return;
+  }
+
+  let useServerIndex = body.directives.findIndex(
+    (directive) =>
+      t.isDirectiveLiteral(directive.value) &&
+      directive.value.value === "use server",
+  );
+
+  if (useServerIndex === -1) {
+    return;
+  }
+
+  let decrypt = t.variableDeclaration("let", [
+    t.variableDeclarator(
+      t.identifier(variable),
+      t.callExpression(t.identifier("decrypt"), [
+        t.identifier(`tf$encrypted$${variable}`),
+        key,
+      ]),
+    ),
+  ]);
+
+  // body.body.splice(useServerIndex, 0, decrypt);
+  body.body.unshift(decrypt);
 }
 
 function getFunctionName(

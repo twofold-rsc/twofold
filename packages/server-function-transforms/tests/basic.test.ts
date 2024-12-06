@@ -1,37 +1,56 @@
 import { expect, test, describe } from "vitest";
 import { transform } from "../src/index.js";
-import { transform as esbuildTransform } from "esbuild";
 import dedent from "dedent";
 
-async function rsc(strings: TemplateStringsArray, ...values: any[]) {
-  let content = strings.reduce(
-    (result, str, i) => result + str + (values[i] || ""),
-    "",
-  );
+describe("transforms", () => {
+  test("it should error if the code has a syntax error", async () => {
+    let code = dedent`
+      export async function Page() {
+        return <div>Hello World;
+      }
+    `;
 
-  let result = await esbuildTransform(dedent(content), {
-    loader: "tsx",
-    jsx: "automatic",
-    format: "esm",
+    await expect(async () => {
+      await transform({
+        input: {
+          code,
+          language: "jsx",
+        },
+        moduleId: "test",
+      });
+    }).rejects.toThrowError(/Transform failed with 1 error/);
   });
 
-  if (result.code) {
-    return result.code;
-  } else {
-    throw new Error("Failed to transform code");
-  }
-}
+  test("it should error if the wrong language is used", async () => {
+    let code = dedent`
+      export async function Page(props: MyProps) {
+        return <div>Hello World<div>;
+      }
+    `;
 
-describe("transforms", () => {
+    await expect(async () => {
+      await transform({
+        input: {
+          code,
+          language: "js",
+        },
+        moduleId: "test",
+      });
+    }).rejects.toThrowError(/Unexpected token/);
+  });
+
   test("it should not alter a file without server functions", async () => {
-    let code = await rsc`
+    let code = dedent`
       export async function Page() {
         return <div>Hello World</div>;
       }
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -48,7 +67,7 @@ describe("transforms", () => {
   });
 
   test("it should transform a 'use server' function defined in module scope", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       function increment() {
@@ -62,7 +81,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -97,7 +119,7 @@ describe("transforms", () => {
   });
 
   test("it should transform multiple 'use server' functions defined in module scope", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       function increment() {
@@ -121,7 +143,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -168,7 +193,7 @@ describe("transforms", () => {
   });
 
   test("it should keep the function async if it was given an async function", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       async function increment() {
@@ -183,7 +208,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -211,7 +239,7 @@ describe("transforms", () => {
   });
 
   test("it should transform a 'use server' function defined in a function expression", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       let increment = function() {
@@ -225,7 +253,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -255,7 +286,7 @@ describe("transforms", () => {
   });
 
   test("it should transform a 'use server' function defined in an arrow function", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       let increment = () => {
@@ -269,7 +300,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -299,7 +333,7 @@ describe("transforms", () => {
   });
 
   test("it should transform a 'use server' function defined in an object method", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       let obj = {
@@ -315,7 +349,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -349,7 +386,7 @@ describe("transforms", () => {
 
 describe("hoisting", () => {
   test("it should hoist 'use server' functions to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -363,7 +400,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -392,7 +432,7 @@ describe("hoisting", () => {
   test.todo("multiple functions with the same name");
 
   test("it should hoist a 'use server' function defined as a function expression to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -406,7 +446,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -433,7 +476,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist a 'use server' function defined as an arrow function to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -447,7 +490,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -474,7 +520,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist a 'use server' function defined in an object method", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
        
       export default function Page() {
@@ -490,7 +536,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -519,7 +568,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist an anonymous 'use server' function to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -531,7 +580,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -558,7 +610,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist an anonymous 'use server' function used in an array to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -572,7 +624,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -602,7 +657,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist an anonymous 'use server' function used as an object property to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -618,7 +673,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -649,7 +707,7 @@ describe("hoisting", () => {
   test.todo("multiple anonymous functions");
 
   test("it should hoist a 'use server' function used as an object property to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -665,7 +723,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -694,7 +755,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist a 'use server' function returned from another function to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -710,7 +771,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -741,7 +805,7 @@ describe("hoisting", () => {
 
 describe("closures and captured variables", () => {
   test("it should move closed over variables to hoisted arguments", async () => {
-    let code = await rsc`
+    let code = dedent`
       export default function Page({ name }) {
         function greet() {
           "use server";
@@ -753,7 +817,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -780,7 +847,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should not move closed over variables that are in module scope", async () => {
-    let code = await rsc`
+    let code = dedent`
       let greeting = "hello";
 
       export default function Page({ name }) {
@@ -794,7 +861,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -822,7 +892,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should not move closed over variables that are imported", async () => {
-    let code = await rsc`
+    let code = dedent`
       import { db } from "./db";
 
       export default function Page({ name }) {
@@ -837,7 +907,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -865,7 +938,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should move multiple closed over variables to arguments", async () => {
-    let code = await rsc`
+    let code = dedent`
       import { db } from "./db";
 
       export default async function Page({ name }) {
@@ -882,7 +955,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -912,7 +988,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should move closed over variables in a function expression to arguments", async () => {
-    let code = await rsc`
+    let code = dedent`
       export default function Page({ name }) {
         const greet = function() {
           "use server";
@@ -924,7 +1000,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -951,7 +1030,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should move closed over variables in an arrow function to arguments", async () => {
-    let code = await rsc`
+    let code = dedent`
       export default function Page({ name }) {
         return <form action={() => {
           "use server";
@@ -961,7 +1040,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -987,7 +1069,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should move closed over variables in an object method to arguments", async () => {
-    let code = await rsc`
+    let code = dedent`
       export default function Page({ name }) {
         let obj = {
           greet() {
@@ -1001,7 +1083,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -1032,7 +1117,7 @@ describe("closures and captured variables", () => {
   test("it should move closed over functions to hoisted function arguments", async () => {
     // i don't think this is a valid RSC, but this tests makes sure
     // we can hoist up and bind in functions.
-    let code = await rsc`
+    let code = dedent`
       export default function Page({ name }) {
         function greet() {
           console.log("hello", name)
@@ -1048,7 +1133,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -1076,4 +1164,6 @@ describe("closures and captured variables", () => {
       export { tf$serverFunction$0$action };"
     `);
   });
+
+  test.todo("close over object", async () => {});
 });
