@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.44
+
+### Patch Changes
+
+- React 19
+
 ## 0.0.43
 
 ### Patch Changes
