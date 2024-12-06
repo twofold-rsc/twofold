@@ -7,7 +7,7 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "target": "ESNext",
-    "types": ["react/experimental", "react-dom/experimental", "node"],
+    "types": ["react", "react-dom", "node"]
   },
-  "include": ["./src/"],
+  "include": ["./src/"]
 }
