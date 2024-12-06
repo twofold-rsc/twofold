@@ -3,42 +3,6 @@ import { transform } from "../src/index.js";
 import dedent from "dedent";
 
 describe("transforms", () => {
-  test("it should error if the code has a syntax error", async () => {
-    let code = dedent`
-      export async function Page() {
-        return <div>Hello World;
-      }
-    `;
-
-    await expect(async () => {
-      await transform({
-        input: {
-          code,
-          language: "jsx",
-        },
-        moduleId: "test",
-      });
-    }).rejects.toThrowError(/Transform failed with 1 error/);
-  });
-
-  test("it should error if the wrong language is used", async () => {
-    let code = dedent`
-      export async function Page(props: MyProps) {
-        return <div>Hello World<div>;
-      }
-    `;
-
-    await expect(async () => {
-      await transform({
-        input: {
-          code,
-          language: "js",
-        },
-        moduleId: "test",
-      });
-    }).rejects.toThrowError(/Unexpected token/);
-  });
-
   test("it should not alter a file without server functions", async () => {
     let code = dedent`
       export async function Page() {
@@ -381,6 +345,44 @@ describe("transforms", () => {
       export { Page as default };
       export { tf$serverFunction$0$increment };"
     `);
+  });
+});
+
+describe("errors", () => {
+  test("it should error if the code has a syntax error", async () => {
+    let code = dedent`
+      export async function Page() {
+        return <div>Hello World;
+      }
+    `;
+
+    await expect(async () => {
+      await transform({
+        input: {
+          code,
+          language: "jsx",
+        },
+        moduleId: "test",
+      });
+    }).rejects.toThrowError(/Transform failed with 1 error/);
+  });
+
+  test("it should error if the wrong language is used", async () => {
+    let code = dedent`
+      export async function Page(props: MyProps) {
+        return <div>Hello World<div>;
+      }
+    `;
+
+    await expect(async () => {
+      await transform({
+        input: {
+          code,
+          language: "js",
+        },
+        moduleId: "test",
+      });
+    }).rejects.toThrowError(/Unexpected token/);
   });
 });
 
@@ -1166,4 +1168,8 @@ describe("closures and captured variables", () => {
   });
 
   test.todo("close over object", async () => {});
+});
+
+describe("factory functions", () => {
+  test.todo("auth factory");
 });

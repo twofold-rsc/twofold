@@ -2,6 +2,7 @@
 // thank you next!
 
 export const externalPackages = [
+  "@twofold/server-function-transforms",
   "@appsignal/nodejs",
   "@aws-sdk/client-s3",
   "@aws-sdk/s3-presigned-post",

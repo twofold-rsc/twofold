@@ -24,7 +24,8 @@
     "./cookies": "./src/http/cookies.ts",
     "./not-found": "./src/http/not-found.ts",
     "./redirect": "./src/http/redirect.ts",
-    "./render": "./src/render.ts"
+    "./render": "./src/render.ts",
+    "./encryption": "./src/utils/encryption.ts"
   },
   "keywords": [],
   "author": "Ryan Toronto",

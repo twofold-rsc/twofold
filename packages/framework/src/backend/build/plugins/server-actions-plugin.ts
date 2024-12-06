@@ -14,7 +14,13 @@ import { cwdUrl } from "../../files.js";
 import { createHash } from "crypto";
 import { basename, extname } from "path";
 import * as path from "path";
-import { transform as serverFunctionTransform } from "@twofold/server-function-transforms";
+import {
+  transform as serverFunctionTransform,
+  envKey,
+} from "@twofold/server-function-transforms";
+import { z } from "zod";
+
+// TODO!!!! figure out the import stuff
 
 type ModuleState = {
   actions: FunctionDeclaration[];
@@ -32,6 +38,13 @@ let importNode = acorn.parse(importStatement, {
   ecmaVersion: "latest",
   sourceType: "module",
 });
+
+let languageSchema = z.union([
+  z.literal("ts"),
+  z.literal("tsx"),
+  z.literal("js"),
+  z.literal("jsx"),
+]);
 
 export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
   let plugin: Plugin = {
@@ -82,16 +95,20 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
           };
         } else if (actionEntry) {
           let contents = await readFile(path, "utf-8");
-          let { moduleId } = actionEntry;
+          let extension = extname(path).slice(1);
 
-          let { code } = await transform(contents, {
-            loader: "tsx",
-            jsx: "automatic",
-            format: "esm",
-          });
+          let { moduleId } = actionEntry;
+          let language = languageSchema.parse(extension);
 
           let transformed = await serverFunctionTransform({
-            code,
+            input: {
+              code: contents,
+              language,
+            },
+            encryption: {
+              key: envKey("TWOFOLD_SECRET_KEY"),
+              module: "@twofold/framework/encryption",
+            },
             moduleId,
           });
 
