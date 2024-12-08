@@ -117,6 +117,11 @@ export default function Nav() {
                         href="/server-actions/form-data-bound"
                       />
                       <ExampleLink
+                        title="Bound object"
+                        description="A server action that works with forms and objects."
+                        href="/server-actions/bound-object"
+                      />
+                      <ExampleLink
                         title="Manual binding"
                         description="A server action that manually binds to a component prop."
                         href="/server-actions/manual-bind"

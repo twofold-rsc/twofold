@@ -8,20 +8,16 @@ framework
 - rename src to app, add /app/components
 - dont auto bundle (maybe only bundle things that depend on react?)
 
-- rename actions folder again
-- kitchen sink - write basic test for binding an object
-- entries builder needs to crawl \*.ts,tsx so that it can find conditional imports
-- both entries builder and server function builder need to read contents
-  - entries so it can discover paths
-  - server function so it can discover externals
-- cleanup estree/acorn deps
-- create app with secrets (crypto.randomBytes)
 - README
+- taint secret key
 - website
 
+- server action modules
 - long cache headers for production
 
 - (layout) routing
+
+- support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder.
 
 - tailwind v4
 - editing env file should trigger some sort of change so live reload works

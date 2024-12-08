@@ -10,6 +10,7 @@ import { remapped } from "./remapped.js";
 import * as childProcess from "child_process";
 import util from "util";
 import { parse } from "yaml";
+import { randomBytes } from "crypto";
 let exec = util.promisify(childProcess.exec);
 
 async function main() {
@@ -214,6 +215,12 @@ async function main() {
 
   let newPackage = JSON.stringify(pkg, null, 2);
   await writeFile(new URL("./package.json", appUrl), newPackage);
+
+  // edit .env file, add secret key
+  let secret = randomBytes(32).toString("hex");
+  let env = await readFile(new URL("./.env", appUrl), "utf8");
+  let newEnv = env.replace("tf$secret_key", secret);
+  await writeFile(new URL("./.env", appUrl), newEnv);
 
   signale.complete("App created!");
 
