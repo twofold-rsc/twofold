@@ -7,3 +7,7 @@ export function envKey(name: string) {
     true,
   );
 }
+
+export function stringKey(name: string) {
+  return t.stringLiteral(name);
+}

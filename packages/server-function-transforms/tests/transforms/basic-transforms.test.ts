@@ -431,7 +431,87 @@ describe("hoisting", () => {
     `);
   });
 
-  test.todo("multiple functions with the same name");
+  test("it should hoist multiple functions with the same name", async () => {
+    let code = dedent`
+      let count = 0;
+
+      export default function Page() {
+        return (
+          <>
+            <ServerComponentA />
+            <ServerComponentB />
+          </>
+        );
+      }
+
+      function ServerComponentA() {
+        function increment() {
+          "use server";
+          count = count + 1;
+        }
+
+        return <form action={increment} />;
+      }
+
+      function ServerComponentB() {
+        function increment() {
+          "use server";
+          count = count + 1;
+        }
+
+        return <form action={increment} />;
+      } 
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toHaveLength(2);
+    expect(result.serverFunctions).toContain("tf$serverFunction$0$increment");
+    expect(result.serverFunctions).toContain("tf$serverFunction$1$increment");
+
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+      let count = 0;
+      function Page() {
+        return /* @__PURE__ */jsxs(Fragment, {
+          children: [/* @__PURE__ */jsx(ServerComponentA, {}), /* @__PURE__ */jsx(ServerComponentB, {})]
+        });
+      }
+      function tf$serverFunction$0$increment() {
+        "use server";
+
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
+      function ServerComponentA() {
+        const increment = tf$serverFunction$0$increment;
+        return /* @__PURE__ */jsx("form", {
+          action: increment
+        });
+      }
+      function tf$serverFunction$1$increment() {
+        "use server";
+
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$1$increment, "test", "tf$serverFunction$1$increment");
+      function ServerComponentB() {
+        const increment = tf$serverFunction$1$increment;
+        return /* @__PURE__ */jsx("form", {
+          action: increment
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$increment, tf$serverFunction$1$increment };"
+    `);
+  });
 
   test("it should hoist a 'use server' function defined as a function expression to the top of the module", async () => {
     let code = dedent`
@@ -706,7 +786,64 @@ describe("hoisting", () => {
     `);
   });
 
-  test.todo("multiple anonymous functions");
+  test("it should hoist multiple anonymous 'use server' functions", async () => {
+    let code = dedent`
+      let count = 0;
+        
+      export default function Page() {
+        return (
+          <div>
+            <form action={() => {
+              "use server";
+              count = count + 1;
+            }} />
+            <form action={() => {
+              "use server";
+              count = count + 1;
+            }} />
+          </div>
+        );
+      }
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toHaveLength(2);
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx, jsxs } from "react/jsx-runtime";
+      let count = 0;
+      function tf$serverFunction$0$action() {
+        "use server";
+
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
+      function tf$serverFunction$1$action() {
+        "use server";
+
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$1$action, "test", "tf$serverFunction$1$action");
+      function Page() {
+        return /* @__PURE__ */jsxs("div", {
+          children: [/* @__PURE__ */jsx("form", {
+            action: tf$serverFunction$0$action
+          }), /* @__PURE__ */jsx("form", {
+            action: tf$serverFunction$1$action
+          })]
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$action, tf$serverFunction$1$action };"
+    `);
+  });
 
   test("it should hoist a 'use server' function used as an object property to the top of the module", async () => {
     let code = dedent`
@@ -1175,6 +1312,56 @@ describe("closures and captured variables", () => {
     `);
   });
 
+  test("it should be able to close over an object", async () => {
+    let code = dedent`
+      export default function Page({ name }) {
+        let user = {
+          name: "ryan"
+        };
+
+        function action() {
+          "use server";
+          console.log(user.name);
+        }
+  
+        return <form action={action} />;
+      }
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      function tf$serverFunction$0$action(tf$bound$vars) {
+        "use server";
+
+        let [user] = tf$bound$vars;
+        console.log(user.name);
+      }
+      registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
+      function Page({
+        name
+      }) {
+        let user = {
+          name: "ryan"
+        };
+        const action = tf$serverFunction$0$action.bind(null, [user]);
+        return /* @__PURE__ */jsx("form", {
+          action
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$action };"
+    `);
+  });
+
   test("it should respect the order of closed over variables and manually bound variables", async () => {
     let code = dedent`
       export default function Page({ name }) {
@@ -1220,10 +1407,42 @@ describe("closures and captured variables", () => {
       export { tf$serverFunction$0$greet };"
     `);
   });
-
-  test.todo("close over object", async () => {});
 });
 
 describe("factory functions", () => {
-  test.todo("auth factory");
+  test.skip("it should transform a factory function", async () => {
+    // this doesn't work correctly and is not 'safe'.
+    // i believe in order to get it working the function param passed
+    // to withAuth needs to be hoisted, but not exported.
+    let code = dedent`
+      import { verifyUser } from "./auth";
+      let count = 0;
+
+      function withAuth(action) {
+        "use server";
+
+        return () => {
+          "use server";
+          if (verifyUser()) {
+            action();
+          }
+        }
+      }
+        
+      export default function Page({ name }) {
+        return <form action={withAuth(() => {
+          "use server";
+          console.log("hello", name);
+        })} />;
+      }
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      moduleId: "test",
+    });
+  });
 });

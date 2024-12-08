@@ -108,95 +108,38 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
         if (hasUseServerDirective(path.node.body)) {
           let name = path.node.id?.name;
           if (name && !state.serverFunctions.has(name)) {
-            let originalFunctionName = name;
-            let capturedVariables = getCapturedVariables(path);
-
-            // functions that use encrypted variables must be async
-            if (capturedVariables.length > 0 && key && !path.node.async) {
-              throw new Error(
-                `Server functions that close over variables must be async. Please turn ${originalFunctionName} into an async function.`,
-              );
-            }
-
-            let functionName =
-              state.getUniqueFunctionName(originalFunctionName);
-            let params = path.node.params.map((param) => t.cloneNode(param));
-            let newParams = [
-              ...(capturedVariables.length > 0
-                ? [t.identifier(`tf$${key ? "encrypted" : "bound"}$vars`)]
-                : []),
-              ...params,
-            ];
-            let functionDeclaration = t.functionDeclaration(
-              t.identifier(functionName),
-              newParams,
-              path.node.body,
-              false, // generator
-              path.node.async, // async
-            );
-
-            if (capturedVariables.length > 0) {
-              if (key) {
-                insertDecryptedVariable(
-                  functionDeclaration,
-                  capturedVariables,
-                  key,
-                );
-                state.hasEncryptedVariables = true;
-              } else {
-                insertBoundVariables(functionDeclaration, capturedVariables);
-              }
-            }
-
-            let underProgramPath = findParentUnderProgram(path);
-            if (!underProgramPath) {
-              return;
-            }
-
-            let [newFunctionPath] =
-              underProgramPath.insertBefore(functionDeclaration);
-            insertRegisterServerReference(
-              newFunctionPath,
+            let {
+              functionDeclaration,
               functionName,
+              capturedVariables,
+              hasEncryptedVariables,
+            } = createServerFunction({
+              path,
+              state,
+              key,
+            });
+
+            insertFunctionIntoProgram({
+              functionDeclaration,
               moduleId,
-            );
+              path,
+            });
 
-            let assignTo: t.CallExpression | t.Identifier;
-            if (capturedVariables.length > 0) {
-              let binding = t.callExpression(
-                t.memberExpression(
-                  t.identifier(functionName),
-                  t.identifier("bind"),
-                ),
-                [
-                  t.nullLiteral(),
-                  key
-                    ? t.callExpression(t.identifier("encrypt"), [
-                        t.arrayExpression(
-                          capturedVariables.map((varName) =>
-                            t.identifier(varName),
-                          ),
-                        ),
-                        key,
-                      ])
-                    : t.arrayExpression(
-                        capturedVariables.map((varName) =>
-                          t.identifier(varName),
-                        ),
-                      ),
-                ],
-              );
-              assignTo = binding;
-            } else {
-              assignTo = t.identifier(functionName);
-            }
+            let binding = createBinding({
+              functionName,
+              capturedVariables,
+              key,
+            });
 
-            // should be let
-            let assignToServerFunction = t.variableDeclaration("const", [
-              t.variableDeclarator(t.identifier(name), assignTo),
+            let assignNameToServerFunction = t.variableDeclaration("const", [
+              t.variableDeclarator(t.identifier(name), binding),
             ]);
 
-            path.replaceWith(assignToServerFunction);
+            path.replaceWith(assignNameToServerFunction);
+
+            if (hasEncryptedVariables) {
+              state.hasEncryptedVariables = true;
+            }
 
             state.serverFunctions.add(functionName);
           }
@@ -207,87 +150,34 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
         ) {
-          let originalFunctionName = getFunctionName(path);
-          let capturedVariables = getCapturedVariables(path);
-
-          // functions that use encrypted variables must be async
-          if (capturedVariables.length > 0 && key && !path.node.async) {
-            throw new Error(
-              `Server functions that close over variables must be async. Please turn ${originalFunctionName} into an async function.`,
-            );
-          }
-
-          let params = path.node.params.map((param) => t.cloneNode(param));
-          let newParams = [
-            ...(capturedVariables.length > 0
-              ? [t.identifier(`tf$${key ? "encrypted" : "bound"}$vars`)]
-              : []),
-            ...params,
-          ];
-          let functionName = state.getUniqueFunctionName(originalFunctionName);
-          let functionDeclaration = t.functionDeclaration(
-            t.identifier(functionName),
-            newParams,
-            path.node.body,
-            false, // generator
-            path.node.async, // async
-          );
-
-          if (capturedVariables.length > 0) {
-            if (key) {
-              insertDecryptedVariable(
-                functionDeclaration,
-                capturedVariables,
-                key,
-              );
-              state.hasEncryptedVariables = true;
-            } else {
-              insertBoundVariables(functionDeclaration, capturedVariables);
-            }
-          }
-
-          let underProgramPath = findParentUnderProgram(path);
-          if (!underProgramPath) {
-            return;
-          }
-
-          let [newFunctionPath] =
-            underProgramPath.insertBefore(functionDeclaration);
-          insertRegisterServerReference(
-            newFunctionPath,
+          let {
+            functionDeclaration,
             functionName,
+            capturedVariables,
+            hasEncryptedVariables,
+          } = createServerFunction({
+            path,
+            state,
+            key,
+          });
+
+          insertFunctionIntoProgram({
+            functionDeclaration,
             moduleId,
-          );
+            path,
+          });
 
-          let assignTo: t.CallExpression | t.Identifier;
-          if (capturedVariables.length > 0) {
-            let binding = t.callExpression(
-              t.memberExpression(
-                t.identifier(functionName),
-                t.identifier("bind"),
-              ),
-              [
-                t.nullLiteral(),
-                key
-                  ? t.callExpression(t.identifier("encrypt"), [
-                      t.arrayExpression(
-                        capturedVariables.map((varName) =>
-                          t.identifier(varName),
-                        ),
-                      ),
-                      key,
-                    ])
-                  : t.arrayExpression(
-                      capturedVariables.map((varName) => t.identifier(varName)),
-                    ),
-              ],
-            );
-            assignTo = binding;
-          } else {
-            assignTo = t.identifier(functionName);
+          let binding = createBinding({
+            functionName,
+            capturedVariables,
+            key,
+          });
+
+          path.replaceWith(binding);
+
+          if (hasEncryptedVariables) {
+            state.hasEncryptedVariables = true;
           }
-
-          path.replaceWith(assignTo);
 
           state.serverFunctions.add(functionName);
         }
@@ -300,87 +190,34 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
         ) {
-          let originalFunctionName = getFunctionName(path);
-          let capturedVariables = getCapturedVariables(path);
-
-          // functions that use encrypted variables must be async
-          if (capturedVariables.length > 0 && key && !path.node.async) {
-            throw new Error(
-              `Server functions that close over variables must be async. Please turn ${originalFunctionName} into an async function.`,
-            );
-          }
-
-          let params = path.node.params.map((param) => t.cloneNode(param));
-          let newParams = [
-            ...(capturedVariables.length > 0
-              ? [t.identifier(`tf$${key ? "encrypted" : "bound"}$vars`)]
-              : []),
-            ...params,
-          ];
-          let functionName = state.getUniqueFunctionName(originalFunctionName);
-          let functionDeclaration = t.functionDeclaration(
-            t.identifier(functionName),
-            newParams,
-            path.node.body,
-            false, // generator
-            path.node.async, // async
-          );
-
-          if (capturedVariables.length > 0) {
-            if (key) {
-              insertDecryptedVariable(
-                functionDeclaration,
-                capturedVariables,
-                key,
-              );
-              state.hasEncryptedVariables = true;
-            } else {
-              insertBoundVariables(functionDeclaration, capturedVariables);
-            }
-          }
-
-          let underProgramPath = findParentUnderProgram(path);
-          if (!underProgramPath) {
-            return;
-          }
-
-          let [newFunctionPath] =
-            underProgramPath.insertBefore(functionDeclaration);
-          insertRegisterServerReference(
-            newFunctionPath,
+          let {
+            functionDeclaration,
             functionName,
+            capturedVariables,
+            hasEncryptedVariables,
+          } = createServerFunction({
+            path,
+            state,
+            key,
+          });
+
+          insertFunctionIntoProgram({
+            functionDeclaration,
             moduleId,
-          );
+            path,
+          });
 
-          let assignTo: t.CallExpression | t.Identifier;
-          if (capturedVariables.length > 0) {
-            let binding = t.callExpression(
-              t.memberExpression(
-                t.identifier(functionName),
-                t.identifier("bind"),
-              ),
-              [
-                t.nullLiteral(),
-                key
-                  ? t.callExpression(t.identifier("encrypt"), [
-                      t.arrayExpression(
-                        capturedVariables.map((varName) =>
-                          t.identifier(varName),
-                        ),
-                      ),
-                      key,
-                    ])
-                  : t.arrayExpression(
-                      capturedVariables.map((varName) => t.identifier(varName)),
-                    ),
-              ],
-            );
-            assignTo = binding;
-          } else {
-            assignTo = t.identifier(functionName);
+          let binding = createBinding({
+            functionName,
+            capturedVariables,
+            key,
+          });
+
+          path.replaceWith(binding);
+
+          if (hasEncryptedVariables) {
+            state.hasEncryptedVariables = true;
           }
-
-          path.replaceWith(assignTo);
 
           state.serverFunctions.add(functionName);
         }
@@ -391,92 +228,39 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
         ) {
-          let originalFunctionName = path.node.key.name;
-          let capturedVariables = getCapturedVariables(path);
-
-          // functions that use encrypted variables must be async
-          if (capturedVariables.length > 0 && key && !path.node.async) {
-            throw new Error(
-              `Server functions that close over variables must be async. Please turn ${originalFunctionName} into an async function.`,
-            );
-          }
-
-          let params = path.node.params.map((param) => t.cloneNode(param));
-          let newParams = [
-            ...(capturedVariables.length > 0
-              ? [t.identifier(`tf$${key ? "encrypted" : "bound"}$vars`)]
-              : []),
-            ...params,
-          ];
-          let functionName = state.getUniqueFunctionName(originalFunctionName);
-          let functionDeclaration = t.functionDeclaration(
-            t.identifier(functionName),
-            newParams,
-            path.node.body,
-            false, // generator
-            path.node.async, // async
-          );
-
-          if (capturedVariables.length > 0) {
-            if (key) {
-              insertDecryptedVariable(
-                functionDeclaration,
-                capturedVariables,
-                key,
-              );
-              state.hasEncryptedVariables = true;
-            } else {
-              insertBoundVariables(functionDeclaration, capturedVariables);
-            }
-          }
-
-          let underProgramPath = findParentUnderProgram(path);
-          if (!underProgramPath) {
-            return;
-          }
-
-          let [newFunctionPath] =
-            underProgramPath.insertBefore(functionDeclaration);
-          insertRegisterServerReference(
-            newFunctionPath,
+          let {
+            functionDeclaration,
             functionName,
-            moduleId,
-          );
+            capturedVariables,
+            hasEncryptedVariables,
+          } = createServerFunction({
+            path,
+            state,
+            key,
+          });
 
-          let assignTo: t.CallExpression | t.Identifier;
-          if (capturedVariables.length > 0) {
-            let binding = t.callExpression(
-              t.memberExpression(
-                t.identifier(functionName),
-                t.identifier("bind"),
-              ),
-              [
-                t.nullLiteral(),
-                key
-                  ? t.callExpression(t.identifier("encrypt"), [
-                      t.arrayExpression(
-                        capturedVariables.map((varName) =>
-                          t.identifier(varName),
-                        ),
-                      ),
-                      key,
-                    ])
-                  : t.arrayExpression(
-                      capturedVariables.map((varName) => t.identifier(varName)),
-                    ),
-              ],
-            );
-            assignTo = binding;
-          } else {
-            assignTo = t.identifier(functionName);
-          }
+          insertFunctionIntoProgram({
+            functionDeclaration,
+            moduleId,
+            path,
+          });
+
+          let binding = createBinding({
+            functionName,
+            capturedVariables,
+            key,
+          });
 
           let newProperty = t.objectProperty(
             t.identifier(path.node.key.name),
-            assignTo,
+            binding,
           );
 
           path.replaceWith(newProperty);
+
+          if (hasEncryptedVariables) {
+            state.hasEncryptedVariables = true;
+          }
 
           state.serverFunctions.add(functionName);
         }
@@ -553,6 +337,97 @@ function hasUseServerDirective(body: t.BlockStatement | undefined) {
   );
 }
 
+function createServerFunction({
+  path,
+  state,
+  key,
+}: {
+  path: NodePath<
+    | t.FunctionDeclaration
+    | t.FunctionExpression
+    | t.ArrowFunctionExpression
+    | t.ObjectMethod
+  >;
+  state: State;
+  key?: t.Expression;
+}) {
+  let originalFunctionName = getFunctionName(path);
+  let capturedVariables = getCapturedVariables(path);
+
+  // functions that use encrypted variables must be async
+  if (capturedVariables.length > 0 && key && !path.node.async) {
+    throw new Error(
+      `Server functions that close over variables must be async. Please turn ${originalFunctionName} into an async function.`,
+    );
+  }
+
+  if (!t.isBlockStatement(path.node.body)) {
+    throw new Error(
+      `Server functions must have a block body. Please convert ${originalFunctionName} to a block function.`,
+    );
+  }
+
+  let functionName = state.getUniqueFunctionName(originalFunctionName);
+  let params = path.node.params.map((param) => t.cloneNode(param));
+  let newParams = [
+    ...(capturedVariables.length > 0
+      ? [t.identifier(`tf$${key ? "encrypted" : "bound"}$vars`)]
+      : []),
+    ...params,
+  ];
+  let functionDeclaration = t.functionDeclaration(
+    t.identifier(functionName),
+    newParams,
+    path.node.body,
+    false, // generator
+    path.node.async, // async
+  );
+
+  if (capturedVariables.length > 0) {
+    if (key) {
+      insertDecryptedVariables(functionDeclaration, capturedVariables, key);
+    } else {
+      insertBoundVariables(functionDeclaration, capturedVariables);
+    }
+  }
+
+  return {
+    functionDeclaration,
+    functionName,
+    capturedVariables,
+    hasEncryptedVariables: capturedVariables.length > 0 && key,
+  };
+}
+
+function insertFunctionIntoProgram({
+  functionDeclaration,
+  path,
+  moduleId,
+}: {
+  functionDeclaration: t.FunctionDeclaration;
+  moduleId: string;
+  path: NodePath<
+    | t.FunctionDeclaration
+    | t.FunctionExpression
+    | t.ArrowFunctionExpression
+    | t.ObjectMethod
+  >;
+}) {
+  let underProgramPath = findParentUnderProgram(path);
+  if (!underProgramPath) {
+    throw new Error(
+      "Failed to find parent program node. This is a bug in @twofold/server-function-transforms.",
+    );
+  }
+
+  let [newFunctionPath] = underProgramPath.insertBefore(functionDeclaration);
+  let functionName = getFunctionName(newFunctionPath);
+
+  insertRegisterServerReference(newFunctionPath, functionName, moduleId);
+
+  return newFunctionPath;
+}
+
 function findParentUnderProgram(path: NodePath) {
   if (path.parentPath?.isProgram()) {
     return path;
@@ -581,6 +456,41 @@ function insertRegisterServerReference(
   path.insertAfter(callExpression);
 }
 
+function createBinding({
+  functionName,
+  capturedVariables,
+  key,
+}: {
+  functionName: string;
+  capturedVariables: string[];
+  key?: t.Expression;
+}) {
+  let functionBinding: t.CallExpression | t.Identifier;
+  if (capturedVariables.length > 0) {
+    let binding = t.callExpression(
+      t.memberExpression(t.identifier(functionName), t.identifier("bind")),
+      [
+        t.nullLiteral(),
+        key
+          ? t.callExpression(t.identifier("encrypt"), [
+              t.arrayExpression(
+                capturedVariables.map((varName) => t.identifier(varName)),
+              ),
+              key,
+            ])
+          : t.arrayExpression(
+              capturedVariables.map((varName) => t.identifier(varName)),
+            ),
+      ],
+    );
+    functionBinding = binding;
+  } else {
+    functionBinding = t.identifier(functionName);
+  }
+
+  return functionBinding;
+}
+
 function insertBoundVariables(
   node: t.FunctionDeclaration,
   variables: string[],
@@ -591,14 +501,14 @@ function insertBoundVariables(
     return;
   }
 
-  let useServerIndex = body.directives.findIndex(
+  let insertIndex = body.directives.findIndex(
     (directive) =>
       t.isDirectiveLiteral(directive.value) &&
       directive.value.value === "use server",
   );
 
-  if (useServerIndex === -1) {
-    return;
+  if (insertIndex === -1) {
+    insertIndex = 0;
   }
 
   let createVariables = t.variableDeclaration("let", [
@@ -608,10 +518,11 @@ function insertBoundVariables(
     ),
   ]);
 
-  body.body.unshift(createVariables);
+  body.body.splice(insertIndex, 0, createVariables);
+  // body.body.unshift(createVariables);
 }
 
-function insertDecryptedVariable(
+function insertDecryptedVariables(
   node: t.FunctionDeclaration,
   variables: string[],
   key: t.ArgumentPlaceholder | t.Expression,
@@ -622,13 +533,13 @@ function insertDecryptedVariable(
     return;
   }
 
-  let useServerIndex = body.directives.findIndex(
+  let insertIndex = body.directives.findIndex(
     (directive) =>
       t.isDirectiveLiteral(directive.value) &&
       directive.value.value === "use server",
   );
 
-  if (useServerIndex === -1) {
+  if (insertIndex === -1) {
     return;
   }
 
@@ -644,13 +555,26 @@ function insertDecryptedVariable(
     ),
   ]);
 
-  // body.body.splice(useServerIndex, 0, decrypt);
-  body.body.unshift(decryptVariables);
+  body.body.splice(insertIndex, 0, decryptVariables);
+  // body.body.unshift(decryptVariables);
 }
 
 function getFunctionName(
-  path: NodePath<t.FunctionExpression | t.ArrowFunctionExpression>,
+  path: NodePath<
+    | t.FunctionDeclaration
+    | t.FunctionExpression
+    | t.ArrowFunctionExpression
+    | t.ObjectMethod
+  >,
 ) {
+  if (t.isObjectMethod(path.node) && t.isIdentifier(path.node.key)) {
+    return path.node.key.name;
+  }
+
+  if (t.isFunctionDeclaration(path.node) && path.node.id) {
+    return path.node.id.name;
+  }
+
   let parent = path.parent;
 
   if (t.isVariableDeclarator(parent) && t.isIdentifier(parent.id)) {

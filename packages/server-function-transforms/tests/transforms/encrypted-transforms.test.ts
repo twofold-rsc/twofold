@@ -2,6 +2,7 @@ import { expect, test, describe } from "vitest";
 import dedent from "dedent";
 import { transform } from "../../src/index";
 import { envKey } from "../../src/index";
+import { stringKey } from "../../src/key";
 
 describe("encrypted captured variables", () => {
   test("it should encrypt and decrypt function declarations", async () => {
@@ -395,6 +396,116 @@ describe("encrypted captured variables", () => {
         const greet = tf$serverFunction$0$greet.bind(null, encrypt([name], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet.bind(null, other)
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$greet };"
+    `);
+  });
+});
+
+describe("keys", () => {
+  test("it should allow for ENV keys", async () => {
+    let code = dedent`
+      export default function Page({ name }) {
+        async function greet() {
+          "use server";
+          console.log("hello", name)
+        }
+  
+        return <form action={greet} />;
+      }
+    `;
+
+    let result = await transform({
+      moduleId: "test",
+      input: {
+        code,
+        language: "jsx",
+      },
+      encryption: {
+        key: envKey("ENV_KEY"),
+      },
+    });
+
+    expect(result.code).toContain(
+      'let [name] = await decrypt(await tf$encrypted$vars, process.env["ENV_KEY"]);',
+    );
+
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      if (typeof process.env["ENV_KEY"] !== "string") {
+        throw new Error("Invalid key. Encryption key is missing or undefined.");
+      }
+      async function tf$serverFunction$0$greet(tf$encrypted$vars) {
+        "use server";
+
+        let [name] = await decrypt(await tf$encrypted$vars, process.env["ENV_KEY"]);
+        console.log("hello", name);
+      }
+      registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
+      function Page({
+        name
+      }) {
+        const greet = tf$serverFunction$0$greet.bind(null, encrypt([name], process.env["ENV_KEY"]));
+        return /* @__PURE__ */jsx("form", {
+          action: greet
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$greet };"
+    `);
+  });
+
+  test("it should allow for string keys", async () => {
+    let code = dedent`
+      export default function Page({ name }) {
+        async function greet() {
+          "use server";
+          console.log("hello", name)
+        }
+  
+        return <form action={greet} />;
+      }
+    `;
+
+    let result = await transform({
+      moduleId: "test",
+      input: {
+        code,
+        language: "jsx",
+      },
+      encryption: {
+        key: stringKey("a-plain-text-string-password"),
+      },
+    });
+
+    expect(result.code).toContain(
+      'let [name] = await decrypt(await tf$encrypted$vars, "a-plain-text-string-password");',
+    );
+
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      if (typeof "a-plain-text-string-password" !== "string") {
+        throw new Error("Invalid key. Encryption key is missing or undefined.");
+      }
+      async function tf$serverFunction$0$greet(tf$encrypted$vars) {
+        "use server";
+
+        let [name] = await decrypt(await tf$encrypted$vars, "a-plain-text-string-password");
+        console.log("hello", name);
+      }
+      registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
+      function Page({
+        name
+      }) {
+        const greet = tf$serverFunction$0$greet.bind(null, encrypt([name], "a-plain-text-string-password"));
+        return /* @__PURE__ */jsx("form", {
+          action: greet
         });
       }
       export { Page as default };

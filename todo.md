@@ -7,9 +7,6 @@ framework
 
 - rename src to app, add /app/components
 - dont auto bundle (maybe only bundle things that depend on react?)
-- encrypted actions
-- finish up encrypted transforms tests
-- finish up test cases
 - rename actions folder again
 - kitchen sink - write basic test for binding an object
 - entries builder needs to crawl \*.ts,tsx so that it can find conditional imports
@@ -18,7 +15,6 @@ framework
   - server function so it can discover externals
 - cleanup estree/acorn deps
 - create app with secrets (crypto.randomBytes)
-
 - README
 
 - long cache headers for production

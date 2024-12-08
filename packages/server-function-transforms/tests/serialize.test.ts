@@ -34,11 +34,16 @@ describe("serialization", () => {
     expect(deserialized).toEqual({ hello: "world" });
   });
 
-  test.skip("it should not be able to serialize a function", async () => {
-    expect(async () => {
+  test("it should not be able to serialize a function", async () => {
+    let originalError = console.error;
+    console.error = () => {};
+
+    await expect(async () => {
       await encode(() => {
         console.log("hello");
       });
     }).rejects.toThrowError();
+
+    console.error = originalError;
   });
 });
