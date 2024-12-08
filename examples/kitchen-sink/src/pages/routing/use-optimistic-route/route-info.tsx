@@ -42,7 +42,7 @@ export function RouteInfo() {
             </td>
           </tr>
           <tr>
-            <td>Current search params: </td>
+            <td>Optimistic search params: </td>
             <td>
               <span className="font-mono text-sm text-gray-900">
                 {optimisticRoute.searchParams.toString()}
