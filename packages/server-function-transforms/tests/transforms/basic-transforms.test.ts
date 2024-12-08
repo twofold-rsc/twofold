@@ -1,5 +1,5 @@
 import { expect, test, describe } from "vitest";
-import { transform } from "../src/index.js";
+import { transform } from "../../src/index.js";
 import dedent from "dedent";
 
 describe("transforms", () => {
@@ -829,16 +829,17 @@ describe("closures and captured variables", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction$0$greet(name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, [name]);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -874,16 +875,17 @@ describe("closures and captured variables", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let greeting = "hello";
-      function tf$serverFunction$0$greet(name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         console.log(greeting, name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, [name]);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -920,16 +922,17 @@ describe("closures and captured variables", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       import { db } from "./db";
-      function tf$serverFunction$0$greet(name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         db.query("INSERT INTO users (name) VALUES ($1)", [name]);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, [name]);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -968,9 +971,10 @@ describe("closures and captured variables", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       import { db } from "./db";
-      function tf$serverFunction$0$greet(greeting, name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [greeting, name] = tf$bound$vars;
         console.log(greeting, name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
@@ -979,7 +983,7 @@ describe("closures and captured variables", () => {
       }) {
         let result = await db.query("SELECT greeting FROM greetings WHERE name = $1", [name]);
         let greeting = result.rows[0].greeting;
-        const greet = tf$serverFunction$0$greet.bind(null, greeting, name);
+        const greet = tf$serverFunction$0$greet.bind(null, [greeting, name]);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -1012,16 +1016,17 @@ describe("closures and captured variables", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction$0$greet(name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, [name]);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -1052,9 +1057,10 @@ describe("closures and captured variables", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction$0$action(name) {
+      function tf$serverFunction$0$action(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
@@ -1062,7 +1068,7 @@ describe("closures and captured variables", () => {
         name
       }) {
         return /* @__PURE__ */jsx("form", {
-          action: tf$serverFunction$0$action.bind(null, name)
+          action: tf$serverFunction$0$action.bind(null, [name])
         });
       }
       export { Page as default };
@@ -1095,9 +1101,10 @@ describe("closures and captured variables", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction$0$greet(name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
@@ -1105,7 +1112,7 @@ describe("closures and captured variables", () => {
         name
       }) {
         let obj = {
-          greet: tf$serverFunction$0$greet.bind(null, name)
+          greet: tf$serverFunction$0$greet.bind(null, [name])
         };
         return /* @__PURE__ */jsx("form", {
           action: obj.greet
@@ -1145,9 +1152,10 @@ describe("closures and captured variables", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction$0$action(greet) {
+      function tf$serverFunction$0$action(tf$bound$vars) {
         "use server";
 
+        let [greet] = tf$bound$vars;
         greet();
       }
       registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
@@ -1157,13 +1165,59 @@ describe("closures and captured variables", () => {
         function greet() {
           console.log("hello", name);
         }
-        const action = tf$serverFunction$0$action.bind(null, greet);
+        const action = tf$serverFunction$0$action.bind(null, [greet]);
         return /* @__PURE__ */jsx("form", {
           action
         });
       }
       export { Page as default };
       export { tf$serverFunction$0$action };"
+    `);
+  });
+
+  test("it should respect the order of closed over variables and manually bound variables", async () => {
+    let code = dedent`
+      export default function Page({ name }) {
+        let other = 123;
+
+        async function greet(other) {
+          "use server";
+          console.log("hello", name, other)
+        }
+
+        return <form action={greet.bind(null, other)} />;
+      }
+    `;
+
+    let result = await transform({
+      moduleId: "test",
+      input: {
+        code,
+        language: "jsx",
+      },
+    });
+
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      async function tf$serverFunction$0$greet(tf$bound$vars, other2) {
+        "use server";
+
+        let [name] = tf$bound$vars;
+        console.log("hello", name, other2);
+      }
+      registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
+      function Page({
+        name
+      }) {
+        let other = 123;
+        const greet = tf$serverFunction$0$greet.bind(null, [name]);
+        return /* @__PURE__ */jsx("form", {
+          action: greet.bind(null, other)
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$greet };"
     `);
   });
 

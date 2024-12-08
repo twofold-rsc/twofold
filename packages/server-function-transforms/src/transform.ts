@@ -1,4 +1,4 @@
-import { NodePath, PluginObj, Node } from "@babel/core";
+import { NodePath, PluginObj } from "@babel/core";
 import { transformAsync } from "@babel/core";
 import generate from "@babel/generator";
 import * as t from "@babel/types";
@@ -122,9 +122,9 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               state.getUniqueFunctionName(originalFunctionName);
             let params = path.node.params.map((param) => t.cloneNode(param));
             let newParams = [
-              ...capturedVariables.map((varName) =>
-                t.identifier(`${key ? "tf$encrypted$" : ""}${varName}`),
-              ),
+              ...(capturedVariables.length > 0
+                ? [t.identifier(`tf$${key ? "encrypted" : "bound"}$vars`)]
+                : []),
               ...params,
             ];
             let functionDeclaration = t.functionDeclaration(
@@ -135,12 +135,17 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               path.node.async, // async
             );
 
-            if (!!key && capturedVariables.length > 0) {
-              for (let varName of capturedVariables) {
-                insertDecryptedVariable(functionDeclaration, varName, key);
+            if (capturedVariables.length > 0) {
+              if (key) {
+                insertDecryptedVariable(
+                  functionDeclaration,
+                  capturedVariables,
+                  key,
+                );
+                state.hasEncryptedVariables = true;
+              } else {
+                insertBoundVariables(functionDeclaration, capturedVariables);
               }
-
-              state.hasEncryptedVariables = true;
             }
 
             let underProgramPath = findParentUnderProgram(path);
@@ -165,14 +170,20 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
                 ),
                 [
                   t.nullLiteral(),
-                  ...capturedVariables.map((varName) =>
-                    key
-                      ? t.callExpression(t.identifier("encrypt"), [
+                  key
+                    ? t.callExpression(t.identifier("encrypt"), [
+                        t.arrayExpression(
+                          capturedVariables.map((varName) =>
+                            t.identifier(varName),
+                          ),
+                        ),
+                        key,
+                      ])
+                    : t.arrayExpression(
+                        capturedVariables.map((varName) =>
                           t.identifier(varName),
-                          key,
-                        ])
-                      : t.identifier(varName),
-                  ),
+                        ),
+                      ),
                 ],
               );
               assignTo = binding;
@@ -180,6 +191,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               assignTo = t.identifier(functionName);
             }
 
+            // should be let
             let assignToServerFunction = t.variableDeclaration("const", [
               t.variableDeclarator(t.identifier(name), assignTo),
             ]);
@@ -207,7 +219,9 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
 
           let params = path.node.params.map((param) => t.cloneNode(param));
           let newParams = [
-            ...capturedVariables.map((varName) => t.identifier(varName)),
+            ...(capturedVariables.length > 0
+              ? [t.identifier(`tf$${key ? "encrypted" : "bound"}$vars`)]
+              : []),
             ...params,
           ];
           let functionName = state.getUniqueFunctionName(originalFunctionName);
@@ -215,7 +229,22 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
             t.identifier(functionName),
             newParams,
             path.node.body,
+            false, // generator
+            path.node.async, // async
           );
+
+          if (capturedVariables.length > 0) {
+            if (key) {
+              insertDecryptedVariable(
+                functionDeclaration,
+                capturedVariables,
+                key,
+              );
+              state.hasEncryptedVariables = true;
+            } else {
+              insertBoundVariables(functionDeclaration, capturedVariables);
+            }
+          }
 
           let underProgramPath = findParentUnderProgram(path);
           if (!underProgramPath) {
@@ -239,7 +268,18 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               ),
               [
                 t.nullLiteral(),
-                ...capturedVariables.map((varName) => t.identifier(varName)),
+                key
+                  ? t.callExpression(t.identifier("encrypt"), [
+                      t.arrayExpression(
+                        capturedVariables.map((varName) =>
+                          t.identifier(varName),
+                        ),
+                      ),
+                      key,
+                    ])
+                  : t.arrayExpression(
+                      capturedVariables.map((varName) => t.identifier(varName)),
+                    ),
               ],
             );
             assignTo = binding;
@@ -272,7 +312,9 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
 
           let params = path.node.params.map((param) => t.cloneNode(param));
           let newParams = [
-            ...capturedVariables.map((varName) => t.identifier(varName)),
+            ...(capturedVariables.length > 0
+              ? [t.identifier(`tf$${key ? "encrypted" : "bound"}$vars`)]
+              : []),
             ...params,
           ];
           let functionName = state.getUniqueFunctionName(originalFunctionName);
@@ -280,7 +322,22 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
             t.identifier(functionName),
             newParams,
             path.node.body,
+            false, // generator
+            path.node.async, // async
           );
+
+          if (capturedVariables.length > 0) {
+            if (key) {
+              insertDecryptedVariable(
+                functionDeclaration,
+                capturedVariables,
+                key,
+              );
+              state.hasEncryptedVariables = true;
+            } else {
+              insertBoundVariables(functionDeclaration, capturedVariables);
+            }
+          }
 
           let underProgramPath = findParentUnderProgram(path);
           if (!underProgramPath) {
@@ -304,7 +361,18 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               ),
               [
                 t.nullLiteral(),
-                ...capturedVariables.map((varName) => t.identifier(varName)),
+                key
+                  ? t.callExpression(t.identifier("encrypt"), [
+                      t.arrayExpression(
+                        capturedVariables.map((varName) =>
+                          t.identifier(varName),
+                        ),
+                      ),
+                      key,
+                    ])
+                  : t.arrayExpression(
+                      capturedVariables.map((varName) => t.identifier(varName)),
+                    ),
               ],
             );
             assignTo = binding;
@@ -335,7 +403,9 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
 
           let params = path.node.params.map((param) => t.cloneNode(param));
           let newParams = [
-            ...capturedVariables.map((varName) => t.identifier(varName)),
+            ...(capturedVariables.length > 0
+              ? [t.identifier(`tf$${key ? "encrypted" : "bound"}$vars`)]
+              : []),
             ...params,
           ];
           let functionName = state.getUniqueFunctionName(originalFunctionName);
@@ -343,7 +413,22 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
             t.identifier(functionName),
             newParams,
             path.node.body,
+            false, // generator
+            path.node.async, // async
           );
+
+          if (capturedVariables.length > 0) {
+            if (key) {
+              insertDecryptedVariable(
+                functionDeclaration,
+                capturedVariables,
+                key,
+              );
+              state.hasEncryptedVariables = true;
+            } else {
+              insertBoundVariables(functionDeclaration, capturedVariables);
+            }
+          }
 
           let underProgramPath = findParentUnderProgram(path);
           if (!underProgramPath) {
@@ -367,7 +452,18 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               ),
               [
                 t.nullLiteral(),
-                ...capturedVariables.map((varName) => t.identifier(varName)),
+                key
+                  ? t.callExpression(t.identifier("encrypt"), [
+                      t.arrayExpression(
+                        capturedVariables.map((varName) =>
+                          t.identifier(varName),
+                        ),
+                      ),
+                      key,
+                    ])
+                  : t.arrayExpression(
+                      capturedVariables.map((varName) => t.identifier(varName)),
+                    ),
               ],
             );
             assignTo = binding;
@@ -421,6 +517,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               t.stringLiteral(encryptionModule),
             );
             path.unshiftContainer("body", importDeclaration);
+            insertKeyCheck(path, key);
           }
 
           // make sure all server functions are exported
@@ -484,9 +581,39 @@ function insertRegisterServerReference(
   path.insertAfter(callExpression);
 }
 
+function insertBoundVariables(
+  node: t.FunctionDeclaration,
+  variables: string[],
+) {
+  let body = node.body;
+
+  if (!body || !body.directives) {
+    return;
+  }
+
+  let useServerIndex = body.directives.findIndex(
+    (directive) =>
+      t.isDirectiveLiteral(directive.value) &&
+      directive.value.value === "use server",
+  );
+
+  if (useServerIndex === -1) {
+    return;
+  }
+
+  let createVariables = t.variableDeclaration("let", [
+    t.variableDeclarator(
+      t.arrayPattern(variables.map((variable) => t.identifier(variable))),
+      t.identifier("tf$bound$vars"),
+    ),
+  ]);
+
+  body.body.unshift(createVariables);
+}
+
 function insertDecryptedVariable(
   node: t.FunctionDeclaration,
-  variable: string,
+  variables: string[],
   key: t.ArgumentPlaceholder | t.Expression,
 ) {
   let body = node.body;
@@ -505,18 +632,20 @@ function insertDecryptedVariable(
     return;
   }
 
-  let decrypt = t.variableDeclaration("let", [
+  let decryptVariables = t.variableDeclaration("let", [
     t.variableDeclarator(
-      t.identifier(variable),
-      t.callExpression(t.identifier("decrypt"), [
-        t.identifier(`tf$encrypted$${variable}`),
-        key,
-      ]),
+      t.arrayPattern(variables.map((variable) => t.identifier(variable))),
+      t.awaitExpression(
+        t.callExpression(t.identifier("decrypt"), [
+          t.awaitExpression(t.identifier(`tf$encrypted$vars`)),
+          key,
+        ]),
+      ),
     ),
   ]);
 
   // body.body.splice(useServerIndex, 0, decrypt);
-  body.body.unshift(decrypt);
+  body.body.unshift(decryptVariables);
 }
 
 function getFunctionName(
@@ -571,4 +700,33 @@ function getCapturedVariables(
   });
 
   return Array.from(capturedVariables);
+}
+
+function insertKeyCheck(path: NodePath<t.Program>, key: t.MemberExpression) {
+  let ifStatement = t.ifStatement(
+    t.binaryExpression(
+      "!==",
+      t.unaryExpression("typeof", key),
+      t.stringLiteral("string"),
+    ),
+    t.blockStatement([
+      t.throwStatement(
+        t.newExpression(t.identifier("Error"), [
+          t.stringLiteral(
+            `Invalid key. Encryption key is missing or undefined.`,
+          ),
+        ]),
+      ),
+    ]),
+  );
+
+  let body = path.get("body");
+  let firstNonImportIndex = body.findIndex(
+    (p) => !t.isImportDeclaration(p.node),
+  );
+
+  let insertPosition =
+    firstNonImportIndex === -1 ? body.length : firstNonImportIndex;
+
+  body[insertPosition].insertBefore(ifStatement);
 }

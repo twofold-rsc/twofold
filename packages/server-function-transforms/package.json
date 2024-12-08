@@ -3,14 +3,12 @@
   "version": "0.0.2",
   "description": "Transform and encrypt React Server Functions",
   "type": "module",
+  "main": "./dist/index.js",
   "files": [
     "dist"
   ],
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+    ".": "./dist/index.js"
   },
   "scripts": {
     "compile": "node compile.js && tsc --emitDeclarationOnly --declaration --outDir ./dist",
@@ -32,6 +30,7 @@
     "@babel/core": "^7.23.9",
     "@babel/generator": "^7.26.3",
     "@babel/types": "^7.26.3",
-    "esbuild": "0.24.0"
+    "esbuild": "0.24.0",
+    "react-server-dom-webpack": ">=19.0.0"
   }
 }

@@ -6,13 +6,20 @@ framework
 - sessions
 
 - rename src to app, add /app/components
-- encrypted actions
 - dont auto bundle (maybe only bundle things that depend on react?)
+- encrypted actions
+- finish up encrypted transforms tests
+- finish up test cases
+- rename actions folder again
+- kitchen sink - write basic test for binding an object
 - entries builder needs to crawl \*.ts,tsx so that it can find conditional imports
 - both entries builder and server function builder need to read contents
   - entries so it can discover paths
   - server function so it can discover externals
 - cleanup estree/acorn deps
+- create app with secrets (crypto.randomBytes)
+
+- README
 
 - long cache headers for production
 
@@ -183,6 +190,10 @@ Form
 - Link should only navigate with local urls
 - CSS should reload independent of RSC/CC reload. Possible for CC+CSS to change at same time.
 - Verify version of pnpm
+
+## Postgres
+
+- https://github.com/Olshansk/postgres_for_everything?tab=readme-ov-file
 
 ## Other
 

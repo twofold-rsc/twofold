@@ -30,17 +30,15 @@ export async function encrypt(plainText: string, password: string) {
     encoder.encode(plainText),
   );
 
-  let serialized = JSON.stringify({
-    ciphertext: Buffer.from(encrypted).toString(format),
-    iv: Buffer.from(iv).toString(format),
-  });
+  let ivText = Buffer.from(iv).toString(format);
+  let cipherText = Buffer.from(encrypted).toString(format);
 
-  return serialized;
+  return `${ivText}:${cipherText}`;
 }
 
 export async function decrypt(encrypted: string, password: string) {
   let decoder = new TextDecoder();
-  let { ciphertext, iv } = JSON.parse(encrypted);
+  let [iv, cipherText] = encrypted.split(":");
   let key = await deriveKeyFromString(password);
 
   let decrypted = await subtle.decrypt(
@@ -49,7 +47,7 @@ export async function decrypt(encrypted: string, password: string) {
       iv: Buffer.from(iv, format),
     },
     key,
-    Buffer.from(ciphertext, format),
+    Buffer.from(cipherText, format),
   );
 
   return decoder.decode(decrypted);

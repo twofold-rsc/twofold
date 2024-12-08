@@ -25,7 +25,7 @@
     "./not-found": "./src/http/not-found.ts",
     "./redirect": "./src/http/redirect.ts",
     "./render": "./src/render.ts",
-    "./encryption": "./src/utils/encryption.ts"
+    "./encryption": "./dist/backend/encryption.js"
   },
   "keywords": [],
   "author": "Ryan Toronto",
