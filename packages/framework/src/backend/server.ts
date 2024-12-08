@@ -1,3 +1,4 @@
+import "./monkey-patch.js";
 import { createServer } from "@hattip/adapter-node/native-fetch";
 import { parseHeaderValue } from "@hattip/headers";
 import { createRouter } from "@hattip/router";

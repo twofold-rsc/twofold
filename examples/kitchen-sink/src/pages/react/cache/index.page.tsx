@@ -35,13 +35,6 @@ async function WaterfallComponent() {
 }
 
 let getRandomNumber = cache(async () => {
-  console.log("getRandomNumber called");
   await new Promise((resolve) => setTimeout(resolve, 1000));
   return Math.floor(Math.random() * 1000);
 });
-
-// export let fetchData = async () => {
-//   console.log("fetchData called");
-//   await new Promise((resolve) => setTimeout(resolve, 1000));
-//   return "data";
-// };
