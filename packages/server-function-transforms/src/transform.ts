@@ -14,7 +14,7 @@ export async function transform({
     language: "js" | "jsx" | "ts" | "tsx";
   };
   encryption?: {
-    key: t.Node;
+    key: t.Expression;
     module?: string;
   };
   moduleId: string;
@@ -73,7 +73,7 @@ export async function transform({
 type Options = {
   moduleId: string;
   encryption: {
-    key?: t.ArgumentPlaceholder | t.Expression;
+    key?: t.Expression;
     module?: string;
   };
 };
@@ -502,7 +502,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           }
 
           // import encryption functions
-          if (hasEncryptedVariables) {
+          if (hasEncryptedVariables && key) {
             let importDeclaration = t.importDeclaration(
               [
                 t.importSpecifier(
@@ -702,7 +702,7 @@ function getCapturedVariables(
   return Array.from(capturedVariables);
 }
 
-function insertKeyCheck(path: NodePath<t.Program>, key: t.MemberExpression) {
+function insertKeyCheck(path: NodePath<t.Program>, key: t.Expression) {
   let ifStatement = t.ifStatement(
     t.binaryExpression(
       "!==",
