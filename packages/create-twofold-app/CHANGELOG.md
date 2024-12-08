@@ -1,5 +1,11 @@
 # create-twofold-app
 
+## 0.0.11
+
+### Patch Changes
+
+- Server action/function updates
+
 ## 0.0.10
 
 ### Patch Changes

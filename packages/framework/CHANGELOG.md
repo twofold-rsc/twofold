@@ -1,5 +1,13 @@
 # @twofold/framework
 
+## 0.0.45
+
+### Patch Changes
+
+- Server action/function updates
+- Updated dependencies
+  - @twofold/server-function-transforms@0.0.3
+
 ## 0.0.44
 
 ### Patch Changes
