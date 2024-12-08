@@ -1,37 +1,20 @@
 import { expect, test, describe } from "vitest";
-import { transform } from "../src/index.js";
-import { transform as esbuildTransform } from "esbuild";
+import { transform } from "../../src/index.js";
 import dedent from "dedent";
-
-async function rsc(strings: TemplateStringsArray, ...values: any[]) {
-  let content = strings.reduce(
-    (result, str, i) => result + str + (values[i] || ""),
-    "",
-  );
-
-  let result = await esbuildTransform(dedent(content), {
-    loader: "tsx",
-    jsx: "automatic",
-    format: "esm",
-  });
-
-  if (result.code) {
-    return result.code;
-  } else {
-    throw new Error("Failed to transform code");
-  }
-}
 
 describe("transforms", () => {
   test("it should not alter a file without server functions", async () => {
-    let code = await rsc`
+    let code = dedent`
       export async function Page() {
         return <div>Hello World</div>;
       }
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -48,7 +31,7 @@ describe("transforms", () => {
   });
 
   test("it should transform a 'use server' function defined in module scope", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       function increment() {
@@ -62,7 +45,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -97,7 +83,7 @@ describe("transforms", () => {
   });
 
   test("it should transform multiple 'use server' functions defined in module scope", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       function increment() {
@@ -121,7 +107,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -168,7 +157,7 @@ describe("transforms", () => {
   });
 
   test("it should keep the function async if it was given an async function", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       async function increment() {
@@ -183,7 +172,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -211,7 +203,7 @@ describe("transforms", () => {
   });
 
   test("it should transform a 'use server' function defined in a function expression", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       let increment = function() {
@@ -225,7 +217,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -255,7 +250,7 @@ describe("transforms", () => {
   });
 
   test("it should transform a 'use server' function defined in an arrow function", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       let increment = () => {
@@ -269,7 +264,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -299,7 +297,7 @@ describe("transforms", () => {
   });
 
   test("it should transform a 'use server' function defined in an object method", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
 
       let obj = {
@@ -315,7 +313,10 @@ describe("transforms", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -347,9 +348,47 @@ describe("transforms", () => {
   });
 });
 
+describe("errors", () => {
+  test("it should error if the code has a syntax error", async () => {
+    let code = dedent`
+      export async function Page() {
+        return <div>Hello World;
+      }
+    `;
+
+    await expect(async () => {
+      await transform({
+        input: {
+          code,
+          language: "jsx",
+        },
+        moduleId: "test",
+      });
+    }).rejects.toThrowError(/Transform failed with 1 error/);
+  });
+
+  test("it should error if the wrong language is used", async () => {
+    let code = dedent`
+      export async function Page(props: MyProps) {
+        return <div>Hello World<div>;
+      }
+    `;
+
+    await expect(async () => {
+      await transform({
+        input: {
+          code,
+          language: "js",
+        },
+        moduleId: "test",
+      });
+    }).rejects.toThrowError(/Unexpected token/);
+  });
+});
+
 describe("hoisting", () => {
   test("it should hoist 'use server' functions to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -363,7 +402,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -389,10 +431,90 @@ describe("hoisting", () => {
     `);
   });
 
-  test.todo("multiple functions with the same name");
+  test("it should hoist multiple functions with the same name", async () => {
+    let code = dedent`
+      let count = 0;
+
+      export default function Page() {
+        return (
+          <>
+            <ServerComponentA />
+            <ServerComponentB />
+          </>
+        );
+      }
+
+      function ServerComponentA() {
+        function increment() {
+          "use server";
+          count = count + 1;
+        }
+
+        return <form action={increment} />;
+      }
+
+      function ServerComponentB() {
+        function increment() {
+          "use server";
+          count = count + 1;
+        }
+
+        return <form action={increment} />;
+      } 
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toHaveLength(2);
+    expect(result.serverFunctions).toContain("tf$serverFunction$0$increment");
+    expect(result.serverFunctions).toContain("tf$serverFunction$1$increment");
+
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+      let count = 0;
+      function Page() {
+        return /* @__PURE__ */jsxs(Fragment, {
+          children: [/* @__PURE__ */jsx(ServerComponentA, {}), /* @__PURE__ */jsx(ServerComponentB, {})]
+        });
+      }
+      function tf$serverFunction$0$increment() {
+        "use server";
+
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
+      function ServerComponentA() {
+        const increment = tf$serverFunction$0$increment;
+        return /* @__PURE__ */jsx("form", {
+          action: increment
+        });
+      }
+      function tf$serverFunction$1$increment() {
+        "use server";
+
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$1$increment, "test", "tf$serverFunction$1$increment");
+      function ServerComponentB() {
+        const increment = tf$serverFunction$1$increment;
+        return /* @__PURE__ */jsx("form", {
+          action: increment
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$increment, tf$serverFunction$1$increment };"
+    `);
+  });
 
   test("it should hoist a 'use server' function defined as a function expression to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -406,7 +528,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -433,7 +558,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist a 'use server' function defined as an arrow function to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -447,7 +572,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -474,7 +602,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist a 'use server' function defined in an object method", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
        
       export default function Page() {
@@ -490,7 +618,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -519,7 +650,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist an anonymous 'use server' function to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -531,7 +662,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -558,7 +692,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist an anonymous 'use server' function used in an array to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -572,7 +706,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -602,7 +739,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist an anonymous 'use server' function used as an object property to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -618,7 +755,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -646,10 +786,67 @@ describe("hoisting", () => {
     `);
   });
 
-  test.todo("multiple anonymous functions");
+  test("it should hoist multiple anonymous 'use server' functions", async () => {
+    let code = dedent`
+      let count = 0;
+        
+      export default function Page() {
+        return (
+          <div>
+            <form action={() => {
+              "use server";
+              count = count + 1;
+            }} />
+            <form action={() => {
+              "use server";
+              count = count + 1;
+            }} />
+          </div>
+        );
+      }
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toHaveLength(2);
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx, jsxs } from "react/jsx-runtime";
+      let count = 0;
+      function tf$serverFunction$0$action() {
+        "use server";
+
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
+      function tf$serverFunction$1$action() {
+        "use server";
+
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$1$action, "test", "tf$serverFunction$1$action");
+      function Page() {
+        return /* @__PURE__ */jsxs("div", {
+          children: [/* @__PURE__ */jsx("form", {
+            action: tf$serverFunction$0$action
+          }), /* @__PURE__ */jsx("form", {
+            action: tf$serverFunction$1$action
+          })]
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$action, tf$serverFunction$1$action };"
+    `);
+  });
 
   test("it should hoist a 'use server' function used as an object property to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -665,7 +862,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -694,7 +894,7 @@ describe("hoisting", () => {
   });
 
   test("it should hoist a 'use server' function returned from another function to the top of the module", async () => {
-    let code = await rsc`
+    let code = dedent`
       let count = 0;
         
       export default function Page() {
@@ -710,7 +910,10 @@ describe("hoisting", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -741,7 +944,7 @@ describe("hoisting", () => {
 
 describe("closures and captured variables", () => {
   test("it should move closed over variables to hoisted arguments", async () => {
-    let code = await rsc`
+    let code = dedent`
       export default function Page({ name }) {
         function greet() {
           "use server";
@@ -753,23 +956,27 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction$0$greet(name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, [name]);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -780,7 +987,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should not move closed over variables that are in module scope", async () => {
-    let code = await rsc`
+    let code = dedent`
       let greeting = "hello";
 
       export default function Page({ name }) {
@@ -794,7 +1001,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -802,16 +1012,17 @@ describe("closures and captured variables", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       let greeting = "hello";
-      function tf$serverFunction$0$greet(name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         console.log(greeting, name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, [name]);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -822,7 +1033,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should not move closed over variables that are imported", async () => {
-    let code = await rsc`
+    let code = dedent`
       import { db } from "./db";
 
       export default function Page({ name }) {
@@ -837,7 +1048,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -845,16 +1059,17 @@ describe("closures and captured variables", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       import { db } from "./db";
-      function tf$serverFunction$0$greet(name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         db.query("INSERT INTO users (name) VALUES ($1)", [name]);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, [name]);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -865,7 +1080,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should move multiple closed over variables to arguments", async () => {
-    let code = await rsc`
+    let code = dedent`
       import { db } from "./db";
 
       export default async function Page({ name }) {
@@ -882,7 +1097,10 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
@@ -890,9 +1108,10 @@ describe("closures and captured variables", () => {
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       import { db } from "./db";
-      function tf$serverFunction$0$greet(greeting, name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [greeting, name] = tf$bound$vars;
         console.log(greeting, name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
@@ -901,7 +1120,7 @@ describe("closures and captured variables", () => {
       }) {
         let result = await db.query("SELECT greeting FROM greetings WHERE name = $1", [name]);
         let greeting = result.rows[0].greeting;
-        const greet = tf$serverFunction$0$greet.bind(null, greeting, name);
+        const greet = tf$serverFunction$0$greet.bind(null, [greeting, name]);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -912,7 +1131,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should move closed over variables in a function expression to arguments", async () => {
-    let code = await rsc`
+    let code = dedent`
       export default function Page({ name }) {
         const greet = function() {
           "use server";
@@ -924,23 +1143,27 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction$0$greet(name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, name);
+        const greet = tf$serverFunction$0$greet.bind(null, [name]);
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -951,7 +1174,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should move closed over variables in an arrow function to arguments", async () => {
-    let code = await rsc`
+    let code = dedent`
       export default function Page({ name }) {
         return <form action={() => {
           "use server";
@@ -961,16 +1184,20 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction$0$action(name) {
+      function tf$serverFunction$0$action(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
@@ -978,7 +1205,7 @@ describe("closures and captured variables", () => {
         name
       }) {
         return /* @__PURE__ */jsx("form", {
-          action: tf$serverFunction$0$action.bind(null, name)
+          action: tf$serverFunction$0$action.bind(null, [name])
         });
       }
       export { Page as default };
@@ -987,7 +1214,7 @@ describe("closures and captured variables", () => {
   });
 
   test("it should move closed over variables in an object method to arguments", async () => {
-    let code = await rsc`
+    let code = dedent`
       export default function Page({ name }) {
         let obj = {
           greet() {
@@ -1001,16 +1228,20 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction$0$greet(name) {
+      function tf$serverFunction$0$greet(tf$bound$vars) {
         "use server";
 
+        let [name] = tf$bound$vars;
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
@@ -1018,7 +1249,7 @@ describe("closures and captured variables", () => {
         name
       }) {
         let obj = {
-          greet: tf$serverFunction$0$greet.bind(null, name)
+          greet: tf$serverFunction$0$greet.bind(null, [name])
         };
         return /* @__PURE__ */jsx("form", {
           action: obj.greet
@@ -1032,7 +1263,7 @@ describe("closures and captured variables", () => {
   test("it should move closed over functions to hoisted function arguments", async () => {
     // i don't think this is a valid RSC, but this tests makes sure
     // we can hoist up and bind in functions.
-    let code = await rsc`
+    let code = dedent`
       export default function Page({ name }) {
         function greet() {
           console.log("hello", name)
@@ -1048,16 +1279,20 @@ describe("closures and captured variables", () => {
     `;
 
     let result = await transform({
-      code,
+      input: {
+        code,
+        language: "jsx",
+      },
       moduleId: "test",
     });
 
     expect(result.code).toMatchInlineSnapshot(`
       "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
-      function tf$serverFunction$0$action(greet) {
+      function tf$serverFunction$0$action(tf$bound$vars) {
         "use server";
 
+        let [greet] = tf$bound$vars;
         greet();
       }
       registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
@@ -1067,7 +1302,7 @@ describe("closures and captured variables", () => {
         function greet() {
           console.log("hello", name);
         }
-        const action = tf$serverFunction$0$action.bind(null, greet);
+        const action = tf$serverFunction$0$action.bind(null, [greet]);
         return /* @__PURE__ */jsx("form", {
           action
         });
@@ -1075,5 +1310,139 @@ describe("closures and captured variables", () => {
       export { Page as default };
       export { tf$serverFunction$0$action };"
     `);
+  });
+
+  test("it should be able to close over an object", async () => {
+    let code = dedent`
+      export default function Page({ name }) {
+        let user = {
+          name: "ryan"
+        };
+
+        function action() {
+          "use server";
+          console.log(user.name);
+        }
+  
+        return <form action={action} />;
+      }
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      function tf$serverFunction$0$action(tf$bound$vars) {
+        "use server";
+
+        let [user] = tf$bound$vars;
+        console.log(user.name);
+      }
+      registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
+      function Page({
+        name
+      }) {
+        let user = {
+          name: "ryan"
+        };
+        const action = tf$serverFunction$0$action.bind(null, [user]);
+        return /* @__PURE__ */jsx("form", {
+          action
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$action };"
+    `);
+  });
+
+  test("it should respect the order of closed over variables and manually bound variables", async () => {
+    let code = dedent`
+      export default function Page({ name }) {
+        let other = 123;
+
+        async function greet(other) {
+          "use server";
+          console.log("hello", name, other)
+        }
+
+        return <form action={greet.bind(null, other)} />;
+      }
+    `;
+
+    let result = await transform({
+      moduleId: "test",
+      input: {
+        code,
+        language: "jsx",
+      },
+    });
+
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      async function tf$serverFunction$0$greet(tf$bound$vars, other2) {
+        "use server";
+
+        let [name] = tf$bound$vars;
+        console.log("hello", name, other2);
+      }
+      registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
+      function Page({
+        name
+      }) {
+        let other = 123;
+        const greet = tf$serverFunction$0$greet.bind(null, [name]);
+        return /* @__PURE__ */jsx("form", {
+          action: greet.bind(null, other)
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$greet };"
+    `);
+  });
+});
+
+describe("factory functions", () => {
+  test.skip("it should transform a factory function", async () => {
+    // this doesn't work correctly and is not 'safe'.
+    // i believe in order to get it working the function param passed
+    // to withAuth needs to be hoisted, but not exported.
+    let code = dedent`
+      import { verifyUser } from "./auth";
+      let count = 0;
+
+      function withAuth(action) {
+        "use server";
+
+        return () => {
+          "use server";
+          if (verifyUser()) {
+            action();
+          }
+        }
+      }
+        
+      export default function Page({ name }) {
+        return <form action={withAuth(() => {
+          "use server";
+          console.log("hello", name);
+        })} />;
+      }
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      moduleId: "test",
+    });
   });
 });

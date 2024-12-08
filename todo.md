@@ -2,18 +2,28 @@
 
 framework
 
-- create app w/ secrets
-- sessions
+- merge into main
+- pull, test, and release
+- release framework, server-functions, create-app
+- test create, test w/ server action
 
 - rename src to app, add /app/components
-- actions
 - dont auto bundle (maybe only bundle things that depend on react?)
 
-- long cache headers for production
+- README
+- website
 
+- server action modules
+
+- long cache headers for production
+- sessions
 - (layout) routing
 
+- support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder.
+
 - tailwind v4
+
+- taint secret key (needs experimental react)
 - editing env file should trigger some sort of change so live reload works
 - editing config file should trigger reload
 - if build changes (stale browser, whatever) we should live reload
@@ -178,6 +188,10 @@ Form
 - Link should only navigate with local urls
 - CSS should reload independent of RSC/CC reload. Possible for CC+CSS to change at same time.
 - Verify version of pnpm
+
+## Postgres
+
+- https://github.com/Olshansk/postgres_for_everything?tab=readme-ov-file
 
 ## Other
 

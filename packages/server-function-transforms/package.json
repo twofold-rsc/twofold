@@ -1,13 +1,15 @@
 {
   "name": "@twofold/server-function-transforms",
   "version": "0.0.2",
-  "description": "",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "description": "Transform and encrypt React Server Functions",
   "type": "module",
+  "main": "./dist/index.js",
   "files": [
     "dist"
   ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "scripts": {
     "compile": "node compile.js && tsc --emitDeclarationOnly --declaration --outDir ./dist",
     "test": "vitest"
@@ -20,14 +22,15 @@
     "@types/babel__generator": "^7.6.8",
     "@types/node": "catalog:",
     "dedent": "^1.5.3",
-    "esbuild": "0.24.0",
-    "prettier": "^3.3.3",
+    "prettier": "^3.4.2",
     "typescript": "catalog:",
-    "vitest": "^2.1.6"
+    "vitest": "^2.1.8"
   },
   "dependencies": {
     "@babel/core": "^7.23.9",
-    "@babel/generator": "^7.26.2",
-    "@babel/types": "^7.26.0"
+    "@babel/generator": "^7.26.3",
+    "@babel/types": "^7.26.3",
+    "esbuild": "0.24.0",
+    "react-server-dom-webpack": ">=19.0.0"
   }
 }

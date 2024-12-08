@@ -1,1 +1,4 @@
+# This key is needed to secure your application.
+TWOFOLD_SECRET_KEY=tf$secret_key
+
 # Add your environment variables here!

@@ -70,10 +70,8 @@ export class EntriesBuilder extends Builder {
     let builder = this;
     this.#context = await context({
       entryPoints: [
-        "./src/pages/**/*.page.tsx",
-        "./src/pages/**/layout.tsx",
-        "./src/pages/**/*.api.ts",
-        "./src/pages/**/*.api.tsx",
+        "./src/pages/**/*.ts",
+        "./src/pages/**/*.tsx",
         `${frameworkComponentsPath}/**/*.tsx`,
       ],
       bundle: true,

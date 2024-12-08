@@ -149,6 +149,8 @@ export class Runtime {
       },
     });
 
+    // use transform stream to buffer
+
     // await the first chunk
     let [t1, t2] = rscStream.tee();
     let reader = t1.getReader();

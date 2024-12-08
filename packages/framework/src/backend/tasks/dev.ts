@@ -1,6 +1,5 @@
 import { cwdUrl } from "../files.js";
 import { stat, watch } from "fs/promises";
-import { watchFile } from "fs";
 import dotenv from "dotenv";
 import { logger } from "./helpers/logger.js";
 import { Runtime } from "../runtime.js";
@@ -22,6 +21,8 @@ export class DevTask {
   }
 
   async start() {
+    this.verifyEnv();
+
     await this.#build.setup();
     await this.#server.start();
 
@@ -41,6 +42,17 @@ export class DevTask {
     );
 
     this.watch();
+  }
+
+  private verifyEnv() {
+    let key = process.env.TWOFOLD_SECRET_KEY;
+
+    // validate
+    if (!key || typeof key !== "string") {
+      throw new Error(
+        "process.env.TWOFOLD_SECRET_KEY is required. Please set it to a string.",
+      );
+    }
   }
 
   private async restart() {

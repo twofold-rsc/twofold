@@ -25,7 +25,7 @@ export default function Page() {
         </span>
       </p>
 
-      <form action={handleFormArg} className="mt-3 flex items-center space-x-2">
+      <form action={handleFormArg} className="mt-3 flex items-center">
         <input
           name="name"
           defaultValue={name}
@@ -33,7 +33,7 @@ export default function Page() {
         />
         <button
           type="submit"
-          className="rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"
+          className="ml-2 rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"
         >
           Update name
         </button>

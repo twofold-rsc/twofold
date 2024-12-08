@@ -2,6 +2,7 @@
 // thank you next!
 
 export const externalPackages = [
+  "@twofold/framework/encryption",
   "@appsignal/nodejs",
   "@aws-sdk/client-s3",
   "@aws-sdk/s3-presigned-post",
