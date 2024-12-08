@@ -2,24 +2,25 @@
 
 framework
 
-- create app w/ secrets
-- sessions
+- release framework, server-functions, create-app
 
 - rename src to app, add /app/components
 - dont auto bundle (maybe only bundle things that depend on react?)
 
 - README
-- taint secret key
 - website
 
 - server action modules
-- long cache headers for production
 
+- long cache headers for production
+- sessions
 - (layout) routing
 
 - support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder.
 
 - tailwind v4
+
+- taint secret key (needs experimental react)
 - editing env file should trigger some sort of change so live reload works
 - editing config file should trigger reload
 - if build changes (stale browser, whatever) we should live reload
