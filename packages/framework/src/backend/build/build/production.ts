@@ -48,7 +48,12 @@ export class ProductionBuild extends Build {
       frameworkTime.end();
       // frameworkTime.log();
 
-      if (!this.error) {
+      let firstPassError =
+        this.getBuilder("entries").error ||
+        this.getBuilder("server-files").error ||
+        this.getBuilder("static-files").error;
+
+      if (!firstPassError) {
         let rscBuild = this.getBuilder("rsc").build();
         let clientBuild = this.getBuilder("client").build();
 

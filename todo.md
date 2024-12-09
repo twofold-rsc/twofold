@@ -2,11 +2,6 @@
 
 framework
 
-- merge into main
-- pull, test, and release
-- release framework, server-functions, create-app
-- test create, test w/ server action
-
 - rename src to app, add /app/components
 - dont auto bundle (maybe only bundle things that depend on react?)
 
