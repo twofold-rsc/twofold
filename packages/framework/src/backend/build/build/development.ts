@@ -75,7 +75,15 @@ export class DevelopmentBuild extends Build {
       ]);
       frameworkTime.end();
 
-      if (!this.error) {
+      let firstPassError =
+        this.getBuilder("entries").error ||
+        this.getBuilder("dev-error-page").error ||
+        this.getBuilder("server-files").error ||
+        this.getBuilder("static-files").error;
+
+      // we don't want to continue here if any of the build steps
+      // above happened to error
+      if (!firstPassError) {
         let rscBuild = this.getBuilder("rsc").build();
         let clientBuild = this.getBuilder("client").build();
 
