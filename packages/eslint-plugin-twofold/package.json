@@ -3,9 +3,7 @@
   "version": "0.0.45",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "keywords": [],
   "author": "Ryan Toronto",
   "license": "ISC",
