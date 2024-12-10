@@ -2,21 +2,24 @@
 
 framework
 
+- release build fix
+
+- server action modules
+- mode: client/server for proxy vs server reference
+
 - rename src to app, add /app/components
 - dont auto bundle (maybe only bundle things that depend on react?)
 
 - README
 - website
 
-- server action modules
+- sessions
+- tailwind v4
 
 - long cache headers for production
-- sessions
 - (layout) routing
 
 - support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder.
-
-- tailwind v4
 
 - taint secret key (needs experimental react)
 - editing env file should trigger some sort of change so live reload works
