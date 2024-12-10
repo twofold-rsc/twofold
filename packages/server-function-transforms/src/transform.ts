@@ -79,6 +79,7 @@ type Options = {
 };
 
 type State = {
+  isServerModule: boolean;
   serverFunctions: Set<string>;
   hasEncryptedVariables: boolean;
   getUniqueFunctionName: (name: string) => string;
@@ -94,6 +95,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
     pre() {
       let functionNameCounter = new Map<string, number>();
 
+      this.isServerModule = false;
       this.serverFunctions = new Set<string>();
       this.hasEncryptedVariables = false;
       this.getUniqueFunctionName = (name: string) => {
@@ -104,7 +106,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
     },
 
     visitor: {
-      FunctionDeclaration(path: NodePath<t.FunctionDeclaration>, state: State) {
+      FunctionDeclaration(path, state) {
         if (hasUseServerDirective(path.node.body)) {
           let name = path.node.id?.name;
           if (name && !state.serverFunctions.has(name)) {
@@ -145,7 +147,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           }
         }
       },
-      FunctionExpression(path: NodePath<t.FunctionExpression>, state: State) {
+      FunctionExpression(path, state) {
         if (
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
@@ -182,10 +184,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           state.serverFunctions.add(functionName);
         }
       },
-      ArrowFunctionExpression(
-        path: NodePath<t.ArrowFunctionExpression>,
-        state: State,
-      ) {
+      ArrowFunctionExpression(path, state) {
         if (
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
@@ -222,7 +221,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           state.serverFunctions.add(functionName);
         }
       },
-      ObjectMethod(path: NodePath<t.ObjectMethod>, state: State) {
+      ObjectMethod(path, state) {
         if (
           t.isIdentifier(path.node.key) &&
           t.isBlockStatement(path.node.body) &&
@@ -265,7 +264,85 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           state.serverFunctions.add(functionName);
         }
       },
+
+      ExportNamedDeclaration(path, state) {
+        if (state.isServerModule) {
+          let { specifiers } = path.node;
+
+          // we turn default into a specifier before running through babel,
+          // so this should cover the export default case
+          for (let specifier of specifiers) {
+            if (
+              t.isExportSpecifier(specifier) &&
+              t.isIdentifier(specifier.exported)
+            ) {
+              let exportName = specifier.exported.name;
+              let localBinding = path.scope.getBinding(specifier.local.name);
+
+              console.log(exportName);
+
+              if (localBinding?.path.isFunctionDeclaration()) {
+                let name = getFunctionName(localBinding.path);
+                insertRegisterServerReference(path, name, moduleId, exportName);
+                state.serverFunctions.add(exportName);
+              } else if (localBinding?.path.isVariableDeclarator()) {
+                let assignedTo = localBinding.path.get("init");
+
+                if (
+                  assignedTo.isArrowFunctionExpression() ||
+                  assignedTo.isFunctionExpression()
+                ) {
+                  // let name = getFunctionName(assignedTo);
+                  // insertRegisterServerReference(
+                  //   path,
+                  //   name,
+                  //   moduleId,
+                  //   exportName,
+                  // );
+                  // state.serverFunctions.add(exportName);
+                }
+
+                console.log(assignedTo.type);
+
+                if (
+                  assignedTo.isArrowFunctionExpression() ||
+                  assignedTo.isFunctionExpression()
+                ) {
+                  let {
+                    functionDeclaration,
+                    functionName,
+                    capturedVariables,
+                    hasEncryptedVariables,
+                  } = createServerFunction({
+                    path: assignedTo,
+                    state,
+                    key,
+                  });
+
+                  let newFunction = insertFunctionIntoProgram({
+                    functionDeclaration,
+                    moduleId,
+                    path: assignedTo,
+                  });
+                  registerServerFunction(newFunction, moduleId, exportName);
+
+                  assignedTo.replaceWith(t.identifier(functionName));
+
+                  // registerServerFunction(newFunction, moduleId, exportName);
+                }
+              }
+            }
+          }
+        }
+      },
+
       Program: {
+        enter(path: NodePath<t.Program>, state: State) {
+          if (hasUseServerDirective(path.node)) {
+            state.isServerModule = true;
+          }
+        },
+
         // find module decorator and transform functions
         exit(path: NodePath<t.Program>, state: State) {
           let hasServerFunction = state.serverFunctions.size > 0;
@@ -305,7 +382,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           }
 
           // make sure all server functions are exported
-          if (hasServerFunction) {
+          if (hasServerFunction && !state.isServerModule) {
             let exportDeclaration = t.exportNamedDeclaration(
               null,
               Array.from(state.serverFunctions).map((serverFunction) =>
@@ -330,9 +407,11 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
   };
 }
 
-function hasUseServerDirective(body: t.BlockStatement | undefined) {
-  if (!body || !body.directives) return false;
-  return body.directives.some((directive) =>
+function hasUseServerDirective(
+  block: t.BlockStatement | t.Program | undefined,
+) {
+  if (!block || !block.directives) return false;
+  return block.directives.some((directive) =>
     t.isDirectiveLiteral(directive.value, { value: "use server" }),
   );
 }
@@ -421,9 +500,8 @@ function insertFunctionIntoProgram({
   }
 
   let [newFunctionPath] = underProgramPath.insertBefore(functionDeclaration);
-  let functionName = getFunctionName(newFunctionPath);
 
-  insertRegisterServerReference(newFunctionPath, functionName, moduleId);
+  registerServerFunction(newFunctionPath, moduleId);
 
   return newFunctionPath;
 }
@@ -440,16 +518,36 @@ function findParentUnderProgram(path: NodePath) {
   return underProgramPath;
 }
 
+function registerServerFunction(
+  path: NodePath<t.FunctionDeclaration>,
+  moduleId: string,
+  name?: string,
+) {
+  let functionName = getFunctionName(path);
+  if (!functionName) {
+    throw new Error(
+      "Failed to find function name. This is a bug in @twofold/server-function-transforms.",
+    );
+  }
+
+  if (!name) {
+    name = functionName;
+  }
+
+  insertRegisterServerReference(path, functionName, moduleId, name);
+}
+
 function insertRegisterServerReference(
   path: NodePath,
   functionName: string,
   moduleId: string,
+  name: string,
 ) {
   let callExpression = t.expressionStatement(
     t.callExpression(t.identifier("registerServerReference"), [
       t.identifier(functionName),
       t.stringLiteral(moduleId),
-      t.stringLiteral(functionName),
+      t.stringLiteral(name),
     ]),
   );
 
@@ -602,22 +700,22 @@ function getCapturedVariables(
     Identifier(innerPath) {
       let name = innerPath.node.name;
 
-      // Ensure the identifier is part of a reference, not a declaration
+      // make sure the identifier is part of a reference, not a declaration
       if (
-        !innerPath.isReferenced() || // Skip identifiers that are not references
-        path.scope.hasOwnBinding(name) // Skip if declared within the function (includes parameters)
+        !innerPath.isReferenced() || // skip non references
+        path.scope.hasOwnBinding(name) // skip if declared within the function or parameters
       ) {
         return;
       }
 
-      // Check if the variable is defined in an outer scope
+      // check if the variable is defined in an outer scope
       let binding = path.scope.getBinding(name);
       if (binding && !binding.scope.parent) {
         return;
       }
 
       if (binding && binding.scope !== path.scope) {
-        // Add variables from outer scopes
+        // add variables from outer scopes
         capturedVariables.add(name);
       }
     },
