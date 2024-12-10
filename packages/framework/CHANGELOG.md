@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.46
+
+### Patch Changes
+
+- fix error where build would not rebuild correctly
+
 ## 0.0.45
 
 ### Patch Changes
