@@ -82,6 +82,50 @@ describe("transforms", () => {
     `);
   });
 
+  test("it should work with 'use server' functions that are already exported", async () => {
+    let code = dedent`
+      let count = 0;
+
+      export function increment() {
+        "use server";
+        count = count + 1;
+      }
+        
+      export default function Page() {
+        return <form action={increment} />;
+      }
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toHaveLength(1);
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      let count = 0;
+      function tf$serverFunction$0$increment() {
+        "use server";
+
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
+      const increment = tf$serverFunction$0$increment;
+      function Page() {
+        return /* @__PURE__ */jsx("form", {
+          action: increment
+        });
+      }
+      export { Page as default, increment };
+      export { tf$serverFunction$0$increment };"
+    `);
+  });
+
   test("it should transform multiple 'use server' functions defined in module scope", async () => {
     let code = dedent`
       let count = 0;
@@ -382,7 +426,7 @@ describe("errors", () => {
         },
         moduleId: "test",
       });
-    }).rejects.toThrowError(/Unexpected token/);
+    }).rejects.toThrowError(/Expected "\)" but found ":"/);
   });
 });
 
@@ -1411,16 +1455,13 @@ describe("closures and captured variables", () => {
 
 describe("factory functions", () => {
   test.skip("it should transform a factory function", async () => {
-    // this doesn't work correctly and is not 'safe'.
-    // i believe in order to get it working the function param passed
-    // to withAuth needs to be hoisted, but not exported.
+    // im not sure what the correct behavior should be here
+    // i don't think this is safe though.
     let code = dedent`
       import { verifyUser } from "./auth";
       let count = 0;
 
       function withAuth(action) {
-        "use server";
-
         return () => {
           "use server";
           if (verifyUser()) {
@@ -1444,5 +1485,7 @@ describe("factory functions", () => {
       },
       moduleId: "test",
     });
+
+    console.log(result.code);
   });
 });

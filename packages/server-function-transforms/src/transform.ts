@@ -19,19 +19,13 @@ export async function transform({
   };
   moduleId: string;
 }) {
-  let jsCode;
-  if (input.language !== "js") {
-    let esResult = await esbuildTransform(input.code, {
-      loader: input.language,
-      jsx: "automatic",
-      format: "esm",
-    });
-    jsCode = esResult.code;
-  } else {
-    jsCode = input.code;
-  }
+  let esResult = await esbuildTransform(input.code, {
+    loader: input.language,
+    jsx: "automatic",
+    format: "esm",
+  });
 
-  let codeAst = await transformAsync(jsCode, {
+  let codeAst = await transformAsync(esResult.code, {
     plugins: [
       [
         Plugin,
@@ -79,25 +73,35 @@ type Options = {
 };
 
 type State = {
+  moduleId: string;
   isServerModule: boolean;
   serverFunctions: Set<string>;
-  hasEncryptedVariables: boolean;
+  registeredServerReferences: Set<string>;
+  exported: Set<string>;
+  encryption: {
+    hasEncryptedVariables: boolean;
+    module: string;
+    key?: t.Expression;
+  };
   getUniqueFunctionName: (name: string) => string;
 };
 
 export function Plugin(babel: any, options: Options): PluginObj<State> {
-  let moduleId = options.moduleId;
-  let key = options.encryption.key;
-  let encryptionModule =
-    options.encryption.module ?? "@twofold/server-function-transforms";
-
   return {
     pre() {
       let functionNameCounter = new Map<string, number>();
 
+      this.moduleId = options.moduleId;
       this.isServerModule = false;
       this.serverFunctions = new Set<string>();
-      this.hasEncryptedVariables = false;
+      this.registeredServerReferences = new Set<string>();
+      this.exported = new Set<string>();
+      this.encryption = {
+        hasEncryptedVariables: false,
+        module:
+          options.encryption.module ?? "@twofold/server-function-transforms",
+        key: options.encryption.key,
+      };
       this.getUniqueFunctionName = (name: string) => {
         let count = functionNameCounter.get(name) ?? 0;
         functionNameCounter.set(name, count + 1);
@@ -107,44 +111,52 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
 
     visitor: {
       FunctionDeclaration(path, state) {
-        if (hasUseServerDirective(path.node.body)) {
-          let name = path.node.id?.name;
-          if (name && !state.serverFunctions.has(name)) {
-            let {
-              functionDeclaration,
-              functionName,
-              capturedVariables,
-              hasEncryptedVariables,
-            } = createServerFunction({
-              path,
-              state,
-              key,
-            });
+        if (!hasUseServerDirective(path.node.body)) {
+          return;
+        }
 
-            insertFunctionIntoProgram({
-              functionDeclaration,
-              moduleId,
-              path,
-            });
+        if (isTopLevelFunction(path) && state.isServerModule) {
+          return;
+        }
 
-            let binding = createBinding({
-              functionName,
-              capturedVariables,
-              key,
-            });
+        let name = path.node.id?.name;
+        if (name && !state.serverFunctions.has(name)) {
+          let {
+            functionDeclaration,
+            functionName,
+            capturedVariables,
+            hasEncryptedVariables,
+          } = createServerFunction({
+            path,
+            state,
+          });
 
-            let assignNameToServerFunction = t.variableDeclaration("const", [
-              t.variableDeclarator(t.identifier(name), binding),
-            ]);
+          let newFunctionPath = insertFunctionIntoProgram({
+            functionDeclaration,
+            path,
+          });
+          registerServerFunction({
+            path: newFunctionPath,
+            state,
+          });
 
-            path.replaceWith(assignNameToServerFunction);
+          let binding = createBinding({
+            functionName,
+            capturedVariables,
+            state,
+          });
 
-            if (hasEncryptedVariables) {
-              state.hasEncryptedVariables = true;
-            }
+          let assignNameToServerFunction = t.variableDeclaration("const", [
+            t.variableDeclarator(t.identifier(name), binding),
+          ]);
 
-            state.serverFunctions.add(functionName);
+          path.replaceWith(assignNameToServerFunction);
+
+          if (hasEncryptedVariables) {
+            state.encryption.hasEncryptedVariables = true;
           }
+
+          state.serverFunctions.add(functionName);
         }
       },
       FunctionExpression(path, state) {
@@ -160,25 +172,27 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           } = createServerFunction({
             path,
             state,
-            key,
           });
 
-          insertFunctionIntoProgram({
-            functionDeclaration,
-            moduleId,
+          let newFunctionPath = insertFunctionIntoProgram({
             path,
+            functionDeclaration,
+          });
+          registerServerFunction({
+            path: newFunctionPath,
+            state,
           });
 
           let binding = createBinding({
             functionName,
             capturedVariables,
-            key,
+            state,
           });
 
           path.replaceWith(binding);
 
           if (hasEncryptedVariables) {
-            state.hasEncryptedVariables = true;
+            state.encryption.hasEncryptedVariables = true;
           }
 
           state.serverFunctions.add(functionName);
@@ -197,25 +211,27 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           } = createServerFunction({
             path,
             state,
-            key,
           });
 
-          insertFunctionIntoProgram({
+          let newFunction = insertFunctionIntoProgram({
             functionDeclaration,
-            moduleId,
             path,
+          });
+          registerServerFunction({
+            path: newFunction,
+            state,
           });
 
           let binding = createBinding({
             functionName,
             capturedVariables,
-            key,
+            state,
           });
 
           path.replaceWith(binding);
 
           if (hasEncryptedVariables) {
-            state.hasEncryptedVariables = true;
+            state.encryption.hasEncryptedVariables = true;
           }
 
           state.serverFunctions.add(functionName);
@@ -235,19 +251,21 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           } = createServerFunction({
             path,
             state,
-            key,
           });
 
-          insertFunctionIntoProgram({
+          let newFunction = insertFunctionIntoProgram({
             functionDeclaration,
-            moduleId,
             path,
+          });
+          registerServerFunction({
+            path: newFunction,
+            state,
           });
 
           let binding = createBinding({
             functionName,
             capturedVariables,
-            key,
+            state,
           });
 
           let newProperty = t.objectProperty(
@@ -258,7 +276,7 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           path.replaceWith(newProperty);
 
           if (hasEncryptedVariables) {
-            state.hasEncryptedVariables = true;
+            state.encryption.hasEncryptedVariables = true;
           }
 
           state.serverFunctions.add(functionName);
@@ -277,60 +295,54 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
               t.isIdentifier(specifier.exported)
             ) {
               let exportName = specifier.exported.name;
-              let localBinding = path.scope.getBinding(specifier.local.name);
+              let localName = specifier.local.name;
 
-              console.log(exportName);
+              insertRegisterServerReference({
+                path,
+                functionName: localName,
+                name: exportName,
+                state,
+              });
 
-              if (localBinding?.path.isFunctionDeclaration()) {
-                let name = getFunctionName(localBinding.path);
-                insertRegisterServerReference(path, name, moduleId, exportName);
-                state.serverFunctions.add(exportName);
-              } else if (localBinding?.path.isVariableDeclarator()) {
-                let assignedTo = localBinding.path.get("init");
+              state.serverFunctions.add(exportName);
+              state.exported.add(exportName);
 
-                if (
-                  assignedTo.isArrowFunctionExpression() ||
-                  assignedTo.isFunctionExpression()
-                ) {
-                  // let name = getFunctionName(assignedTo);
-                  // insertRegisterServerReference(
-                  //   path,
-                  //   name,
-                  //   moduleId,
-                  //   exportName,
-                  // );
-                  // state.serverFunctions.add(exportName);
-                }
+              // let localBinding = path.scope.getBinding(specifier.local.name);
 
-                console.log(assignedTo.type);
-
-                if (
-                  assignedTo.isArrowFunctionExpression() ||
-                  assignedTo.isFunctionExpression()
-                ) {
-                  let {
-                    functionDeclaration,
-                    functionName,
-                    capturedVariables,
-                    hasEncryptedVariables,
-                  } = createServerFunction({
-                    path: assignedTo,
-                    state,
-                    key,
-                  });
-
-                  let newFunction = insertFunctionIntoProgram({
-                    functionDeclaration,
-                    moduleId,
-                    path: assignedTo,
-                  });
-                  registerServerFunction(newFunction, moduleId, exportName);
-
-                  assignedTo.replaceWith(t.identifier(functionName));
-
-                  // registerServerFunction(newFunction, moduleId, exportName);
-                }
-              }
+              // if (localBinding?.path.isFunctionDeclaration()) {
+              // registerServerFunction({
+              //   path: localBinding.path,
+              //   state,
+              //   name: exportName,
+              // });
+              // state.serverFunctions.add(exportName);
+              // } else if (localBinding?.path.isVariableDeclarator()) {
+              // let assignedTo = localBinding.path.get("init");
+              // if (
+              //   assignedTo.isArrowFunctionExpression() ||
+              //   assignedTo.isFunctionExpression()
+              // ) {
+              //   let {
+              //     functionDeclaration,
+              //     functionName,
+              //     capturedVariables,
+              //     hasEncryptedVariables,
+              //   } = createServerFunction({
+              //     path: assignedTo,
+              //     state,
+              //   });
+              //   let newFunction = insertFunctionIntoProgram({
+              //     functionDeclaration,
+              //     path: assignedTo,
+              //   });
+              //   registerServerFunction({
+              //     path: newFunction,
+              //     state,
+              //     name: exportName,
+              //   });
+              //   assignedTo.replaceWith(t.identifier(functionName));
+              // }
+              // }
             }
           }
         }
@@ -345,8 +357,11 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
 
         // find module decorator and transform functions
         exit(path: NodePath<t.Program>, state: State) {
+          let isServerModule = state.isServerModule;
           let hasServerFunction = state.serverFunctions.size > 0;
-          let hasEncryptedVariables = state.hasEncryptedVariables;
+          let encryptionModule = state.encryption.module;
+          let hasEncryptedVariables = state.encryption.hasEncryptedVariables;
+          let key = state.encryption.key;
 
           // import registerServerReference
           if (hasServerFunction) {
@@ -382,17 +397,22 @@ export function Plugin(babel: any, options: Options): PluginObj<State> {
           }
 
           // make sure all server functions are exported
-          if (hasServerFunction && !state.isServerModule) {
-            let exportDeclaration = t.exportNamedDeclaration(
-              null,
-              Array.from(state.serverFunctions).map((serverFunction) =>
-                t.exportSpecifier(
-                  t.identifier(serverFunction),
-                  t.identifier(serverFunction),
-                ),
-              ),
+          if (hasServerFunction) {
+            let exports = Array.from(state.serverFunctions).filter(
+              (serverFunction) => !state.exported.has(serverFunction),
             );
-            path.pushContainer("body", exportDeclaration);
+            if (exports.length > 0) {
+              let exportDeclaration = t.exportNamedDeclaration(
+                null,
+                exports.map((serverFunction) =>
+                  t.exportSpecifier(
+                    t.identifier(serverFunction),
+                    t.identifier(serverFunction),
+                  ),
+                ),
+              );
+              path.pushContainer("body", exportDeclaration);
+            }
           }
         },
       },
@@ -419,7 +439,6 @@ function hasUseServerDirective(
 function createServerFunction({
   path,
   state,
-  key,
 }: {
   path: NodePath<
     | t.FunctionDeclaration
@@ -428,8 +447,8 @@ function createServerFunction({
     | t.ObjectMethod
   >;
   state: State;
-  key?: t.Expression;
 }) {
+  let key = state.encryption.key;
   let originalFunctionName = getFunctionName(path);
   let capturedVariables = getCapturedVariables(path);
 
@@ -481,10 +500,8 @@ function createServerFunction({
 function insertFunctionIntoProgram({
   functionDeclaration,
   path,
-  moduleId,
 }: {
   functionDeclaration: t.FunctionDeclaration;
-  moduleId: string;
   path: NodePath<
     | t.FunctionDeclaration
     | t.FunctionExpression
@@ -501,7 +518,7 @@ function insertFunctionIntoProgram({
 
   let [newFunctionPath] = underProgramPath.insertBefore(functionDeclaration);
 
-  registerServerFunction(newFunctionPath, moduleId);
+  // registerServerFunction(newFunctionPath, moduleId);
 
   return newFunctionPath;
 }
@@ -518,12 +535,17 @@ function findParentUnderProgram(path: NodePath) {
   return underProgramPath;
 }
 
-function registerServerFunction(
-  path: NodePath<t.FunctionDeclaration>,
-  moduleId: string,
-  name?: string,
-) {
+function registerServerFunction({
+  path,
+  state,
+  name,
+}: {
+  path: NodePath<t.FunctionDeclaration>;
+  state: State;
+  name?: string;
+}) {
   let functionName = getFunctionName(path);
+
   if (!functionName) {
     throw new Error(
       "Failed to find function name. This is a bug in @twofold/server-function-transforms.",
@@ -534,36 +556,52 @@ function registerServerFunction(
     name = functionName;
   }
 
-  insertRegisterServerReference(path, functionName, moduleId, name);
+  insertRegisterServerReference({
+    path,
+    functionName,
+    name,
+    state,
+  });
 }
 
-function insertRegisterServerReference(
-  path: NodePath,
-  functionName: string,
-  moduleId: string,
-  name: string,
-) {
-  let callExpression = t.expressionStatement(
-    t.callExpression(t.identifier("registerServerReference"), [
-      t.identifier(functionName),
-      t.stringLiteral(moduleId),
-      t.stringLiteral(name),
-    ]),
-  );
+function insertRegisterServerReference({
+  path,
+  functionName,
+  name,
+  state,
+}: {
+  path: NodePath;
+  functionName: string;
+  name: string;
+  state: State;
+}) {
+  if (!state.registeredServerReferences.has(functionName)) {
+    let callExpression = t.expressionStatement(
+      t.callExpression(t.identifier("registerServerReference"), [
+        t.identifier(functionName),
+        t.stringLiteral(state.moduleId),
+        t.stringLiteral(name),
+      ]),
+    );
 
-  path.insertAfter(callExpression);
+    path.insertAfter(callExpression);
+
+    state.registeredServerReferences.add(functionName);
+  }
 }
 
 function createBinding({
   functionName,
   capturedVariables,
-  key,
+  state,
 }: {
   functionName: string;
   capturedVariables: string[];
-  key?: t.Expression;
+  state: State;
 }) {
   let functionBinding: t.CallExpression | t.Identifier;
+  let key = state.encryption.key;
+
   if (capturedVariables.length > 0) {
     let binding = t.callExpression(
       t.memberExpression(t.identifier(functionName), t.identifier("bind")),
@@ -751,4 +789,8 @@ function insertKeyCheck(path: NodePath<t.Program>, key: t.Expression) {
     firstNonImportIndex === -1 ? body.length : firstNonImportIndex;
 
   body[insertPosition].insertBefore(ifStatement);
+}
+
+function isTopLevelFunction(path: NodePath<t.FunctionDeclaration>): boolean {
+  return path.parentPath?.isProgram() || false;
 }
