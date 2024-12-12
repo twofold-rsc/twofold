@@ -2,15 +2,15 @@
 
 framework
 
-- server action modules
-- mode: client/server for proxy vs server reference
+- server modules
+- client proxy
 - kitchen sink test for factory functions
 
 - rename src to app, add /app/components
 - dont auto bundle (maybe only bundle things that depend on react?)
 
-- README
-- website
+- README for server-function-transforms
+- website for server-function-transforms
 
 - sessions
 - tailwind v4
