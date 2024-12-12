@@ -2,10 +2,9 @@
 
 framework
 
-- release build fix
-
 - server action modules
 - mode: client/server for proxy vs server reference
+- kitchen sink test for factory functions
 
 - rename src to app, add /app/components
 - dont auto bundle (maybe only bundle things that depend on react?)

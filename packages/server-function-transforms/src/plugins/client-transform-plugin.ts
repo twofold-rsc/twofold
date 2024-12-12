@@ -11,7 +11,6 @@ type State = {
   callServerModule: string;
   isServerModule: boolean;
   serverFunctions: Set<string>;
-  exported: Set<string>;
 };
 
 export function ClientTransformPlugin(
@@ -24,7 +23,6 @@ export function ClientTransformPlugin(
       this.callServerModule = options.callServerModule;
       this.isServerModule = false;
       this.serverFunctions = new Set<string>();
-      this.exported = new Set<string>();
     },
 
     visitor: {
@@ -43,7 +41,6 @@ export function ClientTransformPlugin(
               let localName = specifier.local.name;
 
               state.serverFunctions.add(exportName);
-              state.exported.add(exportName);
             }
           }
         }
@@ -51,25 +48,17 @@ export function ClientTransformPlugin(
 
       Program: {
         enter(path: NodePath<t.Program>, state: State) {
-          if (hasUseServerDirective(path.node)) {
-            state.isServerModule = true;
-          }
+          state.isServerModule = hasUseServerDirective(path.node);
         },
 
-        // find module decorator and transform functions
         exit(path: NodePath<t.Program>, state: State) {
           let hasServerFunction = state.serverFunctions.size > 0;
+          let isServerModule = state.isServerModule;
 
-          // create a new program
-          let newProgram = t.program([]);
-
-          // import registerServerReference
-          if (hasServerFunction) {
+          if (isServerModule && hasServerFunction) {
+            let newProgram = t.program([]);
             traverse(t.file(newProgram), {
               Program(path) {
-                // let directive = t.directive(t.directiveLiteral("use server"));
-                // path.pushContainer("directives", directive);
-
                 let createServerReferenceImport = t.importDeclaration(
                   [
                     t.importSpecifier(
@@ -93,7 +82,7 @@ export function ClientTransformPlugin(
                 path.pushContainer("body", createServerReferenceImport);
                 path.pushContainer("body", callServerImport);
 
-                for (let exported of state.exported) {
+                for (let exported of state.serverFunctions) {
                   let exportLine = createExportedServerReference(
                     exported,
                     state.moduleId,
@@ -103,10 +92,10 @@ export function ClientTransformPlugin(
                 }
               },
             });
-          }
 
-          // replace the existing program with our new one
-          path.replaceWith(newProgram);
+            // replace the existing program with our new one
+            path.replaceWith(newProgram);
+          }
         },
       },
     },
@@ -129,19 +118,18 @@ function hasUseServerDirective(
   );
 }
 
-function createExportedServerReference(
-  name: string,
-  moduleId: string,
-): t.ExportNamedDeclaration {
+function createExportedServerReference(name: string, moduleId: string) {
   let callExpression = t.callExpression(t.identifier("createServerReference"), [
     t.stringLiteral(`${moduleId}#${name}`),
     t.identifier("callServer"),
   ]);
 
-  return t.exportNamedDeclaration(
-    t.variableDeclaration("const", [
-      t.variableDeclarator(t.identifier(name), callExpression),
-    ]),
-    [],
-  );
+  return name === "default"
+    ? t.exportDefaultDeclaration(callExpression)
+    : t.exportNamedDeclaration(
+        t.variableDeclaration("const", [
+          t.variableDeclarator(t.identifier(name), callExpression),
+        ]),
+        [],
+      );
 }

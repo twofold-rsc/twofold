@@ -14,7 +14,6 @@ type BaseTransformOptions = {
 };
 
 type ServerTransformOptions = BaseTransformOptions & {
-  output?: "server";
   encryption?: {
     key: t.Expression;
     module?: string;
@@ -23,7 +22,6 @@ type ServerTransformOptions = BaseTransformOptions & {
 };
 
 type ClientTransformOptions = BaseTransformOptions & {
-  output?: "client";
   client: {
     callServerModule: string;
   };
@@ -34,7 +32,6 @@ type TransformOptions = ServerTransformOptions | ClientTransformOptions;
 
 export async function transform({
   input,
-  output = "server",
   encryption,
   client,
   moduleId,
@@ -44,6 +41,8 @@ export async function transform({
     jsx: "automatic",
     format: "esm",
   });
+
+  let output = client ? "client" : "server";
 
   let plugins =
     output === "server"
@@ -64,7 +63,7 @@ export async function transform({
             ClientTransformPlugin,
             {
               moduleId,
-              callServer: client?.callServerModule,
+              callServerModule: client?.callServerModule,
             },
           ],
         ];

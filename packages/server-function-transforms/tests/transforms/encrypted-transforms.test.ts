@@ -513,3 +513,63 @@ describe("keys", () => {
     `);
   });
 });
+
+describe("factory functions", () => {
+  test("it should transform a factory function", async () => {
+    let code = dedent`
+      let count = 0;
+
+      function createIncrementor(amount) {
+        return async () => {
+          "use server";
+          count = count + amount;
+        };
+      }
+        
+      export default function Page({ name }) {
+        return <form action={createIncrementor(7)} />;
+      }
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      encryption: {
+        key: envKey("ENCRYPTION_KEY"),
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toHaveLength(1);
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      if (typeof process.env["ENCRYPTION_KEY"] !== "string") {
+        throw new Error("Invalid key. Encryption key is missing or undefined.");
+      }
+      let count = 0;
+      async function tf$serverFunction$0$anonymous(tf$encrypted$vars) {
+        "use server";
+
+        let [amount] = await decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        count = count + amount;
+      }
+      registerServerReference(tf$serverFunction$0$anonymous, "test", "tf$serverFunction$0$anonymous");
+      function createIncrementor(amount) {
+        return tf$serverFunction$0$anonymous.bind(null, encrypt([amount], process.env["ENCRYPTION_KEY"]));
+      }
+      function Page({
+        name
+      }) {
+        return /* @__PURE__ */jsx("form", {
+          action: createIncrementor(7)
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$anonymous };"
+    `);
+  });
+});

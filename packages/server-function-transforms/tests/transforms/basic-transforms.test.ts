@@ -1454,27 +1454,19 @@ describe("closures and captured variables", () => {
 });
 
 describe("factory functions", () => {
-  test.skip("it should transform a factory function", async () => {
-    // im not sure what the correct behavior should be here
-    // i don't think this is safe though.
+  test("it should transform a factory function", async () => {
     let code = dedent`
-      import { verifyUser } from "./auth";
       let count = 0;
 
-      function withAuth(action) {
+      function createIncrementor(amount) {
         return () => {
           "use server";
-          if (verifyUser()) {
-            action();
-          }
-        }
+          count = count + amount;
+        };
       }
         
       export default function Page({ name }) {
-        return <form action={withAuth(() => {
-          "use server";
-          console.log("hello", name);
-        })} />;
+        return <form action={createIncrementor(7)} />;
       }
     `;
 
@@ -1486,6 +1478,30 @@ describe("factory functions", () => {
       moduleId: "test",
     });
 
-    console.log(result.code);
+    expect(result.serverFunctions).toHaveLength(1);
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      let count = 0;
+      function tf$serverFunction$0$anonymous(tf$bound$vars) {
+        "use server";
+
+        let [amount] = tf$bound$vars;
+        count = count + amount;
+      }
+      registerServerReference(tf$serverFunction$0$anonymous, "test", "tf$serverFunction$0$anonymous");
+      function createIncrementor(amount) {
+        return tf$serverFunction$0$anonymous.bind(null, [amount]);
+      }
+      function Page({
+        name
+      }) {
+        return /* @__PURE__ */jsx("form", {
+          action: createIncrementor(7)
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$anonymous };"
+    `);
   });
 });

@@ -419,9 +419,41 @@ describe("module transform", () => {
     `);
   });
 
-  test.todo(
-    "do not double export function expressions marked with 'use server'",
-  );
+  test("do not double export function expressions marked with 'use server'", async () => {
+    let code = dedent`
+      "use server";
+
+      let count = 0;
+
+      export const add1 = function() {
+        "use server";
+        count = count + 1;
+      };
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "ts",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toEqual(["add1"]);
+    expect(result.code).toMatchInlineSnapshot(`
+      ""use server";
+
+      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      let count = 0;
+      const add1 = function () {
+        "use server";
+
+        count = count + 1;
+      };
+      export { add1 };
+      registerServerReference(add1, "test", "add1");"
+    `);
+  });
 
   test("it should transform arrow functions", async () => {
     let code = dedent`
@@ -534,32 +566,16 @@ describe("module transform", () => {
     `);
   });
 
-  test.todo("do not double export arrow functions marked with 'use server'");
-});
-
-describe("factory functions", () => {
-  test.skip("it should transform a factory function", async () => {
-    // im not sure what the correct behavior here should be?
+  test("do not double export arrow functions marked with 'use server'", async () => {
     let code = dedent`
       "use server";
 
-      import { verifyUser } from "./auth";
-
       let count = 0;
 
-      function withAuth(action) {
-        return () => {
-          "use server";
-          if (verifyUser()) {
-            action();
-          }
-        };
-      }
-
-      export const increment = withAuth(() => { 
+      export const add1 = () => {
         "use server";
         count = count + 1;
-      });
+      };
     `;
 
     let result = await transform({
@@ -570,8 +586,69 @@ describe("factory functions", () => {
       moduleId: "test",
     });
 
-    // expect(result.serverFunctions).toHaveLength(2);
-    // expect(result.code).toMatchInlineSnapshot();
+    expect(result.serverFunctions).toEqual(["add1"]);
+    expect(result.code).toMatchInlineSnapshot(`
+      ""use server";
+
+      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      let count = 0;
+      const add1 = () => {
+        "use server";
+
+        count = count + 1;
+      };
+      export { add1 };
+      registerServerReference(add1, "test", "add1");"
+    `);
+  });
+});
+
+describe("factory functions", () => {
+  test("it should transform a factory function", async () => {
+    let code = dedent`
+      "use server";
+
+      let count = 0;
+
+      function createIncrementor(amount) {
+        return () => {
+          "use server";
+          count = count + amount;
+        };
+      }
+
+      export const increment = createIncrementor(7);
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "ts",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toHaveLength(2);
+    expect(result.code).toMatchInlineSnapshot(`
+      ""use server";
+
+      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      let count = 0;
+      function tf$serverFunction$0$anonymous(tf$bound$vars) {
+        "use server";
+
+        let [amount] = tf$bound$vars;
+        count = count + amount;
+      }
+      registerServerReference(tf$serverFunction$0$anonymous, "test", "tf$serverFunction$0$anonymous");
+      function createIncrementor(amount) {
+        return tf$serverFunction$0$anonymous.bind(null, [amount]);
+      }
+      const increment = createIncrementor(7);
+      export { increment };
+      registerServerReference(increment, "test", "increment");
+      export { tf$serverFunction$0$anonymous };"
+    `);
   });
 });
 

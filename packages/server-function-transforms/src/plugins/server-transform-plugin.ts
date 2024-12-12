@@ -61,15 +61,11 @@ export function ServerTransformPlugin(
 
         let name = path.node.id?.name;
         if (name && !state.serverFunctions.has(name)) {
-          let {
-            functionDeclaration,
-            functionName,
-            capturedVariables,
-            hasEncryptedVariables,
-          } = createServerFunction({
-            path,
-            state,
-          });
+          let { functionDeclaration, functionName, capturedVariables } =
+            createServerFunction({
+              path,
+              state,
+            });
 
           let newFunctionPath = insertFunctionIntoProgram({
             functionDeclaration,
@@ -92,90 +88,84 @@ export function ServerTransformPlugin(
 
           path.replaceWith(assignNameToServerFunction);
 
-          if (hasEncryptedVariables) {
-            state.encryption.hasEncryptedVariables = true;
-          }
-
           state.serverFunctions.add(functionName);
         }
       },
       FunctionExpression(path, state) {
-        if (
-          t.isBlockStatement(path.node.body) &&
-          hasUseServerDirective(path.node.body)
-        ) {
-          let {
-            functionDeclaration,
-            functionName,
-            capturedVariables,
-            hasEncryptedVariables,
-          } = createServerFunction({
-            path,
-            state,
-          });
-
-          let newFunctionPath = insertFunctionIntoProgram({
-            path,
-            functionDeclaration,
-          });
-          registerServerFunction({
-            path: newFunctionPath,
-            state,
-          });
-
-          let binding = createBinding({
-            functionName,
-            capturedVariables,
-            state,
-          });
-
-          path.replaceWith(binding);
-
-          if (hasEncryptedVariables) {
-            state.encryption.hasEncryptedVariables = true;
-          }
-
-          state.serverFunctions.add(functionName);
+        if (!hasUseServerDirective(path.node.body)) {
+          return;
         }
+
+        if (!t.isBlockStatement(path.node.body)) {
+          return;
+        }
+
+        if (isTopLevelFunction(path) && state.isServerModule) {
+          return;
+        }
+
+        let { functionDeclaration, functionName, capturedVariables } =
+          createServerFunction({
+            path,
+            state,
+          });
+
+        let newFunctionPath = insertFunctionIntoProgram({
+          path,
+          functionDeclaration,
+        });
+        registerServerFunction({
+          path: newFunctionPath,
+          state,
+        });
+
+        let binding = createBinding({
+          functionName,
+          capturedVariables,
+          state,
+        });
+
+        path.replaceWith(binding);
+
+        state.serverFunctions.add(functionName);
       },
       ArrowFunctionExpression(path, state) {
-        if (
-          t.isBlockStatement(path.node.body) &&
-          hasUseServerDirective(path.node.body)
-        ) {
-          let {
-            functionDeclaration,
-            functionName,
-            capturedVariables,
-            hasEncryptedVariables,
-          } = createServerFunction({
-            path,
-            state,
-          });
-
-          let newFunction = insertFunctionIntoProgram({
-            functionDeclaration,
-            path,
-          });
-          registerServerFunction({
-            path: newFunction,
-            state,
-          });
-
-          let binding = createBinding({
-            functionName,
-            capturedVariables,
-            state,
-          });
-
-          path.replaceWith(binding);
-
-          if (hasEncryptedVariables) {
-            state.encryption.hasEncryptedVariables = true;
-          }
-
-          state.serverFunctions.add(functionName);
+        if (!t.isBlockStatement(path.node.body)) {
+          return;
         }
+
+        if (!hasUseServerDirective(path.node.body)) {
+          return;
+        }
+
+        if (isTopLevelFunction(path) && state.isServerModule) {
+          return;
+        }
+
+        let { functionDeclaration, functionName, capturedVariables } =
+          createServerFunction({
+            path,
+            state,
+          });
+
+        let newFunction = insertFunctionIntoProgram({
+          functionDeclaration,
+          path,
+        });
+        registerServerFunction({
+          path: newFunction,
+          state,
+        });
+
+        let binding = createBinding({
+          functionName,
+          capturedVariables,
+          state,
+        });
+
+        path.replaceWith(binding);
+
+        state.serverFunctions.add(functionName);
       },
       ObjectMethod(path, state) {
         if (
@@ -183,15 +173,11 @@ export function ServerTransformPlugin(
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
         ) {
-          let {
-            functionDeclaration,
-            functionName,
-            capturedVariables,
-            hasEncryptedVariables,
-          } = createServerFunction({
-            path,
-            state,
-          });
+          let { functionDeclaration, functionName, capturedVariables } =
+            createServerFunction({
+              path,
+              state,
+            });
 
           let newFunction = insertFunctionIntoProgram({
             functionDeclaration,
@@ -214,10 +200,6 @@ export function ServerTransformPlugin(
           );
 
           path.replaceWith(newProperty);
-
-          if (hasEncryptedVariables) {
-            state.encryption.hasEncryptedVariables = true;
-          }
 
           state.serverFunctions.add(functionName);
         }
@@ -391,11 +373,14 @@ function createServerFunction({
     }
   }
 
+  if (capturedVariables.length > 0 && key) {
+    state.encryption.hasEncryptedVariables = true;
+  }
+
   return {
     functionDeclaration,
     functionName,
     capturedVariables,
-    hasEncryptedVariables: capturedVariables.length > 0 && key,
   };
 }
 
@@ -693,6 +678,28 @@ function insertKeyCheck(path: NodePath<t.Program>, key: t.Expression) {
   body[insertPosition].insertBefore(ifStatement);
 }
 
-function isTopLevelFunction(path: NodePath<t.FunctionDeclaration>): boolean {
-  return path.parentPath?.isProgram() || false;
+function isTopLevelFunction(
+  path: NodePath<
+    t.FunctionDeclaration | t.FunctionExpression | t.ArrowFunctionExpression
+  >,
+) {
+  let parent = path.parentPath;
+
+  if (t.isFunctionDeclaration(path.node)) {
+    return parent?.isProgram() || false;
+  }
+
+  if (
+    t.isFunctionExpression(path.node) ||
+    t.isArrowFunctionExpression(path.node)
+  ) {
+    return (
+      parent?.isProgram() ||
+      (parent.isVariableDeclarator() &&
+        parent.parentPath.isVariableDeclaration() &&
+        parent.parentPath.parentPath.isProgram())
+    );
+  }
+
+  return false;
 }
