@@ -1,18 +1,19 @@
 # Server Function Transforms
 
-A bundling package for transforming, hoisting, and encrypting RSC Server Functions.
+A package for transforming, hoisting, and encrypting RSC Server Functions.
+
+## Why it useful
+
+Imagine a server function that closes over a prop passed into a component:
 
 ```jsx
 export default function Page({ name }) {
+  return <FormComponent name="bob" />;
+}
+
+function FormComponent({ name }) {
   async function greet() {
     "use server";
-
-    // We're closing over the name prop inside this server action.
-    // Which means it'll be sent to the client, and then back to
-    // the server when the form is submitted.
-
-    // To ensure that this name prop is tamper-proof, it gets
-    // encrypted and then verified before this action is run.
 
     console.log("hello", name);
   }
@@ -25,23 +26,39 @@ export default function Page({ name }) {
 }
 ```
 
-Image
+The `greet()` function is closing over the `name` prop, which means that `name` will be given to the client and sent back to the server when the form is submitted.
+
+To ensure that `name` is tamper-proof, it needs to be encrypted and later verified when `greet` is run.
+
+Without verification, a malicious client could change the `name` prop to something else before submitting the form.
+
+![An encrypted server function](https://media.graphassets.com/mcFVofoiQwyUkab7edPl)
+
+However, in the encrypted version the `name` prop cannot be changed without knowing the server-side encryption key. This ensures that the data passed between the client and server is tamper-proof.
 
 ## Features
 
-- Turns `"use server"` functions into server references
-- Turns exports from `"use server"` modules into server references
-- Encrypts and verifies closure variables used in server functions
-- Allows `"use server"` modules to be imported into client bundles
-- Supports function declarations, function expressions, arrow functions, object methods, and factory functions.
+- Turns `"use server"` functions into server references.
+- Turns exports from `"use server"` modules into server references.
+- Encrypts and verifies closure variables used in server functions.
+- Allows `"use server"` modules to be imported into client bundles.
+- Supports factory functions.
 
 ## Who's this for?
 
-This package is for developers creating their own RSC bundler or framework who are looking to add support for server functions and actions.
+This package is for developers creating their own RSC bundler or framework and are looking to add support for server functions and actions.
 
 If you are using an existing RSC framework then you do not need this package.
 
 ## Usage
+
+Installation:
+
+```text
+npm install @twofold/server-function-transforms
+```
+
+Usage:
 
 ```js
 import { transform, envKey } from "@twofold/server-function-transforms";
@@ -104,13 +121,13 @@ const { code, serverFunctions } = await transform({
 
 This function takes an object with the following properties:
 
-| Property            | Type                    | Description                                                          |
-| ------------------- | ----------------------- | -------------------------------------------------------------------- |
-| `input.code`        | `string`                | The source code to transform                                         |
-| `input.language`    | `string`                | The language of the source code. Can be `jsx`, `tsx`, `js`, or `ts`  |
-| `moduleId`          | `string`                | A unique identifier the module. Used when creating server references |
-| `encryption.key`    | `envKey` \| `stringKey` | The encryption key to use when encrypting closure variables          |
-| `encryption.source` | `string`                | Optional: Bring your own encryption/serialization functions          |
+| Property            | Type                    | Description                                                              |
+| ------------------- | ----------------------- | ------------------------------------------------------------------------ |
+| `input.code`        | `string`                | The source code to transform                                             |
+| `input.language`    | `string`                | The language of the source code. Can be `jsx`, `tsx`, `js`, or `ts`      |
+| `moduleId`          | `string`                | A unique identifier for the module. Used when creating server references |
+| `encryption.key`    | `envKey` \| `stringKey` | The encryption key to use when encrypting closure variables              |
+| `encryption.source` | `string`                | Optional: Bring your own encryption/serialization functions              |
 
 The transform function returns an object with the following:
 
@@ -121,13 +138,15 @@ The transform function returns an object with the following:
 
 ### Encryption
 
-The `encryption` option is used to encrypt and decrypt closure variables used in server functions. This is done to ensure that the data passed between the server and client is tamper-proof.
+The `encryption` option is used to encrypt and decrypt closure variables used in server functions. This is done to ensure that the data passed between server and client is tamper-proof.
+
+Under the hood, this package uses AES-GCM as the encryption algorithm.
 
 #### Keys
 
 The `key` property tells the server function where to find the encryption key.
 
-Using the `envKey` function will instruction the server function to load the encryption key from an environment variable.
+Using `envKey` will instruction the server function to load the encryption key from an environment variable.
 
 ```typescript
 import { envKey } from "@twofold/server-function-transforms";
@@ -142,11 +161,11 @@ const { code, serverFunctions } = await transform({
 
 In the above example, the transformed code will use `process.env.ENCRYPTION_KEY` as the encryption key.
 
-Alternatively, you can use the `stringKey` function to use a string encryption key. This should only be used for testing purposes though, since it will inject the key directly into the transformed source code.
+Alternatively, you can use `stringKey` for a hardcoded string encryption key. This should only be used for testing purposes though, since it will inject the key directly into the transformed source code.
 
 #### Source
 
-By default, this package ships with a built-in encryption and serialization functions. If you would like to bring your own encryption functions you can pass in a module using the `source` property.
+This package ships with a built-in encryption and serialization functions. If you would like to bring your own encryption you can pass in a module using the `source` property.
 
 The module should export two async functions: `encrypt` and `decrypt`.
 
@@ -202,11 +221,40 @@ console.log("server functions", result.serverFunctions);
 
 ### Client bundle transforms
 
-write this...
+To transform server modules into code that is importable by client bundles, pass the `client` option to the transform function.
+
+```typescript
+import { transform } from "@twofold/server-function-transforms";
+
+const { code, serverFunctions } = await transform({
+  input: {
+    code,
+    language,
+  },
+  moduleId,
+  client: {
+    callServerModule: "path/to/my/call-server",
+  },
+});
+```
+
+You must specify the path to a module that exports your framework's `callServer` function as `client.callServerModule`.
+
+For example:
+
+```typescript
+// path/to/my/call-server.js
+
+export async function callServer(id: string, args: any[]) {
+  console.log("client bundle calling server function", id, args);
+}
+```
+
+Note that encryption is not available when using `transform` with the `client` option, since the output is made to be imported by client bundles.
 
 ## Unsupported features
 
-There are most likely some functions that do not get transformed properly by this package. I'd love to hear about any bugs you run into or suggestions you have. Feel free to open an issue or reach out to me on [Twitter/X](https://twitter.com/ryantotweets).
+There are most likely some functions that do not get transformed properly by this package. I'd love to hear about any bugs you run into or suggestions you have. Feel free to reach out to me on [Twitter/X](https://twitter.com/ryantotweets) or [Bluesky](https://bsky.app/profile/ryantoron.to).
 
 ## Roadmap
 
@@ -216,4 +264,4 @@ There are most likely some functions that do not get transformed properly by thi
 
 ## Acknowledgements
 
-I would like to thank the authors of [Next.js](https://nextjs.org/) and [Tangle](https://github.com/lubieowoce/tangle) for their excellent work on React Server Components. Encrypted server functions were first introduced by Next.js and their source code and tests were an invaluable resource learning for better understanding server functions.
+I would like to thank [Next.js](https://nextjs.org/) and [Tangle](https://github.com/lubieowoce/tangle) for their excellent work on React Server Components. Encrypted server functions were first introduced by Next.js and their source code and tests were an invaluable resource for better understanding server functions.

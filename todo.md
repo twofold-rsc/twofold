@@ -2,15 +2,17 @@
 
 framework
 
-- server modules
-- client proxy
+- import encrypt/decrypt as something else, name will clash with user code
+- README for server-function-transforms
+- Image for encryption vs no encryption
 - kitchen sink test for factory functions
+- update docs website with new server actions
+
+- bug: creating a file, then renaming it
+- bug: creating a file, then deleting it
 
 - rename src to app, add /app/components
 - dont auto bundle (maybe only bundle things that depend on react?)
-
-- README for server-function-transforms
-- website for server-function-transforms
 
 - sessions
 - tailwind v4
@@ -37,6 +39,8 @@ framework
 
 - rename api handlers
 - only allow function exports from server modules. you dont want to import a non function call server on the client
+
+- website for server-function-transforms
 
 - eslints
 - https://bsky.app/profile/tkdodo.eu/post/3lbn55t5d5s24
