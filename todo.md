@@ -2,8 +2,6 @@
 
 framework
 
-- update docs website with new server actions
-
 - bug: creating a file, then renaming it
 - bug: creating a file, then deleting it
 

@@ -1,14 +1,16 @@
 # Mutations
 
-Data can be created, updated, and destroyed using Server Actions. These are special functions that are called on the client, but executed on the server.
+Data can be created, updated, and destroyed using [React Server Functions](https://react.dev/reference/rsc/server-functions). These are special functions that are called on the client, but executed on the server.
 
-This guide will show you how to mutate data using a made up `./database` module. You can substitute this with an ORM or database client of your choice.
+This guide demonstrates how to mutate data using a mock `./database` module, which you can replace with an ORM or database client of your choice.
 
-## Server actions
+## Server functions
 
-Server actions are functions marked with the `"use server"` directive. This directive tells Twofold that the function is going to mutate data that lives on the server.
+Server functions use the `"use server"` directive, which ensures that the code in these functions executes on the server.
 
-Let's create a server action that inserts a new post into the database:
+### Example: Creating a post
+
+Let's create a server function that inserts a new post into the database:
 
 ```tsx
 // src/pages/posts.page.tsx
@@ -60,11 +62,15 @@ export async function PostsPage() {
 }
 ```
 
-The above example will create a new post whenever the form is submitted and then re-render the lists of posts with the new post included.
+In this example, submitting the form creates a new post and re-renders the list of posts to include the new entry.
 
 ## Server modules
 
-Server actions can be defined in separate modules and imported into your components. A server action module is any module that begins with the `"use server"` directive.
+Server functions can be placed inside of server modules, which is any module that starts with the `"use server"` directive.
+
+When using a server module all functions exported from the module become server functions.
+
+### Example: Using a Server Module
 
 ```tsx
 // src/pages/posts/mutations.ts
@@ -85,7 +91,7 @@ async function createPost(formData: FormData) {
 }
 ```
 
-Now any component can import the `createPost` function and use it to create a new post.
+Now any component can import and use the `createPost` function:
 
 ```tsx
 // src/pages/posts/index.page.tsx
@@ -125,32 +131,20 @@ export async function PostsPage() {
 }
 ```
 
-Like the previous example, this will create a new post whenever the form is submitted and then re-render the lists of posts with the new post included.
+Just like before, submitting the form creates a new post and updates the displayed list.
+
+A benefit to using server modules is that they can be imported by both server and client components.
 
 ## Dynamic data
 
-Server actions that need access to dynamic data can use hidden form fields to pass that data to the server.
+Server functions that need to work with dynamic data can be defined inside of render and close over any of the component's props or variables.
 
-Let's create a server action that updates a post in the database:
+### Example: Updating a Post
+
+Here's an example of how to update a post in the database:
 
 ```tsx
 // src/pages/posts/$slug.page.tsx
-
-async function updatePost(formData: FormData) {
-  "use server";
-
-  let id = formData.get("id");
-  let title = formData.get("title");
-  let content = formData.get("content");
-
-  await db.exec(
-    "UPDATE posts SET title = ?, content = ?, updatedAt = ? WHERE id = ?",
-    title,
-    content,
-    new Date().toISOString(),
-    id,
-  );
-}
 
 export default function PostsSlugPage({
   params,
@@ -158,6 +152,21 @@ export default function PostsSlugPage({
   params: { slug: string };
 }) {
   let post = await db.query("SELECT * FROM posts WHERE slug = ?", params.slug);
+
+  async function updatePost(formData: FormData) {
+    "use server";
+
+    let title = formData.get("title");
+    let content = formData.get("content");
+
+    await db.exec(
+      "UPDATE posts SET title = ?, content = ?, updatedAt = ? WHERE id = ?",
+      title,
+      content,
+      new Date().toISOString(),
+      post.id,
+    );
+  }
 
   return (
     <div>
@@ -183,10 +192,6 @@ export default function PostsSlugPage({
 }
 ```
 
-Whenever the form is submitted the post will be updated in the database and the page will re-render with the date of the last update.
+Notice how the `updatePost` function knows which post to update because it closes over the selected `post.id` variable.
 
-It's recommended to use hidden form inputs when working with dynamic data. This allows you to be explicit with the data you are passing between the client and server.
-
-## Limitations
-
-Server actions in Twofold are only allowed to be defined in the top-level scope of a module. This means that you cannot define server actions inside of components, other functions, or closures. This is a limitation of the current implementation and will improve in the future.
+Now when the form is submitted, the post is updated in the database, and the page refreshes to show the updated timestamp.
