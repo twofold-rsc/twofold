@@ -1,5 +1,11 @@
 # @twofold/server-function-transforms
 
+## 0.0.4
+
+### Patch Changes
+
+- Server modules now use server-functions-transforms
+
 ## 0.0.3
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # eslint-plugin-twofold
 
+## 0.0.47
+
 ## 0.0.46
 
 ## 0.0.45

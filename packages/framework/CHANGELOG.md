@@ -1,5 +1,13 @@
 # @twofold/framework
 
+## 0.0.47
+
+### Patch Changes
+
+- Server modules now use server-functions-transforms
+- Updated dependencies
+  - @twofold/server-function-transforms@0.0.4
+
 ## 0.0.46
 
 ### Patch Changes
