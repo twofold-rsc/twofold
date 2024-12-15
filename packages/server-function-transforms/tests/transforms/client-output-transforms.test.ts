@@ -3,7 +3,7 @@ import dedent from "dedent";
 import { transform } from "../../src";
 
 describe("module transform", () => {
-  test("it should not export anything from a module that does not have a 'use server' directive", async () => {
+  test("it should not export any call servers from a module that does not have a 'use server' directive", async () => {
     let code = dedent`
       let count = 0;
 
@@ -29,7 +29,10 @@ describe("module transform", () => {
       function increment() {
         count = count + 1;
       }
-      export { increment };"
+      export {
+        increment
+      };
+      "
     `);
   });
 
@@ -60,7 +63,7 @@ describe("module transform", () => {
       'import { callServer } from "framework/call-server";',
     );
     expect(result.code).toMatchInlineSnapshot(`
-      "import { createServerReference } from "react-server-dom-webpack/client.edge";
+      "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
       export const increment = createServerReference("test#increment", callServer);"
     `);
@@ -94,7 +97,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["increment"]);
     expect(result.code).toMatchInlineSnapshot(`
-      "import { createServerReference } from "react-server-dom-webpack/client.edge";
+      "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
       export const increment = createServerReference("test#increment", callServer);"
     `);
@@ -150,7 +153,7 @@ describe("module transform", () => {
     expect(result.serverFunctions).toContain("newAdd1_000");
     expect(result.serverFunctions).toContain("default");
     expect(result.code).toMatchInlineSnapshot(`
-      "import { createServerReference } from "react-server-dom-webpack/client.edge";
+      "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
       export const add1 = createServerReference("test#add1", callServer);
       export const add10 = createServerReference("test#add10", callServer);
@@ -186,7 +189,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["increment"]);
     expect(result.code).toMatchInlineSnapshot(`
-      "import { createServerReference } from "react-server-dom-webpack/client.edge";
+      "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
       export const increment = createServerReference("test#increment", callServer);"
     `);
@@ -218,7 +221,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["addOne"]);
     expect(result.code).toMatchInlineSnapshot(`
-      "import { createServerReference } from "react-server-dom-webpack/client.edge";
+      "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
       export const addOne = createServerReference("test#addOne", callServer);"
     `);
@@ -248,7 +251,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["default"]);
     expect(result.code).toMatchInlineSnapshot(`
-      "import { createServerReference } from "react-server-dom-webpack/client.edge";
+      "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
       export default createServerReference("test#default", callServer);"
     `);
@@ -281,7 +284,7 @@ describe("module transform", () => {
     expect(result.serverFunctions).toContain("count");
     expect(result.serverFunctions).toContain("database");
     expect(result.code).toMatchInlineSnapshot(`
-      "import { createServerReference } from "react-server-dom-webpack/client.edge";
+      "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
       export const count = createServerReference("test#count", callServer);
       export const database = createServerReference("test#database", callServer);"
@@ -321,7 +324,7 @@ describe("factory functions", () => {
 
     expect(result.serverFunctions).toHaveLength(1);
     expect(result.code).toMatchInlineSnapshot(`
-      "import { createServerReference } from "react-server-dom-webpack/client.edge";
+      "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
       export const increment = createServerReference("test#increment", callServer);"
     `);
@@ -356,7 +359,7 @@ describe("JS tests", () => {
 
     expect(result.serverFunctions).toEqual(["increment"]);
     expect(result.code).toMatchInlineSnapshot(`
-      "import { createServerReference } from "react-server-dom-webpack/client.edge";
+      "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
       export const increment = createServerReference("test#increment", callServer);"
     `);

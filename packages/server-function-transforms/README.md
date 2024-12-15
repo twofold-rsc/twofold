@@ -14,7 +14,6 @@ export default function Page({ name }) {
 function FormComponent({ name }) {
   async function greet() {
     "use server";
-
     console.log("hello", name);
   }
 
@@ -26,7 +25,7 @@ function FormComponent({ name }) {
 }
 ```
 
-The `greet()` function is closing over the `name` prop, which means that `name` will be given to the client and sent back to the server when the form is submitted.
+In the above example, the `greet()` function closes over the `name` prop, which means that `name` will be given to the browser and sent back to the server when the form is submitted.
 
 To ensure that `name` is tamper-proof, it needs to be encrypted and later verified when `greet` is run.
 
@@ -34,19 +33,19 @@ Without verification, a malicious client could change the `name` prop to somethi
 
 ![An encrypted server function](https://media.graphassets.com/mcFVofoiQwyUkab7edPl)
 
-However, in the encrypted version the `name` prop cannot be changed without knowing the server-side encryption key. This ensures that the data passed between the client and server is tamper-proof.
+In the encrypted version the `name` prop cannot be changed without knowing the server-side encryption key. This ensures that the data passed between the server and browser is tamper-proof.
 
 ## Features
 
 - Turns `"use server"` functions into server references.
 - Turns exports from `"use server"` modules into server references.
-- Encrypts and verifies closure variables used in server functions.
 - Allows `"use server"` modules to be imported into client bundles.
+- Encrypts and verifies closure variables used in server functions.
 - Supports factory functions.
 
 ## Who's this for?
 
-This package is for developers creating their own RSC bundler or framework and are looking to add support for server functions and actions.
+This package is for developers creating their own RSC bundler or framework, who are looking to add support for server functions and actions.
 
 If you are using an existing RSC framework then you do not need this package.
 
@@ -165,7 +164,7 @@ Alternatively, you can use `stringKey` for a hardcoded string encryption key. Th
 
 #### Source
 
-This package ships with a built-in encryption and serialization functions. If you would like to bring your own encryption you can pass in a module using the `source` property.
+This package ships with built-in encryption and serialization functions. If you would like to bring your own encryption you can pass in a module using the `source` property.
 
 The module should export two async functions: `encrypt` and `decrypt`.
 
@@ -259,7 +258,6 @@ There are most likely some functions that do not get transformed properly by thi
 ## Roadmap
 
 - Action & function signing
-- "use cache"
 - Runner
 
 ## Acknowledgements

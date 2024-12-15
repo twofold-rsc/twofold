@@ -3,14 +3,14 @@ import { RSCBuilder } from "../builders/rsc-builder";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
 import { cwdUrl } from "../../files.js";
-import { createHash } from "crypto";
-import { basename, extname } from "path";
+import { extname } from "path";
 import * as path from "path";
 import {
   transform as serverFunctionTransform,
   envKey,
 } from "@twofold/server-function-transforms";
 import { z } from "zod";
+import { getModuleId } from "../helpers/module.js";
 
 type ServerAction = {
   id: string;
@@ -43,80 +43,38 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
       });
 
       build.onLoad({ filter: /\.(ts|tsx|js|jsx)$/ }, async ({ path }) => {
-        let actionModule = builder.entries.serverActionModuleMap.get(path);
-        let actionEntry = builder.entries.serverActionEntryMap.get(path);
-
         let contents = await readFile(path, "utf-8");
-        let hasServerReference = contents.includes("use server");
+        let hasUseServer = contents.includes("use server");
 
-        if (hasServerReference) {
-          if (actionModule) {
-            let { moduleId, exportsAndNames } = actionModule;
-            let contents = await readFile(path, "utf-8");
-            let registerLines = exportsAndNames.map((data) => {
-              return `registerServerReference(${data.local}, "${moduleId}", "${data.export}");`;
+        if (hasUseServer) {
+          let moduleId = getModuleId(path);
+          let extension = extname(path).slice(1);
+          let language = languageSchema.parse(extension);
+
+          let transformed = await serverFunctionTransform({
+            input: {
+              code: contents,
+              language,
+            },
+            encryption: {
+              key: envKey("TWOFOLD_SECRET_KEY"),
+              module: "@twofold/framework/encryption",
+            },
+            moduleId,
+          });
+
+          for (let serverFunction of transformed.serverFunctions) {
+            serverActions.add({
+              id: `${moduleId}#${serverFunction}`,
+              path,
+              export: serverFunction,
             });
-
-            let newContents = `
-              import { registerServerReference } from "react-server-dom-webpack/server.edge";
-
-              ${contents}
-              ${registerLines.join("\n")}
-            `;
-
-            for (let data of exportsAndNames) {
-              serverActions.add({
-                id: `${moduleId}#${data.export}`,
-                path,
-                export: data.export,
-              });
-            }
-
-            return {
-              contents: newContents,
-              loader: "tsx",
-            };
-          } else if (actionEntry) {
-            let { moduleId } = actionEntry;
-
-            let extension = extname(path).slice(1);
-            let language = languageSchema.parse(extension);
-
-            let transformed = await serverFunctionTransform({
-              input: {
-                code: contents,
-                language,
-              },
-              encryption: {
-                key: envKey("TWOFOLD_SECRET_KEY"),
-                module: "@twofold/framework/encryption",
-              },
-              moduleId,
-            });
-
-            for (let serverFunction of transformed.serverFunctions) {
-              serverActions.add({
-                id: `${moduleId}#${serverFunction}`,
-                path,
-                export: serverFunction,
-              });
-            }
-
-            return {
-              contents: transformed.code,
-              loader: "js",
-            };
           }
-        } else {
-          // TODO
-          // this is an action from a file we didn't know about, probably a node_module
-          // that was imported into an RSC.
-          // function getModuleId(path: string) {
-          //   let md5 = createHash("md5").update(path).digest("hex");
-          //   let name = basename(path, extname(path));
-          //   let moduleId = `${name}-${md5}`;
-          //   return moduleId;
-          // }
+
+          return {
+            contents: transformed.code,
+            loader: "js",
+          };
         }
       });
 
@@ -151,8 +109,6 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
             });
           });
         }
-
-        // console.log(builder.serverActionMap);
       });
     },
   };

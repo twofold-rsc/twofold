@@ -266,11 +266,11 @@ export function ServerTransformPlugin(
             let importDeclaration = t.importDeclaration(
               [
                 t.importSpecifier(
-                  t.identifier("encrypt"),
+                  t.identifier("tf$encrypt"),
                   t.identifier("encrypt"),
                 ),
                 t.importSpecifier(
-                  t.identifier("decrypt"),
+                  t.identifier("tf$decrypt"),
                   t.identifier("decrypt"),
                 ),
               ],
@@ -495,7 +495,7 @@ function createBinding({
       [
         t.nullLiteral(),
         key
-          ? t.callExpression(t.identifier("encrypt"), [
+          ? t.callExpression(t.identifier("tf$encrypt"), [
               t.arrayExpression(
                 capturedVariables.map((varName) => t.identifier(varName)),
               ),
@@ -570,7 +570,7 @@ function insertDecryptedVariables(
     t.variableDeclarator(
       t.arrayPattern(variables.map((variable) => t.identifier(variable))),
       t.awaitExpression(
-        t.callExpression(t.identifier("decrypt"), [
+        t.callExpression(t.identifier("tf$decrypt"), [
           t.awaitExpression(t.identifier(`tf$encrypted$vars`)),
           key,
         ]),

@@ -2,7 +2,7 @@ let counterMap = new Map<string, number>();
 
 export default function Page() {
   return (
-    <div>
+    <div key="automatic-binding">
       <h1 className="text-4xl font-black tracking-tighter">
         Server action automatic binding
       </h1>

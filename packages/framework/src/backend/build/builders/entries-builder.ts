@@ -1,14 +1,13 @@
 import { readFirstNBytes } from "../helpers/file.js";
 import { externalPackages } from "../externals.js";
 import { BuildContext, context, transform } from "esbuild";
-import { createHash } from "crypto";
-import { basename, extname } from "path";
 import { readFile } from "fs/promises";
 import { ParseResult, parseAsync } from "@babel/core";
 import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
 import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";
+import { getModuleId } from "../helpers/module.js";
 
 type ClientComponentModule = {
   moduleId: string;
@@ -16,16 +15,8 @@ type ClientComponentModule = {
   exports: string[];
 };
 
-type ServerActionModule = {
-  moduleId: string;
-  path: string;
-  exports: string[];
-  exportsAndNames: { export: string; local: string }[];
-};
-
-// RSCs that hold server actions defined in module scope
 type ServerActionEntry = {
-  moduleId: string;
+  moduleId: string; // moduleId isn't used, we just need the entry path
   path: string;
 };
 
@@ -39,7 +30,6 @@ export class EntriesBuilder extends Builder {
   #build: Build;
 
   #clientComponentModuleMap = new Map<string, ClientComponentModule>();
-  #serverActionModuleMap = new Map<string, ServerActionModule>();
   #serverActionEntryMap = new Map<string, ServerActionEntry>();
 
   constructor({ build }: { build: Build }) {
@@ -50,10 +40,6 @@ export class EntriesBuilder extends Builder {
 
   get clientComponentModuleMap() {
     return this.#clientComponentModuleMap;
-  }
-
-  get serverActionModuleMap() {
-    return this.#serverActionModuleMap;
   }
 
   get serverActionEntryMap() {
@@ -105,9 +91,6 @@ export class EntriesBuilder extends Builder {
               if (clientMarkers.some(contentsStartsWithMarker)) {
                 let module = await pathToClientComponentModule(path);
                 builder.#clientComponentModuleMap.set(path, module);
-              } else if (serverMarkers.some(contentsStartsWithMarker)) {
-                let module = await pathToServerActionModule(path);
-                builder.#serverActionModuleMap.set(path, module);
               } else if (serverMarkers.some(contentsHasMarker)) {
                 let module = await pathToServerActionEntry(path);
                 builder.#serverActionEntryMap.set(path, module);
@@ -127,7 +110,7 @@ export class EntriesBuilder extends Builder {
     }
 
     this.#clientComponentModuleMap = new Map();
-    this.#serverActionModuleMap = new Map();
+    this.#serverActionEntryMap = new Map();
 
     this.clearError();
 
@@ -148,9 +131,6 @@ export class EntriesBuilder extends Builder {
       clientComponentModuleMap: Object.fromEntries(
         this.#clientComponentModuleMap.entries(),
       ),
-      serverActionModuleMap: Object.fromEntries(
-        this.#serverActionModuleMap.entries(),
-      ),
       serverActionEntryMap: Object.fromEntries(
         this.#serverActionEntryMap.entries(),
       ),
@@ -160,9 +140,6 @@ export class EntriesBuilder extends Builder {
   load(data: any) {
     this.#clientComponentModuleMap = new Map(
       Object.entries(data.clientComponentModuleMap),
-    );
-    this.#serverActionModuleMap = new Map(
-      Object.entries(data.serverActionModuleMap),
     );
     this.#serverActionEntryMap = new Map(
       Object.entries(data.serverActionEntryMap),
@@ -181,18 +158,6 @@ async function pathToClientComponentModule(path: string) {
   };
 }
 
-async function pathToServerActionModule(path: string) {
-  let moduleId = getModuleId(path);
-  let ast = await getAst(path);
-
-  return {
-    moduleId,
-    path,
-    exports: getExports(ast),
-    exportsAndNames: getExportsAndNames(ast),
-  };
-}
-
 async function pathToServerActionEntry(path: string) {
   let moduleId = getModuleId(path);
 
@@ -200,13 +165,6 @@ async function pathToServerActionEntry(path: string) {
     moduleId,
     path,
   };
-}
-
-function getModuleId(path: string) {
-  let md5 = createHash("md5").update(path).digest("hex");
-  let name = basename(path, extname(path));
-  let moduleId = `${name}-${md5}`;
-  return moduleId;
 }
 
 async function getAst(path: string) {
@@ -241,36 +199,6 @@ function getExports(ast: ParseResult | null) {
         return exports;
       }
     }, []) ?? [];
-
-  return exports;
-}
-
-function getExportsAndNames(ast: ParseResult | null) {
-  let exports =
-    ast?.program.body.reduce<{ export: string; local: string }[]>(
-      (exports, node) => {
-        if (node.type === "ExportNamedDeclaration") {
-          let functionExports = [];
-
-          for (let specifier of node.specifiers) {
-            if (
-              specifier.type === "ExportSpecifier" &&
-              specifier.exported.type === "Identifier"
-            ) {
-              functionExports.push({
-                export: specifier.exported.name,
-                local: specifier.local.name,
-              });
-            }
-          }
-
-          return [...exports, ...functionExports];
-        }
-
-        return exports;
-      },
-      [],
-    ) ?? [];
 
   return exports;
 }

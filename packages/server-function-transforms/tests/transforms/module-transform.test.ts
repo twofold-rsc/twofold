@@ -26,7 +26,10 @@ describe("module transform", () => {
       function increment() {
         count = count + 1;
       }
-      export { increment };"
+      export {
+        increment
+      };
+      "
     `);
   });
 

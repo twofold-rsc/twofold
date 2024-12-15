@@ -2,10 +2,7 @@
 
 framework
 
-- import encrypt/decrypt as something else, name will clash with user code
 - README for server-function-transforms
-- Image for encryption vs no encryption
-- kitchen sink test for factory functions
 - update docs website with new server actions
 
 - bug: creating a file, then renaming it
@@ -214,6 +211,7 @@ Form
 ## Design
 
 - https://twitter.com/jh3yy/status/1712881626969997355
+- https://craftofui.substack.com/p/muddling-your-words?triedRedirect=true
 
 ```tsx
 // client component map for rsc server render

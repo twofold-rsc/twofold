@@ -7,7 +7,7 @@ async function run(id: string) {
 
 export default function Page() {
   return (
-    <div>
+    <div key="manual-binding">
       <h1 className="text-4xl font-black tracking-tighter">
         Server action manual binding
       </h1>

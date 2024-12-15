@@ -66,7 +66,7 @@ export function ClientTransformPlugin(
                       t.identifier("createServerReference"),
                     ),
                   ],
-                  t.stringLiteral("react-server-dom-webpack/client.edge"),
+                  t.stringLiteral("react-server-dom-webpack/client"),
                 );
 
                 let callServerImport = t.importDeclaration(

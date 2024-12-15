@@ -74,7 +74,6 @@ export async function transform({
     code: false,
   });
 
-  let ast = codeAst?.ast;
   let serverFunctions: string[] =
     codeAst?.metadata &&
     "serverFunctions" in codeAst.metadata &&
@@ -82,6 +81,14 @@ export async function transform({
       ? Array.from(codeAst.metadata.serverFunctions)
       : [];
 
+  if (serverFunctions.length === 0) {
+    return {
+      code: esResult.code,
+      serverFunctions,
+    };
+  }
+
+  let ast = codeAst?.ast;
   if (!ast) {
     throw new Error(
       "Failed to transform code. This is probably a bug in @twofold/server-function-transforms.",

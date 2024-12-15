@@ -22,11 +22,12 @@ describe("transforms", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { jsx } from "react/jsx-runtime";
       async function Page() {
-        return /* @__PURE__ */jsx("div", {
-          children: "Hello World"
-        });
+        return /* @__PURE__ */ jsx("div", { children: "Hello World" });
       }
-      export { Page };"
+      export {
+        Page
+      };
+      "
     `);
   });
 
