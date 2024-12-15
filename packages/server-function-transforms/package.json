@@ -1,6 +1,6 @@
 {
   "name": "@twofold/server-function-transforms",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Transform and encrypt React Server Functions",
   "type": "module",
   "main": "./dist/index.js",
