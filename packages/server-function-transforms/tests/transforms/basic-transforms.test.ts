@@ -22,11 +22,12 @@ describe("transforms", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { jsx } from "react/jsx-runtime";
       async function Page() {
-        return /* @__PURE__ */jsx("div", {
-          children: "Hello World"
-        });
+        return /* @__PURE__ */ jsx("div", { children: "Hello World" });
       }
-      export { Page };"
+      export {
+        Page
+      };
+      "
     `);
   });
 
@@ -78,6 +79,50 @@ describe("transforms", () => {
         });
       }
       export { Page as default };
+      export { tf$serverFunction$0$increment };"
+    `);
+  });
+
+  test("it should work with 'use server' functions that are already exported", async () => {
+    let code = dedent`
+      let count = 0;
+
+      export function increment() {
+        "use server";
+        count = count + 1;
+      }
+        
+      export default function Page() {
+        return <form action={increment} />;
+      }
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toHaveLength(1);
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      let count = 0;
+      function tf$serverFunction$0$increment() {
+        "use server";
+
+        count = count + 1;
+      }
+      registerServerReference(tf$serverFunction$0$increment, "test", "tf$serverFunction$0$increment");
+      const increment = tf$serverFunction$0$increment;
+      function Page() {
+        return /* @__PURE__ */jsx("form", {
+          action: increment
+        });
+      }
+      export { Page as default, increment };
       export { tf$serverFunction$0$increment };"
     `);
   });
@@ -382,7 +427,7 @@ describe("errors", () => {
         },
         moduleId: "test",
       });
-    }).rejects.toThrowError(/Unexpected token/);
+    }).rejects.toThrowError(/Expected "\)" but found ":"/);
   });
 });
 
@@ -1410,30 +1455,19 @@ describe("closures and captured variables", () => {
 });
 
 describe("factory functions", () => {
-  test.skip("it should transform a factory function", async () => {
-    // this doesn't work correctly and is not 'safe'.
-    // i believe in order to get it working the function param passed
-    // to withAuth needs to be hoisted, but not exported.
+  test("it should transform a factory function", async () => {
     let code = dedent`
-      import { verifyUser } from "./auth";
       let count = 0;
 
-      function withAuth(action) {
-        "use server";
-
+      function createIncrementor(amount) {
         return () => {
           "use server";
-          if (verifyUser()) {
-            action();
-          }
-        }
+          count = count + amount;
+        };
       }
         
       export default function Page({ name }) {
-        return <form action={withAuth(() => {
-          "use server";
-          console.log("hello", name);
-        })} />;
+        return <form action={createIncrementor(7)} />;
       }
     `;
 
@@ -1444,5 +1478,31 @@ describe("factory functions", () => {
       },
       moduleId: "test",
     });
+
+    expect(result.serverFunctions).toHaveLength(1);
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      let count = 0;
+      function tf$serverFunction$0$anonymous(tf$bound$vars) {
+        "use server";
+
+        let [amount] = tf$bound$vars;
+        count = count + amount;
+      }
+      registerServerReference(tf$serverFunction$0$anonymous, "test", "tf$serverFunction$0$anonymous");
+      function createIncrementor(amount) {
+        return tf$serverFunction$0$anonymous.bind(null, [amount]);
+      }
+      function Page({
+        name
+      }) {
+        return /* @__PURE__ */jsx("form", {
+          action: createIncrementor(7)
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$anonymous };"
+    `);
   });
 });

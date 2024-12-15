@@ -69,9 +69,6 @@ export class RSCBuilder extends Builder {
     let notFoundEntry = await this.notFoundSrcPath();
 
     // files need to be sorted for deterministic builds
-    let serverActionModules = Array.from(
-      this.#entriesBuilder.serverActionModuleMap.keys(),
-    ).sort();
     let serverActionEntries = Array.from(
       this.#entriesBuilder.serverActionEntryMap.keys(),
     ).sort();
@@ -95,7 +92,6 @@ export class RSCBuilder extends Builder {
           "./src/pages/**/*.api.ts",
           "./src/pages/**/*.api.tsx",
           ...middlewareEntry,
-          ...serverActionModules,
           ...serverActionEntries,
           notFoundEntry,
           this.innerRootWrapperSrcPath,

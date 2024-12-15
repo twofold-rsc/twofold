@@ -29,7 +29,7 @@ describe("encrypted captured variables", () => {
     });
 
     expect(result.code).toContain(
-      'import { encrypt, decrypt } from "@twofold/server-function-transforms";',
+      'import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "@twofold/server-function-transforms";',
     );
 
     expect(result.code).toContain(
@@ -37,7 +37,7 @@ describe("encrypted captured variables", () => {
     );
 
     expect(result.code).toMatchInlineSnapshot(`
-      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      "import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "@twofold/server-function-transforms";
       import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       if (typeof process.env["ENCRYPTION_KEY"] !== "string") {
@@ -46,14 +46,14 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, encrypt([name], process.env["ENCRYPTION_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -87,7 +87,7 @@ describe("encrypted captured variables", () => {
     });
 
     expect(result.code).toMatchInlineSnapshot(`
-      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      "import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "@twofold/server-function-transforms";
       import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       if (typeof process.env["ENCRYPTION_KEY"] !== "string") {
@@ -96,14 +96,14 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, encrypt([name], process.env["ENCRYPTION_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -135,7 +135,7 @@ describe("encrypted captured variables", () => {
     });
 
     expect(result.code).toMatchInlineSnapshot(`
-      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      "import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "@twofold/server-function-transforms";
       import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       if (typeof process.env["ENCRYPTION_KEY"] !== "string") {
@@ -144,7 +144,7 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$action(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
@@ -152,7 +152,7 @@ describe("encrypted captured variables", () => {
         name
       }) {
         return /* @__PURE__ */jsx("form", {
-          action: tf$serverFunction$0$action.bind(null, encrypt([name], process.env["ENCRYPTION_KEY"]))
+          action: tf$serverFunction$0$action.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]))
         });
       }
       export { Page as default };
@@ -186,7 +186,7 @@ describe("encrypted captured variables", () => {
     });
 
     expect(result.code).toMatchInlineSnapshot(`
-      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      "import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "@twofold/server-function-transforms";
       import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       if (typeof process.env["ENCRYPTION_KEY"] !== "string") {
@@ -195,7 +195,7 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
@@ -203,7 +203,7 @@ describe("encrypted captured variables", () => {
         name
       }) {
         let obj = {
-          greet: tf$serverFunction$0$greet.bind(null, encrypt([name], process.env["ENCRYPTION_KEY"]))
+          greet: tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]))
         };
         return /* @__PURE__ */jsx("form", {
           action: obj.greet
@@ -239,11 +239,11 @@ describe("encrypted captured variables", () => {
     });
 
     expect(result.code).toContain(
-      'import { encrypt, decrypt } from "some/other/encrypt/module";',
+      'import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "some/other/encrypt/module";',
     );
 
     expect(result.code).toMatchInlineSnapshot(`
-      "import { encrypt, decrypt } from "some/other/encrypt/module";
+      "import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "some/other/encrypt/module";
       import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       if (typeof process.env["ENCRYPTION_KEY"] !== "string") {
@@ -252,14 +252,14 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, encrypt([name], process.env["ENCRYPTION_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -295,7 +295,7 @@ describe("encrypted captured variables", () => {
     });
 
     expect(result.code).toMatchInlineSnapshot(`
-      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      "import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "@twofold/server-function-transforms";
       import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       if (typeof process.env["ENCRYPTION_KEY"] !== "string") {
@@ -304,7 +304,7 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name, other] = await decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name, other] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
         console.log("hello", name, other);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
@@ -312,7 +312,7 @@ describe("encrypted captured variables", () => {
         name
       }) {
         let other = 123;
-        const greet = tf$serverFunction$0$greet.bind(null, encrypt([name, other], process.env["ENCRYPTION_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name, other], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -376,7 +376,7 @@ describe("encrypted captured variables", () => {
     });
 
     expect(result.code).toMatchInlineSnapshot(`
-      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      "import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "@twofold/server-function-transforms";
       import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       if (typeof process.env["ENCRYPTION_KEY"] !== "string") {
@@ -385,7 +385,7 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars, other2) {
         "use server";
 
-        let [name] = await decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
         console.log("hello", name, other2);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
@@ -393,7 +393,7 @@ describe("encrypted captured variables", () => {
         name
       }) {
         let other = 123;
-        const greet = tf$serverFunction$0$greet.bind(null, encrypt([name], process.env["ENCRYPTION_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet.bind(null, other)
         });
@@ -429,11 +429,11 @@ describe("keys", () => {
     });
 
     expect(result.code).toContain(
-      'let [name] = await decrypt(await tf$encrypted$vars, process.env["ENV_KEY"]);',
+      'let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENV_KEY"]);',
     );
 
     expect(result.code).toMatchInlineSnapshot(`
-      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      "import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "@twofold/server-function-transforms";
       import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       if (typeof process.env["ENV_KEY"] !== "string") {
@@ -442,14 +442,14 @@ describe("keys", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await decrypt(await tf$encrypted$vars, process.env["ENV_KEY"]);
+        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENV_KEY"]);
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, encrypt([name], process.env["ENV_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENV_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -483,11 +483,11 @@ describe("keys", () => {
     });
 
     expect(result.code).toContain(
-      'let [name] = await decrypt(await tf$encrypted$vars, "a-plain-text-string-password");',
+      'let [name] = await tf$decrypt(await tf$encrypted$vars, "a-plain-text-string-password");',
     );
 
     expect(result.code).toMatchInlineSnapshot(`
-      "import { encrypt, decrypt } from "@twofold/server-function-transforms";
+      "import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "@twofold/server-function-transforms";
       import { registerServerReference } from "react-server-dom-webpack/server.edge";
       import { jsx } from "react/jsx-runtime";
       if (typeof "a-plain-text-string-password" !== "string") {
@@ -496,20 +496,80 @@ describe("keys", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await decrypt(await tf$encrypted$vars, "a-plain-text-string-password");
+        let [name] = await tf$decrypt(await tf$encrypted$vars, "a-plain-text-string-password");
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, encrypt([name], "a-plain-text-string-password"));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], "a-plain-text-string-password"));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
       }
       export { Page as default };
       export { tf$serverFunction$0$greet };"
+    `);
+  });
+});
+
+describe("factory functions", () => {
+  test("it should transform a factory function", async () => {
+    let code = dedent`
+      let count = 0;
+
+      function createIncrementor(amount) {
+        return async () => {
+          "use server";
+          count = count + amount;
+        };
+      }
+        
+      export default function Page({ name }) {
+        return <form action={createIncrementor(7)} />;
+      }
+    `;
+
+    let result = await transform({
+      input: {
+        code,
+        language: "jsx",
+      },
+      encryption: {
+        key: envKey("ENCRYPTION_KEY"),
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toHaveLength(1);
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { encrypt as tf$encrypt, decrypt as tf$decrypt } from "@twofold/server-function-transforms";
+      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      import { jsx } from "react/jsx-runtime";
+      if (typeof process.env["ENCRYPTION_KEY"] !== "string") {
+        throw new Error("Invalid key. Encryption key is missing or undefined.");
+      }
+      let count = 0;
+      async function tf$serverFunction$0$anonymous(tf$encrypted$vars) {
+        "use server";
+
+        let [amount] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        count = count + amount;
+      }
+      registerServerReference(tf$serverFunction$0$anonymous, "test", "tf$serverFunction$0$anonymous");
+      function createIncrementor(amount) {
+        return tf$serverFunction$0$anonymous.bind(null, tf$encrypt([amount], process.env["ENCRYPTION_KEY"]));
+      }
+      function Page({
+        name
+      }) {
+        return /* @__PURE__ */jsx("form", {
+          action: createIncrementor(7)
+        });
+      }
+      export { Page as default };
+      export { tf$serverFunction$0$anonymous };"
     `);
   });
 });

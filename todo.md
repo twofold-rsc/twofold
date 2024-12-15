@@ -2,21 +2,22 @@
 
 framework
 
+- README for server-function-transforms
+- update docs website with new server actions
+
+- bug: creating a file, then renaming it
+- bug: creating a file, then deleting it
+
 - rename src to app, add /app/components
 - dont auto bundle (maybe only bundle things that depend on react?)
 
-- README
-- website
-
-- server action modules
+- sessions
+- tailwind v4
 
 - long cache headers for production
-- sessions
 - (layout) routing
 
 - support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder.
-
-- tailwind v4
 
 - taint secret key (needs experimental react)
 - editing env file should trigger some sort of change so live reload works
@@ -35,6 +36,8 @@ framework
 
 - rename api handlers
 - only allow function exports from server modules. you dont want to import a non function call server on the client
+
+- website for server-function-transforms
 
 - eslints
 - https://bsky.app/profile/tkdodo.eu/post/3lbn55t5d5s24
@@ -208,6 +211,7 @@ Form
 ## Design
 
 - https://twitter.com/jh3yy/status/1712881626969997355
+- https://craftofui.substack.com/p/muddling-your-words?triedRedirect=true
 
 ```tsx
 // client component map for rsc server render

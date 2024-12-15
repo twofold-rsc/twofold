@@ -147,8 +147,13 @@ export default function Nav() {
                         href="/server-actions/action-returns-cc"
                       />
                       <ExampleLink
+                        title="Action factory"
+                        description="An action that is created by a factory."
+                        href="/server-actions/function-factory"
+                      />
+                      <ExampleLink
                         title="Slow action"
-                        description="A action that is very slow."
+                        description="An action that is very slow."
                         href="/server-actions/slow-function"
                       />
                     </ExampleGroup>
