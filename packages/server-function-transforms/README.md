@@ -2,11 +2,11 @@
 
 A package for transforming, hoisting, and encrypting RSC Server Functions.
 
-## Why it useful
+## Why it's useful
 
 Imagine a server function that closes over a prop passed into a component:
 
-```jsx
+```tsx
 export default function Page({ name }) {
   return <FormComponent name="bob" />;
 }
@@ -59,14 +59,13 @@ npm install @twofold/server-function-transforms
 
 Usage:
 
-```js
+```typescript
 import { transform, envKey } from "@twofold/server-function-transforms";
 
 const code = `
   export default function Page({ name }) {
     async function greet() {
       "use server";
-
       console.log("hello", name);
     }
 
@@ -145,7 +144,7 @@ Under the hood, this package uses AES-GCM as the encryption algorithm.
 
 The `key` property tells the server function where to find the encryption key.
 
-Using `envKey` will instruction the server function to load the encryption key from an environment variable.
+Using `envKey` will instruct the server function to load the encryption key from an environment variable.
 
 ```typescript
 import { envKey } from "@twofold/server-function-transforms";
@@ -191,7 +190,7 @@ function decrypt(data: string, key: string): Promise<any>;
 
 When given a module with a top-level `"use server"` directive the transform function will turn all function exports into server references. When a module is marked with `"use server"` all exports are considered server functions, so they do not need to individually be marked with `"use server"`.
 
-```js
+```typescript
 let code = `
   "use server";
 
