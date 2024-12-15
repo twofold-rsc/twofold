@@ -2,7 +2,6 @@
 
 framework
 
-- README for server-function-transforms
 - update docs website with new server actions
 
 - bug: creating a file, then renaming it
