@@ -2,9 +2,9 @@
 
 Twofold is an opinionated framework that is designed to be used in a specific way. Here are some reasons why you shouldn't use Twofold.
 
-## Beta features
+## Newer React features
 
-Server components, server functions, and actions are a new concepts to React that are only available in a special release candidate of React. Therefore any application built using Twofold is being built on the bleeding edge of React.
+Server components, server functions, and actions are a new concepts to React. Therefore any application built using Twofold is being built on the bleeding edge of React.
 
 Personally, I believe architecture behind React Server Components is so powerful that it will change the future of React development over the upcoming years. Twofold is my bet on that, a bet on RSC and the future of React, but if I'm wrong then applications built with Twofold will suffer and be left behind.
 
@@ -15,7 +15,7 @@ Many concepts that fall under the RSC umbrella are still being fleshed out and a
 There is also a significant learning curve when it comes to understanding how to build applications with these new concepts. While I want to Twofold to help make this learning as easy as possible, in its current state to be successful with Twofold you'll need to have a strong understanding of:
 
 - Server components and client components
-- Transitions
+- Transitions and Actions
 - New React APIs like `useOptimistic`, `useActionState`, and so on.
 
 If you want to focus on other areas of application development instead of learning these new concepts then Twofold is not a good fit.
