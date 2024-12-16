@@ -6,7 +6,7 @@ import Link from "@twofold/framework/link";
 export default function DocsLayout({ children }: { children: ReactNode }) {
   return (
     <EnterDocsAnimation>
-      <header className="flex shadow-sm justify-center space-x-10 items-center border-b border-gray-300 py-4">
+      <header className="flex items-center justify-center space-x-10 border-b border-gray-300 py-4 shadow-sm">
         <Link href="/" className="text-gray-500">
           Home
         </Link>
@@ -21,10 +21,10 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
         </a>
       </header>
 
-      <div className="max-w-6xl w-full mx-auto px-4 gap-x-12 grid grid-cols-5 mt-8">
+      <div className="mx-auto mt-8 grid w-full max-w-[1190px] grid-cols-5 gap-x-12 px-4">
         <div className="hidden sm:block">
           <div className="font-bold">Guides</div>
-          <ul className="space-y-1 mt-1">
+          <ul className="mt-1 space-y-1">
             <li>
               <DocLink href="/docs/guides/getting-started">
                 Getting started
@@ -50,8 +50,8 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             </li>
           </ul>
 
-          <div className="font-bold mt-6">Server</div>
-          <ul className="space-y-1 mt-1">
+          <div className="mt-6 font-bold">Server</div>
+          <ul className="mt-1 space-y-1">
             <li>
               <DocLink href="/docs/reference/cookies">Cookies</DocLink>
             </li>
@@ -66,15 +66,15 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             </li>
           </ul>
 
-          <div className="font-bold mt-6">Components</div>
-          <ul className="space-y-1 mt-1">
+          <div className="mt-6 font-bold">Components</div>
+          <ul className="mt-1 space-y-1">
             <li>
               <DocLink href="/docs/reference/link">Link</DocLink>
             </li>
           </ul>
 
-          <div className="font-bold mt-6">Hooks</div>
-          <ul className="space-y-1 mt-1">
+          <div className="mt-6 font-bold">Hooks</div>
+          <ul className="mt-1 space-y-1">
             <li>
               <DocLink href="/docs/reference/use-router">useRouter</DocLink>
             </li>
@@ -85,8 +85,8 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             </li>
           </ul>
 
-          <div className="font-bold mt-6">Configuration</div>
-          <ul className="space-y-1 mt-1">
+          <div className="mt-6 font-bold">Configuration</div>
+          <ul className="mt-1 space-y-1">
             <li>
               <DocLink href="/docs/reference/application-config">
                 Application
@@ -99,8 +99,8 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             </li>
           </ul>
 
-          <div className="font-bold mt-6">Philosophy</div>
-          <ul className="space-y-1 mt-1">
+          <div className="mt-6 font-bold">Philosophy</div>
+          <ul className="mt-1 space-y-1">
             <li>
               <DocLink href="/docs/philosophy/dont-use-twofold">
                 Don't use Twofold
