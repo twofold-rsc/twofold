@@ -33,11 +33,11 @@ export async function DocPage({
       <title>{title}</title>
       <meta property="og:title" content={title} />
 
-      <div className="col-span-5 sm:col-span-4 lg:col-span-3 min-w-0">
+      <div className="col-span-5 min-w-0 sm:col-span-4 lg:col-span-3 lg:flex lg:justify-center">
         <div>
           <div className="flex items-center space-x-2 font-medium">
             <span className="text-gray-500">Docs</span>
-            <span className="text-gray-400 text-xs">/</span>
+            <span className="text-xs text-gray-400">/</span>
             <span className="text-gray-500">
               {type === "guide"
                 ? "Guides"
@@ -45,7 +45,7 @@ export async function DocPage({
                   ? "Philosophy"
                   : "Reference"}
             </span>
-            <span className="text-gray-400 text-xs">/</span>
+            <span className="text-xs text-gray-400">/</span>
             <Link
               href={`${basePath}/${slug}`}
               className="text-blue-500 hover:underline active:text-blue-600"
@@ -60,19 +60,21 @@ export async function DocPage({
       </div>
       <div className="hidden lg:block">
         <div className="sticky top-8">
-          <div className="text-gray-500 text-sm font-semibold">
+          <div className="text-sm font-semibold text-gray-500">
             On this page
           </div>
-          <ul className="space-y-1 mt-1">
-            {headings.map((heading) => (
-              <li key={heading.title}>
-                <Link
-                  href={`${basePath}/${slug}${heading.level > 1 ? `#${heading.id}` : ""}`}
-                >
-                  {heading.title}
-                </Link>
-              </li>
-            ))}
+          <ul className="mt-1 space-y-1 text-sm">
+            {headings
+              .filter((heading) => heading.level <= 2)
+              .map((heading) => (
+                <li key={heading.title}>
+                  <Link
+                    href={`${basePath}/${slug}${heading.level > 1 ? `#${heading.id}` : ""}`}
+                  >
+                    {heading.title}
+                  </Link>
+                </li>
+              ))}
           </ul>
         </div>
       </div>

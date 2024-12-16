@@ -19,6 +19,7 @@
     "@sindresorhus/slugify": "^2.2.1",
     "@tailwindcss/typography": "^0.5.15",
     "@twofold/framework": "workspace:*",
+    "clsx": "^2.1.1",
     "framer-motion": "^11.13.1",
     "react": "catalog:",
     "react-dom": "catalog:",
