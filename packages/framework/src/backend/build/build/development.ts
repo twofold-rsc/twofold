@@ -74,6 +74,7 @@ export class DevelopmentBuild extends Build {
         staticFilesBuild,
       ]);
       frameworkTime.end();
+      // frameworkTime.log();
 
       let firstPassError =
         this.getBuilder("entries").error ||

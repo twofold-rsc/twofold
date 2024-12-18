@@ -1,8 +1,17 @@
-// from next.js: https://github.com/vercel/next.js/blob/canary/packages/next/src/lib/server-external-packages.json
-// thank you next!
-
 export const externalPackages = [
+  // common and no need to bundle in rsc
+  "react",
+  "react-dom",
+  "react-server-dom-webpack",
+  "tailwindcss",
+  "zod",
+  // icon libraries
+  "@heroicons/react",
+  // twofold libraries
   "@twofold/framework/encryption",
+  // cjs unable to bundle
+  // from next.js: https://github.com/vercel/next.js/blob/canary/packages/next/src/lib/server-external-packages.json
+  // thank you next!
   "@appsignal/nodejs",
   "@aws-sdk/client-s3",
   "@aws-sdk/s3-presigned-post",
@@ -64,3 +73,5 @@ export const externalPackages = [
   "websocket",
   "zeromq",
 ];
+
+export const bundlePackages = ["@twofold/framework"];

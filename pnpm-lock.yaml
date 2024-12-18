@@ -108,6 +108,9 @@ importers:
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
+      tailwindcss:
+        specifier: ^3.4.13
+        version: 3.4.14
       zod:
         specifier: ^3.23.8
         version: 3.23.8
