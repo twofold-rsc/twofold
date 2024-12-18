@@ -20,6 +20,7 @@ let jiti = createJiti(import.meta.url, {
 
 export const configSchema = z.object({
   externalPackages: z.array(z.string()).optional(),
+  bundlePackages: z.array(z.string()).optional(),
   reactCompiler: z.boolean().optional(),
   trustProxy: z.boolean().optional(),
 });
@@ -50,6 +51,7 @@ export abstract class Build {
   async getAppConfig() {
     let defaultConfig: Required<Config> = {
       externalPackages: [],
+      bundlePackages: [],
       reactCompiler: false,
       trustProxy: false,
     };

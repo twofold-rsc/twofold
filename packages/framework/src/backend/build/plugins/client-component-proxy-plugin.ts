@@ -27,7 +27,9 @@ export function clientComponentProxyPlugin({
           // RSC "safe" version of the client component
           let newContents = `
             import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
-            let proxy = createClientModuleProxy("${clientComponentModule.moduleId}");
+            let proxy = createClientModuleProxy("${
+              clientComponentModule.moduleId
+            }");
 
             ${exportLines.join("\n")}
           `;

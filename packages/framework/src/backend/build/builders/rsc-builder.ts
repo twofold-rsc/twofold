@@ -11,7 +11,7 @@ import * as postcssrc from "postcss-load-config";
 import postcss from "postcss";
 import { clientComponentProxyPlugin } from "../plugins/client-component-proxy-plugin.js";
 import { serverActionsPlugin } from "../plugins/server-actions-plugin.js";
-import { externalPackages } from "../externals.js";
+import { externalPackages } from "../packages.js";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder";
 import path from "path";
@@ -80,6 +80,7 @@ export class RSCBuilder extends Builder {
     try {
       let appConfig = await this.#build.getAppConfig();
       let userDefinedExternalPackages = appConfig.externalPackages;
+      let discoveredExternals = this.#entriesBuilder.discoveredExternals;
 
       let result = await build({
         bundle: true,
@@ -100,10 +101,9 @@ export class RSCBuilder extends Builder {
         outbase: "src",
         entryNames: "[ext]/[name]-[hash]",
         external: [
-          "react",
-          "react-server-dom-webpack",
           ...externalPackages,
           ...userDefinedExternalPackages,
+          ...discoveredExternals,
         ],
         conditions: ["react-server", "module"],
         platform: "node",
@@ -111,8 +111,8 @@ export class RSCBuilder extends Builder {
         chunkNames: "chunks/[name]-[hash]",
         metafile: true,
         plugins: [
-          clientComponentProxyPlugin({ builder: builder }),
-          serverActionsPlugin({ builder: builder }),
+          clientComponentProxyPlugin({ builder }),
+          serverActionsPlugin({ builder }),
           {
             name: "postcss",
             async setup(build) {

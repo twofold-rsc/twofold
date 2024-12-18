@@ -1,5 +1,5 @@
 import { readFirstNBytes } from "../helpers/file.js";
-import { externalPackages } from "../externals.js";
+import { externalPackages } from "../packages.js";
 import { BuildContext, context, transform } from "esbuild";
 import { readFile } from "fs/promises";
 import { ParseResult, parseAsync } from "@babel/core";
@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";
 import { getModuleId } from "../helpers/module.js";
+import { externalsPlugin } from "../plugins/externals-plugin.js";
 
 type ClientComponentModule = {
   moduleId: string;
@@ -31,6 +32,7 @@ export class EntriesBuilder extends Builder {
 
   #clientComponentModuleMap = new Map<string, ClientComponentModule>();
   #serverActionEntryMap = new Map<string, ServerActionEntry>();
+  #discoveredExternals = new Set<string>();
 
   constructor({ build }: { build: Build }) {
     super();
@@ -44,6 +46,10 @@ export class EntriesBuilder extends Builder {
 
   get serverActionEntryMap() {
     return this.#serverActionEntryMap;
+  }
+
+  get discoveredExternals() {
+    return this.#discoveredExternals;
   }
 
   async setup() {
@@ -69,13 +75,14 @@ export class EntriesBuilder extends Builder {
       write: false,
       outdir: "./.twofold/temp/",
       outbase: "src",
-      external: [
-        "react",
-        "react-dom",
-        ...externalPackages,
-        ...userDefinedExternalPackages,
-      ],
+      external: [...externalPackages, ...userDefinedExternalPackages],
       plugins: [
+        externalsPlugin({
+          userDefinedExternalPackages: userDefinedExternalPackages,
+          onEnd: (discoveredExternals) => {
+            builder.#discoveredExternals = discoveredExternals;
+          },
+        }),
         {
           name: "find-entry-points-plugin",
           setup(build) {
@@ -111,6 +118,7 @@ export class EntriesBuilder extends Builder {
 
     this.#clientComponentModuleMap = new Map();
     this.#serverActionEntryMap = new Map();
+    this.#discoveredExternals = new Set();
 
     this.clearError();
 
@@ -134,6 +142,7 @@ export class EntriesBuilder extends Builder {
       serverActionEntryMap: Object.fromEntries(
         this.#serverActionEntryMap.entries(),
       ),
+      discoveredExternals: Array.from(this.#discoveredExternals),
     };
   }
 
@@ -144,6 +153,7 @@ export class EntriesBuilder extends Builder {
     this.#serverActionEntryMap = new Map(
       Object.entries(data.serverActionEntryMap),
     );
+    this.#discoveredExternals = new Set(data.discoveredExternals);
   }
 }
 
