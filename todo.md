@@ -6,7 +6,6 @@ framework
 - bug: creating a file, then deleting it
 
 - rename src to app, add /app/components
-- dont auto bundle (maybe only bundle things that depend on react?)
 
 - sessions
 - tailwind v4

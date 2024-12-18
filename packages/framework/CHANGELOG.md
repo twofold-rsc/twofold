@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.48
+
+### Patch Changes
+
+- Auto detect external packages
+
 ## 0.0.47
 
 ### Patch Changes
