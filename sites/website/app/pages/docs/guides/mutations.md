@@ -13,7 +13,7 @@ Server functions use the `"use server"` directive, which ensures that the code i
 Let's create a server function that inserts a new post into the database:
 
 ```tsx
-// src/pages/posts.page.tsx
+// app/pages/posts.page.tsx
 
 import { db } from "./database";
 
@@ -73,7 +73,7 @@ When using a server module all functions exported from the module become server 
 ### Example: Using a Server Module
 
 ```tsx
-// src/pages/posts/mutations.ts
+// app/pages/posts/mutations.ts
 
 "use server";
 
@@ -94,7 +94,7 @@ async function createPost(formData: FormData) {
 Now any component can import and use the `createPost` function:
 
 ```tsx
-// src/pages/posts/index.page.tsx
+// app/pages/posts/index.page.tsx
 
 import { db } from "./database";
 import { createPost } from "./mutations";
@@ -144,12 +144,15 @@ Server functions that need to work with dynamic data can be defined inside of re
 Here's an example of how to update a post in the database:
 
 ```tsx
-// src/pages/posts/$slug.page.tsx
+// app/pages/posts/$slug.page.tsx
+
+import { db } from "./database";
+import { PageProps } from "@twofold/framework/types";
 
 export default function PostsSlugPage({
   params,
 }: {
-  params: { slug: string };
+  params: PageProps<"slug">;
 }) {
   let post = await db.query("SELECT * FROM posts WHERE slug = ?", params.slug);
 
@@ -172,7 +175,6 @@ export default function PostsSlugPage({
     <div>
       <p>This post was last updated at {post.updatedAt}.</p>
       <form action={updatePost}>
-        <input type="hidden" name="id" value={post.id} />
         <input
           name="title"
           placeholder="Title"
@@ -194,4 +196,4 @@ export default function PostsSlugPage({
 
 Notice how the `updatePost` function knows which post to update because it closes over the selected `post.id` variable.
 
-Now when the form is submitted, the post is updated in the database, and the page refreshes to show the updated timestamp.
+Now when the form is submitted, the post is updated in the database, and the data on the page updates to show the latest timestamp.

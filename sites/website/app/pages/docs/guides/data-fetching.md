@@ -9,7 +9,7 @@ At the moment, Twofold does not have a built-in data fetching library. This guid
 Pages that export asynchronous components can fetch data before rendering.
 
 ```tsx
-// src/pages/sales.page.tsx
+// app/pages/sales.page.tsx
 
 import { db } from "./database";
 
@@ -32,7 +32,7 @@ Twofold will wait for the total count of sales to be fetched from the database b
 Similar to pages, layouts can also fetch data. This useful for data that is rendered across multiple pages.
 
 ```tsx
-// src/pages/posts/layout.tsx
+// app/pages/posts/layout.tsx
 
 import { db } from "./database";
 import { ReactNode } from "react";

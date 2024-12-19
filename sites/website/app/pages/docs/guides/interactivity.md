@@ -11,7 +11,7 @@ Here's an example of a component tree that starts it's rendering on the server, 
 Let's start with a page component that executes SQL on the server:
 
 ```tsx
-// src/pages/posts/index.page.tsx
+// app/pages/posts/index.page.tsx
 
 import { db } from "./database";
 import { PostsList } from "./posts-list";
@@ -32,7 +32,7 @@ export async function PostsPage() {
 This component fetches a list of posts and hands them off to `PostsLists`, which is a client component:
 
 ```tsx
-// src/pages/posts/post-list.tsx
+// app/pages/posts/post-list.tsx
 
 "use client";
 

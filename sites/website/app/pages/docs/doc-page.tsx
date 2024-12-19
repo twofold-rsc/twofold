@@ -111,7 +111,7 @@ let loadDocContent = cache(
 
     let filePath = path.join(
       process.cwd(),
-      `./src/pages/docs/${basePath}/${slug}.md`,
+      `./app/pages/docs/${basePath}/${slug}.md`,
     );
     let raw = await readFile(filePath, "utf-8");
     let ast = Markdoc.parse(raw);
@@ -176,7 +176,7 @@ let fence: Schema = {
 };
 
 async function getDocSlugs(dir: "guides" | "reference" | "philosophy") {
-  let directoryPath = path.join(process.cwd(), `./src/pages/docs/${dir}`);
+  let directoryPath = path.join(process.cwd(), `./app/pages/docs/${dir}`);
   let files = await readdir(directoryPath);
   return files
     .filter((file) => file.endsWith(".md"))

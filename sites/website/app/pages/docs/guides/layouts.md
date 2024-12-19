@@ -2,7 +2,7 @@
 
 Layouts are React Server Components that wrap your page components. They contain common elements such as headers, footers, and navigation menus that are shared across multiple pages.
 
-Layouts are always named `layout.tsx` and are placed in the `src/pages` directory alongside your pages.
+Layouts are always named `layout.tsx` and are placed in the `app/pages` directory alongside your pages.
 
 ## Root layout
 
@@ -35,7 +35,7 @@ It's best to keep your root layout as simple as possible. You can add additional
 Layouts that are nested will create a hierarchy of layouts. When a page component is rendered, it is wrapped by the root layout, followed by any layouts that exist in the directory hierarchy leading to the page.
 
 ```tsx
-// src/pages/posts/layout.tsx
+// app/pages/posts/layout.tsx
 
 import { LayoutProps } from "@twofold/framework/types";
 
@@ -50,7 +50,7 @@ export default function PostsLayout({ children }: LayoutProps) {
 }
 ```
 
-The above `PostsLayout` component wraps the page components in the `src/pages/posts` directory. When visiting a URL under `/posts`, the `PostsLayout` component will be rendered.
+The above `PostsLayout` component wraps the page components in the `app/pages/posts` directory. When visiting a URL under `/posts`, the `PostsLayout` component will be rendered.
 
 Layout nesting can be infinitely deep. Visiting the URL `/posts/comments/:commentId` will render the posts layout component, followed by the comments layout component, and then finally the comment page component.
 
@@ -76,7 +76,7 @@ In addition to the `children` prop, layouts receive the same props passed to pag
 A special `LayoutProps` type can be imported from `@twofold/framework/types` that provides types for the props passed to pages.
 
 ```tsx
-// src/pages/posts/layout.tsx
+// app/pages/posts/layout.tsx
 
 import { LayoutProps } from "@twofold/framework/types";
 
@@ -87,7 +87,7 @@ export default function PostsLayout(props: LayoutProps) {
 
 ## URL mapping
 
-The table below serves as a reference for how URLs map to layout components. Each layout in the `src/pages` directory is listed with the URL it will render.
+The table below serves as a reference for how URLs map to layout components. Each layout in the `app/pages` directory is listed with the URL it will render.
 
 | Layout file                 | URL pattern        |
 | --------------------------- | ------------------ |
