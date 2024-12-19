@@ -62,8 +62,8 @@ export class EntriesBuilder extends Builder {
     let builder = this;
     this.#context = await context({
       entryPoints: [
-        "./src/pages/**/*.ts",
-        "./src/pages/**/*.tsx",
+        "./app/pages/**/*.ts",
+        "./app/pages/**/*.tsx",
         `${frameworkComponentsPath}/**/*.tsx`,
       ],
       bundle: true,
@@ -74,7 +74,7 @@ export class EntriesBuilder extends Builder {
       metafile: true,
       write: false,
       outdir: "./.twofold/temp/",
-      outbase: "src",
+      outbase: "app",
       external: [...externalPackages, ...userDefinedExternalPackages],
       plugins: [
         externalsPlugin({

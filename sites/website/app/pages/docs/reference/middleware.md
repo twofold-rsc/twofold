@@ -7,7 +7,7 @@ Middleware allows you to run code before rendering layouts and pages.
 A page or layout can export a `before` function to run middleware before rendering:
 
 ```tsx
-// src/pages/posts/index.page.tsx
+// app/pages/posts/index.page.tsx
 
 export async function before() {
   console.log("Running middleware before rendering");
@@ -21,7 +21,7 @@ export default function IndexPage() {
 A layout can also export a `before` middleware function:
 
 ```tsx
-// src/pages/posts/layout.tsx
+// app/pages/posts/layout.tsx
 
 export async function before() {
   console.log("Running middleware before rendering");

@@ -7,7 +7,7 @@ Twofold has built in support for reading, setting, and destroying cookies.
 Cookies can be read in Twofold using the cookie module:
 
 ```tsx
-// src/pages/index.page.tsx
+// app/pages/index.page.tsx
 
 import cookies from "@twofold/framework/cookies";
 
@@ -25,7 +25,7 @@ Cookies can be read in pages, layouts, server components, actions, and middlewar
 To set cookies:
 
 ```tsx
-// src/pages/index.page.tsx
+// app/pages/index.page.tsx
 
 import cookies from "@twofold/framework/cookies";
 
@@ -51,7 +51,7 @@ export default function Page() {
 Note that cookies should only be set in server actions or middleware. Setting cookies in pages, layouts, or server components is forbidden.
 
 ```tsx
-// src/pages/index.page.tsx
+// app/pages/index.page.tsx
 
 import cookies from "@twofold/framework/cookies";
 
@@ -73,7 +73,7 @@ export default function Page() {
 To destroy cookies:
 
 ```tsx
-// src/pages/index.page.tsx
+// app/pages/index.page.tsx
 
 import cookies from "@twofold/framework/cookies";
 

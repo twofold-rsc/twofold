@@ -4,20 +4,20 @@ Twofold uses [Tailwind CSS](https://tailwindcss.com/) for a simple and constrain
 
 ## Tailwind CSS
 
-A default Tailwind configuration is included in the root of your project. It is configured to scan the `src` directory for any utility classes when building.
+A default Tailwind configuration is included in the root of your project. It is configured to scan the `app` directory for any utility classes when building.
 
 You can change the default configuration by editing the `tailwind.config.js` file.
 
 ## Global styles
 
-You can add global CSS to your project by editing the `src/pages/global.css` file. This file will be imported by your root layout.
+You can add global CSS to your project by editing the `app/pages/global.css` file. This file will be imported by your root layout.
 
 ## Page specific styles
 
 Pages are allowed to import their own CSS files that will only be loaded when the page is visited.
 
 ```css
-/* src/pages/posts/styles.css */
+/* app/pages/posts/styles.css */
 
 .posts {
   background-color: blue;
@@ -25,7 +25,7 @@ Pages are allowed to import their own CSS files that will only be loaded when th
 ```
 
 ```tsx
-// src/pages/posts/index.page.tsx
+// app/pages/posts/index.page.tsx
 
 import "./styles.css";
 

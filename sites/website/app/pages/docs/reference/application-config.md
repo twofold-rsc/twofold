@@ -31,7 +31,7 @@ An array of package names that should be excluded from the build process.
 
 Defaults to `[]`.
 
-Twofold bundles all dependencies by default, but you can exclude certain packages from the build process by adding them to this list. This is typically used for Node.js packages that rely on specific features, like dynamic require, that prevent them from being bundled.
+Twofold attempts to bundle dependencies by default, but some dependencies are designed to not be bundled. The build process does a pretty good job at automatically detecting packages that cannot be bundled, but you can use the `externalPackages` option to have more control over dependencies that should be excluded.
 
 ```tsx
 let config: Config = {

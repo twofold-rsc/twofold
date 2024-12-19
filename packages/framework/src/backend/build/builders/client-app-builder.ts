@@ -6,7 +6,7 @@ import {
 import { readFile } from "fs/promises";
 import { transformAsync } from "@babel/core";
 import { fileURLToPath } from "url";
-import { appCompiledDir, appSrcDir, frameworkSrcDir } from "../../files.js";
+import { appCompiledDir, appAppDir, frameworkSrcDir } from "../../files.js";
 import { dirname } from "path";
 import * as path from "path";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
@@ -140,7 +140,7 @@ export class ClientAppBuilder extends Builder {
           {
             name: "react-babel-transforms",
             async setup(build) {
-              let appSrcPath = fileURLToPath(appSrcDir);
+              let appAppPath = fileURLToPath(appAppDir);
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
               let appConfig = await builder.#build.getAppConfig();
               let refreshEnabled =
@@ -165,7 +165,7 @@ export class ClientAppBuilder extends Builder {
               let shouldRunBabel = refreshEnabled || compilerEnabled;
 
               build.onLoad({ filter: /\.(tsx|ts)$/ }, async ({ path }) => {
-                if (shouldRunBabel && path.startsWith(appSrcPath)) {
+                if (shouldRunBabel && path.startsWith(appAppPath)) {
                   let contents = await readFile(path, "utf-8");
 
                   // esbuild transform ts to js
@@ -204,7 +204,7 @@ export class ClientAppBuilder extends Builder {
                     /\$RefreshReg\$\(/.test(newContents)
                   ) {
                     let moduleName = path
-                      .slice(appSrcPath.length)
+                      .slice(appAppPath.length)
                       .replace(/\.tsx$/, "");
 
                     let start = `

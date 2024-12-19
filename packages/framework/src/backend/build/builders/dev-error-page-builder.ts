@@ -56,7 +56,7 @@ export class DevErrorPageBuilder extends Builder {
 
   private get appPath() {
     let appPath = fileURLToPath(
-      new URL("./apps/errors/app.tsx", frameworkSrcDir)
+      new URL("./apps/errors/app.tsx", frameworkSrcDir),
     );
     return appPath;
   }

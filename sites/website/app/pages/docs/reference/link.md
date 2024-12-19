@@ -7,7 +7,7 @@ The `<Link>` component is used to navigate between pages in your app.
 Links can be rendered by both server and client components.
 
 ```tsx
-// src/pages/index.page.tsx
+// app/pages/index.page.tsx
 
 import Link from "@twofold/framework/link";
 

@@ -8,5 +8,5 @@
     "target": "ESNext",
     "types": ["react", "react-dom", "node"]
   },
-  "include": ["./src/"]
+  "include": ["./app/"]
 }

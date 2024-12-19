@@ -3,7 +3,7 @@ import { readFile } from "fs/promises";
 import { fileURLToPath, pathToFileURL } from "url";
 import {
   appCompiledDir,
-  appSrcDir,
+  appAppDir,
   frameworkCompiledDir,
   frameworkSrcDir,
 } from "../../files.js";
@@ -64,7 +64,7 @@ export class RSCBuilder extends Builder {
     let builder = this;
 
     let hasMiddleware = await this.hasMiddleware();
-    let middlewareEntry = hasMiddleware ? ["./src/middleware.ts"] : [];
+    let middlewareEntry = hasMiddleware ? ["./app/middleware.ts"] : [];
 
     let notFoundEntry = await this.notFoundSrcPath();
 
@@ -88,17 +88,17 @@ export class RSCBuilder extends Builder {
         jsx: "automatic",
         logLevel: "error",
         entryPoints: [
-          "./src/pages/**/*.page.tsx",
-          "./src/pages/**/layout.tsx",
-          "./src/pages/**/*.api.ts",
-          "./src/pages/**/*.api.tsx",
+          "./app/pages/**/*.page.tsx",
+          "./app/pages/**/layout.tsx",
+          "./app/pages/**/*.api.ts",
+          "./app/pages/**/*.api.tsx",
           ...middlewareEntry,
           ...serverActionEntries,
           notFoundEntry,
           this.innerRootWrapperSrcPath,
         ],
         outdir: "./.twofold/rsc/",
-        outbase: "src",
+        outbase: "app",
         entryNames: "[ext]/[name]-[hash]",
         external: [
           ...externalPackages,
@@ -197,7 +197,7 @@ export class RSCBuilder extends Builder {
   }
 
   hasMiddleware() {
-    return fileExists(new URL("./middleware.ts", appSrcDir));
+    return fileExists(new URL("./middleware.ts", appAppDir));
   }
 
   get middlewarePath() {
@@ -205,7 +205,7 @@ export class RSCBuilder extends Builder {
       throw new Error("No metafile");
     }
 
-    let middlewareUrl = new URL("./middleware.ts", appSrcDir);
+    let middlewareUrl = new URL("./middleware.ts", appAppDir);
     let middlewarePath = fileURLToPath(middlewareUrl);
 
     return getCompiledEntrypoint(middlewarePath, this.#metafile);
@@ -266,7 +266,7 @@ export class RSCBuilder extends Builder {
     let outputs = metafile.outputs;
     let cwd = process.cwd();
     let baseUrl = pathToFileURL(`${cwd}/`);
-    let prefix = "src/pages/";
+    let prefix = "app/pages/";
     let pageSuffix = ".page.tsx";
 
     let cssUrl = new URL("./rsc/css/", appCompiledDir);
@@ -317,7 +317,7 @@ export class RSCBuilder extends Builder {
     let outputs = metafile.outputs;
     let cwd = process.cwd();
     let baseUrl = pathToFileURL(`${cwd}/`);
-    let prefix = "src/pages/";
+    let prefix = "app/pages/";
     let layoutSuffix = "/layout.tsx";
 
     let cssUrl = new URL("./rsc/css/", appCompiledDir);
@@ -365,7 +365,7 @@ export class RSCBuilder extends Builder {
     let outputs = metafile.outputs;
     let cwd = process.cwd();
     let baseUrl = pathToFileURL(`${cwd}/`);
-    let prefix = "src/pages/";
+    let prefix = "app/pages/";
     let apiSuffix = /\.api\.tsx?$/;
 
     let keys = Object.keys(outputs);
@@ -455,13 +455,13 @@ export class RSCBuilder extends Builder {
   }
 }
 
-let appSrcPath = fileURLToPath(appSrcDir);
+let appAppPath = fileURLToPath(appAppDir);
 let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
 let srcPaths = {
   framework: {
     notFound: path.join(frameworkSrcPath, "pages", "not-found.tsx"),
   },
   app: {
-    notFound: path.join(appSrcPath, "pages", "errors", "not-found.tsx"),
+    notFound: path.join(appAppPath, "pages", "errors", "not-found.tsx"),
   },
 };

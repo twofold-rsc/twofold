@@ -93,7 +93,7 @@ export class DevTask {
 
   private async watch() {
     let files = {
-      "./src": () => this.rebuild(),
+      "./app": () => this.rebuild(),
       "./public": () => this.rebuild(),
       "./config": () => this.restart(),
       "./.env": () => this.reloadEnv(),
