@@ -7,7 +7,7 @@ The `useRouter` hook provides client components access to Twofold's router. This
 To use the `useRouter` hook:
 
 ```tsx
-// src/pages/client-component.tsx
+// app/pages/client-component.tsx
 
 "use client";
 
@@ -27,7 +27,7 @@ The `useRouter` hook can only be used in client components since it is a reactiv
 Programmatic navigation can be achieved by calling the `navigate` or `replace` functions from `useRouter`:
 
 ```tsx
-// src/pages/client-component.tsx
+// app/pages/client-component.tsx
 
 "use client";
 
@@ -60,7 +60,7 @@ The `replace` function from `useRouter` can be used instead of `navigate`. The o
 The `refresh` function from `useRouter` can be used to refresh the current page and its layouts:
 
 ```tsx
-// src/pages/client-component.tsx
+// app/pages/client-component.tsx
 
 "use client";
 
@@ -91,7 +91,7 @@ This component will refresh the data fetched from the page and layouts once a mi
 The functions and values returned by `useRouter`:
 
 ```tsx
-// src/pages/client-component.tsx
+// app/pages/client-component.tsx
 
 "use client";
 

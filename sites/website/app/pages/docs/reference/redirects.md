@@ -7,7 +7,7 @@ In Twofold redirects can happen in pages, layouts, server components, actions, a
 Redirect when rendering a page or layout:
 
 ```tsx
-// src/pages/posts/$slug.page.tsx
+// app/pages/posts/$slug.page.tsx
 
 import { redirect } from "@twofold/framework/redirect";
 import { PageProps } from "@twofold/framework/types";
@@ -38,7 +38,7 @@ redirect("/posts", { permanent: true });
 Redirect from server actions:
 
 ```tsx
-// src/pages/posts/mutations.ts
+// app/pages/posts/mutations.ts
 
 "use server";
 
@@ -67,7 +67,7 @@ Redirects from server actions will always use the 303 (see other) status code. T
 Redirect from middleware:
 
 ```tsx
-// src/pages/posts/$slug.page.tsx
+// app/pages/posts/$slug.page.tsx
 
 import { redirect } from "@twofold/framework/redirect";
 import { PageProps } from "@twofold/framework/types";

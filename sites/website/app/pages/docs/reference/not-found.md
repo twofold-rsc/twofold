@@ -7,7 +7,7 @@ Twofold has built in support for handling and customizing not found errors.
 Render the not found page from a page or layout:
 
 ```tsx
-// src/pages/posts/$slug.page.tsx
+// app/pages/posts/$slug.page.tsx
 
 import { notFound } from "@twofold/framework/not-found";
 import { PageProps } from "@twofold/framework/types";
@@ -31,7 +31,7 @@ In addition to pages that invoke `notFound()`, any page that is missing from the
 Render the not found page from a server action:
 
 ```tsx
-// src/pages/posts/mutations.ts
+// app/pages/posts/mutations.ts
 
 "use server";
 
@@ -56,7 +56,7 @@ async function updatePost(formData: FormData) {
 Render the not found page from middleware:
 
 ```tsx
-// src/pages/posts/$slug.page.tsx
+// app/pages/posts/$slug.page.tsx
 
 import { notFound } from "@twofold/framework/not-found";
 import { PageProps } from "@twofold/framework/types";
@@ -74,10 +74,10 @@ export default function PostPage({ slug }: PageProps<"slug">) {
 
 ## Customizing the not found page
 
-To customize the default not found page create a new file at `src/pages/errors/not-found.page.tsx`:
+To customize the default not found page create a new file at `app/pages/errors/not-found.page.tsx`:
 
 ```tsx
-// src/pages/errors/not-found.page.tsx
+// app/pages/errors/not-found.page.tsx
 
 export default function NotFoundPage() {
   return (

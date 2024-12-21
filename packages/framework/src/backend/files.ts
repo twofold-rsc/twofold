@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url";
 let cwd = pathToFileURL(process.cwd());
 
 export const cwdUrl = new URL(`${cwd}/`);
-export const appSrcDir = new URL("./src/", cwdUrl);
+export const appAppDir = new URL("./app/", cwdUrl);
 export const appConfigDir = new URL("./config/", cwdUrl);
 export const appCompiledDir = new URL("./.twofold/", cwdUrl);
 

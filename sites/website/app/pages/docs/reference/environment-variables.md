@@ -54,7 +54,8 @@ export function ClientComponent() {
 If you need to access environment variables on the client then you should pass them as props from a server component into a client component.
 
 ```tsx
-// src/pages/index.tsx
+// app/pages/index.tsx
+
 import { ClientComponent } from "./client-component";
 
 export default function IndexPage() {

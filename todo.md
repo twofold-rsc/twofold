@@ -26,6 +26,8 @@ framework
 - rename src to app
 - add /app/components?
 
+- perf tracking: https://github.com/facebook/react/pull/31729
+
 - live reload should reconnect when disconnected
 - add --log=debug flag to show debug logs
 - tailwind v4/lightening css
