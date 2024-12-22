@@ -9,7 +9,6 @@ export function postcssTailwind() {
     async setup(build) {
       let postcssConfig: postcssrc.Result | false;
 
-      // @ts-expect-error: Property 'default' does not exist on type '(ctx?: ConfigContext | undefined, path?: string | undefined, options?: Options | undefined) => Promise<Result>'.
       postcssConfig = await postcssrc.default();
       build.onLoad({ filter: /\.css$/ }, async ({ path }) => {
         let css = await readFile(path, "utf8");

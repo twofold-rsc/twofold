@@ -1,6 +1,6 @@
-import { RequestContextExtensions } from "@hattip/compose";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { ReactNode } from "react";
+import { SerializeOptions } from "cookie";
 
 export type Store = {
   reqId: number;
@@ -8,9 +8,13 @@ export type Store = {
   canReload: boolean;
   cookies: {
     get: (key: string) => string | undefined;
-    set: RequestContextExtensions["setCookie"];
-    destroy: RequestContextExtensions["deleteCookie"];
-    outgoingCookies: RequestContextExtensions["outgoingCookies"];
+    set(key: string, value: string, options?: SerializeOptions): void;
+    destroy(key: string, options?: SerializeOptions): void;
+    outgoingCookies: {
+      name: string;
+      value: string;
+      options?: SerializeOptions;
+    }[];
   };
   assets: string[];
   render: {

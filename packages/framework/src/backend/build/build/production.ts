@@ -2,7 +2,7 @@ import { ClientAppBuilder } from "../builders/client-app-builder.js";
 import { RSCBuilder } from "../builders/rsc-builder.js";
 import { StaticFilesBuilder } from "../builders/static-files-builder.js";
 import { EntriesBuilder } from "../builders/entries-builder.js";
-import { time } from "./time.js";
+import { time } from "../helpers/time.js";
 import { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import { Build } from "./build.js";
 

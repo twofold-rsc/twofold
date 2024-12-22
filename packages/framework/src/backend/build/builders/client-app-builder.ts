@@ -10,7 +10,7 @@ import { appCompiledDir, appAppDir, frameworkSrcDir } from "../../files.js";
 import { dirname } from "path";
 import * as path from "path";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
-import { EntriesBuilder } from "./entries-builder";
+import { EntriesBuilder } from "./entries-builder.js";
 import { serverActionClientReferencePlugin } from "../plugins/server-action-client-reference-plugin.js";
 import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";

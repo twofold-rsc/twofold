@@ -2,18 +2,19 @@
 
 framework
 
-- bug: creating a file, then renaming it
-- bug: creating a file, then deleting it
-
-- rename src to app, add /app/components
-
-- sessions
 - tailwind v4
+- test external store plugin
+- test tailwind, live reload
+- test dev error page
+- postcss tailwind esbuild plugin
+- update website, base app
+- drop postcss
+- sessions
 
 - long cache headers for production
 - (layout) routing
 
-- support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder.
+- support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder. i think this is done?
 
 - taint secret key (needs experimental react)
 - editing env file should trigger some sort of change so live reload works
@@ -23,7 +24,6 @@ framework
 
 - errors when editing files + SSE closing
 
-- rename src to app
 - add /app/components?
 
 - perf tracking: https://github.com/facebook/react/pull/31729

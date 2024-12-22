@@ -8,7 +8,7 @@ export default function Counter() {
   return (
     <div>
       <p className="text-center text-xl text-gray-500">Count</p>
-      <p className="text-center text-5xl font-bold tabular-nums text-gray-950">
+      <p className="text-center text-5xl font-bold text-gray-950 tabular-nums">
         {count}
       </p>
 

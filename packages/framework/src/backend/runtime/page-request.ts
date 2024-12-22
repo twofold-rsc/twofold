@@ -1,5 +1,5 @@
-import { Runtime } from "../runtime";
-import { Page } from "../build/rsc/page";
+import { Runtime } from "../runtime.js";
+import { Page } from "../build/rsc/page.js";
 import { getStore } from "../stores/rsc-store.js";
 import {
   isNotFoundError,

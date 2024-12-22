@@ -26,7 +26,7 @@ export class DevErrorPageBuilder extends Builder {
       splitting: true,
       chunkNames: "chunks/[name]-[hash]",
       metafile: true,
-      plugins: [postcssTailwind()],
+      // plugins: [postcssTailwind()],
     });
   }
 

@@ -6,14 +6,15 @@ import {
   appAppDir,
   frameworkCompiledDir,
   frameworkSrcDir,
+  cwdUrl,
 } from "../../files.js";
-import * as postcssrc from "postcss-load-config";
-import postcss from "postcss";
+import { compile } from "@tailwindcss/node";
+import { Scanner } from "@tailwindcss/oxide";
 import { clientComponentProxyPlugin } from "../plugins/client-component-proxy-plugin.js";
 import { serverActionsPlugin } from "../plugins/server-actions-plugin.js";
 import { externalPackages } from "../packages.js";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
-import { EntriesBuilder } from "./entries-builder";
+import { EntriesBuilder } from "./entries-builder.js";
 import path from "path";
 import { RSC } from "../rsc/rsc.js";
 import { Page } from "../rsc/page.js";
@@ -23,6 +24,7 @@ import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";
 import { Layout } from "../rsc/layout.js";
 import { API } from "../rsc/api.js";
+import { time } from "../helpers/time.js";
 
 type CompiledAction = {
   id: string;
@@ -114,27 +116,47 @@ export class RSCBuilder extends Builder {
           clientComponentProxyPlugin({ builder }),
           serverActionsPlugin({ builder }),
           {
-            name: "postcss",
+            name: "tailwind-v4",
             async setup(build) {
-              let postcssConfig: postcssrc.Result | false;
+              let basePath = fileURLToPath(cwdUrl);
 
-              // this becomes root when we point at an actual app
-              // @ts-expect-error: Property 'default' does not exist on type '(ctx?: ConfigContext | undefined, path?: string | undefined, options?: Options | undefined) => Promise<Result>'.
-              postcssConfig = await postcssrc.default();
               build.onLoad({ filter: /\.css$/ }, async ({ path }) => {
                 let css = await readFile(path, "utf8");
 
-                if (!postcssConfig) {
-                  return { contents: css, loader: "css" };
-                }
+                let log = time("tailwindcss");
+                log.start();
 
-                let result = await postcss(postcssConfig.plugins).process(css, {
-                  ...postcssConfig.options,
-                  from: path,
+                // recreate compiler so we don't have to do dependency
+                // tracking. can change in future if needed
+                let compiler = await compile(css, {
+                  base: basePath,
+                  onDependency(path: string) {
+                    // console.log("dependency", path);
+                  },
                 });
 
+                let sources = [...compiler.globs];
+                let candidates: string[] = [];
+                if (compiler.features > 0) {
+                  // we're going to re-scan every time for now, but we can
+                  // switch this to only files that have changed if needed
+                  sources.push({ base: basePath, pattern: "**/*" });
+                  let scanner = new Scanner({
+                    sources,
+                  });
+
+                  candidates = scanner.scan();
+                }
+
+                let result = compiler.build(candidates);
+
+                log.end();
+                // console.log("tailwindcss", path, log.duration);
+
+                // optimize with lightening css
+
                 return {
-                  contents: result.css,
+                  contents: result,
                   loader: "css",
                 };
               });
@@ -143,6 +165,7 @@ export class RSCBuilder extends Builder {
           {
             name: "stores",
             setup(build) {
+              // this needs updating to use the shared directory
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
               let storeUrl = new URL(
                 "./backend/stores/rsc-store.js",
