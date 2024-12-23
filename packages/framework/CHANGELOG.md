@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.50
+
+### Patch Changes
+
+- Tailwind v4 beta
+
 ## 0.0.49
 
 ### Patch Changes
