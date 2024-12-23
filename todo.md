@@ -3,7 +3,7 @@
 framework
 
 - tailwind v4
-- update base app
+- update template
 - website docs
 
 - sessions

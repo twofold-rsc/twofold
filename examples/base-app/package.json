@@ -20,16 +20,16 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-server-dom-webpack": "catalog:",
-    "tailwindcss": "^3.4.3"
+    "tailwindcss": "4.0.0-beta.8"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "eslint": "^9.12.0",
+    "eslint": "^9.17.0",
     "eslint-plugin-twofold": "workspace:*",
-    "prettier": "^3.2.5",
-    "prettier-plugin-tailwindcss": "^0.6.8",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.9",
     "typescript": "catalog:"
   }
 }
