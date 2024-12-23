@@ -1,12 +1,12 @@
 # Styling
 
-Twofold uses [Tailwind CSS](https://tailwindcss.com/) for a simple and constrained styling approach.
+Twofold uses [Tailwind CSS](https://tailwindcss.com/) for a streamlined and consistent styling experience.
 
-## Tailwind CSS
+## Tailwind CSS V4
 
-A default Tailwind configuration is included in the root of your project. It is configured to scan the `app` directory for any utility classes when building.
+New Twofold apps are automatically set up with Tailwind CSS v4, currently in beta. You can find the v4 documentation [here](https://tailwindcss.com/docs/v4-beta).
 
-You can change the default configuration by editing the `tailwind.config.js` file.
+Edit the `app/pages/global.css` file if you need to customize Tailwind, add plugins, or change the configuration in any way.
 
 ## Global styles
 

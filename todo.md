@@ -3,8 +3,6 @@
 framework
 
 - tailwind v4
-- update template
-- website docs
 
 - sessions
 
