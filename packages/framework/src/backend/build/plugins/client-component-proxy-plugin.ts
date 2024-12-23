@@ -1,5 +1,5 @@
 import { Plugin } from "esbuild";
-import { RSCBuilder } from "../builders/rsc-builder";
+import { RSCBuilder } from "../builders/rsc-builder.js";
 
 export function clientComponentProxyPlugin({
   builder,

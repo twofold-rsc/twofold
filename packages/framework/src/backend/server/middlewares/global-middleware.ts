@@ -1,5 +1,5 @@
 import { RouteHandler } from "@hattip/router";
-import { Build } from "../../build/build/build";
+import { Build } from "../../build/build/build.js";
 import { pathToFileURL } from "node:url";
 
 export function globalMiddleware(build: Build): RouteHandler {

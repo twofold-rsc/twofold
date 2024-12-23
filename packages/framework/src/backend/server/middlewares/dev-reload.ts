@@ -1,6 +1,6 @@
 import { RouteHandler } from "@hattip/router";
 import { ServerSentEventSink, serverSentEvents } from "@hattip/response";
-import { DevelopmentBuild } from "../../build/build/development";
+import { DevelopmentBuild } from "../../build/build/development.js";
 
 type Connection = {
   connectionId: number;

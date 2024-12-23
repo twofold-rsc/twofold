@@ -1,6 +1,4 @@
 import type { ReactNode } from "react";
-import { z } from "zod";
-import { configSchema } from "../backend/build/build/build";
 
 export type PageProps<T extends string | never = never> = {
   params: Record<T, string>;
@@ -21,4 +19,9 @@ export type APIProps<T extends string | never = never> = {
   request: Request;
 };
 
-export type Config = z.infer<typeof configSchema>;
+export type Config = {
+  externalPackages?: string[];
+  bundlePackages?: string[];
+  reactCompiler?: boolean;
+  trustProxy?: boolean;
+};

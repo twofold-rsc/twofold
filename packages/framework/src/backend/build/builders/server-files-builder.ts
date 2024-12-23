@@ -3,7 +3,7 @@ import { appCompiledDir, frameworkSrcDir } from "../../files.js";
 import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";
 
-let devFile = new URL("./apps/errors/index.html", frameworkSrcDir);
+let devFile = new URL("./client/apps/errors/index.html", frameworkSrcDir);
 let prodFile = new URL("./backend/server/internal-error.html", frameworkSrcDir);
 
 export class ServerFilesBuilder extends Builder {

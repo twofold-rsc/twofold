@@ -1,24 +1,24 @@
 import { randomBytes } from "crypto";
-import { Builder } from "../builders/builder";
+import { Builder } from "../builders/builder.js";
 import { appCompiledDir, appConfigDir } from "../../files.js";
 import { readFile, rm, writeFile } from "fs/promises";
-import { EntriesBuilder } from "../builders/entries-builder";
-import { StaticFilesBuilder } from "../builders/static-files-builder";
-import { ServerFilesBuilder } from "../builders/server-files-builder";
-import { RSCBuilder } from "../builders/rsc-builder";
-import { ClientAppBuilder } from "../builders/client-app-builder";
-import { DevErrorPageBuilder } from "../builders/dev-error-page-builder";
-import { z } from "zod";
+import { EntriesBuilder } from "../builders/entries-builder.js";
+import { StaticFilesBuilder } from "../builders/static-files-builder.js";
+import { ServerFilesBuilder } from "../builders/server-files-builder.js";
+import { RSCBuilder } from "../builders/rsc-builder.js";
+import { ClientAppBuilder } from "../builders/client-app-builder.js";
+import { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
 import { createJiti } from "jiti";
-import { time } from "./time.js";
+import { time } from "../helpers/time.js";
 import EventEmitter from "events";
+import { z } from "zod";
 
 let jiti = createJiti(import.meta.url, {
   debug: false,
   moduleCache: false,
 });
 
-export const configSchema = z.object({
+let configSchema = z.object({
   externalPackages: z.array(z.string()).optional(),
   bundlePackages: z.array(z.string()).optional(),
   reactCompiler: z.boolean().optional(),

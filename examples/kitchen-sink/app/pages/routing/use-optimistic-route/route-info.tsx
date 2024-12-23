@@ -9,7 +9,7 @@ export function RouteInfo() {
 
   return (
     <div className="">
-      <table cellPadding={8} className="min-w-[400px]">
+      <table className="min-w-[400px] [&_td]:pt-2 [&_td]:pr-4">
         <thead>
           <tr>
             <th className="text-left">State</th>

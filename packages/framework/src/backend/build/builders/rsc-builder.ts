@@ -1,5 +1,4 @@
 import { Metafile, build } from "esbuild";
-import { readFile } from "fs/promises";
 import { fileURLToPath, pathToFileURL } from "url";
 import {
   appCompiledDir,
@@ -7,13 +6,11 @@ import {
   frameworkCompiledDir,
   frameworkSrcDir,
 } from "../../files.js";
-import * as postcssrc from "postcss-load-config";
-import postcss from "postcss";
 import { clientComponentProxyPlugin } from "../plugins/client-component-proxy-plugin.js";
 import { serverActionsPlugin } from "../plugins/server-actions-plugin.js";
 import { externalPackages } from "../packages.js";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
-import { EntriesBuilder } from "./entries-builder";
+import { EntriesBuilder } from "./entries-builder.js";
 import path from "path";
 import { RSC } from "../rsc/rsc.js";
 import { Page } from "../rsc/page.js";
@@ -23,6 +20,7 @@ import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";
 import { Layout } from "../rsc/layout.js";
 import { API } from "../rsc/api.js";
+import { tailwindPlugin } from "../plugins/tailwind-plugin.js";
 
 type CompiledAction = {
   id: string;
@@ -113,33 +111,7 @@ export class RSCBuilder extends Builder {
         plugins: [
           clientComponentProxyPlugin({ builder }),
           serverActionsPlugin({ builder }),
-          {
-            name: "postcss",
-            async setup(build) {
-              let postcssConfig: postcssrc.Result | false;
-
-              // this becomes root when we point at an actual app
-              // @ts-expect-error: Property 'default' does not exist on type '(ctx?: ConfigContext | undefined, path?: string | undefined, options?: Options | undefined) => Promise<Result>'.
-              postcssConfig = await postcssrc.default();
-              build.onLoad({ filter: /\.css$/ }, async ({ path }) => {
-                let css = await readFile(path, "utf8");
-
-                if (!postcssConfig) {
-                  return { contents: css, loader: "css" };
-                }
-
-                let result = await postcss(postcssConfig.plugins).process(css, {
-                  ...postcssConfig.options,
-                  from: path,
-                });
-
-                return {
-                  contents: result.css,
-                  loader: "css",
-                };
-              });
-            },
-          },
+          tailwindPlugin({ base: fileURLToPath(appAppDir) }),
           {
             name: "stores",
             setup(build) {
@@ -149,17 +121,14 @@ export class RSCBuilder extends Builder {
                 frameworkCompiledDir,
               );
 
-              build.onResolve(
-                { filter: /\/stores\/rsc-store\.js$/ },
-                (args) => {
-                  if (args.importer.startsWith(frameworkSrcPath)) {
-                    return {
-                      external: true,
-                      path: storeUrl.href,
-                    };
-                  }
-                },
-              );
+              build.onResolve({ filter: /\/stores\/rsc-store/ }, (args) => {
+                if (args.importer.startsWith(frameworkSrcPath)) {
+                  return {
+                    external: true,
+                    path: storeUrl.href,
+                  };
+                }
+              });
             },
           },
         ],
@@ -221,6 +190,7 @@ export class RSCBuilder extends Builder {
   get innerRootWrapperSrcPath() {
     return path.join(
       fileURLToPath(frameworkSrcDir),
+      "client",
       "components",
       "inner-root-wrapper.tsx",
     );
@@ -459,7 +429,7 @@ let appAppPath = fileURLToPath(appAppDir);
 let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
 let srcPaths = {
   framework: {
-    notFound: path.join(frameworkSrcPath, "pages", "not-found.tsx"),
+    notFound: path.join(frameworkSrcPath, "client", "pages", "not-found.tsx"),
   },
   app: {
     notFound: path.join(appAppPath, "pages", "errors", "not-found.tsx"),

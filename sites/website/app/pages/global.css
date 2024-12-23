@@ -1,6 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  /* --default-font-family: "Inter", ui-sans-serif, system-ui, sans-serif; */
+}
 
 .caveat-font {
   font-family: "Caveat", cursive;

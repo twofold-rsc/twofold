@@ -3,7 +3,7 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { useRouter } from "@twofold/framework/use-router";
 import Link from "@twofold/framework/link";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 export default function Nav() {
   let { path } = useRouter();
@@ -17,7 +17,7 @@ export default function Nav() {
       <NavigationMenu.List className="center flex items-center justify-center space-x-12">
         <NavigationMenu.Item>
           <NavigationMenu.Trigger>Twofold</NavigationMenu.Trigger>
-          <NavigationMenu.Content className="absolute left-0 top-0">
+          <NavigationMenu.Content className="absolute top-0 left-0">
             <ul className="grid w-[500px] grid-cols-2 gap-1.5 rounded border border-gray-200 p-1.5 shadow-2xl">
               <li>
                 <NavigationMenu.Link active={path === "/"} asChild>
@@ -52,7 +52,7 @@ export default function Nav() {
 
         <NavigationMenu.Item>
           <NavigationMenu.Trigger>Examples</NavigationMenu.Trigger>
-          <NavigationMenu.Content className="absolute left-0 top-0">
+          <NavigationMenu.Content className="absolute top-0 left-0">
             <NavigationMenu.Sub
               value={selectedSectionPath}
               onValueChange={(value) => setSelectedSectionPath(value)}
@@ -219,6 +219,11 @@ export default function Nav() {
                         href="/build/css"
                       />
                       <ExampleLink
+                        title="Tailwind"
+                        description="Customizing the Tailwind theme."
+                        href="/build/tailwind"
+                      />
+                      <ExampleLink
                         title="Dev reload"
                         description="Reload pages in development as they are edited."
                         href="/build/dev-reload"
@@ -358,7 +363,7 @@ export default function Nav() {
         </NavigationMenu.Indicator>
       </NavigationMenu.List>
 
-      <div className="absolute left-0 top-full flex w-full justify-center">
+      <div className="absolute top-full left-0 flex w-full justify-center">
         <NavigationMenu.Viewport className="relative mt-2.5 h-[var(--radix-navigation-menu-viewport-height)] w-[var(--radix-navigation-menu-viewport-width)] bg-white" />
       </div>
     </NavigationMenu.Root>
@@ -380,7 +385,7 @@ function ExampleGroup({
         {name}
       </NavigationMenu.Trigger>
       <NavigationMenu.Content>
-        <ul className="grid grid-cols-2 gap-x-8 gap-y-5 pb-2 pl-2 pr-1">
+        <ul className="grid grid-cols-2 gap-x-8 gap-y-5 pr-1 pb-2 pl-2">
           {children}
         </ul>
       </NavigationMenu.Content>

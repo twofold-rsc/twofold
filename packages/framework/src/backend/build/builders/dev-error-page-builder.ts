@@ -2,7 +2,7 @@ import { BuildContext, Metafile, context } from "esbuild";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import { cwdUrl, frameworkSrcDir } from "../../files.js";
-import { postcssTailwind } from "../plugins/postcss-tailwind.js";
+import { tailwindPlugin } from "../plugins/tailwind-plugin.js";
 import { readFile } from "fs/promises";
 import { Builder } from "./builder.js";
 
@@ -26,7 +26,11 @@ export class DevErrorPageBuilder extends Builder {
       splitting: true,
       chunkNames: "chunks/[name]-[hash]",
       metafile: true,
-      plugins: [postcssTailwind()],
+      plugins: [
+        tailwindPlugin({
+          base: path.dirname(this.appPath),
+        }),
+      ],
     });
   }
 
@@ -56,7 +60,7 @@ export class DevErrorPageBuilder extends Builder {
 
   private get appPath() {
     let appPath = fileURLToPath(
-      new URL("./apps/errors/app.tsx", frameworkSrcDir),
+      new URL("./client/apps/errors/app.tsx", frameworkSrcDir),
     );
     return appPath;
   }

@@ -29,7 +29,7 @@ export default function Layout({
         <meta name="twitter:title" content="Twofold" />
         <meta name="twitter:image" content={ogImageUrl.href} />
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        {/* <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
@@ -38,7 +38,7 @@ export default function Layout({
         <link
           href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@100..900&display=swap"
           rel="stylesheet"
-        />
+        /> */}
       </head>
       <body className="flex min-h-full flex-col">
         <EnterDocs className="flex grow flex-col">{children}</EnterDocs>

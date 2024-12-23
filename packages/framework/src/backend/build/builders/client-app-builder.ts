@@ -10,7 +10,7 @@ import { appCompiledDir, appAppDir, frameworkSrcDir } from "../../files.js";
 import { dirname } from "path";
 import * as path from "path";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
-import { EntriesBuilder } from "./entries-builder";
+import { EntriesBuilder } from "./entries-builder.js";
 import { serverActionClientReferencePlugin } from "../plugins/server-action-client-reference-plugin.js";
 import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";
@@ -104,7 +104,7 @@ export class ClientAppBuilder extends Builder {
             name: "add-webpack-loaders-to-rsdw-client",
             async setup(build) {
               let loadersUrl = new URL(
-                "./apps/client/ext/webpack-loaders.ts",
+                "./client/apps/client/ext/webpack-loaders.ts",
                 frameworkSrcDir,
               );
               let loadersPath = fileURLToPath(loadersUrl);
@@ -273,7 +273,10 @@ export class ClientAppBuilder extends Builder {
 
   private get initializeBrowserPath() {
     let initializeBrowser = fileURLToPath(
-      new URL("./apps/client/browser/initialize-browser.tsx", frameworkSrcDir),
+      new URL(
+        "./client/apps/client/browser/initialize-browser.tsx",
+        frameworkSrcDir,
+      ),
     );
 
     return initializeBrowser;
@@ -281,7 +284,7 @@ export class ClientAppBuilder extends Builder {
 
   private get srcSSRAppPath() {
     let initializeBrowser = fileURLToPath(
-      new URL("./apps/client/ssr/ssr-app.tsx", frameworkSrcDir),
+      new URL("./client/apps/client/ssr/ssr-app.tsx", frameworkSrcDir),
     );
 
     return initializeBrowser;

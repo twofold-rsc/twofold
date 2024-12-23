@@ -1,5 +1,5 @@
 import { Plugin } from "esbuild";
-import { EntriesBuilder } from "../builders/entries-builder";
+import { EntriesBuilder } from "../builders/entries-builder.js";
 import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
 import { relative, dirname, sep, extname } from "path";
@@ -45,7 +45,7 @@ export function serverActionClientReferencePlugin({
 
     setup(build) {
       let callServerUrl = new URL(
-        "./apps/client/actions/call-server.ts",
+        "./client/apps/client/actions/call-server.ts",
         frameworkSrcDir,
       );
       let callServerPath = fileURLToPath(callServerUrl);
