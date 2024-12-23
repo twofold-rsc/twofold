@@ -1,15 +1,11 @@
 import { Metafile, build } from "esbuild";
-import { readFile } from "fs/promises";
 import { fileURLToPath, pathToFileURL } from "url";
 import {
   appCompiledDir,
   appAppDir,
   frameworkCompiledDir,
   frameworkSrcDir,
-  cwdUrl,
 } from "../../files.js";
-import { compile } from "@tailwindcss/node";
-import { Scanner } from "@tailwindcss/oxide";
 import { clientComponentProxyPlugin } from "../plugins/client-component-proxy-plugin.js";
 import { serverActionsPlugin } from "../plugins/server-actions-plugin.js";
 import { externalPackages } from "../packages.js";
@@ -24,7 +20,6 @@ import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";
 import { Layout } from "../rsc/layout.js";
 import { API } from "../rsc/api.js";
-import { time } from "../helpers/time.js";
 import { tailwindPlugin } from "../plugins/tailwind-plugin.js";
 
 type CompiledAction = {
