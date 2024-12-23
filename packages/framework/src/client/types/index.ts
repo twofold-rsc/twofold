@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { z } from "zod";
 
 export type PageProps<T extends string | never = never> = {
   params: Record<T, string>;
@@ -20,11 +19,9 @@ export type APIProps<T extends string | never = never> = {
   request: Request;
 };
 
-export const configSchema = z.object({
-  externalPackages: z.array(z.string()).optional(),
-  bundlePackages: z.array(z.string()).optional(),
-  reactCompiler: z.boolean().optional(),
-  trustProxy: z.boolean().optional(),
-});
-
-export type Config = z.infer<typeof configSchema>;
+export type Config = {
+  externalPackages?: string[];
+  bundlePackages?: string[];
+  reactCompiler?: boolean;
+  trustProxy?: boolean;
+};

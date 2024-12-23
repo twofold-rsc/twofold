@@ -18,6 +18,9 @@ export default function DevReload() {
 
   useEffect(() => {
     cssToCleanup.forEach((file) => removeCSSFile(file));
+    if (cssToCleanup.length > 0) {
+      setCSSToCleanup([]);
+    }
   }, [cssToCleanup]);
 
   useEffect(() => {
@@ -25,12 +28,21 @@ export default function DevReload() {
 
     eventSource.onmessage = async (event) => {
       let reload = JSON.parse(event.data);
-      // console.log(reload)
 
       if (reload.rscFiles.added.length > 0) {
-        startTransition(() => {
+        startTransition(async () => {
           refresh();
           setCSSToCleanup(reload.cssFiles.removed);
+
+          // if any of the added files had previous been removed, then we
+          // have to manually add them back. reason being react still
+          // thinks they are rendered, and will not automatically re-insert
+          // them.
+          let addingCSS = reload.cssFiles.added.map((cssFile: string) =>
+            addCSSFile(cssFile),
+          );
+
+          await Promise.all(addingCSS);
         });
       } else {
         // add new css

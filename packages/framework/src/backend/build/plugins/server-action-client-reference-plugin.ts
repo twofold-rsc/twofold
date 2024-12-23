@@ -45,7 +45,7 @@ export function serverActionClientReferencePlugin({
 
     setup(build) {
       let callServerUrl = new URL(
-        "./apps/client/actions/call-server.ts",
+        "./client/apps/client/actions/call-server.ts",
         frameworkSrcDir,
       );
       let callServerPath = fileURLToPath(callServerUrl);

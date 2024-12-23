@@ -8,15 +8,24 @@ import { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import { RSCBuilder } from "../builders/rsc-builder.js";
 import { ClientAppBuilder } from "../builders/client-app-builder.js";
 import { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
-import { Config, configSchema } from "../../../client/types/index.js";
 import { createJiti } from "jiti";
 import { time } from "../helpers/time.js";
 import EventEmitter from "events";
+import { z } from "zod";
 
 let jiti = createJiti(import.meta.url, {
   debug: false,
   moduleCache: false,
 });
+
+let configSchema = z.object({
+  externalPackages: z.array(z.string()).optional(),
+  bundlePackages: z.array(z.string()).optional(),
+  reactCompiler: z.boolean().optional(),
+  trustProxy: z.boolean().optional(),
+});
+
+type Config = z.infer<typeof configSchema>;
 
 type Complete = {
   key: string;

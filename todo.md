@@ -3,12 +3,9 @@
 framework
 
 - tailwind v4
-- test external store plugin
-- test tailwind, live reload
-- test dev error page
-- postcss tailwind esbuild plugin
-- update website, base app
-- drop postcss
+- update base app
+- website docs
+
 - sessions
 
 - long cache headers for production

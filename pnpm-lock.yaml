@@ -241,7 +241,7 @@ importers:
         version: link:../server-function-transforms
       autoprefixer:
         specifier: ^10.4.16
-        version: 10.4.20(postcss@8.4.47)
+        version: 10.4.20(postcss@8.4.49)
       babel-plugin-react-compiler:
         specifier: 19.0.0-beta-8a03594-20241020
         version: 19.0.0-beta-8a03594-20241020
@@ -263,12 +263,6 @@ importers:
       mime-types:
         specifier: ^2.1.35
         version: 2.1.35
-      postcss:
-        specifier: ^8.4.32
-        version: 8.4.47
-      postcss-load-config:
-        specifier: ^4.0.1
-        version: 4.0.2(postcss@8.4.47)
       react:
         specifier: 'catalog:'
         version: 19.0.0
@@ -396,7 +390,7 @@ importers:
         version: 2.2.1
       '@tailwindcss/typography':
         specifier: ^0.5.15
-        version: 0.5.15(tailwindcss@3.4.14)
+        version: 0.5.15(tailwindcss@4.0.0-beta.8)
       '@twofold/framework':
         specifier: workspace:*
         version: link:../../packages/framework
@@ -422,8 +416,8 @@ importers:
         specifier: ^1.4.0
         version: 1.22.2
       tailwindcss:
-        specifier: ^3.4.14
-        version: 3.4.14
+        specifier: 4.0.0-beta.8
+        version: 4.0.0-beta.8
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -5421,13 +5415,13 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.0.0-beta.8
       '@tailwindcss/oxide-win32-x64-msvc': 4.0.0-beta.8
 
-  '@tailwindcss/typography@0.5.15(tailwindcss@3.4.14)':
+  '@tailwindcss/typography@0.5.15(tailwindcss@4.0.0-beta.8)':
     dependencies:
       lodash.castarray: 4.4.0
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
-      tailwindcss: 3.4.14
+      tailwindcss: 4.0.0-beta.8
 
   '@types/babel__core@7.20.5':
     dependencies:
@@ -5881,14 +5875,14 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
-  autoprefixer@10.4.20(postcss@8.4.47):
+  autoprefixer@10.4.20(postcss@8.4.49):
     dependencies:
       browserslist: 4.23.3
       caniuse-lite: 1.0.30001651
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.0.1
-      postcss: 8.4.47
+      postcss: 8.4.49
       postcss-value-parser: 4.2.0
 
   available-typed-arrays@1.0.5: {}

@@ -1,12 +1,8 @@
-@config "./tailwind.error-page.config.js";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 html,
 body,
 #root {
   height: 100%;
-  @apply bg-red-50;
+  background-color: var(--color-red-50);
 }

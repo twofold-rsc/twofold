@@ -79,8 +79,6 @@
     "etag": "^1.8.1",
     "jiti": "^2.3.3",
     "mime-types": "^2.1.35",
-    "postcss": "^8.4.32",
-    "postcss-load-config": "^4.0.1",
     "react-refresh": "^0.14.0",
     "serialize-error": "^11.0.3",
     "server-only": "^0.0.1",

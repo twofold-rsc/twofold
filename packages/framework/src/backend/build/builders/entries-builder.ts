@@ -53,7 +53,10 @@ export class EntriesBuilder extends Builder {
   }
 
   async setup() {
-    let frameworkComponentsUrl = new URL("./components/", frameworkSrcDir);
+    let frameworkComponentsUrl = new URL(
+      "./client/components/",
+      frameworkSrcDir,
+    );
     let frameworkComponentsPath = fileURLToPath(frameworkComponentsUrl);
 
     let appConfig = await this.#build.getAppConfig();

@@ -25,6 +25,7 @@ import { Build } from "../build/build.js";
 import { Layout } from "../rsc/layout.js";
 import { API } from "../rsc/api.js";
 import { time } from "../helpers/time.js";
+import { tailwindPlugin } from "../plugins/tailwind-plugin.js";
 
 type CompiledAction = {
   id: string;
@@ -115,74 +116,24 @@ export class RSCBuilder extends Builder {
         plugins: [
           clientComponentProxyPlugin({ builder }),
           serverActionsPlugin({ builder }),
-          {
-            name: "tailwind-v4",
-            async setup(build) {
-              let basePath = fileURLToPath(cwdUrl);
-
-              build.onLoad({ filter: /\.css$/ }, async ({ path }) => {
-                let css = await readFile(path, "utf8");
-
-                let log = time("tailwindcss");
-                log.start();
-
-                // recreate compiler so we don't have to do dependency
-                // tracking. can change in future if needed
-                let compiler = await compile(css, {
-                  base: basePath,
-                  onDependency(path: string) {
-                    // console.log("dependency", path);
-                  },
-                });
-
-                let sources = [...compiler.globs];
-                let candidates: string[] = [];
-                if (compiler.features > 0) {
-                  // we're going to re-scan every time for now, but we can
-                  // switch this to only files that have changed if needed
-                  sources.push({ base: basePath, pattern: "**/*" });
-                  let scanner = new Scanner({
-                    sources,
-                  });
-
-                  candidates = scanner.scan();
-                }
-
-                let result = compiler.build(candidates);
-
-                log.end();
-                // console.log("tailwindcss", path, log.duration);
-
-                // optimize with lightening css
-
-                return {
-                  contents: result,
-                  loader: "css",
-                };
-              });
-            },
-          },
+          tailwindPlugin({ base: fileURLToPath(appAppDir) }),
           {
             name: "stores",
             setup(build) {
-              // this needs updating to use the shared directory
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
               let storeUrl = new URL(
                 "./backend/stores/rsc-store.js",
                 frameworkCompiledDir,
               );
 
-              build.onResolve(
-                { filter: /\/stores\/rsc-store\.js$/ },
-                (args) => {
-                  if (args.importer.startsWith(frameworkSrcPath)) {
-                    return {
-                      external: true,
-                      path: storeUrl.href,
-                    };
-                  }
-                },
-              );
+              build.onResolve({ filter: /\/stores\/rsc-store/ }, (args) => {
+                if (args.importer.startsWith(frameworkSrcPath)) {
+                  return {
+                    external: true,
+                    path: storeUrl.href,
+                  };
+                }
+              });
             },
           },
         ],
@@ -244,6 +195,7 @@ export class RSCBuilder extends Builder {
   get innerRootWrapperSrcPath() {
     return path.join(
       fileURLToPath(frameworkSrcDir),
+      "client",
       "components",
       "inner-root-wrapper.tsx",
     );
@@ -482,7 +434,7 @@ let appAppPath = fileURLToPath(appAppDir);
 let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
 let srcPaths = {
   framework: {
-    notFound: path.join(frameworkSrcPath, "pages", "not-found.tsx"),
+    notFound: path.join(frameworkSrcPath, "client", "pages", "not-found.tsx"),
   },
   app: {
     notFound: path.join(appAppPath, "pages", "errors", "not-found.tsx"),
