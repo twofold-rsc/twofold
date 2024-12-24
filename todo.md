@@ -2,9 +2,11 @@
 
 framework
 
-- tailwind v4
+- docs for encrypted cookies
 
-- sessions
+- bug: login ui: login, refresh, hit back. correctly fetches but gets stuck in render loop
+
+- server function transforms should include name
 
 - long cache headers for production
 - (layout) routing

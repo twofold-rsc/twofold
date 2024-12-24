@@ -19,6 +19,35 @@ let cookies = {
     let store = getStore();
     store.cookies.destroy(name, options);
   },
+
+  encrypted: {
+    async set(name: string, value: any, options?: SerializeOptions) {
+      let store = getStore();
+      let encryptedValue = await store.encryption.encrypt([name, value]);
+      cookies.set(`tfec_${name}`, encryptedValue, options);
+    },
+    async get(name: string) {
+      let store = getStore();
+      let encryptedValue = cookies.get(`tfec_${name}`);
+      if (!encryptedValue) {
+        return undefined;
+      }
+
+      try {
+        let [storedName, value] =
+          await store.encryption.decrypt(encryptedValue);
+        if (storedName !== name) {
+          return undefined;
+        }
+        return value;
+      } catch (e) {
+        return undefined;
+      }
+    },
+    destroy(name: string, options?: SerializeOptions) {
+      cookies.destroy(`tfec_${name}`, options);
+    },
+  },
 };
 
 export default cookies;

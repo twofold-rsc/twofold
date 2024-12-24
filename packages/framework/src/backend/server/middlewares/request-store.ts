@@ -2,6 +2,7 @@ import { RouteHandler } from "@hattip/router";
 import { SerializeOptions } from "cookie";
 import { Store, runStore } from "../../stores/rsc-store.js";
 import { Runtime } from "../../runtime.js";
+import { encrypt, decrypt } from "../../encryption.js";
 
 let reqId = 0;
 
@@ -20,26 +21,44 @@ export function requestStore(runtime: Runtime): RouteHandler {
       build: build.name,
       canReload: build.canReload,
       cookies: {
-        set: (key: string, value: string, options?: SerializeOptions) => {
+        set: (name: string, value: string, options?: SerializeOptions) => {
           let cookieOptions = {
             ...defaultCookieOptions,
             ...options,
           };
 
-          ctx.setCookie(key, value, cookieOptions);
+          ctx.setCookie(name, value, cookieOptions);
         },
-        get: (key: string) => {
-          return ctx.cookie[key];
+        get: (name: string) => {
+          return ctx.cookie[name];
         },
-        destroy: (key: string, options?: SerializeOptions) => {
+        destroy: (name: string, options?: SerializeOptions) => {
           let cookieOptions = {
             ...defaultCookieOptions,
             ...options,
           };
 
-          ctx.deleteCookie(key, cookieOptions);
+          ctx.deleteCookie(name, cookieOptions);
         },
         outgoingCookies: [],
+      },
+      encryption: {
+        encrypt: (value: any) => {
+          let key = process.env.TWOFOLD_SECRET_KEY;
+          if (typeof key !== "string") {
+            throw new Error("TWOFOLD_SECRET_KEY is not set");
+          }
+
+          return encrypt(value, key);
+        },
+        decrypt: (value: string) => {
+          let key = process.env.TWOFOLD_SECRET_KEY;
+          if (typeof key !== "string") {
+            throw new Error("TWOFOLD_SECRET_KEY is not set");
+          }
+
+          return decrypt(value, key);
+        },
       },
       assets: [],
       render: {

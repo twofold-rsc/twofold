@@ -2,15 +2,16 @@ import cookies from "@twofold/framework/cookies";
 import { notFound } from "@twofold/framework/not-found";
 import { redirect } from "@twofold/framework/redirect";
 
-export function before() {
-  if (cookies.get("auth") !== "true") {
+export async function before() {
+  let auth = await cookies.encrypted.get("auth");
+  if (!auth) {
     notFound();
   }
 }
 
 async function logout() {
   "use server";
-  cookies.destroy("auth");
+  cookies.encrypted.destroy("auth");
   redirect("/uis/login");
 }
 

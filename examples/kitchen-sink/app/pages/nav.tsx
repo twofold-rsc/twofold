@@ -186,6 +186,11 @@ export default function Nav() {
                         href="/http/cookies"
                       />
                       <ExampleLink
+                        title="Encrypted cookies"
+                        description="Encrypt and sign cookies"
+                        href="/http/encrypted-cookies"
+                      />
+                      <ExampleLink
                         title="Middleware"
                         description="Run code before rendering a page."
                         href="/http/middleware"

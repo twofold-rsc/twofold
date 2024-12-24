@@ -16,6 +16,10 @@ export type Store = {
       options?: SerializeOptions;
     }[];
   };
+  encryption: {
+    encrypt(value: any): Promise<string>;
+    decrypt(value: string): Promise<any>;
+  };
   assets: string[];
   render: {
     // this needs to move to an API store, its not callable from rsc

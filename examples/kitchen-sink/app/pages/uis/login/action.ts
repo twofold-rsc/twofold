@@ -26,7 +26,7 @@ export async function login(formData: FormData) {
   let { email, password } = result.data;
 
   if (email === "email@example.com" && password === "password") {
-    cookies.set("auth", "true");
+    await cookies.encrypted.set("auth", true);
     redirect("/uis/login/dashboard");
   } else {
     return {

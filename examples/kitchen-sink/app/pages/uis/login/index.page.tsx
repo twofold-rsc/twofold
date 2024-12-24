@@ -2,8 +2,9 @@ import cookies from "@twofold/framework/cookies";
 import { LoginForm } from "./login-form";
 import { redirect } from "@twofold/framework/redirect";
 
-export function before() {
-  if (cookies.get("auth")) {
+export async function before() {
+  let auth = await cookies.encrypted.get("auth");
+  if (auth) {
     redirect("/uis/login/dashboard");
   }
 }
