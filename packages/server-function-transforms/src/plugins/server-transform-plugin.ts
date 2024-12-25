@@ -1,6 +1,8 @@
 import { NodePath, PluginObj } from "@babel/core";
 import * as t from "@babel/types";
 
+let DEBUG = false;
+
 type Options = {
   moduleId: string;
   encryption: {
@@ -367,7 +369,12 @@ function createServerFunction({
 
   if (capturedVariables.length > 0) {
     if (key) {
-      insertDecryptedVariables(functionDeclaration, capturedVariables, key);
+      insertDecryptedVariables(
+        functionDeclaration,
+        functionName,
+        capturedVariables,
+        state,
+      );
     } else {
       insertBoundVariables(functionDeclaration, capturedVariables);
     }
@@ -496,9 +503,10 @@ function createBinding({
         t.nullLiteral(),
         key
           ? t.callExpression(t.identifier("tf$encrypt"), [
-              t.arrayExpression(
-                capturedVariables.map((varName) => t.identifier(varName)),
-              ),
+              t.arrayExpression([
+                ...capturedVariables.map((varName) => t.identifier(varName)),
+                t.stringLiteral(`${state.moduleId}#${functionName}`),
+              ]),
               key,
             ])
           : t.arrayExpression(
@@ -547,12 +555,14 @@ function insertBoundVariables(
 
 function insertDecryptedVariables(
   node: t.FunctionDeclaration,
+  functionName: string,
   variables: string[],
-  key: t.ArgumentPlaceholder | t.Expression,
+  state: State,
 ) {
   let body = node.body;
+  let key = state.encryption.key;
 
-  if (!body || !body.directives) {
+  if (!key || !body || !body.directives) {
     return;
   }
 
@@ -568,7 +578,10 @@ function insertDecryptedVariables(
 
   let decryptVariables = t.variableDeclaration("let", [
     t.variableDeclarator(
-      t.arrayPattern(variables.map((variable) => t.identifier(variable))),
+      t.arrayPattern([
+        ...variables.map((variable) => t.identifier(variable)),
+        t.identifier("tf$encrypted$id"),
+      ]),
       t.awaitExpression(
         t.callExpression(t.identifier("tf$decrypt"), [
           t.awaitExpression(t.identifier(`tf$encrypted$vars`)),
@@ -578,8 +591,44 @@ function insertDecryptedVariables(
     ),
   ]);
 
+  let signatureCheck = t.ifStatement(
+    t.binaryExpression(
+      "!==",
+      t.identifier("tf$encrypted$id"),
+      t.stringLiteral(`${state.moduleId}#${functionName}`),
+    ),
+    t.blockStatement([
+      t.throwStatement(
+        t.newExpression(t.identifier("Error"), [
+          t.stringLiteral(
+            "Server function could not be invoked: Signature mismatch",
+          ),
+        ]),
+      ),
+    ]),
+  );
+
   body.body.splice(insertIndex, 0, decryptVariables);
-  // body.body.unshift(decryptVariables);
+  body.body.splice(insertIndex + 1, 0, signatureCheck);
+
+  if (DEBUG) {
+    let debugStatement = t.expressionStatement(
+      t.callExpression(t.identifier("console.log"), [
+        t.stringLiteral("Decrypted variables:"),
+        t.objectExpression([
+          ...variables.map((variable) =>
+            t.objectProperty(t.identifier(variable), t.identifier(variable)),
+          ),
+          t.objectProperty(
+            t.identifier("tf$encrypted$id"),
+            t.identifier("tf$encrypted$id"),
+          ),
+        ]),
+      ]),
+    );
+
+    body.body.splice(insertIndex + 2, 0, debugStatement);
+  }
 }
 
 function getFunctionName(

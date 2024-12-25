@@ -2,12 +2,19 @@
 
 framework
 
+- update spec snapshots
+- test server actions (and prod build)
+- update readme
+- PR+merge
+
 - tailwind v4
 
 - sessions
 
 - long cache headers for production
 - (layout) routing
+
+- babel client app filter should have stricter regex filter
 
 - support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder. i think this is done?
 
