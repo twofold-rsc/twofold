@@ -2,11 +2,11 @@
 
 framework
 
-- docs for encrypted cookies
-
-- bug: login ui: login, refresh, hit back. correctly fetches but gets stuck in render loop
+- test windows
 
 - server function transforms should include name
+
+- bug: login ui: login, refresh, hit back. correctly fetches but gets stuck in render loop
 
 - long cache headers for production
 - (layout) routing
