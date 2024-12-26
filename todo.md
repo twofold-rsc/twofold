@@ -2,11 +2,6 @@
 
 framework
 
-- update spec snapshots
-- test server actions (and prod build)
-- update readme
-- PR+merge
-
 - tailwind v4
 
 - sessions
