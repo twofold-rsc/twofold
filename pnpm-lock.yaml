@@ -224,9 +224,6 @@ importers:
       '@hattip/router':
         specifier: ^0.0.49
         version: 0.0.49
-      '@hattip/session':
-        specifier: ^0.0.49
-        version: 0.0.49
       '@hattip/static':
         specifier: ^0.0.49
         version: 0.0.49
@@ -1136,9 +1133,6 @@ packages:
 
   '@hattip/router@0.0.49':
     resolution: {integrity: sha512-DcPTUdEFHATUK71kBgjuz4kNpvGqsIIvp391t5fiERbsR0oAKUSRzpI6rVQGJo3WwX64sFd9eHr7P/h4UgxGYg==}
-
-  '@hattip/session@0.0.49':
-    resolution: {integrity: sha512-1AOz6Mhh9XjzQtiIAGU26QoizDAe1LMxyOFYoXovBbuXUKetsEn2moTmWdSl09u4zWtfe8JpYhRBQ45Ikq6lXg==}
 
   '@hattip/static@0.0.49':
     resolution: {integrity: sha512-86+xnm/SJdMvZE4F4pQcfYlysxV9THWfsoNSpkuLaNqEGAxCtm+3w8PMwt01hfsyNUp0vnOLhHwz4WtZgBdzsA==}
@@ -4982,12 +4976,6 @@ snapshots:
   '@hattip/router@0.0.49':
     dependencies:
       '@hattip/compose': 0.0.49
-      '@hattip/core': 0.0.49
-
-  '@hattip/session@0.0.49':
-    dependencies:
-      '@hattip/compose': 0.0.49
-      '@hattip/cookie': 0.0.49
       '@hattip/core': 0.0.49
 
   '@hattip/static@0.0.49':

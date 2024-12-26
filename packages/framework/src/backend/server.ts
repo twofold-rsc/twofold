@@ -15,7 +15,6 @@ import { errors } from "./server/middlewares/errors.js";
 import { staticFiles } from "./server/middlewares/static-files.js";
 import { assets } from "./server/middlewares/assets.js";
 import { pathNormalization } from "./server/middlewares/path-normalization.js";
-import { session } from "./server/middlewares/session.js";
 import { globalMiddleware } from "./server/middlewares/global-middleware.js";
 import { requestStore } from "./server/middlewares/request-store.js";
 import { waitForBuild } from "./server/middlewares/wait-for-build.js";
@@ -36,7 +35,6 @@ async function createHandler(runtime: Runtime) {
   app.use(pathNormalization());
 
   app.use(cookie());
-  app.use(await session());
 
   app.use(waitForBuild(runtime));
 
