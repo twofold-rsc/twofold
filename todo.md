@@ -2,12 +2,10 @@
 
 framework
 
-- test windows
+- release, server functions, framework, create app
 
 - long cache headers for production
 - (layout) routing
-
-- babel client app filter should have stricter regex filter
 
 - support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder. i think this is done?
 

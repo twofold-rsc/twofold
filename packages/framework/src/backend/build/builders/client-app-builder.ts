@@ -140,8 +140,6 @@ export class ClientAppBuilder extends Builder {
           {
             name: "react-babel-transforms",
             async setup(build) {
-              let appAppPath = fileURLToPath(appAppDir);
-              let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
               let appConfig = await builder.#build.getAppConfig();
               let refreshEnabled =
                 builder.#env === "development" &&
@@ -149,6 +147,8 @@ export class ClientAppBuilder extends Builder {
               let compilerEnabled = appConfig.reactCompiler;
 
               if (!refreshEnabled) {
+                let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
+
                 build.onLoad(
                   { filter: /ext(\/|\\)react-refresh/ },
                   async (args) => {
@@ -164,8 +164,14 @@ export class ClientAppBuilder extends Builder {
 
               let shouldRunBabel = refreshEnabled || compilerEnabled;
 
-              build.onLoad({ filter: /\.(tsx|ts)$/ }, async ({ path }) => {
-                if (shouldRunBabel && path.startsWith(appAppPath)) {
+              if (shouldRunBabel) {
+                let appAppPath = fileURLToPath(appAppDir);
+                let escapedPrefix = escapeRegExp(appAppPath);
+                let appPathRegex = new RegExp(
+                  `^${escapedPrefix}.*\\.(ts|tsx)$`,
+                );
+
+                build.onLoad({ filter: appPathRegex }, async ({ path }) => {
                   let contents = await readFile(path, "utf-8");
 
                   // esbuild transform ts to js
@@ -208,27 +214,27 @@ export class ClientAppBuilder extends Builder {
                       .replace(/\.tsx$/, "");
 
                     let start = `
-                      let prevRefreshReg = undefined;
-                      let prevRefreshSig = undefined;
-                      if (typeof window !== 'undefined') {
-                        prevRefreshReg = window.$RefreshReg$;
-                        prevRefreshSig = window.$RefreshSig$;
-                        window.$RefreshReg$ = (type, refreshId) => {
-                          let registerId = \`${encodeURIComponent(
-                            moduleName,
-                          )} \${refreshId}\`;
-                          window.$RefreshRuntime$.register(type, registerId);
-                        };
-                        window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
-                      }
-                    `;
+                        let prevRefreshReg = undefined;
+                        let prevRefreshSig = undefined;
+                        if (typeof window !== 'undefined') {
+                          prevRefreshReg = window.$RefreshReg$;
+                          prevRefreshSig = window.$RefreshSig$;
+                          window.$RefreshReg$ = (type, refreshId) => {
+                            let registerId = \`${encodeURIComponent(
+                              moduleName,
+                            )} \${refreshId}\`;
+                            window.$RefreshRuntime$.register(type, registerId);
+                          };
+                          window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
+                        }
+                      `;
 
                     let end = `
-                      if (typeof window !== 'undefined') {
-                        window.$RefreshReg$ = prevRefreshReg;
-                        window.$RefreshSig$ = prevRefreshSig;
-                      }
-                    `;
+                        if (typeof window !== 'undefined') {
+                          window.$RefreshReg$ = prevRefreshReg;
+                          window.$RefreshSig$ = prevRefreshSig;
+                        }
+                      `;
                     newContents = `${start}\n${newContents}\n${end}`;
                   }
 
@@ -239,8 +245,8 @@ export class ClientAppBuilder extends Builder {
                       resolveDir: dirname(path),
                     };
                   }
-                }
-              });
+                });
+              }
             },
           },
         ],
@@ -466,4 +472,8 @@ export class ClientAppBuilder extends Builder {
       };
     });
   }
+}
+
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
