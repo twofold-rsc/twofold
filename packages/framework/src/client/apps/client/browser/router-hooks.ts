@@ -158,6 +158,20 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           let newCache = new Map(previous.cache);
           newCache.set(rsc.path, rsc.tree);
 
+          if (action.path !== rsc.path) {
+            // we're trying to populate action.path, but the rsc fetch is
+            // is giving us a tree for a different path. this is likely
+            // because of a redirect.
+            //
+            // we need to fulfill the populate request, so we're also
+            // going to store the tree in the path we were asked to
+            // populate.
+            //
+            // longer term: this should really put in some sort of stub that
+            // says action.path should redirect to rsc.path.
+            newCache.set(action.path, rsc.tree);
+          }
+
           return {
             ...previous,
             action: "populate",
