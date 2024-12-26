@@ -2,7 +2,7 @@
 
 framework
 
-- test windows
+- release, server functions, framework, create app
 
 - long cache headers for production
 - (layout) routing

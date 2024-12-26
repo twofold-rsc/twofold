@@ -1,6 +1,6 @@
 {
   "name": "base-app",
-  "version": "0.0.48",
+  "version": "0.0.49",
   "private": true,
   "description": "",
   "type": "module",
@@ -13,7 +13,7 @@
   "keywords": [],
   "license": "ISC",
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.12.0"
   },
   "dependencies": {
     "@twofold/framework": "workspace:*",
