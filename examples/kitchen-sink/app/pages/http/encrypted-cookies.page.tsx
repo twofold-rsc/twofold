@@ -1,5 +1,5 @@
 import cookies from "@twofold/framework/cookies";
-import { Fragment } from "react/jsx-runtime";
+import { Fragment } from "react";
 
 async function setToString() {
   "use server";
