@@ -46,14 +46,17 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        if (tf$encrypted$id !== "test#tf$serverFunction$0$greet") {
+          throw new Error("Server function could not be invoked: Signature mismatch");
+        }
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name, "test#tf$serverFunction$0$greet"], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -96,14 +99,17 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        if (tf$encrypted$id !== "test#tf$serverFunction$0$greet") {
+          throw new Error("Server function could not be invoked: Signature mismatch");
+        }
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name, "test#tf$serverFunction$0$greet"], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -144,7 +150,10 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$action(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        if (tf$encrypted$id !== "test#tf$serverFunction$0$action") {
+          throw new Error("Server function could not be invoked: Signature mismatch");
+        }
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$action, "test", "tf$serverFunction$0$action");
@@ -152,7 +161,7 @@ describe("encrypted captured variables", () => {
         name
       }) {
         return /* @__PURE__ */jsx("form", {
-          action: tf$serverFunction$0$action.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]))
+          action: tf$serverFunction$0$action.bind(null, tf$encrypt([name, "test#tf$serverFunction$0$action"], process.env["ENCRYPTION_KEY"]))
         });
       }
       export { Page as default };
@@ -195,7 +204,10 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        if (tf$encrypted$id !== "test#tf$serverFunction$0$greet") {
+          throw new Error("Server function could not be invoked: Signature mismatch");
+        }
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
@@ -203,7 +215,7 @@ describe("encrypted captured variables", () => {
         name
       }) {
         let obj = {
-          greet: tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]))
+          greet: tf$serverFunction$0$greet.bind(null, tf$encrypt([name, "test#tf$serverFunction$0$greet"], process.env["ENCRYPTION_KEY"]))
         };
         return /* @__PURE__ */jsx("form", {
           action: obj.greet
@@ -252,14 +264,17 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        if (tf$encrypted$id !== "test#tf$serverFunction$0$greet") {
+          throw new Error("Server function could not be invoked: Signature mismatch");
+        }
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name, "test#tf$serverFunction$0$greet"], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -304,7 +319,10 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name, other] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name, other, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        if (tf$encrypted$id !== "test#tf$serverFunction$0$greet") {
+          throw new Error("Server function could not be invoked: Signature mismatch");
+        }
         console.log("hello", name, other);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
@@ -312,7 +330,7 @@ describe("encrypted captured variables", () => {
         name
       }) {
         let other = 123;
-        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name, other], process.env["ENCRYPTION_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name, other, "test#tf$serverFunction$0$greet"], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -385,7 +403,10 @@ describe("encrypted captured variables", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars, other2) {
         "use server";
 
-        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [name, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        if (tf$encrypted$id !== "test#tf$serverFunction$0$greet") {
+          throw new Error("Server function could not be invoked: Signature mismatch");
+        }
         console.log("hello", name, other2);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
@@ -393,7 +414,7 @@ describe("encrypted captured variables", () => {
         name
       }) {
         let other = 123;
-        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENCRYPTION_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name, "test#tf$serverFunction$0$greet"], process.env["ENCRYPTION_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet.bind(null, other)
         });
@@ -429,7 +450,7 @@ describe("keys", () => {
     });
 
     expect(result.code).toContain(
-      'let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENV_KEY"]);',
+      'let [name, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, process.env["ENV_KEY"]);',
     );
 
     expect(result.code).toMatchInlineSnapshot(`
@@ -442,14 +463,17 @@ describe("keys", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await tf$decrypt(await tf$encrypted$vars, process.env["ENV_KEY"]);
+        let [name, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, process.env["ENV_KEY"]);
+        if (tf$encrypted$id !== "test#tf$serverFunction$0$greet") {
+          throw new Error("Server function could not be invoked: Signature mismatch");
+        }
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], process.env["ENV_KEY"]));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name, "test#tf$serverFunction$0$greet"], process.env["ENV_KEY"]));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -483,7 +507,7 @@ describe("keys", () => {
     });
 
     expect(result.code).toContain(
-      'let [name] = await tf$decrypt(await tf$encrypted$vars, "a-plain-text-string-password");',
+      'let [name, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, "a-plain-text-string-password");',
     );
 
     expect(result.code).toMatchInlineSnapshot(`
@@ -496,14 +520,17 @@ describe("keys", () => {
       async function tf$serverFunction$0$greet(tf$encrypted$vars) {
         "use server";
 
-        let [name] = await tf$decrypt(await tf$encrypted$vars, "a-plain-text-string-password");
+        let [name, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, "a-plain-text-string-password");
+        if (tf$encrypted$id !== "test#tf$serverFunction$0$greet") {
+          throw new Error("Server function could not be invoked: Signature mismatch");
+        }
         console.log("hello", name);
       }
       registerServerReference(tf$serverFunction$0$greet, "test", "tf$serverFunction$0$greet");
       function Page({
         name
       }) {
-        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name], "a-plain-text-string-password"));
+        const greet = tf$serverFunction$0$greet.bind(null, tf$encrypt([name, "test#tf$serverFunction$0$greet"], "a-plain-text-string-password"));
         return /* @__PURE__ */jsx("form", {
           action: greet
         });
@@ -554,12 +581,15 @@ describe("factory functions", () => {
       async function tf$serverFunction$0$anonymous(tf$encrypted$vars) {
         "use server";
 
-        let [amount] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        let [amount, tf$encrypted$id] = await tf$decrypt(await tf$encrypted$vars, process.env["ENCRYPTION_KEY"]);
+        if (tf$encrypted$id !== "test#tf$serverFunction$0$anonymous") {
+          throw new Error("Server function could not be invoked: Signature mismatch");
+        }
         count = count + amount;
       }
       registerServerReference(tf$serverFunction$0$anonymous, "test", "tf$serverFunction$0$anonymous");
       function createIncrementor(amount) {
-        return tf$serverFunction$0$anonymous.bind(null, tf$encrypt([amount], process.env["ENCRYPTION_KEY"]));
+        return tf$serverFunction$0$anonymous.bind(null, tf$encrypt([amount, "test#tf$serverFunction$0$anonymous"], process.env["ENCRYPTION_KEY"]));
       }
       function Page({
         name
