@@ -166,6 +166,9 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
             // we need to fulfill the populate request, so we're also
             // going to store the tree in the path we were asked to
             // populate.
+            //
+            // longer term: this should really put in some sort of stub that
+            // says action.path should redirect to rsc.path.
             newCache.set(action.path, rsc.tree);
           }
 
