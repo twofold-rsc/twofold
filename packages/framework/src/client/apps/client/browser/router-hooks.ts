@@ -10,7 +10,7 @@ type Tree = any;
 
 type State = {
   path: string;
-  action: "seed" | "populate" | "refresh" | "navigate" | "popstate";
+  action: "seed" | "render" | "refresh" | "navigate" | "popstate";
   history: "none" | "push" | "replace";
   cache: Map<string, Tree>;
 };
@@ -26,7 +26,10 @@ export function useRouterReducer() {
 
   if (!cache.has(path)) {
     // we got asked to render a path and we don't have a tree for it.
-    dispatch({ type: "POPULATE", path });
+    dispatch({
+      type: "RENDER",
+      path,
+    });
   }
 
   useEffect(() => {
@@ -65,6 +68,11 @@ type PopulateAction = {
   path: string;
 };
 
+type RenderAction = {
+  type: "RENDER";
+  path: string;
+};
+
 type UpdateAction = {
   type: "UPDATE";
   path: string;
@@ -82,6 +90,7 @@ type Action =
   | PopAction
   | RefreshAction
   | PopulateAction
+  | RenderAction
   | UpdateAction
   | NotFoundAction;
 
@@ -105,6 +114,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           }
 
           return {
+            ...previous,
             path,
             action: "navigate",
             history: action.using,
@@ -119,6 +129,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           let previous = await state;
 
           return {
+            ...previous,
             path: action.path,
             action: "popstate",
             history: "none",
@@ -158,24 +169,29 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           let newCache = new Map(previous.cache);
           newCache.set(rsc.path, rsc.tree);
 
-          if (action.path !== rsc.path) {
-            // we're trying to populate action.path, but the rsc fetch is
-            // is giving us a tree for a different path. this is likely
-            // because of a redirect.
-            //
-            // we need to fulfill the populate request, so we're also
-            // going to store the tree in the path we were asked to
-            // populate.
-            //
-            // longer term: this should really put in some sort of stub that
-            // says action.path should redirect to rsc.path.
-            newCache.set(action.path, rsc.tree);
-          }
+          return {
+            ...previous,
+            cache: newCache,
+          };
+        },
+      });
+    case "RENDER":
+      return createRouterState({
+        cacheKey: `populate-${action.path}`,
+        async reduce() {
+          let previous = await state;
+          let rsc = await fetchRSCPayload(action.path, {
+            initiator: "populate",
+          });
+
+          let newCache = new Map(previous.cache);
+          newCache.set(rsc.path, rsc.tree);
 
           return {
             ...previous,
-            action: "populate",
-            history: "none",
+            path: rsc.path,
+            action: "render",
+            history: "replace",
             cache: newCache,
           };
         },
@@ -189,6 +205,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           newCache.set(action.path, action.tree);
 
           return {
+            ...previous,
             path: previous.path,
             action: "refresh",
             history: "none",
@@ -209,8 +226,9 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           newCache.set(rsc.path, rsc.tree);
 
           return {
+            ...previous,
             path: rsc.path,
-            action: "populate",
+            action: "render",
             history: "none",
             cache: newCache,
           };
