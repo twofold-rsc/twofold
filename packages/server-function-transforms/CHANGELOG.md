@@ -1,5 +1,11 @@
 # @twofold/server-function-transforms
 
+## 0.0.6
+
+### Patch Changes
+
+- Updates and bug fixes
+
 ## 0.0.4
 
 ### Patch Changes
