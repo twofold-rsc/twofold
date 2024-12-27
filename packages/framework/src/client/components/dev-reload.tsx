@@ -29,7 +29,10 @@ export default function DevReload() {
     eventSource.onmessage = async (event) => {
       let reload = JSON.parse(event.data);
 
-      if (reload.rscFiles.added.length > 0) {
+      if (Object.keys(reload).length === 0) {
+        // some sort of error state
+        refresh();
+      } else if (reload.rscFiles.added.length > 0) {
         startTransition(async () => {
           refresh();
           setCSSToCleanup(reload.cssFiles.removed);
