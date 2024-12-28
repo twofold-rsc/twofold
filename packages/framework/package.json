@@ -78,7 +78,7 @@
     "etag": "^1.8.1",
     "jiti": "^2.3.3",
     "mime-types": "^2.1.35",
-    "react-refresh": "^0.14.0",
+    "react-refresh": "^0.16.0",
     "serialize-error": "^11.0.3",
     "server-only": "^0.0.1",
     "urlpattern-polyfill": "10.0.0",

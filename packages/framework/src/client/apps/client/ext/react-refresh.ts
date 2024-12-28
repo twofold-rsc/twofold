@@ -16,20 +16,15 @@ declare global {
 
 if (process.env.NODE_ENV !== "production") {
   if (typeof window !== "undefined") {
-    function debounce(fn: () => void, timeout: number) {
-      let u: NodeJS.Timeout;
-      return () => {
-        clearTimeout(u);
-        u = setTimeout(fn, timeout);
-      };
-    }
-
     window.$RefreshRuntime$ = RefreshRuntime;
     let refresh = window.$RefreshRuntime$.performReactRefresh;
 
-    window.$RefreshRuntime$.performReactRefresh = debounce(() => {
-      refresh();
-    }, 30);
+    window.$RefreshRuntime$.performReactRefresh = createDebouncedFunction(
+      () => {
+        refresh();
+      },
+      30,
+    );
 
     // @ts-ignore
     window.$RefreshRuntime$.injectIntoGlobalHook(window);
@@ -39,4 +34,35 @@ if (process.env.NODE_ENV !== "production") {
     globalThis.$RefreshReg$ = () => {};
     globalThis.$RefreshSig$ = () => (type: string) => type;
   }
+}
+
+function createDebouncedFunction(fn: () => void, timeout: number) {
+  let timer: NodeJS.Timeout | null = null;
+  let currentPromiseReject: ((reason?: any) => void) | null = null;
+
+  const debouncedFunction = () => {
+    if (timer) {
+      clearTimeout(timer);
+      if (currentPromiseReject) {
+        currentPromiseReject(new Error("Debounced function reset"));
+      }
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      currentPromiseReject = reject;
+      timer = setTimeout(() => {
+        try {
+          fn();
+          resolve();
+        } catch (error) {
+          reject(error);
+        } finally {
+          timer = null;
+          currentPromiseReject = null;
+        }
+      }, timeout);
+    });
+  };
+
+  return debouncedFunction;
 }

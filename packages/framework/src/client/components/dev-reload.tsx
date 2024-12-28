@@ -6,7 +6,7 @@ import { useRouter } from "../hooks/use-router";
 declare global {
   interface Window {
     $RefreshRuntime$: {
-      performReactRefresh(): void;
+      performReactRefresh(): Promise<void>;
     };
   }
 }
@@ -35,7 +35,7 @@ export default function DevReload() {
       } else if (reload.rscFiles.added.length > 0) {
         startTransition(async () => {
           refresh();
-          setCSSToCleanup(reload.cssFiles.removed);
+          setCSSToCleanup((c) => [...c, ...reload.cssFiles.removed]);
 
           // if any of the added files had previous been removed, then we
           // have to manually add them back. reason being react still
@@ -59,11 +59,13 @@ export default function DevReload() {
 
         await Promise.all([...cssFiles, ...chunkModules, ...clientModules]);
 
-        // remove old css
-        reload.cssFiles.removed.forEach(removeCSSFile);
+        startTransition(async () => {
+          // refresh react
+          await window.$RefreshRuntime$.performReactRefresh();
 
-        // refresh react
-        window.$RefreshRuntime$.performReactRefresh();
+          // remove old css
+          setCSSToCleanup((c) => [...c, ...reload.cssFiles.removed]);
+        });
       }
     };
 
@@ -111,7 +113,9 @@ function addCSSFile(href: string) {
     }
 
     link.href = `${cssBase}${href}`;
-    link.onload = () => resolve();
+    link.onload = () => {
+      resolve();
+    };
     link.onerror = reject;
     link.rel = "stylesheet";
 
