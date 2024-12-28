@@ -121,6 +121,7 @@ export class DevTask {
             // if (match !== ".twofold/**/*") {
             //   console.log({ filename, match, callback });
             // }
+            // we should buffer for a few ms before running this callback
             await callback();
           }
         }
