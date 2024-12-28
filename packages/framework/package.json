@@ -78,6 +78,7 @@
     "etag": "^1.8.1",
     "jiti": "^2.3.3",
     "mime-types": "^2.1.35",
+    "minimatch": "^10.0.1",
     "react-refresh": "^0.16.0",
     "serialize-error": "^11.0.3",
     "server-only": "^0.0.1",

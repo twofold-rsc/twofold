@@ -6,6 +6,9 @@ import { Runtime } from "../runtime.js";
 import { Server } from "../server.js";
 import { ProductionBuild } from "../build/build/production.js";
 import { DevelopmentBuild } from "../build/build/development.js";
+import { fileURLToPath } from "url";
+import path from "path";
+import { minimatch } from "minimatch";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -93,34 +96,35 @@ export class DevTask {
 
   private async watch() {
     let files = {
-      "./app": () => this.rebuild(),
-      "./public": () => this.rebuild(),
-      "./config": () => this.restart(),
-      "./.env": () => this.reloadEnv(),
+      "app/**/*": () => this.rebuild(),
+      "lib/**/*": () => this.rebuild(),
+      "config/**/*": () => this.restart(),
+      "public/**/*": () => this.rebuild(),
+      ".env": () => this.reloadEnv(),
+      "package.json": () => this.restart(),
+      ".twofold/**/*": () => {},
+      "node_modules/**/*": () => {},
+      ".git/**/*": () => {},
+      "**/*.{js,jsx,ts,tsx}": () => this.rebuild(),
     };
 
-    Object.entries(files).forEach(async ([fileOrDir, callback]) => {
-      let url = new URL(fileOrDir, cwdUrl);
-      let watchType: "file" | "directory" | "none" = "none";
-      try {
-        let stats = await stat(url);
-        if (stats.isDirectory()) {
-          watchType = "directory";
-        } else if (stats.isFile()) {
-          watchType = "file";
-        }
-      } catch (_e) {
-        watchType = "none";
-      }
+    (async () => {
+      let watched = watch(cwdUrl, { recursive: true });
+      for await (let { filename } of watched) {
+        if (filename) {
+          let matchResult = Object.entries(files).find(([match]) =>
+            minimatch(filename, match),
+          );
 
-      if (watchType === "directory" || watchType === "file") {
-        let watched = watch(fileOrDir, {
-          recursive: watchType === "directory",
-        });
-        for await (let _event of watched) {
-          await callback();
+          if (matchResult) {
+            let [match, callback] = matchResult;
+            // if (match !== ".twofold/**/*") {
+            //   console.log({ filename, match, callback });
+            // }
+            await callback();
+          }
         }
       }
-    });
+    })();
   }
 }
