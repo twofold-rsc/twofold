@@ -2,7 +2,7 @@ import { redirect } from "@twofold/framework/redirect";
 
 async function action() {
   "use server";
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 500));
   redirect("/routing/redirects/ending");
   console.log("You should not see this!");
 }

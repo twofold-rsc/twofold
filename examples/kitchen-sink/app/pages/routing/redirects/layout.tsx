@@ -81,6 +81,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/routing/redirects/uas-redirect"
+              className="text-blue-500 underline"
+            >
+              Action in uAS redirect
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/redirects/action-redirect-to-another-domain"
               className="text-blue-500 underline"
             >
