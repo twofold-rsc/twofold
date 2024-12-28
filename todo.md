@@ -2,9 +2,7 @@
 
 framework
 
-- bug fixes
 - login demo fixes
-- add no emit
 
 - keyed routes
 - long cache headers for production
