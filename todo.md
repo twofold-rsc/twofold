@@ -2,13 +2,10 @@
 
 framework
 
-- bug fixes
-- login demo fixes
-- add no emit
-
 - keyed routes
-- long cache headers for production
 - (layout) routing
+
+- long cache headers for production
 
 - support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder. i think this is done?
 
