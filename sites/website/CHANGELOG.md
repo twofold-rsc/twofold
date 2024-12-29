@@ -1,5 +1,12 @@
 # website
 
+## 0.0.38
+
+### Patch Changes
+
+- Updated dependencies
+  - @twofold/framework@0.0.52
+
 ## 0.0.37
 
 ### Patch Changes
