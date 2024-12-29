@@ -72,6 +72,14 @@ export default function Layout({ children }: { children: ReactNode }) {
               Action calls notFound
             </Link>
           </li>
+          <li>
+            <Link
+              href="/routing/not-found/not-found-after-action"
+              className="text-blue-500 underline"
+            >
+              Not found after action
+            </Link>
+          </li>
         </ul>
       </div>
       <div>{children}</div>

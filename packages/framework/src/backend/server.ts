@@ -158,6 +158,7 @@ async function createHandler(runtime: Runtime) {
     let requestUrl = new URL(path, url);
     let requestToRender = new Request(requestUrl, {
       ...ctx.request,
+      headers: ctx.request.headers,
       method: "GET",
       body: null,
     });
@@ -207,6 +208,27 @@ async function createHandler(runtime: Runtime) {
       });
     }
 
+    let pageRequest = runtime.pageRequest(requestToRender);
+    let pageResponse = await pageRequest.rscResponse();
+
+    // if the page render is a redirect we need to use status code 303
+    // since this is in response to a POST request.
+    if (pageResponse.status === 307 || pageResponse.status === 308) {
+      return new Response(null, {
+        ...pageResponse,
+        headers: pageResponse.headers,
+        status: 303,
+      });
+    }
+
+    // if re-rendering the page does not return an ok response then
+    // we can we can just give back the page response. this is most
+    // likely because of a 404 or some other error, so the action
+    // stream shouldn't matter.
+    if (!pageResponse.ok || !pageResponse.body) {
+      return pageResponse;
+    }
+
     let actionStream = renderToReadableStream(
       result,
       build.getBuilder("client").clientComponentMap,
@@ -222,9 +244,6 @@ async function createHandler(runtime: Runtime) {
         "x-twofold-server-reference": id,
       },
     });
-
-    let pageRequest = runtime.pageRequest(requestToRender);
-    let pageResponse = await pageRequest.rscResponse();
 
     multipart.add({
       type: "text/x-component",
