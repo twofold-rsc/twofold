@@ -2,9 +2,6 @@
 
 framework
 
-- redirect in render after action
-- not found in render after action
-
 - keyed routes
 - (layout) routing
 
