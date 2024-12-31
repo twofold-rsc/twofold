@@ -38,14 +38,13 @@ export class Layout {
   }
 
   findPage(f: (page: Page) => boolean): Page | undefined {
-    let [dynamicPages, fixedPages] = partition(
-      this.#pages,
-      (page) => page.isDynamic,
-    );
+    // this is incredibly inefficient, should have better tree based search
+    let sortBy = (a: Page, b: Page) =>
+      a.dynamicSegments.length - b.dynamicSegments.length;
+    let searchPages = this.#pages.toSorted(sortBy);
 
     let page =
-      fixedPages.find(f) ||
-      dynamicPages.find(f) ||
+      searchPages.find(f) ||
       this.#children.map((child) => child.findPage(f)).find(Boolean);
 
     return page;

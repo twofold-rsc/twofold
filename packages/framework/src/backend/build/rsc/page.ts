@@ -15,6 +15,10 @@ export class Page {
     return this.#rsc.path.includes("$");
   }
 
+  get dynamicSegments() {
+    return this.#rsc.path.match(/\$([^/]+)/g) ?? [];
+  }
+
   get pattern() {
     return new URLPattern({
       protocol: "http{s}?",
@@ -104,7 +108,7 @@ export function componentsToTree<T extends object>({
       componentsToTree({
         components: components.slice(1),
         props,
-      })
+      }),
     );
   }
 }

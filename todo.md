@@ -6,6 +6,7 @@ framework
 - (layout) routing
 
 - long cache headers for production
+- prefix encrypted cookie with app name
 
 - support server actions from node_modules, see the esbuild server-actions-plugin used by rsc builder. i think this is done?
 
@@ -203,6 +204,7 @@ Form
 
 - https://twitter.com/jh3yy/status/1712881626969997355
 - https://craftofui.substack.com/p/muddling-your-words?triedRedirect=true
+- https://news.ycombinator.com/item?id=42537567
 
 ```tsx
 // client component map for rsc server render
