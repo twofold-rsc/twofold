@@ -287,7 +287,7 @@ export default function Nav() {
                       <ExampleLink
                         title="Dynamic URLs"
                         description="Use dynamic params to load different data based off the URL."
-                        href="/routing/slugs"
+                        href="/routing/dynamic"
                       />
                       <ExampleLink
                         title="Scroll position"
