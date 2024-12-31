@@ -1,7 +1,11 @@
 import Link from "@twofold/framework/link";
 import { LayoutProps } from "@twofold/framework/types";
 
-export default function SlugLayout({ params, children, request }: LayoutProps) {
+export default function DynamicLayout({
+  params,
+  children,
+  request,
+}: LayoutProps) {
   let slug = params.slug;
   let folder = params.folder;
   let file = params.file;

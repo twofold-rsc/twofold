@@ -1,13 +1,18 @@
-import { RSC } from "./rsc.js";
-
 export class Wrapper {
-  #rsc: RSC;
+  #path: string;
+  #fileUrl: URL;
 
-  constructor({ rsc }: { rsc: RSC }) {
-    this.#rsc = rsc;
+  constructor({ path, fileUrl }: { path: string; fileUrl: URL }) {
+    this.#path = path;
+    this.#fileUrl = fileUrl;
   }
 
-  get rsc() {
-    return this.#rsc;
+  get path() {
+    return this.#path;
+  }
+
+  async loadModule() {
+    let module = await import(this.#fileUrl.href);
+    return module;
   }
 }

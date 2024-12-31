@@ -12,7 +12,6 @@ import { externalPackages } from "../packages.js";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder.js";
 import path from "path";
-import { RSC } from "../rsc/rsc.js";
 import { Page } from "../rsc/page.js";
 import { Wrapper } from "../rsc/wrapper.js";
 import { fileExists } from "../helpers/file.js";
@@ -210,15 +209,11 @@ export class RSCBuilder extends Builder {
     if (!page) {
       let entryPoint = srcPaths.framework.notFound;
       let outputFile = getCompiledEntrypoint(entryPoint, metafile);
+      let rootLayout = this.layouts.find((layout) => layout.path === "/");
 
-      let notFoundRsc = new RSC({
+      page = new Page({
         path: "/errors/not-found",
         fileUrl: pathToFileURL(outputFile),
-      });
-
-      let rootLayout = this.layouts.find((layout) => layout.rsc.path === "/");
-      page = new Page({
-        rsc: notFoundRsc,
       });
       page.layout = rootLayout;
     }
@@ -263,16 +258,12 @@ export class RSCBuilder extends Builder {
         }
         path = `/${path}`;
 
-        let rsc = new RSC({
+        return new Page({
           path,
           css: output.cssBundle
             ? output.cssBundle.slice(cssPrefix.length)
             : undefined,
           fileUrl: new URL(key, baseUrl),
-        });
-
-        return new Page({
-          rsc,
         });
       });
   }
@@ -313,15 +304,13 @@ export class RSCBuilder extends Builder {
           .slice(prefix.length)
           .slice(0, -layoutSuffix.length);
 
-        let rsc = new RSC({
+        return new Layout({
           path: `/${path}`,
           css: output.cssBundle
             ? output.cssBundle.slice(cssPrefix.length)
             : undefined,
           fileUrl: new URL(key, baseUrl),
         });
-
-        return new Layout({ rsc });
       });
   }
 
@@ -385,19 +374,17 @@ export class RSCBuilder extends Builder {
     );
     let outputFileUrl = pathToFileURL(outputFilePath);
 
-    let rsc = new RSC({
+    let wrapper = new Wrapper({
       path: "/",
       fileUrl: outputFileUrl,
     });
-
-    let wrapper = new Wrapper({ rsc });
 
     return wrapper;
   }
 
   get css() {
-    let layoutCss = this.layouts.map((layout) => layout.rsc.css);
-    let pageCss = this.pages.map((page) => page.rsc.css);
+    let layoutCss = this.layouts.map((layout) => layout.css);
+    let pageCss = this.pages.map((page) => page.css);
 
     let css = [...layoutCss, ...pageCss].filter(Boolean);
 
@@ -409,8 +396,8 @@ export class RSCBuilder extends Builder {
     let layouts = this.layouts;
     let innerRootWrapper = this.innerRootWrapper;
 
-    let root = layouts.find((layout) => layout.rsc.path === "/");
-    let otherLayouts = layouts.filter((layout) => layout.rsc.path !== "/");
+    let root = layouts.find((layout) => layout.path === "/");
+    let otherLayouts = layouts.filter((layout) => layout.path !== "/");
 
     if (!root) {
       throw new Error("No root layout");

@@ -1,20 +1,36 @@
 import { Page } from "./page.js";
-import { RSC } from "./rsc.js";
 import { Wrapper } from "./wrapper.js";
 
 export class Layout {
-  #rsc: RSC;
+  #path: string;
+  #css?: string;
+  #fileUrl: URL;
+
   #children: Layout[] = [];
   #parent?: Layout;
   #pages: Page[] = [];
   #wrappers: Wrapper[] = [];
 
-  constructor({ rsc }: { rsc: RSC }) {
-    this.#rsc = rsc;
+  constructor({
+    path,
+    css,
+    fileUrl,
+  }: {
+    path: string;
+    css?: string;
+    fileUrl: URL;
+  }) {
+    this.#path = path;
+    this.#fileUrl = fileUrl;
+    this.#css = css;
   }
 
-  get rsc() {
-    return this.#rsc;
+  get path() {
+    return this.#path;
+  }
+
+  get css() {
+    return this.#css;
   }
 
   get children() {
@@ -56,10 +72,10 @@ export class Layout {
     console.log("*** Printing Tree ***");
 
     let print = (layout: Layout) => {
-      console.log(`${" ".repeat(indent)} ${layout.rsc.path} (layout)`);
+      console.log(`${" ".repeat(indent)} ${layout.path} (layout)`);
       indent++;
       layout.#pages.map((page) => {
-        console.log(`${" ".repeat(indent)} ${page.rsc.path} (page)`);
+        console.log(`${" ".repeat(indent)} ${page.path} (page)`);
       });
       layout.children.forEach(print);
       indent--;
@@ -98,16 +114,14 @@ export class Layout {
       pages.forEach((page) => this.addPage(page));
     } else {
       // cant go under a child, cant go under me
-      throw new Error(
-        `Could not add layout ${layout.rsc.path} to ${this.rsc.path}`,
-      );
+      throw new Error(`Could not add layout ${layout.path} to ${this.path}`);
     }
   }
 
   private addPage(page: Page) {
-    let isMatch = page.rsc.path.startsWith(this.rsc.path);
+    let isMatch = page.path.startsWith(this.path);
     let matchingChild = this.#children.find((child) =>
-      page.rsc.path.startsWith(child.rsc.path),
+      page.path.startsWith(child.path),
     );
 
     if (matchingChild) {
@@ -116,9 +130,7 @@ export class Layout {
       this.#pages.push(page);
       page.layout = this;
     } else {
-      throw new Error(
-        `Could not add page ${page.rsc.path} to ${this.rsc.path}`,
-      );
+      throw new Error(`Could not add page ${page.path} to ${this.path}`);
     }
   }
 
@@ -130,17 +142,15 @@ export class Layout {
     // flat list of all the modules the render tree needs
     // -> [Layout, Inner, Providers, etc]
 
-    let module = await this.#rsc.loadModule();
+    let module = await this.loadModule();
     if (!module.default) {
-      throw new Error(`Layout for ${this.rsc.path}/ has no default export.`);
+      throw new Error(`Layout for ${this.path}/ has no default export.`);
     }
 
     let loadWrapperModules = this.#wrappers.map(async (wrapper) => {
-      let module = await wrapper.rsc.loadModule();
+      let module = await wrapper.loadModule();
       if (!module.default) {
-        throw new Error(
-          `Wrapper for ${wrapper.rsc.path} has no default export.`,
-        );
+        throw new Error(`Wrapper for ${wrapper.path} has no default export.`);
       }
 
       return module.default;
@@ -150,6 +160,22 @@ export class Layout {
     let wrapperModules = loadedWrapperModules.flat();
 
     return [module.default, ...wrapperModules];
+  }
+
+  async runMiddleware(props: {
+    params: Record<string, string | undefined>;
+    searchParams: URLSearchParams;
+    request: Request;
+  }) {
+    let module = await this.loadModule();
+    if (module.before) {
+      await module.before(props);
+    }
+  }
+
+  private async loadModule() {
+    let module = await import(this.#fileUrl.href);
+    return module;
   }
 }
 
@@ -162,11 +188,10 @@ export class Layout {
  */
 function canGoUnder(child: Layout, parent: Layout) {
   let alreadyHave = parent.children.some(
-    (current) => current.rsc.path === child.rsc.path,
+    (current) => current.path === child.path,
   );
   let matchingPath =
-    child.rsc.path.startsWith(parent.rsc.path) &&
-    child.rsc.path !== parent.rsc.path;
+    child.path.startsWith(parent.path) && child.path !== parent.path;
 
   return !alreadyHave && matchingPath;
 }
