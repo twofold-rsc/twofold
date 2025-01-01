@@ -57,7 +57,6 @@ export class PageRequest {
       store.assets = assets;
     }
 
-    // figuring this out
     let reactTree = await this.reactTree();
 
     let { stream, error, redirect, notFound } =
