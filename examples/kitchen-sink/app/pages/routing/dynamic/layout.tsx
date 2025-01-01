@@ -52,6 +52,14 @@ export default function DynamicLayout({
           </li>
           <li>
             <Link
+              href="/routing/dynamic/slug/doesnt-exist"
+              className={`text-blue-500 ${pathname === "/routing/dynamic/slug/doesnt-exist" ? "underline" : ""} whitespace-nowrap`}
+            >
+              Catch all
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/dynamic/nested/folder/file"
               className={`text-blue-500 ${params.folder === "folder" && params.file === "file" ? "underline" : ""} whitespace-nowrap`}
             >
@@ -72,6 +80,14 @@ export default function DynamicLayout({
               className={`text-blue-500 ${pathname === "/routing/dynamic/nested/folder/fixed" ? "underline" : ""} whitespace-nowrap`}
             >
               Nested fixed
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/dynamic/nested/folder/file/doesnt-exist"
+              className={`text-blue-500 ${pathname === "/routing/dynamic/nested/folder/file/doesnt-exist" ? "underline" : ""} whitespace-nowrap`}
+            >
+              Deep catch all
             </Link>
           </li>
         </ul>

@@ -69,10 +69,7 @@ export class Runtime {
 
   pageRequest(request: Request) {
     let url = new URL(request.url);
-
-    let page = this.build
-      .getBuilder("rsc")
-      .tree.findPage((page) => page.pattern.test(url.pathname, this.baseUrl));
+    let page = this.build.getBuilder("rsc").tree.findPageForPath(url.pathname);
 
     let response = page
       ? new PageRequest({ page, request, runtime: this })

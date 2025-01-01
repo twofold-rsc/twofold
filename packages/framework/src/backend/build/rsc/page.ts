@@ -34,15 +34,27 @@ export class Page {
     return this.#path.includes("$");
   }
 
+  get isCatchAll() {
+    return this.#path.includes("$$");
+  }
+
   get dynamicSegments() {
-    return this.#path.match(/\$([^/]+)/g) ?? [];
+    return this.#path.match(/(?<!\$)\$([^/]+)/g) ?? [];
+  }
+
+  get catchAllSegments() {
+    return this.#path.match(/\$\$([^/]+)/g) ?? [];
   }
 
   get pattern() {
+    let pathname = this.#path
+      .replace(/\/\$\$(\w+)/g, "/:$1(.*)")
+      .replace(/\/\$/g, "/:");
+
     return new URLPattern({
       protocol: "http{s}?",
       hostname: "*",
-      pathname: this.#path.replace(/\/\$/g, "/:"),
+      pathname,
     });
   }
 

@@ -1,3 +1,7 @@
+import {
+  pathMatches,
+  pathPartialMatches,
+} from "../../runtime/helpers/routing.js";
 import { Page } from "./page.js";
 import { Wrapper } from "./wrapper.js";
 
@@ -53,15 +57,28 @@ export class Layout {
     }
   }
 
-  findPage(f: (page: Page) => boolean): Page | undefined {
-    // this is incredibly inefficient, should have better tree based search
+  findPageForPath(realPath: string): Page | undefined {
+    let [staticAndDynamicPages, catchAllPages] = partition(
+      this.#pages,
+      (page) => !page.isCatchAll,
+    );
+    let [dynamicPages, staticPages] = partition(
+      staticAndDynamicPages,
+      (page) => page.isDynamic,
+    );
+
     let sortBy = (a: Page, b: Page) =>
       a.dynamicSegments.length - b.dynamicSegments.length;
-    let searchPages = this.#pages.toSorted(sortBy);
+    let dynamicPagesInOrder = dynamicPages.toSorted(sortBy);
 
     let page =
-      searchPages.find(f) ||
-      this.#children.map((child) => child.findPage(f)).find(Boolean);
+      staticPages.find((page) => pathMatches(page.path, realPath)) ??
+      dynamicPagesInOrder.find((page) => pathMatches(page.path, realPath)) ??
+      this.#children
+        .filter((child) => pathPartialMatches(child.path, realPath))
+        .map((child) => child.findPageForPath(realPath))
+        .find(Boolean) ??
+      catchAllPages.find((page) => pathMatches(page.path, realPath));
 
     return page;
   }

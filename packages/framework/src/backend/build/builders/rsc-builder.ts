@@ -202,9 +202,7 @@ export class RSCBuilder extends Builder {
       throw new Error("Could not find not-found page");
     }
 
-    let page = this.tree.findPage(
-      (p) => p.pattern.pathname === "/errors/not-found",
-    );
+    let page = this.tree.findPageForPath("/errors/not-found");
 
     if (!page) {
       let entryPoint = srcPaths.framework.notFound;

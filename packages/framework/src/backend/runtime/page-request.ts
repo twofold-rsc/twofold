@@ -7,6 +7,7 @@ import {
   redirectErrorInfo,
 } from "./helpers/errors.js";
 import { ComponentType, createElement, ReactElement } from "react";
+import { applyPathParams } from "./helpers/routing.js";
 
 export class PageRequest {
   #page: Page;
@@ -55,8 +56,6 @@ export class PageRequest {
     if (store) {
       store.assets = assets;
     }
-
-    // let reactTree = await this.#page.reactTree(this.props);
 
     // figuring this out
     let reactTree = await this.reactTree();
@@ -132,21 +131,11 @@ export class PageRequest {
 
   private async reactTree() {
     let segments = await this.#page.segments();
-
-    function replaceVars(
-      path: string,
-      params: Record<string, string | undefined>,
-    ) {
-      return path.replace(/\$([^/]+)/g, (match, varName) => {
-        return params[varName] ? params[varName] : match;
-      });
-    }
-
     let params = this.dynamicParams;
     let props = this.props;
 
     let componentsAndProps = segments.flatMap((segment) => {
-      let key = `${segment.path}:${replaceVars(segment.path, params)}`;
+      let key = `${segment.path}:${applyPathParams(segment.path, params)}`;
       return segment.components.map((component) => ({
         component,
         props: {
