@@ -290,6 +290,11 @@ export default function Nav() {
                         href="/routing/dynamic"
                       />
                       <ExampleLink
+                        title="Pathless routes"
+                        description="Use pathless routes to nest and escape layouts."
+                        href="/routing/pathless"
+                      />
+                      <ExampleLink
                         title="Scroll position"
                         description="Maintain scroll position as you navigate around the app."
                         href="/routing/scroll-position"

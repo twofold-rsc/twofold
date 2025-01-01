@@ -6,6 +6,8 @@ import {
   isRedirectError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
+import { ComponentType, createElement, ReactElement } from "react";
+import { applyPathParams } from "./helpers/routing.js";
 
 export class PageRequest {
   #page: Page;
@@ -55,7 +57,7 @@ export class PageRequest {
       store.assets = assets;
     }
 
-    let reactTree = await this.#page.reactTree(this.props);
+    let reactTree = await this.reactTree();
 
     let { stream, error, redirect, notFound } =
       await this.#runtime.renderRSCStreamFromTree(reactTree);
@@ -119,11 +121,36 @@ export class PageRequest {
     });
   }
 
-  private get props() {
-    // props that our rsc will get
+  private get dynamicParams() {
     let url = new URL(this.#request.url);
     let execPattern = this.#page.pattern.exec(url);
     let params = execPattern?.pathname.groups ?? {};
+    return params;
+  }
+
+  private async reactTree() {
+    let segments = await this.#page.segments();
+    let params = this.dynamicParams;
+    let props = this.props;
+
+    let componentsAndProps = segments.flatMap((segment) => {
+      let key = `${segment.path}:${applyPathParams(segment.path, params)}`;
+      return segment.components.map((component) => ({
+        component,
+        props: {
+          ...props,
+          key,
+        },
+      }));
+    });
+
+    return componentsToTree(componentsAndProps);
+  }
+
+  private get props() {
+    // props that our rsc will get
+    let url = new URL(this.#request.url);
+    let params = this.dynamicParams;
     let searchParams = url.searchParams;
     let request = this.#request;
 
@@ -135,13 +162,12 @@ export class PageRequest {
   }
 
   private runMiddleware() {
-    let rsc = this.#page.rsc;
     let layouts = this.#page.layouts;
     let props = this.props;
 
     let promises = [
-      rsc.runMiddleware(props),
-      ...layouts.map((layout) => layout.rsc.runMiddleware(props)),
+      this.#page.runMiddleware(props),
+      ...layouts.map((layout) => layout.runMiddleware(props)),
     ];
 
     return Promise.all(promises);
@@ -211,5 +237,19 @@ export class PageRequest {
         },
       });
     }
+  }
+}
+
+export function componentsToTree<T extends object>(
+  list: {
+    component: ComponentType<T>;
+    props: T;
+  }[],
+): ReactElement {
+  let { component, props } = list[0];
+  if (list.length === 1) {
+    return createElement<T>(component, props);
+  } else {
+    return createElement<T>(component, props, componentsToTree(list.slice(1)));
   }
 }

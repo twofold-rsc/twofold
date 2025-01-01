@@ -1,7 +1,11 @@
 import Link from "@twofold/framework/link";
 import { LayoutProps } from "@twofold/framework/types";
 
-export default function SlugLayout({ params, children, request }: LayoutProps) {
+export default function DynamicLayout({
+  params,
+  children,
+  request,
+}: LayoutProps) {
   let slug = params.slug;
   let folder = params.folder;
   let file = params.file;
@@ -48,6 +52,14 @@ export default function SlugLayout({ params, children, request }: LayoutProps) {
           </li>
           <li>
             <Link
+              href="/routing/dynamic/slug/doesnt-exist"
+              className={`text-blue-500 ${pathname === "/routing/dynamic/slug/doesnt-exist" ? "underline" : ""} whitespace-nowrap`}
+            >
+              Catch all
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/dynamic/nested/folder/file"
               className={`text-blue-500 ${params.folder === "folder" && params.file === "file" ? "underline" : ""} whitespace-nowrap`}
             >
@@ -68,6 +80,14 @@ export default function SlugLayout({ params, children, request }: LayoutProps) {
               className={`text-blue-500 ${pathname === "/routing/dynamic/nested/folder/fixed" ? "underline" : ""} whitespace-nowrap`}
             >
               Nested fixed
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/dynamic/nested/folder/file/doesnt-exist"
+              className={`text-blue-500 ${pathname === "/routing/dynamic/nested/folder/file/doesnt-exist" ? "underline" : ""} whitespace-nowrap`}
+            >
+              Deep catch all
             </Link>
           </li>
         </ul>

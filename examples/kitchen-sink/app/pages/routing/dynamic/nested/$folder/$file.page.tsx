@@ -1,6 +1,6 @@
 import { PageProps } from "@twofold/framework/types";
 
-export default function SlugPage({ params }: PageProps<"folder" | "file">) {
+export default function FilePage({ params }: PageProps<"folder" | "file">) {
   return (
     <div>
       <div>

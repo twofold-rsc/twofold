@@ -11,11 +11,19 @@ export class API {
     return this.#path.includes("$");
   }
 
+  get isCatchAll() {
+    return this.#path.includes("$$");
+  }
+
   get pattern() {
+    let pathname = this.#path
+      .replace(/\/\$\$(\w+)/g, "/:$1(.*)")
+      .replace(/\/\$/g, "/:");
+
     return new URLPattern({
       protocol: "http{s}?",
       hostname: "*",
-      pathname: this.#path.replace(/\/\$/g, "/:"),
+      pathname,
     });
   }
 
