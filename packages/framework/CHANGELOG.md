@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.53
+
+### Patch Changes
+
+- Routing updates
+
 ## 0.0.52
 
 ### Patch Changes
