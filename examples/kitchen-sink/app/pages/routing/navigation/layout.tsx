@@ -17,6 +17,11 @@ export default function Layout({ children }: { children: ReactNode }) {
             </Link>
           </li>
           <li>
+            <Link href="https://github.com" className="text-blue-500 underline">
+              External link
+            </Link>
+          </li>
+          <li>
             <Link
               href="/routing/navigation/ending"
               replace={true}

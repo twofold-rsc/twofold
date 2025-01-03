@@ -2,9 +2,6 @@
 
 framework
 
-- keyed routes
-- (layout) routing
-
 - long cache headers for production
 - prefix encrypted cookie with app name
 
