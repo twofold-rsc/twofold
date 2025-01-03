@@ -13,6 +13,7 @@ async function setToObject() {
   let user = {
     id: 123,
     name: "Alice",
+    createdAt: new Date(),
   };
 
   await cookies.encrypted.set("encrypted-cookie", user);
@@ -176,7 +177,7 @@ function MapCookie({ value }: { value: Map<string, string> }) {
   );
 }
 
-function ObjectCookie({ value }: { value: Record<string, string | number> }) {
+function ObjectCookie({ value }: { value: Record<string, unknown> }) {
   return (
     <div className="flex flex-col items-center justify-center space-y-2">
       <p className="text-sm text-gray-500">Object</p>
@@ -184,7 +185,15 @@ function ObjectCookie({ value }: { value: Record<string, string | number> }) {
         {Object.entries(value).map(([key, value]) => (
           <Fragment key={key}>
             <div>{key}</div>
-            <div>{value}</div>
+            {typeof value === "string" || typeof value === "number" ? (
+              <div>{value}</div>
+            ) : value instanceof Date ? (
+              <div>
+                {value.getMonth() + 1}/{value.getDate()}/{value.getFullYear()}
+              </div>
+            ) : (
+              <div>{JSON.stringify(value)}</div>
+            )}
           </Fragment>
         ))}
       </div>
