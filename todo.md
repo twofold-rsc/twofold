@@ -2,6 +2,9 @@
 
 framework
 
+- route masking
+- flash messages
+
 - long cache headers for production
 - prefix encrypted cookie with app name
 

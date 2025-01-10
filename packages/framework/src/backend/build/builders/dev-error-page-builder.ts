@@ -2,7 +2,7 @@ import { BuildContext, Metafile, context } from "esbuild";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import { cwdUrl, frameworkSrcDir } from "../../files.js";
-import { tailwindPlugin } from "../plugins/tailwind-plugin.js";
+import { esbuildPluginTailwind } from "@ryanto/esbuild-plugin-tailwind";
 import { readFile } from "fs/promises";
 import { Builder } from "./builder.js";
 
@@ -27,7 +27,7 @@ export class DevErrorPageBuilder extends Builder {
       chunkNames: "chunks/[name]-[hash]",
       metafile: true,
       plugins: [
-        tailwindPlugin({
+        esbuildPluginTailwind({
           base: path.dirname(this.appPath),
         }),
       ],
@@ -60,7 +60,7 @@ export class DevErrorPageBuilder extends Builder {
 
   private get appPath() {
     let appPath = fileURLToPath(
-      new URL("./client/apps/errors/app.tsx", frameworkSrcDir),
+      new URL("./client/apps/errors/app.tsx", frameworkSrcDir)
     );
     return appPath;
   }
