@@ -4,8 +4,8 @@ ENV NODE_ENV=production
 ENV NODE_OPTIONS="--conditions react-server"
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+RUN npm install -g corepack 
 RUN corepack enable
-
 
 FROM base AS build
 COPY . /usr/src/twofold
