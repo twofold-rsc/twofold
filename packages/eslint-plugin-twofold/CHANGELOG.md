@@ -1,5 +1,11 @@
 # eslint-plugin-twofold
 
+## 0.0.54
+
+### Patch Changes
+
+- Misc upgrades and updates, better cache headers in production
+
 ## 0.0.53
 
 ## 0.0.52

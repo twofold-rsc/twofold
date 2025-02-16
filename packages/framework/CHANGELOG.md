@@ -1,5 +1,13 @@
 # @twofold/framework
 
+## 0.0.54
+
+### Patch Changes
+
+- Misc upgrades and updates, better cache headers in production
+- Updated dependencies
+  - @twofold/server-function-transforms@0.0.7
+
 ## 0.0.53
 
 ### Patch Changes

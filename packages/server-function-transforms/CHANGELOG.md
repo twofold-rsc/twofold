@@ -1,5 +1,11 @@
 # @twofold/server-function-transforms
 
+## 0.0.7
+
+### Patch Changes
+
+- Misc upgrades and updates, better cache headers in production
+
 ## 0.0.6
 
 ### Patch Changes

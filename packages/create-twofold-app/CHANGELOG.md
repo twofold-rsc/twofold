@@ -1,5 +1,11 @@
 # create-twofold-app
 
+## 0.0.13
+
+### Patch Changes
+
+- Misc upgrades and updates, better cache headers in production
+
 ## 0.0.12
 
 ### Patch Changes
