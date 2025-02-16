@@ -7,6 +7,11 @@ import { Build } from "../../build/build/build.js";
 export function assets(build: Build): RouteHandler {
   let router = createRouter();
 
+  const cacheControlHeader =
+    build.name === "production"
+      ? "public, max-age=31536000, immutable"
+      : "no-store, no-cache, must-revalidate, proxy-revalidate";
+
   router.get("/_assets/client-app/bootstrap/:hash.js", async () => {
     let modulePath = build.getBuilder("client").bootstrapPath;
     let contents = await readFile(modulePath, "utf-8");
@@ -14,6 +19,7 @@ export function assets(build: Build): RouteHandler {
     return new Response(contents, {
       headers: {
         "Content-Type": "application/javascript",
+        "Cache-Control": cacheControlHeader,
       },
     });
   });
@@ -32,6 +38,7 @@ export function assets(build: Build): RouteHandler {
         return new Response(contents, {
           headers: {
             "Content-Type": "application/javascript",
+            "Cache-Control": cacheControlHeader,
           },
         });
       }
@@ -63,6 +70,7 @@ export function assets(build: Build): RouteHandler {
         return new Response(contents, {
           headers: {
             "Content-Type": "application/javascript",
+            "Cache-Control": cacheControlHeader,
           },
         });
       }
@@ -82,6 +90,7 @@ export function assets(build: Build): RouteHandler {
       return new Response(contents, {
         headers: {
           "Content-Type": "text/css",
+          "Cache-Control": cacheControlHeader,
         },
       });
     }

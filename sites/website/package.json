@@ -35,8 +35,5 @@
     "@types/react-dom": "catalog:",
     "nodemon": "^3.1.9",
     "typescript": "catalog:"
-  },
-  "pnpm": {
-    "neverBuiltDependencies": []
   }
 }
