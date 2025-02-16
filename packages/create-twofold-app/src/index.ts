@@ -213,6 +213,10 @@ async function main() {
   modifyVersions(pkg.dependencies);
   modifyVersions(pkg.devDependencies);
 
+  pkg.pnpm = {
+    neverBuiltDependencies: [],
+  };
+
   let newPackage = JSON.stringify(pkg, null, 2);
   await writeFile(new URL("./package.json", appUrl), newPackage);
 
