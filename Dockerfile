@@ -15,7 +15,6 @@ RUN pnpm run --filter="@twofold/framework..." compile
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --filter="website..." --prod=false --frozen-lockfile
 RUN pnpm run --filter=website build
 
-
 FROM base AS website
 COPY --from=build /usr/src/twofold /usr/src/twofold
 WORKDIR /usr/src/twofold/sites/website

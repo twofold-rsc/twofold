@@ -1,5 +1,18 @@
 # TODO
 
+upgrades
+
+- apple builds? try pnpm 10
+
+update base app template
+deploy opengraphing
+
+Release
+
+- eslint-plugin
+- framework
+- server-function-transforms
+
 framework
 
 - long cache headers for production
