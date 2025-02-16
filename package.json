@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "compile": "pnpm run -r compile",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "pnpm run -r compile"
   },
   "keywords": [],
   "author": "Ryan Toronto",
