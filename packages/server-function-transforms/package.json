@@ -22,15 +22,15 @@
     "@types/babel__generator": "^7.6.8",
     "@types/node": "catalog:",
     "dedent": "^1.5.3",
-    "prettier": "^3.4.2",
+    "prettier": "^3.5.1",
     "typescript": "catalog:",
-    "vitest": "^2.1.8"
+    "vitest": "^3.0.5"
   },
   "dependencies": {
-    "@babel/core": "^7.23.9",
-    "@babel/generator": "^7.26.3",
-    "@babel/types": "^7.26.3",
-    "esbuild": "0.24.0",
+    "@babel/core": "^7.26.9",
+    "@babel/generator": "^7.26.9",
+    "@babel/types": "^7.26.9",
+    "esbuild": "0.25.0",
     "react-server-dom-webpack": ">=19.0.0"
   }
 }

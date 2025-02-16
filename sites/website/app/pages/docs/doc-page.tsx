@@ -4,6 +4,7 @@ import Markdoc, {
   Tag,
   Schema,
   RenderableTreeNodes,
+  RenderableTreeNode,
 } from "@markdoc/markdoc";
 import { readFile, readdir } from "fs/promises";
 import * as path from "path";
@@ -53,7 +54,7 @@ export async function DocPage({
               {title}
             </Link>
           </div>
-          <div className="prose mt-8 prose-h1:mb-4 first-of-type:prose-p:mt-0">
+          <div className="prose prose-h1:mb-4 first-of-type:prose-p:mt-0 mt-8">
             <MarkdocContent content={content} />
           </div>
         </div>
@@ -195,50 +196,92 @@ let availableDocs = cache(async () => {
   };
 });
 
-function getTitle(node: any) {
+function getTitle(node: RenderableTreeNode): string | undefined {
   if (!node) {
     return;
   }
 
-  if (!node.children) {
+  if (!(typeof node === "object")) {
     return;
   }
 
-  let title = node.children.reduce((acc: null | string, child: any) => {
-    if (acc) {
-      return acc;
-    }
+  if (!("children" in node)) {
+    return;
+  }
 
-    if (child.name === "h1" && typeof child.children[0] === "string") {
-      return child.children[0];
-    }
+  if (!Array.isArray(node.children)) {
+    return;
+  }
 
-    return getTitle(child);
-  }, null);
+  let title = node.children.reduce(
+    (acc: undefined | string, child: RenderableTreeNode) => {
+      if (acc || !child || typeof child !== "object") {
+        return acc;
+      }
+
+      if (
+        "name" in child &&
+        child.name === "h1" &&
+        Array.isArray(child.children) &&
+        typeof child.children[0] === "string"
+      ) {
+        let potentialTitle = child.children[0];
+        return potentialTitle;
+      }
+
+      return getTitle(child);
+    },
+    undefined,
+  );
 
   return title;
 }
 
 function getHeadings(
-  node: any,
+  node: RenderableTreeNode,
   sections: { title: string; level: number; id: string }[] = [],
 ) {
-  if (node && node.name) {
-    let match = node.name.match(/h\d+/);
-    if (match) {
-      let title = node.children[0];
+  if (!node) {
+    return [];
+  }
 
-      if (typeof title === "string") {
-        sections.push({
-          title,
-          id: node.attributes.id,
-          level: node.attributes.level,
-        });
-      }
-    } else if (node.children) {
-      for (let child of node.children) {
-        getHeadings(child, sections);
-      }
+  if (!(typeof node === "object")) {
+    return [];
+  }
+
+  if (!("children" in node)) {
+    return [];
+  }
+
+  if (!Array.isArray(node.children)) {
+    return [];
+  }
+
+  if (typeof node.name !== "string") {
+    return [];
+  }
+
+  let match = node.name.match(/h\d+/);
+  if (match) {
+    let title = node.children[0];
+    let attributes = node.attributes;
+
+    if (
+      typeof title === "string" &&
+      attributes &&
+      typeof attributes === "object" &&
+      "id" in attributes &&
+      "level" in attributes
+    ) {
+      sections.push({
+        title,
+        id: attributes.id,
+        level: attributes.level,
+      });
+    }
+  } else if (node.children) {
+    for (let child of node.children) {
+      getHeadings(child, sections);
     }
   }
 
