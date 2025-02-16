@@ -31,5 +31,8 @@
     "prettier": "^3.5.1",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "typescript": "catalog:"
+  },
+  "pnpm": {
+    "neverBuiltDependencies": []
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "base-app",
-  "version": "0.0.50",
+  "version": "0.0.52",
   "private": true,
   "description": "",
   "type": "module",
@@ -20,16 +20,19 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-server-dom-webpack": "catalog:",
-    "tailwindcss": "4.0.0-beta.8"
+    "tailwindcss": "^4.0.6"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "eslint": "^9.17.0",
+    "eslint": "^9.20.1",
     "eslint-plugin-twofold": "workspace:*",
-    "prettier": "^3.4.2",
-    "prettier-plugin-tailwindcss": "^0.6.9",
+    "prettier": "^3.5.1",
+    "prettier-plugin-tailwindcss": "^0.6.11",
     "typescript": "catalog:"
+  },
+  "pnpm": {
+    "neverBuiltDependencies": []
   }
 }
