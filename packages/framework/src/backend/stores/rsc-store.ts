@@ -10,7 +10,7 @@ export type Store = {
     get: (key: string) => string | undefined;
     set(key: string, value: string, options?: SerializeOptions): void;
     destroy(key: string, options?: SerializeOptions): void;
-    outgoingCookies: {
+    outgoingCookies(): {
       name: string;
       value: string;
       options?: SerializeOptions;

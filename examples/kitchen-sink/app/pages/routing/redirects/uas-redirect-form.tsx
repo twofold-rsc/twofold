@@ -34,8 +34,11 @@ export function UASRedirectForm() {
 
   return (
     <form action={action} className="space-y-3">
-      <p>State: {state.value}</p>
-      <p>Times run: {state.times}</p>
+      <div className="space-y-1">
+        <p>State: {state.value}</p>
+        <p>Times run: {state.times}</p>
+        <p>Next action will redirect: {state.times >= 2 ? "Yes" : "No"}</p>
+      </div>
       <div>
         <button
           type="submit"

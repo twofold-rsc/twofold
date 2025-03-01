@@ -17,6 +17,7 @@ import { randomUUID } from "node:crypto";
 import { deserializeError } from "serialize-error";
 import { ProductionBuild } from "./build/build/production.js";
 import { DevelopmentBuild } from "./build/build/development.js";
+import { ActionRequest } from "./runtime/action-request.js";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -71,11 +72,11 @@ export class Runtime {
     let url = new URL(request.url);
     let page = this.build.getBuilder("rsc").tree.findPageForPath(url.pathname);
 
-    let response = page
+    let pageRequest = page
       ? new PageRequest({ page, request, runtime: this })
       : this.notFoundPageRequest(request);
 
-    return response;
+    return pageRequest;
   }
 
   notFoundPageRequest(request: Request) {
@@ -89,12 +90,23 @@ export class Runtime {
 
   // actions
 
-  isAction(id: string) {
-    let serverActionMap = this.build.getBuilder("rsc").serverActionMap;
-    return serverActionMap.has(id);
-  }
+  actionRequest(request: Request) {
+    let url = new URL(request.url);
+    let pattern = new URLPattern({
+      protocol: "http{s}?",
+      hostname: "*",
+      pathname: "/__rsc/action/:id",
+    });
 
-  async getAction(id: string) {
+    let exec = pattern.exec(url);
+    let urlId = exec?.pathname.groups.id;
+
+    if (!urlId) {
+      throw new Error("No server action specified");
+    }
+
+    let id = decodeURIComponent(urlId);
+
     let serverActionMap = this.build.getBuilder("rsc").serverActionMap;
     let action = serverActionMap.get(id);
 
@@ -102,22 +114,18 @@ export class Runtime {
       throw new Error("Invalid action id");
     }
 
-    let actionUrl = pathToFileURL(action.path);
-    let module = await import(actionUrl.href);
+    let actionRequest = new ActionRequest({
+      action,
+      request,
+      runtime: this,
+    });
 
-    let fn = module[action.export];
-
-    return fn;
-  }
-
-  async runAction(id: string, args: unknown[]) {
-    let fn = await this.getAction(id);
-    return fn(...args);
+    return actionRequest;
   }
 
   // renders
 
-  async renderRSCStreamFromTree(tree: ReactNode) {
+  async renderRSCStream(tree: any) {
     let clientComponentMap = this.build.getBuilder("client").clientComponentMap;
 
     let streamError: unknown;

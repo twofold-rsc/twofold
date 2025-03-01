@@ -4,7 +4,6 @@ import {
   // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client'.
 } from "react-server-dom-webpack/client";
 import { deserializeError } from "serialize-error";
-import { MultipartResponse } from "./multipart-response";
 
 export async function callServer(id: string, args: any) {
   // console.log("requesting action", id);
@@ -28,59 +27,53 @@ export async function callServer(id: string, args: any) {
   let response = await p;
 
   let contentType = response.headers.get("content-type");
-  let isMultipart =
-    typeof contentType === "string" &&
-    contentType.split(";")[0] === "multipart/mixed";
 
-  let rscStream;
-  let actionStream;
+  let rscTree;
+  let result;
 
-  if (contentType === "text/x-component") {
-    rscStream = response.body;
+  if (contentType === "text/x-action-component") {
+    let streams = await createFromReadableStream(response.body, {
+      callServer,
+    });
+    rscTree = streams.render;
+    result = streams.action;
+  } else if (contentType === "text/x-component") {
+    rscTree = createFromReadableStream(response.body, {
+      callServer,
+    });
   } else if (contentType === "text/x-serialized-error") {
     let json = await response.json();
     let error = deserializeError(json);
-    actionStream = new ReadableStream({
+    let stream = new ReadableStream({
       start(controller) {
         controller.error(error);
       },
+    });
+    result = createFromReadableStream(stream, {
+      callServer,
     });
   } else if (contentType === "application/json") {
     let json = await response.json();
     if (json.type === "twofold-offsite-redirect") {
       window.location.href = json.url;
     }
-  } else if (isMultipart) {
-    let actionResponse = new MultipartResponse({
-      contentType: "text/x-action",
-      response,
-    });
-
-    let rscResponse = new MultipartResponse({
-      contentType: "text/x-component",
-      response,
-    });
-
-    rscStream = rscResponse.stream;
-    actionStream = actionResponse.stream;
   } else if (!response.ok) {
     let error = new Error(response.statusText);
-    actionStream = new ReadableStream({
+    let stream = new ReadableStream({
       start(controller) {
         controller.error(error);
       },
     });
+    result = createFromReadableStream(stream, {
+      callServer,
+    });
   }
 
-  if (rscStream) {
+  if (rscTree) {
     let url = new URL(response.url);
     let receivedPath = url.searchParams.get("path");
     let pathToUpdate =
       response.redirected && receivedPath ? receivedPath : path;
-
-    let rscTree = createFromReadableStream(rscStream, {
-      callServer,
-    });
 
     if (window.__twofold?.updateTree) {
       window.__twofold.updateTree(pathToUpdate, rscTree);
@@ -91,11 +84,5 @@ export async function callServer(id: string, args: any) {
     }
   }
 
-  if (actionStream) {
-    let actionTree = createFromReadableStream(actionStream, {
-      callServer,
-    });
-
-    return actionTree;
-  }
+  return result;
 }

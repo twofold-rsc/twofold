@@ -52,15 +52,14 @@ export class PageRequest {
     }
 
     let store = getStore();
-    let assets = this.#page.assets.map((asset) => `/_assets/styles/${asset}`);
     if (store) {
-      store.assets = assets;
+      store.assets = this.assets;
     }
 
     let reactTree = await this.reactTree();
 
     let { stream, error, redirect, notFound } =
-      await this.#runtime.renderRSCStreamFromTree(reactTree);
+      await this.#runtime.renderRSCStream(reactTree);
 
     if (notFound) {
       stream.cancel();
@@ -128,7 +127,7 @@ export class PageRequest {
     return params;
   }
 
-  private async reactTree() {
+  async reactTree() {
     let segments = await this.#page.segments();
     let params = this.dynamicParams;
     let props = this.props;
@@ -161,7 +160,7 @@ export class PageRequest {
     };
   }
 
-  private runMiddleware() {
+  runMiddleware() {
     let layouts = this.#page.layouts;
     let props = this.props;
 
@@ -171,6 +170,11 @@ export class PageRequest {
     ];
 
     return Promise.all(promises);
+  }
+
+  get assets() {
+    let assets = this.#page.assets.map((asset) => `/_assets/styles/${asset}`);
+    return assets;
   }
 
   private notFoundRscResponse() {

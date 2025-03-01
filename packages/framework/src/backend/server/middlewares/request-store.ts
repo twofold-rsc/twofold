@@ -40,7 +40,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
 
           ctx.deleteCookie(name, cookieOptions);
         },
-        outgoingCookies: [],
+        outgoingCookies: () => ctx.outgoingCookies,
       },
       encryption: {
         encrypt: (value: any) => {
@@ -63,7 +63,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
       assets: [],
       render: {
         async treeToStaticHtml(tree) {
-          let rsc = await runtime.renderRSCStreamFromTree(tree);
+          let rsc = await runtime.renderRSCStream(tree);
           let html = await runtime.renderHtmlStreamFromRSCStream(
             rsc.stream,
             "static",
