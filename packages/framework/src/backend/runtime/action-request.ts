@@ -1,6 +1,5 @@
 import { parseHeaderValue } from "@hattip/headers";
 import { Runtime } from "../runtime.js";
-
 import {
   decodeReply,
   // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/server.edge'.
@@ -12,6 +11,7 @@ import {
 } from "./helpers/errors.js";
 import { CompiledAction } from "../build/builders/rsc-builder.js";
 import { pathToFileURL } from "url";
+import { getStore } from "../stores/rsc-store.js";
 
 export class ActionRequest {
   #action: CompiledAction;
@@ -68,8 +68,10 @@ export class ActionRequest {
       }
     }
 
-    // ugh
-    // need to add page assets to store
+    let store = getStore();
+    if (store) {
+      store.assets = pageRequest.assets;
+    }
 
     let reactTree = await pageRequest.reactTree();
 
@@ -176,7 +178,7 @@ export class ActionRequest {
   }
 
   private redirectResponse(url: string) {
-    let requestUrl = new URL(this.path, url);
+    let requestUrl = new URL(this.path, this.#request.url);
     let redirectUrl = new URL(url, this.#request.url);
     let isRelative =
       redirectUrl.origin === requestUrl.origin && url.startsWith("/");

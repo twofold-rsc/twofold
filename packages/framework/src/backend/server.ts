@@ -93,7 +93,7 @@ async function createHandler(runtime: Runtime) {
     let response = await actionRequest.rscResponse();
 
     if (response.status === 404) {
-      console.log(`🔴 Action ${actionRequest.name} called notFound`);
+      console.log(`🔴 Action ${actionRequest.name} rendered not found`);
     } else if (response.status === 303) {
       let location = response.headers.get("location");
       console.log(`🔵 Action ${actionRequest.name} redirect to ${location}`);

@@ -52,9 +52,8 @@ export class PageRequest {
     }
 
     let store = getStore();
-    let assets = this.#page.assets.map((asset) => `/_assets/styles/${asset}`);
     if (store) {
-      store.assets = assets;
+      store.assets = this.assets;
     }
 
     let reactTree = await this.reactTree();
@@ -171,6 +170,11 @@ export class PageRequest {
     ];
 
     return Promise.all(promises);
+  }
+
+  get assets() {
+    let assets = this.#page.assets.map((asset) => `/_assets/styles/${asset}`);
+    return assets;
   }
 
   private notFoundRscResponse() {

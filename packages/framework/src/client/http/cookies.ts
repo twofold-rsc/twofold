@@ -5,7 +5,7 @@ import { SerializeOptions } from "cookie";
 let cookies = {
   get(name: string) {
     let store = getStore();
-    let outgoing = store.cookies.outgoingCookies.find((c) => c.name === name);
+    let outgoing = store.cookies.outgoingCookies().find((c) => c.name === name);
     return outgoing?.value ?? store.cookies.get(name);
   },
 

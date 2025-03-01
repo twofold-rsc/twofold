@@ -2,12 +2,14 @@
 
 framework
 
+- temporary references for server actions
+
+- release framework
+
 - route masking
 - flash messages
 
-- deal with assets in actionRequest (add pageRequest.assets function)
-- clean up call server
-- test all action examples (and verify console logs)
+- error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
 
 - get rid of assets (instead importing a css file should give the url)
 
