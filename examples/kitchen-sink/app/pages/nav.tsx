@@ -156,6 +156,11 @@ export default function Nav() {
                         description="An action that is very slow."
                         href="/server-actions/slow-function"
                       />
+                      <ExampleLink
+                        title="Streaming action"
+                        description="An action that returns a stream."
+                        href="/server-actions/streaming-action"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup

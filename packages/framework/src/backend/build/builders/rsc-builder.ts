@@ -21,7 +21,7 @@ import { Layout } from "../rsc/layout.js";
 import { API } from "../rsc/api.js";
 import { esbuildPluginTailwind } from "@ryanto/esbuild-plugin-tailwind";
 
-type CompiledAction = {
+export type CompiledAction = {
   id: string;
   path: string;
   export: string;
@@ -67,7 +67,7 @@ export class RSCBuilder extends Builder {
 
     // files need to be sorted for deterministic builds
     let serverActionEntries = Array.from(
-      this.#entriesBuilder.serverActionEntryMap.keys()
+      this.#entriesBuilder.serverActionEntryMap.keys(),
     ).sort();
 
     this.#serverActionMap = new Map();
@@ -120,7 +120,7 @@ export class RSCBuilder extends Builder {
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
               let storeUrl = new URL(
                 "./backend/stores/rsc-store.js",
-                frameworkCompiledDir
+                frameworkCompiledDir,
               );
 
               build.onResolve({ filter: /\/stores\/rsc-store/ }, (args) => {
@@ -194,7 +194,7 @@ export class RSCBuilder extends Builder {
       fileURLToPath(frameworkSrcDir),
       "client",
       "components",
-      "inner-root-wrapper.tsx"
+      "inner-root-wrapper.tsx",
     );
   }
 
@@ -371,7 +371,7 @@ export class RSCBuilder extends Builder {
 
     let outputFilePath = getCompiledEntrypoint(
       this.innerRootWrapperSrcPath,
-      metafile
+      metafile,
     );
     let outputFileUrl = pathToFileURL(outputFilePath);
 

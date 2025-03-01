@@ -60,7 +60,7 @@ export class PageRequest {
     let reactTree = await this.reactTree();
 
     let { stream, error, redirect, notFound } =
-      await this.#runtime.renderRSCStreamFromTree(reactTree);
+      await this.#runtime.renderRSCStream(reactTree);
 
     if (notFound) {
       stream.cancel();
@@ -128,7 +128,7 @@ export class PageRequest {
     return params;
   }
 
-  private async reactTree() {
+  async reactTree() {
     let segments = await this.#page.segments();
     let params = this.dynamicParams;
     let props = this.props;
@@ -161,7 +161,7 @@ export class PageRequest {
     };
   }
 
-  private runMiddleware() {
+  runMiddleware() {
     let layouts = this.#page.layouts;
     let props = this.props;
 

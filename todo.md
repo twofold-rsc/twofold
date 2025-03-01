@@ -5,6 +5,12 @@ framework
 - route masking
 - flash messages
 
+- deal with assets in actionRequest (add pageRequest.assets function)
+- clean up call server
+- test all action examples (and verify console logs)
+
+- get rid of assets (instead importing a css file should give the url)
+
 - prefix encrypted cookie with app name
 
 - taint secret key (needs experimental react)
@@ -18,7 +24,6 @@ framework
 - perf tracking: https://github.com/facebook/react/pull/31729
 
 - live reload should reconnect when disconnected
-- lightening css
 
 - rename api handlers
 - only allow function exports from server modules. you dont want to import a non function call server on the client

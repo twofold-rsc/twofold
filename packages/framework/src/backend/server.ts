@@ -2,14 +2,7 @@ import "./monkey-patch.js";
 import { createServer } from "@hattip/adapter-node/native-fetch";
 import { parseHeaderValue } from "@hattip/headers";
 import { createRouter } from "@hattip/router";
-import {
-  renderToReadableStream,
-  decodeReply,
-  // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/server.edge'.
-} from "react-server-dom-webpack/server.edge";
-import { getStore } from "./stores/rsc-store.js";
 import { cookie } from "@hattip/cookie";
-import { MultipartResponse } from "./multipart-response.js";
 import { devReload } from "./server/middlewares/dev-reload.js";
 import { errors } from "./server/middlewares/errors.js";
 import { staticFiles } from "./server/middlewares/static-files.js";
@@ -19,11 +12,6 @@ import { globalMiddleware } from "./server/middlewares/global-middleware.js";
 import { requestStore } from "./server/middlewares/request-store.js";
 import { waitForBuild } from "./server/middlewares/wait-for-build.js";
 import { waitForSSR } from "./server/middlewares/wait-for-ssr-worker.js";
-import {
-  isNotFoundError,
-  isRedirectError,
-  redirectErrorInfo,
-} from "./runtime/helpers/errors.js";
 import { Server as NodeHttpServer } from "http";
 import { Runtime } from "./runtime.js";
 
@@ -98,163 +86,22 @@ async function createHandler(runtime: Runtime) {
   });
 
   app.post("/__rsc/action/:id", async (ctx) => {
-    // this whole function should be moved into the runtime, but im going to leave it here for now
     let request = ctx.request;
-    let params = ctx.params as Record<string, unknown>;
 
-    if (!params.id || typeof params.id !== "string") {
-      throw new Error("No server action specified");
+    let actionRequest = runtime.actionRequest(request);
+
+    let response = await actionRequest.rscResponse();
+
+    if (response.status === 404) {
+      console.log(`🔴 Action ${actionRequest.name} called notFound`);
+    } else if (response.status === 303) {
+      let location = response.headers.get("location");
+      console.log(`🔵 Action ${actionRequest.name} redirect to ${location}`);
+    } else {
+      console.log(`🟣 Running action ${actionRequest.name}`);
     }
 
-    let id = decodeURIComponent(params.id);
-
-    let url = new URL(request.url);
-    let path = url.searchParams.get("path");
-
-    if (!path) {
-      throw new Error("No path specified");
-    }
-
-    let args = [];
-    let [contentType] = parseHeaderValue(request.headers.get("content-type"));
-
-    if (contentType.value === "text/plain") {
-      let text = await request.text();
-      args = await decodeReply(text);
-    } else if (contentType.value === "multipart/form-data") {
-      let formData = await request.formData();
-      args = await decodeReply(formData);
-    }
-
-    let actionFn = await runtime.getAction(id);
-
-    let [, name] = id.split("#");
-    if (name.startsWith("tf$serverFunction$")) {
-      let parts = name.split("$");
-      name = parts[3];
-    }
-    console.log(`🟣 Running action ${name}`);
-
-    let result;
-    try {
-      result = await actionFn(...args);
-    } catch (err: unknown) {
-      if (isNotFoundError(err) || isRedirectError(err)) {
-        result = err;
-      } else {
-        // rethrow
-        throw err;
-      }
-    }
-
-    // action is done running, get any cookies it set back into
-    // the store
-    let store = getStore();
-    if (store) {
-      store.cookies.outgoingCookies = ctx.outgoingCookies;
-    }
-
-    // meh
-    let requestUrl = new URL(path, url);
-    let requestToRender = new Request(requestUrl, {
-      ...ctx.request,
-      headers: ctx.request.headers,
-      method: "GET",
-      body: null,
-    });
-
-    if (isNotFoundError(result)) {
-      console.log(`🔴 Action ${name} called notFound`);
-      let pageRequest = runtime.notFoundPageRequest(requestToRender);
-      return pageRequest.rscResponse();
-    }
-
-    if (isRedirectError(result)) {
-      let { url } = redirectErrorInfo(result);
-      let redirectUrl = new URL(url, request.url);
-      let isRelative =
-        redirectUrl.origin === requestUrl.origin && url.startsWith("/");
-
-      if (isRelative) {
-        let redirectRequest = new Request(redirectUrl, requestToRender);
-        let redirectPageRequest = runtime.pageRequest(redirectRequest);
-
-        let encodedPath = encodeURIComponent(redirectUrl.pathname);
-        let resource = redirectPageRequest.isNotFound ? "not-found" : "page";
-        let newUrl = `/__rsc/${resource}?path=${encodedPath}`;
-
-        console.log("🔵 Redirecting to", redirectUrl.pathname);
-
-        return new Response(null, {
-          status: 303,
-          headers: {
-            location: newUrl,
-          },
-        });
-      }
-
-      // we could not return a redirect to a page with an rsc payload, so lets
-      // let the action on the browser know it needs to handle this redirect
-      let payload = JSON.stringify({
-        type: "twofold-offsite-redirect",
-        url,
-      });
-
-      return new Response(payload, {
-        status: 200,
-        headers: {
-          "content-type": "application/json",
-        },
-      });
-    }
-
-    let pageRequest = runtime.pageRequest(requestToRender);
-    let pageResponse = await pageRequest.rscResponse();
-
-    // if the page render is a redirect we need to use status code 303
-    // since this is in response to a POST request.
-    if (pageResponse.status === 307 || pageResponse.status === 308) {
-      return new Response(null, {
-        ...pageResponse,
-        headers: pageResponse.headers,
-        status: 303,
-      });
-    }
-
-    // if re-rendering the page does not return an ok response then
-    // we can we can just give back the page response. this is most
-    // likely because of a 404 or some other error, so the action
-    // stream shouldn't matter.
-    if (!pageResponse.ok || !pageResponse.body) {
-      return pageResponse;
-    }
-
-    let actionStream = renderToReadableStream(
-      result,
-      build.getBuilder("client").clientComponentMap,
-    );
-
-    let multipart = new MultipartResponse();
-
-    multipart.add({
-      type: "text/x-action",
-      body: actionStream,
-      headers: {
-        "x-twofold-stream": "action",
-        "x-twofold-server-reference": id,
-      },
-    });
-
-    multipart.add({
-      type: "text/x-component",
-      body: pageResponse.body,
-      headers: {
-        "x-twofold-stream": "render",
-        "x-twofold-path": path,
-      },
-    });
-
-    return multipart.response();
+    return response;
   });
 
   app.use(waitForSSR(runtime));
