@@ -2,6 +2,7 @@ import { parseHeaderValue } from "@hattip/headers";
 import { Runtime } from "../runtime.js";
 import {
   decodeReply,
+  createTemporaryReferenceSet,
   // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/server.edge'.
 } from "react-server-dom-webpack/server.edge";
 import {
@@ -17,6 +18,7 @@ export class ActionRequest {
   #action: CompiledAction;
   #request: Request;
   #runtime: Runtime;
+  #temporaryReferences: unknown = createTemporaryReferenceSet();
 
   constructor({
     action,
@@ -75,10 +77,14 @@ export class ActionRequest {
 
     let reactTree = await pageRequest.reactTree();
 
+    let data = {
+      render: reactTree,
+      action: result,
+    };
+
     let { stream, error, redirect, notFound } =
-      await this.#runtime.renderRSCStream({
-        render: reactTree,
-        action: result,
+      await this.#runtime.renderRSCStream(data, {
+        temporaryReferences: this.#temporaryReferences,
       });
 
     if (notFound) {
@@ -134,16 +140,17 @@ export class ActionRequest {
 
   private async args() {
     let request = this.#request;
+    let temporaryReferences = this.#temporaryReferences;
 
     let args = [];
     let [contentType] = parseHeaderValue(request.headers.get("content-type"));
 
     if (contentType.value === "text/plain") {
       let text = await request.text();
-      args = await decodeReply(text);
+      args = await decodeReply(text, {}, { temporaryReferences });
     } else if (contentType.value === "multipart/form-data") {
       let formData = await request.formData();
-      args = await decodeReply(formData);
+      args = await decodeReply(formData, {}, { temporaryReferences });
     }
 
     return args;
