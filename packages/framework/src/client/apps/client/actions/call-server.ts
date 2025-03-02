@@ -1,6 +1,7 @@
 import {
   encodeReply,
   createFromReadableStream,
+  createTemporaryReferenceSet,
   // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client'.
 } from "react-server-dom-webpack/client";
 import { deserializeError } from "serialize-error";
@@ -8,7 +9,11 @@ import { deserializeError } from "serialize-error";
 export async function callServer(id: string, args: any) {
   // console.log("requesting action", id);
 
-  let body = await encodeReply(args);
+  let temporaryReferences = createTemporaryReferenceSet();
+
+  let body = await encodeReply(args, {
+    temporaryReferences: temporaryReferences,
+  });
   let path = `${location.pathname}${location.search}${location.hash}`;
   let encodedPath = encodeURIComponent(path);
   let encodedId = encodeURIComponent(id);
@@ -34,12 +39,14 @@ export async function callServer(id: string, args: any) {
   if (contentType === "text/x-action-component") {
     let streams = await createFromReadableStream(response.body, {
       callServer,
+      temporaryReferences,
     });
     rscTree = streams.render;
     result = streams.action;
   } else if (contentType === "text/x-component") {
     rscTree = createFromReadableStream(response.body, {
       callServer,
+      temporaryReferences,
     });
   } else if (contentType === "text/x-serialized-error") {
     let json = await response.json();

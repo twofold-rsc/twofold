@@ -125,12 +125,15 @@ export class Runtime {
 
   // renders
 
-  async renderRSCStream(tree: any) {
+  async renderRSCStream(
+    data: any,
+    options: { temporaryReferences?: unknown } = {},
+  ) {
     let clientComponentMap = this.build.getBuilder("client").clientComponentMap;
-
     let streamError: unknown;
 
-    let rscStream = renderToReadableStream(tree, clientComponentMap, {
+    let rscStream = renderToReadableStream(data, clientComponentMap, {
+      temporaryReferences: options.temporaryReferences,
       onError(err: unknown) {
         streamError = err;
         if (
@@ -154,9 +157,11 @@ export class Runtime {
       },
     });
 
-    // use transform stream to buffer
-
     // await the first chunk
+    // todo: use transform stream to buffer
+    // the idea is we don't want to return the stream too early, in case it
+    // errors. so we'll wait for the first chunk to see if it contains
+    // an error before continuing. there's probably a better way to do this.
     let [t1, t2] = rscStream.tee();
     let reader = t1.getReader();
     await reader.read();

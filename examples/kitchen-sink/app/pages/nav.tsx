@@ -147,6 +147,11 @@ export default function Nav() {
                         href="/server-actions/action-returns-cc"
                       />
                       <ExampleLink
+                        title="Action returns RSC"
+                        description="A server action that returns a server component."
+                        href="/server-actions/action-returns-rsc"
+                      />
+                      <ExampleLink
                         title="Action factory"
                         description="An action that is created by a factory."
                         href="/server-actions/function-factory"
