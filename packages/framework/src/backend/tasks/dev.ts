@@ -9,6 +9,7 @@ import { DevelopmentBuild } from "../build/build/development.js";
 import { fileURLToPath } from "url";
 import path from "path";
 import { minimatch } from "minimatch";
+import { randomBytes } from "crypto";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -50,11 +51,9 @@ export class DevTask {
   private verifyEnv() {
     let key = process.env.TWOFOLD_SECRET_KEY;
 
-    // validate
     if (!key || typeof key !== "string") {
-      throw new Error(
-        "process.env.TWOFOLD_SECRET_KEY is required. Please set it to a string.",
-      );
+      console.warn("🟡 Missing TWOFOLD_SECRET_KEY. Generating a random key.");
+      process.env.TWOFOLD_SECRET_KEY = randomBytes(32).toString("hex");
     }
   }
 
