@@ -2,6 +2,7 @@ import "./global.css";
 import Nav from "./nav";
 import TwofoldFramework from "@twofold/framework/twofold-framework";
 import { LayoutProps } from "@twofold/framework/types";
+import { Toaster } from "./toaster";
 
 export default function Layout({ children }: LayoutProps) {
   return (
@@ -15,6 +16,8 @@ export default function Layout({ children }: LayoutProps) {
           <Nav />
         </div>
         <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
+
+        <Toaster />
       </body>
 
       <TwofoldFramework />

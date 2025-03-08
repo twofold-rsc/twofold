@@ -20,6 +20,9 @@ export type Store = {
     encrypt(value: any): Promise<string>;
     decrypt(value: string): Promise<any>;
   };
+  flash: {
+    add(message: string): void;
+  };
   assets: string[];
   render: {
     // this needs to move to an API store, its not callable from rsc
