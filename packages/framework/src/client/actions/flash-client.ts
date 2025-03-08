@@ -1,60 +1,122 @@
 import "client-only";
-
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useFlash() {
-  let [messages, setMessages] = useState<{ id: string; message: string }[]>([]);
-  useEffect(() => {
-    if ("cookieStore" in window) {
-      window.cookieStore.addEventListener("change", (event) => {
-        let newMessages = event.changed
-          .filter(
-            (change) => change.name.startsWith("_tf_flash_") && change.value,
-          )
-          .map((change) => {
-            let id = change.name.slice("_tf_flash_".length);
-            let value = decodeURIComponent(change.value);
-            return { id, message: value };
-          })
-          .flat();
+  const [messagesWithId, setMessagesWithId] = useState<
+    { id: string; message: string }[]
+  >([]);
 
-        // console.log("newMessages", newMessages);
+  useOnCookie(async (cookie) => {
+    if (cookie.name.startsWith("_tf_flash_") && cookie.value) {
+      let value = decodeURIComponent(cookie.value);
 
-        if (newMessages) {
-          setMessages((c) => [...c, ...newMessages]);
-          newMessages.forEach(({ id }) => {
-            window.cookieStore.delete(`_tf_flash_${id}`);
-          });
-        }
-      });
+      let newMessage = {
+        id: cookie.name.slice("_tf_flash_".length),
+        message: value,
+      };
+
+      await deleteCookie(cookie.name);
+
+      setMessagesWithId((c) => [...c, newMessage]);
     }
-  }, []);
+  });
 
-  function removeMessage(id: string) {
-    setMessages((c) => c.filter((m) => m.id !== id));
+  function removeMessageById(id: string) {
+    setMessagesWithId((c) => c.filter((m) => m.id !== id));
   }
 
-  return { messages, removeMessage };
+  let messages = messagesWithId.map((m) => m.message);
+
+  return { messages, messagesWithId, removeMessageById };
 }
 
-export function flash(message: string) {
-  console.log("client side flash");
-}
+type Callback = (cookie: {
+  name: string;
+  value: string | undefined;
+}) => Promise<void> | void;
 
-function useInterval(callback: () => void, delay: number | null) {
-  let callbackRef = useRef<() => void>(() => callback);
+function useOnCookie(callback: Callback) {
+  let callbackRef = useRef<Callback>(callback);
 
   useEffect(() => {
     callbackRef.current = callback;
   }, [callback]);
 
   useEffect(() => {
-    if (delay === null) {
-      return;
-    }
+    let win = typeof window === "undefined" ? undefined : window;
 
-    const id = setInterval(callbackRef.current, delay);
-    return () => clearInterval(id);
-  }, [delay]);
+    if (win && hasCookieStore(win)) {
+      const handleChange = (e: CookieChangeEvent) => {
+        for (let change of e.changed) {
+          callbackRef.current(change);
+        }
+      };
+      win.cookieStore.addEventListener("change", handleChange);
+      return () => win.cookieStore.removeEventListener("change", handleChange);
+    } else {
+      // do interval polling
+    }
+  }, []);
 }
-// useSyncExternalStore
+
+function getSnapshot() {
+  if (hasCookieStore(window)) {
+    // get from cookie store
+    return [];
+  } else {
+    const cookies = document.cookie.split("; ").map((cookie) => {
+      const [name, value] = cookie.split("=");
+      return { name, value };
+    });
+
+    return cookies
+      .filter((cookie) => cookie.name.startsWith("_tf_flash_") && cookie.value)
+      .map((cookie) => {
+        let id = cookie.name.slice("_tf_flash_".length);
+        let value = decodeURIComponent(cookie.value);
+        return { id, message: value };
+      });
+  }
+}
+
+export function flash(message: string) {
+  console.log("client side flash");
+}
+
+// helpers until cookieStore becomes supported in all browsers
+
+async function deleteCookie(name: string) {
+  let win = typeof window === "undefined" ? undefined : window;
+  if (win && hasCookieStore(win)) {
+    await win.cookieStore.delete(name);
+  } else {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+  }
+}
+
+function hasCookieStore(
+  win: Window,
+): win is Window & { cookieStore: CookieStore } {
+  return "cookieStore" in win;
+}
+
+interface CookieChange {
+  name: string;
+  value: string | undefined;
+}
+
+interface CookieChangeEvent extends Event {
+  changed: CookieChange[];
+}
+
+interface CookieStore {
+  addEventListener(
+    type: "change",
+    listener: (event: CookieChangeEvent) => void,
+  ): void;
+  removeEventListener(
+    type: "change",
+    listener: (event: CookieChangeEvent) => void,
+  ): void;
+  delete(name: string): Promise<void>;
+}

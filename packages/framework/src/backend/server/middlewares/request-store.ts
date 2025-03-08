@@ -3,6 +3,7 @@ import { SerializeOptions } from "cookie";
 import { Store, runStore } from "../../stores/rsc-store.js";
 import { Runtime } from "../../runtime.js";
 import { encrypt, decrypt } from "../../encryption.js";
+import { randomBytes } from "crypto";
 
 let reqId = 0;
 
@@ -62,11 +63,8 @@ export function requestStore(runtime: Runtime): RouteHandler {
       },
       flash: {
         add(message: string) {
-          console.log("setting flash...");
-          console.log("existing outgoing cookies", ctx.outgoingCookies);
-          let existingFlash = ctx.cookie["_tf_flash"];
-          console.log("existing flash", existingFlash);
-          let flashId = Math.random().toString(36).substring(2, 15);
+          console.log("setting flash...", message);
+          let flashId = randomBytes(12).toString("hex");
           ctx.setCookie(`_tf_flash_${flashId}`, message, {
             path: "/",
             httpOnly: false,
@@ -74,6 +72,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
             maxAge: 60 * 60 * 24,
           });
         },
+        // getMessages()
       },
       assets: [],
       render: {

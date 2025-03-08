@@ -6,17 +6,21 @@ import * as RadixToast from "@radix-ui/react-toast";
 import { AnimatePresence, motion } from "framer-motion";
 
 export function Toaster() {
-  let { messages, removeMessage } = useFlash();
+  let { messagesWithId, removeMessageById } = useFlash();
 
   return (
     <RadixToast.Provider>
       <AnimatePresence mode="popLayout">
-        {messages.map(({ message, id }) => (
-          <Toast key={id} text={message} onClose={() => removeMessage(id)} />
+        {messagesWithId.map(({ message, id }) => (
+          <Toast
+            key={id}
+            text={message}
+            onClose={() => removeMessageById(id)}
+          />
         ))}
       </AnimatePresence>
 
-      <RadixToast.Viewport className="fixed top-4 right-4 z-10 flex w-80 flex-col-reverse gap-3" />
+      <RadixToast.Viewport className="fixed top-4 right-4 z-20 flex w-80 flex-col-reverse gap-3" />
     </RadixToast.Provider>
   );
 }
