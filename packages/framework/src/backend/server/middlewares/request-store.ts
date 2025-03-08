@@ -60,6 +60,21 @@ export function requestStore(runtime: Runtime): RouteHandler {
           return decrypt(value, key);
         },
       },
+      flash: {
+        add(message: string) {
+          console.log("setting flash...");
+          console.log("existing outgoing cookies", ctx.outgoingCookies);
+          let existingFlash = ctx.cookie["_tf_flash"];
+          console.log("existing flash", existingFlash);
+          let flashId = Math.random().toString(36).substring(2, 15);
+          ctx.setCookie(`_tf_flash_${flashId}`, message, {
+            path: "/",
+            httpOnly: false,
+            secure: false,
+            maxAge: 60 * 60 * 24,
+          });
+        },
+      },
       assets: [],
       render: {
         async treeToStaticHtml(tree) {
