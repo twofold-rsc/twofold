@@ -4,13 +4,14 @@ import { useFlash } from "@twofold/framework/flash";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import * as RadixToast from "@radix-ui/react-toast";
 import { AnimatePresence, motion } from "framer-motion";
+import { Suspense } from "react";
 
 export function Toaster() {
   let { messagesWithId, removeMessageById } = useFlash();
 
   return (
     <RadixToast.Provider>
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence mode="popLayout" initial={false}>
         {messagesWithId.map(({ message, id }) => (
           <Toast
             key={id}
@@ -50,7 +51,7 @@ function Toast({ onClose, text }: { onClose: () => void; text: string }) {
           damping: 30,
           stiffness: 200,
         }}
-        style={{ width, WebkitTapHighlightColor: "transparent" }}
+        style={{ width }}
       >
         <div className="flex items-center justify-between overflow-hidden rounded-lg border border-gray-200 bg-white text-sm whitespace-nowrap text-gray-900 shadow-sm">
           <RadixToast.Description className="truncate p-4">

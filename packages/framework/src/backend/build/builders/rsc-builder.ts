@@ -93,6 +93,7 @@ export class RSCBuilder extends Builder {
           ...serverActionEntries,
           notFoundEntry,
           this.innerRootWrapperSrcPath,
+          this.outerRootWrapperSrcPath,
         ],
         outdir: "./.twofold/rsc/",
         outbase: "app",
@@ -195,6 +196,15 @@ export class RSCBuilder extends Builder {
       "client",
       "components",
       "inner-root-wrapper.tsx",
+    );
+  }
+
+  get outerRootWrapperSrcPath() {
+    return path.join(
+      fileURLToPath(frameworkSrcDir),
+      "client",
+      "components",
+      "outer-root-wrapper.tsx",
     );
   }
 
@@ -378,6 +388,28 @@ export class RSCBuilder extends Builder {
     let wrapper = new Wrapper({
       path: "/",
       fileUrl: outputFileUrl,
+      type: "inner",
+    });
+
+    return wrapper;
+  }
+
+  get outerRootWrapper() {
+    let metafile = this.#metafile;
+    if (!metafile) {
+      throw new Error("Could not find outer root wrapper");
+    }
+
+    let outputFilePath = getCompiledEntrypoint(
+      this.outerRootWrapperSrcPath,
+      metafile,
+    );
+    let outputFileUrl = pathToFileURL(outputFilePath);
+
+    let wrapper = new Wrapper({
+      path: "/",
+      fileUrl: outputFileUrl,
+      type: "outer",
     });
 
     return wrapper;
@@ -396,6 +428,7 @@ export class RSCBuilder extends Builder {
     let pages = this.pages;
     let layouts = this.layouts;
     let innerRootWrapper = this.innerRootWrapper;
+    let outerRootWrapper = this.outerRootWrapper;
 
     let root = layouts.find((layout) => layout.path === "/");
     let otherLayouts = layouts.filter((layout) => layout.path !== "/");
@@ -408,6 +441,7 @@ export class RSCBuilder extends Builder {
     pages.forEach((page) => root?.add(page));
 
     root.addWrapper(innerRootWrapper);
+    root.addWrapper(outerRootWrapper);
 
     return root;
   }

@@ -20,7 +20,7 @@
     "@radix-ui/react-navigation-menu": "^1.2.5",
     "@radix-ui/react-toast": "^1.2.6",
     "@twofold/framework": "workspace:*",
-    "framer-motion": "^12.4.3",
+    "framer-motion": "^12.4.10",
     "open-graph-scraper": "^6.9.0",
     "react": "catalog:",
     "react-dom": "catalog:",

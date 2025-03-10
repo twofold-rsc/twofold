@@ -7,6 +7,7 @@ export type Store = {
   build: "development" | "production";
   canReload: boolean;
   cookies: {
+    all: () => Record<string, string | undefined>;
     get: (key: string) => string | undefined;
     set(key: string, value: string, options?: SerializeOptions): void;
     destroy(key: string, options?: SerializeOptions): void;

@@ -5,3 +5,7 @@ export function flash(message: string) {
   let store = getStore();
   store.flash.add(message);
 }
+
+export function useFlash() {
+  throw new Error("useFlash is not usable in server components.");
+}

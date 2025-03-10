@@ -22,6 +22,9 @@ export function requestStore(runtime: Runtime): RouteHandler {
       build: build.name,
       canReload: build.canReload,
       cookies: {
+        all: () => {
+          return ctx.cookie;
+        },
         set: (name: string, value: string, options?: SerializeOptions) => {
           let cookieOptions = {
             ...defaultCookieOptions,
@@ -63,7 +66,6 @@ export function requestStore(runtime: Runtime): RouteHandler {
       },
       flash: {
         add(message: string) {
-          console.log("setting flash...", message);
           let flashId = randomBytes(12).toString("hex");
           ctx.setCookie(`_tf_flash_${flashId}`, message, {
             path: "/",
@@ -72,7 +74,6 @@ export function requestStore(runtime: Runtime): RouteHandler {
             maxAge: 60 * 60 * 24,
           });
         },
-        // getMessages()
       },
       assets: [],
       render: {

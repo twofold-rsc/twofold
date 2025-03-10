@@ -6,7 +6,7 @@ import { Toaster } from "./toaster";
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <html className="bg-gray-50/10">
+    <html className="bg-white">
       <head>
         <title>Kitchen sink</title>
         <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
