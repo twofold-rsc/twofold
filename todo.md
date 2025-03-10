@@ -2,12 +2,13 @@
 
 framework
 
-- temporary references for server actions
-
-- release framework
+- Redirects
+- Client side flash messages
+- Objects/RSC
 
 - route masking
 - flash messages
+- redirect error boundary
 
 - error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
 

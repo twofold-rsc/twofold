@@ -3,6 +3,34 @@ import { getStore } from "../../backend/stores/rsc-store";
 import { SerializeOptions } from "cookie";
 
 let cookies = {
+  all() {
+    let store = getStore();
+
+    let outgoing = store.cookies.outgoingCookies().map((c) => ({
+      name: c.name,
+      value: c.value,
+    }));
+
+    let cookieNames = Object.keys(store.cookies.all());
+
+    let all = cookieNames.reduce<{ name: string; value: string | undefined }[]>(
+      (list, name) => {
+        return list.some((c) => c.name === name)
+          ? list
+          : [
+              ...list,
+              {
+                name,
+                value: store.cookies.get(name),
+              },
+            ];
+      },
+      outgoing,
+    );
+
+    return all;
+  },
+
   get(name: string) {
     let store = getStore();
     let outgoing = store.cookies.outgoingCookies().find((c) => c.name === name);

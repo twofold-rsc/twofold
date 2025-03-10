@@ -7,6 +7,7 @@ export type Store = {
   build: "development" | "production";
   canReload: boolean;
   cookies: {
+    all: () => Record<string, string | undefined>;
     get: (key: string) => string | undefined;
     set(key: string, value: string, options?: SerializeOptions): void;
     destroy(key: string, options?: SerializeOptions): void;
@@ -19,6 +20,9 @@ export type Store = {
   encryption: {
     encrypt(value: any): Promise<string>;
     decrypt(value: string): Promise<any>;
+  };
+  flash: {
+    add(message: string): void;
   };
   assets: string[];
   render: {

@@ -3,6 +3,7 @@ import { SerializeOptions } from "cookie";
 import { Store, runStore } from "../../stores/rsc-store.js";
 import { Runtime } from "../../runtime.js";
 import { encrypt, decrypt } from "../../encryption.js";
+import { randomBytes } from "crypto";
 
 let reqId = 0;
 
@@ -21,6 +22,9 @@ export function requestStore(runtime: Runtime): RouteHandler {
       build: build.name,
       canReload: build.canReload,
       cookies: {
+        all: () => {
+          return ctx.cookie;
+        },
         set: (name: string, value: string, options?: SerializeOptions) => {
           let cookieOptions = {
             ...defaultCookieOptions,
@@ -58,6 +62,17 @@ export function requestStore(runtime: Runtime): RouteHandler {
           }
 
           return decrypt(value, key);
+        },
+      },
+      flash: {
+        add(message: string) {
+          let flashId = randomBytes(12).toString("hex");
+          ctx.setCookie(`_tf_flash_${flashId}`, message, {
+            path: "/",
+            httpOnly: false,
+            secure: false,
+            maxAge: 60 * 60 * 24,
+          });
         },
       },
       assets: [],
