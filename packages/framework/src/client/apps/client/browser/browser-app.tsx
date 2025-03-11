@@ -12,6 +12,20 @@ import { useRouterReducer } from "./router-hooks";
 import { ErrorBoundary } from "../components/error-boundary";
 import { CrashBoundary } from "../components/crash-boundary";
 
+declare global {
+  interface Window {
+    initialRSC?: {
+      stream: ReadableStream<Uint8Array>;
+    };
+    __twofold?: WindowTwofold | undefined;
+  }
+
+  interface WindowTwofold {
+    updateTree?: (path: string, tree: any) => void;
+    navigate?: (path: string) => void;
+  }
+}
+
 export function BrowserApp() {
   return (
     <CrashBoundary>
@@ -119,6 +133,7 @@ function Router() {
 
   useEffect(() => {
     window.__twofold = {
+      ...window.__twofold,
       updateTree(path: string, tree: any) {
         startTransition(() => {
           setOptimisticPath(path);
@@ -144,7 +159,10 @@ function Router() {
     };
 
     return () => {
-      window.__twofold = undefined;
+      if (window.__twofold) {
+        delete window.__twofold.updateTree;
+        delete window.__twofold.navigate;
+      }
     };
   }, [dispatch, setOptimisticPath]);
 

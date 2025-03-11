@@ -7,5 +7,7 @@ export function useFlash() {
 }
 
 export function flash(message: string) {
-  console.log("client side flash", message);
+  if (window.__twofold?.flash) {
+    window.__twofold.flash(message);
+  }
 }

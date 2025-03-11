@@ -1,4 +1,6 @@
 import { flash } from "@twofold/framework/flash";
+import { redirect } from "@twofold/framework/redirect";
+import { ClientForm } from "./client-form";
 
 function randomMessage() {
   let messages = [
@@ -24,6 +26,13 @@ function multipleToasts() {
   flash(randomMessage());
   flash(randomMessage());
   flash(randomMessage());
+}
+
+function redirectAndToast() {
+  "use server";
+
+  flash(randomMessage());
+  redirect("/server-actions/flash-messages/end");
 }
 
 export default function FlashMessagesPage() {
@@ -52,6 +61,15 @@ export default function FlashMessagesPage() {
             Multiple toasts
           </button>
         </form>
+        <form action={redirectAndToast}>
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded bg-black px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-black/80"
+          >
+            Redirect and toast
+          </button>
+        </form>
+        <ClientForm />
       </div>
     </div>
   );

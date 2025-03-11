@@ -2,7 +2,6 @@
 
 framework
 
-- Redirects
 - Client side flash messages
 - Objects/RSC
 
