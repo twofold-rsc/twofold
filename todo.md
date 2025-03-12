@@ -2,8 +2,8 @@
 
 framework
 
-- Client side flash messages
-- Objects/RSC
+- flash message in base app
+- zod in base app
 
 - route masking
 - flash messages
@@ -62,6 +62,8 @@ framework
   go to server action throws error, trigger, then click back
 
 - custom error page for prod (errors/500.html)
+
+- RSC toast: save RSC in db, and set a cookie with the row id. then clients cant read from it during SSR
 
 create twofold app
 

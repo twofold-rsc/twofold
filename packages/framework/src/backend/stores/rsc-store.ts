@@ -2,6 +2,13 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { ReactNode } from "react";
 import { SerializeOptions } from "cookie";
 
+type JSONValue =
+  | string
+  | number
+  | boolean
+  | { [x: string]: JSONValue }
+  | Array<JSONValue>;
+
 export type Store = {
   reqId: number;
   build: "development" | "production";
@@ -22,7 +29,7 @@ export type Store = {
     decrypt(value: string): Promise<any>;
   };
   flash: {
-    add(message: string): void;
+    add(message: JSONValue): void;
   };
   assets: string[];
   render: {

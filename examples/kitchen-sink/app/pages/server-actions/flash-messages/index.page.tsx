@@ -1,6 +1,7 @@
 import { flash } from "@twofold/framework/flash";
 import { redirect } from "@twofold/framework/redirect";
 import { ClientForm } from "./client-form";
+import { ObjectFlash } from "./object-flash";
 
 function randomMessage() {
   let messages = [
@@ -33,6 +34,12 @@ function redirectAndToast() {
 
   flash(randomMessage());
   redirect("/server-actions/flash-messages/end");
+}
+
+function objectFlashAction() {
+  "use server";
+
+  flash({ type: "object", text: "Hello" });
 }
 
 export default function FlashMessagesPage() {
@@ -70,6 +77,7 @@ export default function FlashMessagesPage() {
           </button>
         </form>
         <ClientForm />
+        <ObjectFlash action={objectFlashAction} />
       </div>
     </div>
   );

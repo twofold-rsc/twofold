@@ -4,18 +4,20 @@ import { useFlash } from "@twofold/framework/flash";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import * as RadixToast from "@radix-ui/react-toast";
 import { AnimatePresence, motion } from "framer-motion";
-import { Suspense } from "react";
+import { z } from "zod";
 
 export function Toaster() {
-  let { messagesWithId, removeMessageById } = useFlash();
+  let { messagesWithId, removeMessageById } = useFlash({
+    schema: z.string(),
+  });
 
   return (
     <RadixToast.Provider>
       <AnimatePresence mode="popLayout" initial={false}>
-        {messagesWithId.map(({ message, id }) => (
+        {messagesWithId.map(({ content, id }) => (
           <Toast
             key={id}
-            text={message}
+            text={content}
             onClose={() => removeMessageById(id)}
           />
         ))}

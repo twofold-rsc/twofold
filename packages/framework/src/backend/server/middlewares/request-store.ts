@@ -25,7 +25,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
         all: () => {
           return ctx.cookie;
         },
-        set: (name: string, value: string, options?: SerializeOptions) => {
+        set: (name, value, options) => {
           let cookieOptions = {
             ...defaultCookieOptions,
             ...options,
@@ -33,10 +33,10 @@ export function requestStore(runtime: Runtime): RouteHandler {
 
           ctx.setCookie(name, value, cookieOptions);
         },
-        get: (name: string) => {
+        get: (name) => {
           return ctx.cookie[name];
         },
-        destroy: (name: string, options?: SerializeOptions) => {
+        destroy: (name, options) => {
           let cookieOptions = {
             ...defaultCookieOptions,
             ...options,
@@ -47,7 +47,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
         outgoingCookies: () => ctx.outgoingCookies,
       },
       encryption: {
-        encrypt: (value: any) => {
+        encrypt: (value) => {
           let key = process.env.TWOFOLD_SECRET_KEY;
           if (typeof key !== "string") {
             throw new Error("TWOFOLD_SECRET_KEY is not set");
@@ -55,7 +55,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
 
           return encrypt(value, key);
         },
-        decrypt: (value: string) => {
+        decrypt: (value) => {
           let key = process.env.TWOFOLD_SECRET_KEY;
           if (typeof key !== "string") {
             throw new Error("TWOFOLD_SECRET_KEY is not set");
@@ -65,11 +65,11 @@ export function requestStore(runtime: Runtime): RouteHandler {
         },
       },
       flash: {
-        add(message: string) {
+        add(message) {
           let flashId = randomBytes(12).toString("hex");
-          ctx.setCookie(`_tf_flash_${flashId}`, message, {
+          let data = JSON.stringify(message);
+          ctx.setCookie(`_tf_flash_${flashId}`, data, {
             path: "/",
-            httpOnly: false,
             secure: false,
             maxAge: 60 * 60 * 24,
           });

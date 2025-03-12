@@ -8,30 +8,32 @@ import {
   useState,
 } from "react";
 
-type Message = {
+export type JSONValue =
+  | string
+  | number
+  | boolean
+  | { [x: string]: JSONValue }
+  | Array<JSONValue>;
+
+export type Message<T = JSONValue> = {
   id: string;
-  message: string;
+  content: T;
 };
 
 declare global {
   interface Window {
-    initialRSC?: {
-      stream: ReadableStream<Uint8Array>;
-    };
     __twofold?: WindowTwofold | undefined;
   }
 
   interface WindowTwofold {
-    flash?: (message: string) => void;
+    flash?: (message: JSONValue) => void;
   }
 }
 
 export const FlashContext = createContext<{
-  messages: string[];
   messagesWithId: Message[];
   removeMessageById: (id: string) => void;
 }>({
-  messages: [],
   messagesWithId: [],
   removeMessageById: () => {},
 });
@@ -43,9 +45,9 @@ export function FlashProvider({
   flashCookies: { name: string; value: string | undefined }[];
   children: ReactNode;
 }) {
-  // ideally we would derive all this from cookieStore, but that's not
-  // supported by all browsers yet. for the time being we'll maintain two
-  // pieces of state (flashCookies from the server and clientMessagesWithId)
+  // we're going to allow cookies to be removed without refreshing the
+  // RSC/flashCookies. Removed Ids tracks cookies that should no longer
+  // be displayed
   let [removedIds, setRemovedIds] = useState<string[]>([]);
   let [clientMessagesWithId, setClientMessagesWithId] = useState<Message[]>([]);
 
@@ -56,22 +58,29 @@ export function FlashProvider({
     )
     .map((cookie) => {
       let id = getIdFromName(cookie.name);
-      return { id, message: cookie.value ?? "" };
+      let content;
+      try {
+        content = cookie.value ? JSON.parse(cookie.value) : "";
+      } catch {
+        console.warn("Failed to parse flash message", cookie.value);
+        content = "";
+      }
+
+      return { id, content };
     });
 
   let messagesWithId = [...serverMessagesWithId, ...clientMessagesWithId];
-  let messages = messagesWithId.map((m) => m.message);
 
-  function removeMessageById(id: string) {
+  let removeMessageById = useCallback((id: string) => {
     setRemovedIds((c) => [...c, id]);
     setClientMessagesWithId((c) => c.filter((m) => m.id !== id));
     deleteCookie(`_tf_flash_${id}`);
-  }
+  }, []);
 
-  let addMessage = useCallback((message: string) => {
+  let addMessage = useCallback((content: JSONValue) => {
     let id = Math.random().toString(36).slice(2);
-    setClientMessagesWithId((c) => [...c, { id, message }]);
-    addCookie(`_tf_flash_${id}`, message);
+    setClientMessagesWithId((c) => [...c, { id, content }]);
+    addCookie(`_tf_flash_${id}`, JSON.stringify(content));
   }, []);
 
   useEffect(() => {
@@ -92,8 +101,7 @@ export function FlashProvider({
   return (
     <FlashContext.Provider
       value={{
-        messages,
-        messagesWithId: messagesWithId,
+        messagesWithId,
         removeMessageById,
       }}
     >
