@@ -2,8 +2,11 @@
 
 framework
 
-- flash message in base app
-- zod in base app
+- update template
+- docs
+- release
+- test server action + flash
+- test windows + server action + flash
 
 - route masking
 - flash messages
