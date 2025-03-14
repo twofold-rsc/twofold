@@ -1,6 +1,6 @@
 # Twofold RSC
 
-Twofold is a React Server Component (RSC) framework designed for creating demos and toy applications. It exists to showcase the features and capabilities of React 19 and Server Components.
+Twofold is a framework for building weekend projects with React Server Components, Tailwind, and TypeScript.
 
 The documentation is available at [twofoldframework.com](https://twofoldframework.com/).
 

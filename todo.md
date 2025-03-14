@@ -3,13 +3,11 @@
 framework
 
 - update template
-- docs
 - release
 - test server action + flash
 - test windows + server action + flash
 
 - route masking
-- flash messages
 - redirect error boundary
 
 - error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
