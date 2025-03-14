@@ -1,5 +1,6 @@
 import TwofoldFramework from "@twofold/framework/twofold-framework";
 import { LayoutProps } from "@twofold/framework/types";
+import { Toaster } from "../components/toaster";
 import "./global.css";
 
 export default function Layout({ children }: LayoutProps) {
@@ -10,8 +11,10 @@ export default function Layout({ children }: LayoutProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta charSet="utf-8" />
       </head>
-      <body>
-        <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
+      <body className="relative min-h-dvh">
+        <main className="mx-auto max-w-7xl grow px-4 py-8">{children}</main>
+
+        <Toaster />
       </body>
 
       {/* This component is needed to start Twofold */}
