@@ -32,9 +32,9 @@ export async function PostsPage() {
 This component fetches a list of posts and hands them off to `PostsLists`, which is a client component:
 
 ```tsx
-// app/pages/posts/post-list.tsx
-
 "use client";
+
+// app/pages/posts/post-list.tsx
 
 export function PostsList({ posts }) {
   let [selected, setSelected] = useState(null);

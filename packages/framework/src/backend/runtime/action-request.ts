@@ -71,9 +71,7 @@ export class ActionRequest {
     }
 
     let store = getStore();
-    if (store) {
-      store.assets = pageRequest.assets;
-    }
+    store.assets = pageRequest.assets;
 
     let reactTree = await pageRequest.reactTree();
 

@@ -166,6 +166,11 @@ export default function Nav() {
                         description="An action that returns a stream."
                         href="/server-actions/streaming-action"
                       />
+                      <ExampleLink
+                        title="Flash messages"
+                        description="An action that flashes a toast message"
+                        href="/server-actions/flash-messages"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup

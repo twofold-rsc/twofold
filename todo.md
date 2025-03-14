@@ -2,12 +2,13 @@
 
 framework
 
-- temporary references for server actions
-
-- release framework
+- update template
+- release
+- test server action + flash
+- test windows + server action + flash
 
 - route masking
-- flash messages
+- redirect error boundary
 
 - error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
 
@@ -62,6 +63,8 @@ framework
   go to server action throws error, trigger, then click back
 
 - custom error page for prod (errors/500.html)
+
+- RSC toast: save RSC in db, and set a cookie with the row id. then clients cant read from it during SSR
 
 create twofold app
 

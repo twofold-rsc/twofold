@@ -3,6 +3,7 @@ import { SerializeOptions } from "cookie";
 import { Store, runStore } from "../../stores/rsc-store.js";
 import { Runtime } from "../../runtime.js";
 import { encrypt, decrypt } from "../../encryption.js";
+import { randomBytes } from "crypto";
 
 let reqId = 0;
 
@@ -21,7 +22,10 @@ export function requestStore(runtime: Runtime): RouteHandler {
       build: build.name,
       canReload: build.canReload,
       cookies: {
-        set: (name: string, value: string, options?: SerializeOptions) => {
+        all: () => {
+          return ctx.cookie;
+        },
+        set: (name, value, options) => {
           let cookieOptions = {
             ...defaultCookieOptions,
             ...options,
@@ -29,10 +33,10 @@ export function requestStore(runtime: Runtime): RouteHandler {
 
           ctx.setCookie(name, value, cookieOptions);
         },
-        get: (name: string) => {
+        get: (name) => {
           return ctx.cookie[name];
         },
-        destroy: (name: string, options?: SerializeOptions) => {
+        destroy: (name, options) => {
           let cookieOptions = {
             ...defaultCookieOptions,
             ...options,
@@ -43,7 +47,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
         outgoingCookies: () => ctx.outgoingCookies,
       },
       encryption: {
-        encrypt: (value: any) => {
+        encrypt: (value) => {
           let key = process.env.TWOFOLD_SECRET_KEY;
           if (typeof key !== "string") {
             throw new Error("TWOFOLD_SECRET_KEY is not set");
@@ -51,13 +55,24 @@ export function requestStore(runtime: Runtime): RouteHandler {
 
           return encrypt(value, key);
         },
-        decrypt: (value: string) => {
+        decrypt: (value) => {
           let key = process.env.TWOFOLD_SECRET_KEY;
           if (typeof key !== "string") {
             throw new Error("TWOFOLD_SECRET_KEY is not set");
           }
 
           return decrypt(value, key);
+        },
+      },
+      flash: {
+        add(message) {
+          let flashId = randomBytes(12).toString("hex");
+          let data = JSON.stringify(message);
+          ctx.setCookie(`_tf_flash_${flashId}`, data, {
+            path: "/",
+            secure: false,
+            maxAge: 60 * 60 * 24,
+          });
         },
       },
       assets: [],

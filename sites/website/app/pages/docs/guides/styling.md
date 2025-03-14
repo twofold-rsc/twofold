@@ -4,7 +4,7 @@ Twofold uses [Tailwind CSS](https://tailwindcss.com/) for a streamlined and cons
 
 ## Tailwind CSS V4
 
-New Twofold apps are automatically set up with Tailwind CSS v4, currently in beta. You can find the v4 documentation [here](https://tailwindcss.com/docs/v4-beta).
+New Twofold apps are automatically set up to use Tailwind CSS v4.
 
 Edit the `app/pages/global.css` file if you need to customize Tailwind, add plugins, or change the configuration in any way.
 

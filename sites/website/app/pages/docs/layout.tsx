@@ -64,6 +64,15 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             <li>
               <DocLink href="/docs/reference/middleware">Middleware</DocLink>
             </li>
+
+          </ul>
+
+
+          <div className="mt-6 font-bold">Patterns</div>
+          <ul className="mt-1 space-y-1">
+            <li>
+              <DocLink href="/docs/reference/flash-messages">Flash messages</DocLink>
+            </li>
           </ul>
 
           <div className="mt-6 font-bold">Components</div>
@@ -81,6 +90,11 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             <li>
               <DocLink href="/docs/reference/use-optimistic-route">
                 useOptimisticRoute
+              </DocLink>
+            </li>
+            <li>
+              <DocLink href="/docs/reference/use-flash">
+                useFlash
               </DocLink>
             </li>
           </ul>

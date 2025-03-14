@@ -7,8 +7,6 @@ The `useOptimisticRoute` hook lets client components peek into the future state 
 To use the `useOptimisticRoute` hook:
 
 ```tsx
-// app/pages/client-component.tsx
-
 "use client";
 
 import { useRouter } from "@twofold/framework/use-router";
@@ -39,8 +37,6 @@ The `useOptimisticRoute` hook can only be used in client components since it is 
 While the router is transitioning to a new page, the `isTransitioning` property will be `true`. This is useful for styling UI elements to indicate that a page is loading.
 
 ```tsx
-// app/pages/client-component.tsx
-
 "use client";
 
 import { Link } from "@twofold/framework/link";
@@ -77,8 +73,6 @@ In the example above, the `Settings` link will pulse when the user clicks the li
 When the router is not transitioning, the `path` and `searchParams` properties will reflect the current path and search params of the router.
 
 ```tsx
-// app/pages/client-component.tsx
-
 "use client";
 
 import { useRouter } from "@twofold/framework/use-router";
@@ -105,8 +99,6 @@ This is where the name "optimistic route" comes from. While transitioning, the h
 The values returned by `useOptimisticRoute`:
 
 ```tsx
-// app/pages/client-component.tsx
-
 "use client";
 
 import { useRouter } from "@twofold/framework/use-router";

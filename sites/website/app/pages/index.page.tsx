@@ -15,10 +15,10 @@ export default async function Page() {
         content="A React Server Component framework"
       />
 
-      <div className="relative grow flex flex-col items-center justify-center">
+      <div className="relative flex grow flex-col items-center justify-center">
         <div
           data-enter-docs-section="grid"
-          className="z-0 absolute inset-0 w-full h-full grid grid-cols-[repeat(25,_minmax(0,_1fr))] gap-px bg-[rgb(243,244,246)] p-px"
+          className="absolute inset-0 z-0 grid h-full w-full grid-cols-[repeat(25,_minmax(0,_1fr))] gap-px bg-[rgb(243,244,246)] p-px"
           style={{
             transform: "scale(1)",
           }}
@@ -31,18 +31,18 @@ export default async function Page() {
         </div>
         <div
           data-enter-docs-section="hero"
-          className="z-10 max-w-7xl px-8 w-full mx-auto"
+          className="z-10 mx-auto w-full max-w-7xl px-8"
         >
           <div className="max-w-[800px]">
             <h1 className="text-7xl font-black tracking-tighter">Twofold</h1>
-            <p className="mt-1 leading-tight text-gray-600 font-medium tracking-tight text-3xl">
-              A framework for building demos and weekend projects with React
-              Server Components, Tailwind, and TypeScript.
+            <p className="mt-1 text-3xl leading-tight font-medium tracking-tight text-gray-600">
+              A framework for building weekend projects with React Server
+              Components, Tailwind, and TypeScript.
             </p>
             <div className="mt-6">
               <EnterDocsLink
                 href="/docs/guides/getting-started"
-                className="inline-flex space-x-2 items-center text-xl bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md shadow font-semibold"
+                className="inline-flex items-center space-x-2 rounded-md bg-blue-600 px-6 py-3 text-xl font-semibold text-white shadow hover:bg-blue-700"
               >
                 <span>Get started</span>
               </EnterDocsLink>
@@ -72,7 +72,7 @@ function GridLines({
 
   return (
     <div
-      className={`z-0 absolute inset-0 grid grid-cols-[repeat(25,_minmax(0,_1fr))] gap-px ${colors[color]} p-px`}
+      className={`absolute inset-0 z-0 grid grid-cols-[repeat(25,_minmax(0,_1fr))] gap-px ${colors[color]} p-px`}
     >
       {grid.map((row, i) =>
         row.map((_, j) => <div key={`${i}_${j}`} className="bg-white"></div>),
