@@ -38,9 +38,9 @@ redirect("/posts", { permanent: true });
 Redirect from server actions:
 
 ```tsx
-// app/pages/posts/mutations.ts
-
 "use server";
+
+// app/pages/posts/mutations.ts
 
 import { redirect } from "@twofold/framework/redirect";
 import { db } from "./database";

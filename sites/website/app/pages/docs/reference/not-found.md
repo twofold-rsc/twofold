@@ -31,9 +31,9 @@ In addition to pages that invoke `notFound()`, any page that is missing from the
 Render the not found page from a server action:
 
 ```tsx
-// app/pages/posts/mutations.ts
-
 "use server";
+
+// app/pages/posts/mutations.ts
 
 import { notFound } from "@twofold/framework/not-found";
 import { db } from "./database";
