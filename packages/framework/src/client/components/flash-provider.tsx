@@ -99,14 +99,14 @@ export function FlashProvider({
   }, [addMessage]);
 
   return (
-    <FlashContext.Provider
+    <FlashContext
       value={{
         messagesWithId,
         removeMessageById,
       }}
     >
       {children}
-    </FlashContext.Provider>
+    </FlashContext>
   );
 }
 
