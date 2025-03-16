@@ -1,4 +1,5 @@
 import "./monkey-patch.js";
+import { injectResolver } from "./monkey-patch.js";
 import { createServer } from "@hattip/adapter-node/native-fetch";
 import { parseHeaderValue } from "@hattip/headers";
 import { createRouter } from "@hattip/router";
@@ -14,6 +15,11 @@ import { waitForBuild } from "./server/middlewares/wait-for-build.js";
 import { waitForSSR } from "./server/middlewares/wait-for-ssr-worker.js";
 import { Server as NodeHttpServer } from "http";
 import { Runtime } from "./runtime.js";
+
+import {
+  decodeAction,
+  // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/server.edge'.
+} from "react-server-dom-webpack/server.edge";
 
 async function createHandler(runtime: Runtime) {
   let build = runtime.build;
@@ -90,6 +96,11 @@ async function createHandler(runtime: Runtime) {
 
     let actionRequest = runtime.actionRequest(request);
 
+    if (!actionRequest) {
+      console.log(`🔴 Action not found`);
+      return runtime.notFoundPageRequest(request).rscResponse();
+    }
+
     let response = await actionRequest.rscResponse();
 
     if (response.status === 404) {
@@ -135,6 +146,75 @@ async function createHandler(runtime: Runtime) {
         return response;
       }
     }
+  });
+
+  injectResolver((moduleId) => {
+    let module = build.getBuilder("rsc").serverActionModuleMap[moduleId];
+    if (!module) {
+      throw new Error(`Failed to resolve module id ${moduleId}`);
+    }
+    return module.path;
+  });
+
+  // mpa actions
+  app.post("/**/*", async (ctx) => {
+    let request = ctx.request;
+
+    let actionRequest = runtime.actionRequest(request);
+    if (actionRequest) {
+      let url = new URL(request.url);
+
+      // this is it!
+      let response = await actionRequest.ssrResponse();
+
+      try {
+        console.log(actionRequest.name);
+      } catch (e) {
+        console.log(e);
+      }
+
+      if (response.status === 404) {
+        console.log(`🔴 Action ${actionRequest.name} rendered not found`);
+      } else if (response.status === 303) {
+        let location = response.headers.get("location");
+        console.log(`🔵 Action ${actionRequest.name} redirect to ${location}`);
+      } else {
+        console.log(`🟣 Running action ${actionRequest.name}`);
+      }
+
+      return response;
+    }
+
+    // let [contentType] = parseHeaderValue(request.headers.get("content-type"));
+    // console.log({ contentType });
+
+    // let formData = await request.formData();
+
+    // console.log(Object.fromEntries(formData));
+
+    // let id =
+    //   "mpa.page-13ec2e29ca9b3ccff66bef1222f9d429#tf$serverFunction$0$action";
+
+    // let testServerManifest = {
+    //   [id]: build.getBuilder("rsc").serverManifest[id],
+    // };
+
+    // console.log("testServerManifest", testServerManifest);
+
+    // try {
+    //   let x = await decodeAction(formData, testServerManifest);
+    //   console.log(x);
+    //   await x();
+    // } catch (e) {
+    //   console.log(e);
+    // }
+
+    // try {
+    //   let x = await decodeReply(formData, {});
+    //   console.log(x);
+    // } catch (e) {
+    //   console.log(e);
+    // }
   });
 
   app.get("/**/*", async (ctx) => {

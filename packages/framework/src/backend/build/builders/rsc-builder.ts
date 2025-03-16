@@ -23,6 +23,7 @@ import { esbuildPluginTailwind } from "@ryanto/esbuild-plugin-tailwind";
 
 export type CompiledAction = {
   id: string;
+  moduleId: string;
   path: string;
   export: string;
 };
@@ -444,6 +445,53 @@ export class RSCBuilder extends Builder {
     root.addWrapper(outerRootWrapper);
 
     return root;
+  }
+
+  get serverManifest() {
+    Object.fromEntries(this.#serverActionMap.entries());
+
+    let keys = this.#serverActionMap.keys();
+    return keys.reduce<
+      Record<string, { id: string; name: string; chunks: string[] }>
+    >((acc, key) => {
+      let action = this.#serverActionMap.get(key);
+      if (!action) {
+        return acc;
+      } else {
+        return {
+          ...acc,
+          [action.id]: {
+            id: action.id,
+            name: action.export,
+            chunks: [action.moduleId],
+          },
+        };
+      }
+    }, {});
+  }
+
+  get serverActionModuleMap() {
+    // moduleId -> {
+    //   path: outputFile
+    // }
+
+    let keys = this.#serverActionMap.keys();
+    return keys.reduce<Record<string, { path: string } | undefined>>(
+      (acc, key) => {
+        let action = this.#serverActionMap.get(key);
+        if (!action) {
+          return acc;
+        } else {
+          return {
+            ...acc,
+            [action.moduleId]: {
+              path: action.path,
+            },
+          };
+        }
+      },
+      {},
+    );
   }
 }
 

@@ -89,37 +89,44 @@ export class Runtime {
   // actions
 
   actionRequest(request: Request) {
-    let url = new URL(request.url);
-    let pattern = new URLPattern({
-      protocol: "http{s}?",
-      hostname: "*",
-      pathname: "/__rsc/action/:id",
-    });
-
-    let exec = pattern.exec(url);
-    let urlId = exec?.pathname.groups.id;
-
-    if (!urlId) {
-      throw new Error("No server action specified");
-    }
-
-    let id = decodeURIComponent(urlId);
-
     let serverActionMap = this.build.getBuilder("rsc").serverActionMap;
-    let action = serverActionMap.get(id);
+    let serverManifest = this.build.getBuilder("rsc").serverManifest;
 
-    if (!action) {
-      throw new Error("Invalid action id");
-    }
-
-    let actionRequest = new ActionRequest({
-      action,
-      request,
-      runtime: this,
-    });
-
-    return actionRequest;
+    return ActionRequest.isActionRequest(request)
+      ? new ActionRequest({
+          request,
+          serverManifest,
+          serverActionMap,
+          runtime: this,
+        })
+      : null;
   }
+
+  // actionRequest2(request: Request) {
+  // let url = new URL(request.url);
+  // let pattern = new URLPattern({
+  //   protocol: "http{s}?",
+  //   hostname: "*",
+  //   pathname: "/__rsc/action/:id",
+  // });
+  // let exec = pattern.exec(url);
+  // let urlId = exec?.pathname.groups.id;
+  // if (!urlId) {
+  //   throw new Error("No server action specified");
+  // }
+  // let id = decodeURIComponent(urlId);
+  // let serverActionMap = this.build.getBuilder("rsc").serverActionMap;
+  // let action = serverActionMap.get(id);
+  // if (!action) {
+  //   throw new Error("Invalid action id");
+  // }
+  // let actionRequest = new ActionRequest({
+  //   action,
+  //   request,
+  //   runtime: this,
+  // });
+  // return actionRequest;
+  // }
 
   // renders
 

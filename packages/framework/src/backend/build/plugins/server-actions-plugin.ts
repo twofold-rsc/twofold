@@ -15,6 +15,7 @@ import { getModuleId } from "../helpers/module.js";
 type ServerAction = {
   id: string;
   path: string;
+  moduleId: string;
   export: string;
 };
 
@@ -67,6 +68,7 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
             serverActions.add({
               id: `${moduleId}#${serverFunction}`,
               path,
+              moduleId,
               export: serverFunction,
             });
           }
@@ -104,6 +106,7 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
             let outputPath = path.join(fileURLToPath(cwdUrl), outputFile);
             builder.serverActionMap.set(action.id, {
               id: action.id,
+              moduleId: action.moduleId,
               path: outputPath,
               export: action.export,
             });

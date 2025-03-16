@@ -17,7 +17,7 @@ type ClientComponentModule = {
 };
 
 type ServerActionEntry = {
-  moduleId: string; // moduleId isn't used, we just need the entry path
+  moduleId: string;
   path: string;
 };
 

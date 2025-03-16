@@ -46,11 +46,6 @@ globalThis.__webpack_chunk_load__ = async function (chunkId: string) {
   let moduleUrl = pathToFileURL(modulePath);
   let mod = await import(moduleUrl.href);
 
-  // let ssrStore = getSSRStore();
-  // if (ssrStore) {
-  //   ssrStore.chunks.push(id);
-  // }
-
   moduleMap.set(moduleId, mod);
   return mod;
 };
