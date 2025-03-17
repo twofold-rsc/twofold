@@ -3,6 +3,7 @@
 framework
 
 - MPA
+- form with client state. a form that returns something in form data
 - test and release new transforms package
 - test server action
 - test server action + bind (closure)

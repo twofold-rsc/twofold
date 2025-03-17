@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-export function FormWithState({
+export function FormWithServerState({
   initialState,
   increment,
 }: {

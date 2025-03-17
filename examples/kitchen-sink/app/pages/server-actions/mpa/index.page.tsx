@@ -1,4 +1,4 @@
-import { FormWithState } from "./form-with-state";
+import { FormWithServerState } from "./form-with-server-state";
 
 let state = { count: 0 };
 
@@ -16,6 +16,7 @@ async function increment() {
 }
 
 export default function MPAPage() {
+  console.log(state);
   return (
     <div>
       <h1 className="text-4xl font-black tracking-tighter">MPA + Form</h1>
@@ -38,7 +39,7 @@ export default function MPAPage() {
         <div className="border border-gray-200 p-4">
           <div>Form with state</div>
           <div className="pt-3">
-            <FormWithState increment={increment} initialState={state} />
+            <FormWithServerState increment={increment} initialState={state} />
           </div>
         </div>
       </div>

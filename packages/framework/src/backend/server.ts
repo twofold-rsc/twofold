@@ -16,11 +16,6 @@ import { waitForSSR } from "./server/middlewares/wait-for-ssr-worker.js";
 import { Server as NodeHttpServer } from "http";
 import { Runtime } from "./runtime.js";
 
-import {
-  decodeAction,
-  // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/server.edge'.
-} from "react-server-dom-webpack/server.edge";
-
 async function createHandler(runtime: Runtime) {
   let build = runtime.build;
 
