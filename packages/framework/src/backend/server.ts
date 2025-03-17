@@ -101,7 +101,8 @@ async function createHandler(runtime: Runtime) {
       return runtime.notFoundPageRequest(request).rscResponse();
     }
 
-    let response = await actionRequest.rscResponse();
+    let result = await actionRequest.runAction();
+    let response = await actionRequest.rscResponse({ result });
 
     if (response.status === 404) {
       console.log(`🔴 Action ${actionRequest.name} rendered not found`);
@@ -165,7 +166,14 @@ async function createHandler(runtime: Runtime) {
       let url = new URL(request.url);
 
       // this is it!
-      let response = await actionRequest.ssrResponse();
+      let response;
+      try {
+        let result = await actionRequest.runAction();
+        response = await actionRequest.ssrResponse({ result });
+      } catch (e) {
+        console.log(e);
+        throw e;
+      }
 
       try {
         console.log(actionRequest.name);

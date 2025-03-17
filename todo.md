@@ -3,6 +3,7 @@
 framework
 
 - MPA
+- test and release new transforms package
 - test server action
 - test server action + bind (closure)
 - test server action + form

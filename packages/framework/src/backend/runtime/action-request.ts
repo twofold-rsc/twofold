@@ -3,6 +3,7 @@ import { Runtime } from "../runtime.js";
 import {
   decodeReply,
   decodeAction,
+  decodeFormState,
   createTemporaryReferenceSet,
   // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/server.edge'.
 } from "react-server-dom-webpack/server.edge";
@@ -32,6 +33,7 @@ export class ActionRequest {
   #request: Request;
   #runtime: Runtime;
   #temporaryReferences: unknown = createTemporaryReferenceSet();
+  #result: unknown;
 
   constructor({
     request,
@@ -64,9 +66,7 @@ export class ActionRequest {
     return SPAAction.matches(request) || MPAAction.matches(request);
   }
 
-  async rscResponse() {
-    let result = await this.runAction();
-
+  async rscResponse({ result }: { result: unknown }) {
     let requestToRender = this.requestToRender;
 
     if (isNotFoundError(result)) {
@@ -129,8 +129,8 @@ export class ActionRequest {
     });
   }
 
-  async ssrResponse() {
-    let rscResponse = await this.rscResponse();
+  async ssrResponse({ result }: { result: unknown }) {
+    let rscResponse = await this.rscResponse({ result });
 
     // response is not SSRable
     if (!rscResponse.body) {
@@ -139,6 +139,14 @@ export class ActionRequest {
 
     let rscStream = rscResponse.body;
     let url = new URL(this.#action.renderPath, this.#request.url);
+
+    try {
+      let formState = await this.#action.getFormState(result);
+      console.log("formState", formState);
+    } catch (e) {
+      console.log("HERE");
+      console.log(e);
+    }
 
     let { stream, notFound, redirect } =
       await this.#runtime.renderHtmlStreamFromRSCStream(rscStream, "page", {
@@ -162,12 +170,10 @@ export class ActionRequest {
     });
   }
 
-  private async runAction() {
-    let fn = await this.#action.getAction();
-
+  async runAction() {
     let result;
     try {
-      result = await fn();
+      result = await this.#action.runAction();
     } catch (err: unknown) {
       if (isNotFoundError(err) || isRedirectError(err)) {
         result = err;
@@ -257,8 +263,9 @@ export class ActionRequest {
 // run it
 // render it
 
-interface Action {
-  getAction: () => Promise<() => unknown>;
+interface Action<T = unknown> {
+  getAction: () => Promise<() => T>;
+  runAction: () => Promise<T>;
   renderPath: string;
   id: string;
   canStreamResult: boolean;
@@ -372,11 +379,21 @@ class SPAAction implements Action {
 
     return fn.bind(null, ...args);
   }
+
+  async getFormState(result: unknown) {
+    return null;
+  }
+
+  async runAction() {
+    let fn = await this.getAction();
+    return fn();
+  }
 }
 
 class MPAAction implements Action {
   #request: Request;
   #serverManifest: ServerManifest;
+  #formData: FormData | null = null;
 
   canStreamResult = false;
 
@@ -402,7 +419,7 @@ class MPAAction implements Action {
   get id() {
     // we should try to extract the id out of the formData
     // TODO
-    return "NOT IMPLEMENTED YEY";
+    return "NOT IMPLEMENTED YET";
   }
 
   get renderPath() {
@@ -411,9 +428,28 @@ class MPAAction implements Action {
   }
 
   async getAction() {
-    let formData = await this.#request.formData();
+    let formData = await this.formData();
     let fn = await decodeAction(formData, this.#serverManifest);
     return fn;
+  }
+
+  private async formData() {
+    if (!this.#formData) {
+      this.#formData = await this.#request.formData();
+    }
+
+    return this.#formData;
+  }
+
+  async runAction() {
+    let fn = await this.getAction();
+    return fn();
+  }
+
+  async getFormState(result: unknown) {
+    let formData = await this.formData();
+    let formState = decodeFormState(result, formData, this.#serverManifest);
+    return formState;
   }
 }
 
