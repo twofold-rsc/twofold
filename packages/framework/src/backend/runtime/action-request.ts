@@ -33,7 +33,9 @@ export class ActionRequest {
   #request: Request;
   #runtime: Runtime;
   #temporaryReferences: unknown = createTemporaryReferenceSet();
+
   #result: unknown;
+  #didRun = false;
 
   constructor({
     request,
@@ -66,7 +68,8 @@ export class ActionRequest {
     return SPAAction.matches(request) || MPAAction.matches(request);
   }
 
-  async rscResponse({ result }: { result: unknown }) {
+  async rscResponse() {
+    let result = await this.getResult();
     let requestToRender = this.requestToRender;
 
     if (isNotFoundError(result)) {
@@ -97,13 +100,13 @@ export class ActionRequest {
     store.assets = pageRequest.assets;
 
     let reactTree = await pageRequest.reactTree();
+    let formState = await this.#action.getFormState(result);
 
-    let data = this.#action.canStreamResult
-      ? {
-          render: reactTree,
-          action: result,
-        }
-      : reactTree;
+    let data = {
+      tree: reactTree,
+      action: result,
+      formState,
+    };
 
     let { stream, error, redirect, notFound } =
       await this.#runtime.renderRSCStream(data, {
@@ -120,7 +123,7 @@ export class ActionRequest {
 
     let status = error ? 500 : 200;
     let headers = new Headers({
-      "Content-type": "text/x-action-component",
+      "Content-type": "text/x-component",
     });
 
     return new Response(stream, {
@@ -129,8 +132,8 @@ export class ActionRequest {
     });
   }
 
-  async ssrResponse({ result }: { result: unknown }) {
-    let rscResponse = await this.rscResponse({ result });
+  async ssrResponse() {
+    let rscResponse = await this.rscResponse();
 
     // response is not SSRable
     if (!rscResponse.body) {
@@ -139,14 +142,6 @@ export class ActionRequest {
 
     let rscStream = rscResponse.body;
     let url = new URL(this.#action.renderPath, this.#request.url);
-
-    try {
-      let formState = await this.#action.getFormState(result);
-      console.log("formState", formState);
-    } catch (e) {
-      console.log("HERE");
-      console.log(e);
-    }
 
     let { stream, notFound, redirect } =
       await this.#runtime.renderHtmlStreamFromRSCStream(rscStream, "page", {
@@ -170,6 +165,16 @@ export class ActionRequest {
     });
   }
 
+  async getResult() {
+    if (!this.#didRun) {
+      let result = await this.runAction();
+      this.#result = result;
+      this.#didRun = true;
+    }
+
+    return this.#result;
+  }
+
   async runAction() {
     let result;
     try {
@@ -179,6 +184,7 @@ export class ActionRequest {
         result = err;
       } else {
         // rethrow
+        console.error(err);
         throw err;
       }
     }
@@ -186,8 +192,8 @@ export class ActionRequest {
     return result;
   }
 
-  get name() {
-    let id = this.#action.id;
+  async name() {
+    let id = await this.#action.id();
     let [, name] = id.split("#");
     if (name?.startsWith("tf$serverFunction$")) {
       let parts = name.split("$");
@@ -258,25 +264,17 @@ export class ActionRequest {
   }
 }
 
-// Action request
-// figure out which type of action we have
-// run it
-// render it
-
 interface Action<T = unknown> {
   getAction: () => Promise<() => T>;
   runAction: () => Promise<T>;
   renderPath: string;
-  id: string;
-  canStreamResult: boolean;
+  id: () => Promise<string> | string;
 }
 
 class SPAAction implements Action {
   #request: Request;
   #serverActionMap: ServerActionMap;
   #temporaryReferences: unknown;
-
-  canStreamResult = true;
 
   constructor({
     request,
@@ -303,7 +301,7 @@ class SPAAction implements Action {
     return pattern.test(url);
   }
 
-  get id() {
+  id() {
     let url = new URL(this.#request.url);
     let pattern = new URLPattern({
       protocol: "http{s}?",
@@ -352,8 +350,8 @@ class SPAAction implements Action {
     return path;
   }
 
-  private get compiledAction() {
-    let id = this.id;
+  get compiledAction() {
+    let id = this.id();
     let action = this.#serverActionMap.get(id);
 
     if (!action) {
@@ -395,8 +393,6 @@ class MPAAction implements Action {
   #serverManifest: ServerManifest;
   #formData: FormData | null = null;
 
-  canStreamResult = false;
-
   constructor({
     request,
     serverManifest,
@@ -416,10 +412,48 @@ class MPAAction implements Action {
     );
   }
 
-  get id() {
-    // we should try to extract the id out of the formData
-    // TODO
-    return "NOT IMPLEMENTED YET";
+  async id() {
+    let formData = await this.formData();
+
+    let id = formData
+      .entries()
+      .map(([key, value]) => {
+        if (key.startsWith("$ACTION_ID_")) {
+          return key.replace(/^\$ACTION_ID_/, "");
+        }
+      })
+      .find(Boolean);
+
+    if (id) {
+      return id;
+    }
+
+    let actionRef = formData
+      .entries()
+      .map(([key, value]) => {
+        if (key.startsWith("$ACTION_REF_")) {
+          return key.replace(/^\$ACTION_REF_/, "");
+        }
+      })
+      .find(Boolean);
+
+    if (actionRef) {
+      let data = formData.get(`$ACTION_${actionRef}:0`);
+      if (typeof data === "string") {
+        try {
+          let action = JSON.parse(data);
+          let id = action.id;
+          if (typeof id === "string") {
+            return id;
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    // if were here we don't have an id
+    throw new Error("No server action specified");
   }
 
   get renderPath() {
@@ -452,5 +486,3 @@ class MPAAction implements Action {
     return formState;
   }
 }
-
-// ActionResponse

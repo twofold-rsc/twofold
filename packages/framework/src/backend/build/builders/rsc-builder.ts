@@ -25,6 +25,7 @@ export type CompiledAction = {
   id: string;
   moduleId: string;
   path: string;
+  hash: string;
   export: string;
 };
 
@@ -463,7 +464,7 @@ export class RSCBuilder extends Builder {
           [action.id]: {
             id: action.id,
             name: action.export,
-            chunks: [action.moduleId],
+            chunks: [`${action.moduleId}:${action.export}:${action.hash}`],
           },
         };
       }

@@ -87,6 +87,15 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
           throw new Error("Failed to get metafile");
         }
 
+        function getHash(outputFile: string) {
+          let file = outputFile.split("/").at(-1);
+          let hash = file?.split("-").at(-1)?.split(".")[0];
+          if (!hash) {
+            throw new Error(`Failed to get hash for ${outputFile}`);
+          }
+          return hash;
+        }
+
         let outputs = metafile.outputs;
 
         for (let outputFile in outputs) {
@@ -104,9 +113,11 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
 
           actions.forEach((action) => {
             let outputPath = path.join(fileURLToPath(cwdUrl), outputFile);
+            let hash = getHash(outputFile);
             builder.serverActionMap.set(action.id, {
               id: action.id,
               moduleId: action.moduleId,
+              hash: hash,
               path: outputPath,
               export: action.export,
             });

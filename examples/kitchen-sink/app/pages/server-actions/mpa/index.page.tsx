@@ -1,10 +1,11 @@
+import { FormWithClientState, State } from "./form-with-client-state";
 import { FormWithServerState } from "./form-with-server-state";
 
 let state = { count: 0 };
 
-async function action() {
+async function log() {
   "use server";
-  console.log("ran action");
+  console.log("running an action that logs to the console");
 }
 
 async function increment() {
@@ -15,8 +16,20 @@ async function increment() {
   return state;
 }
 
+async function clientFormAction(prev: State, formData: FormData) {
+  "use server";
+
+  let data = Object.fromEntries(formData.entries());
+  let isValid = data.name === "alice";
+
+  return {
+    name: typeof data.name === "string" ? data.name : "",
+    success: isValid,
+    error: !isValid ? "Name must be alice" : null,
+  };
+}
+
 export default function MPAPage() {
-  console.log(state);
   return (
     <div>
       <h1 className="text-4xl font-black tracking-tighter">MPA + Form</h1>
@@ -26,7 +39,7 @@ export default function MPAPage() {
       </p>
       <div className="mt-4 space-y-3">
         <div className="border border-gray-200 p-4">
-          <form action={action}>
+          <form action={log}>
             <button
               type="submit"
               className="inline-flex items-center justify-center rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"
@@ -37,9 +50,16 @@ export default function MPAPage() {
         </div>
 
         <div className="border border-gray-200 p-4">
-          <div>Form with state</div>
+          <div>Form with server state</div>
           <div className="pt-3">
             <FormWithServerState increment={increment} initialState={state} />
+          </div>
+        </div>
+
+        <div className="border border-gray-200 p-4">
+          <div>Form with client state</div>
+          <div className="pt-3">
+            <FormWithClientState action={clientFormAction} />
           </div>
         </div>
       </div>

@@ -1,5 +1,4 @@
 import "./monkey-patch.js";
-import { injectResolver } from "./monkey-patch.js";
 import { createServer } from "@hattip/adapter-node/native-fetch";
 import { parseHeaderValue } from "@hattip/headers";
 import { createRouter } from "@hattip/router";
@@ -96,16 +95,16 @@ async function createHandler(runtime: Runtime) {
       return runtime.notFoundPageRequest(request).rscResponse();
     }
 
-    let result = await actionRequest.runAction();
-    let response = await actionRequest.rscResponse({ result });
+    let response = await actionRequest.rscResponse();
+    let name = await actionRequest.name();
 
     if (response.status === 404) {
-      console.log(`🔴 Action ${actionRequest.name} rendered not found`);
+      console.log(`🔴 Action ${name} rendered not found`);
     } else if (response.status === 303) {
       let location = response.headers.get("location");
-      console.log(`🔵 Action ${actionRequest.name} redirect to ${location}`);
+      console.log(`🔵 Action ${name} redirect to ${location}`);
     } else {
-      console.log(`🟣 Running action ${actionRequest.name}`);
+      console.log(`🟣 Ran action ${name}`);
     }
 
     return response;
@@ -144,80 +143,35 @@ async function createHandler(runtime: Runtime) {
     }
   });
 
-  injectResolver((moduleId) => {
-    let module = build.getBuilder("rsc").serverActionModuleMap[moduleId];
-    if (!module) {
-      throw new Error(`Failed to resolve module id ${moduleId}`);
-    }
-    return module.path;
-  });
-
   // mpa actions
   app.post("/**/*", async (ctx) => {
     let request = ctx.request;
 
     let actionRequest = runtime.actionRequest(request);
     if (actionRequest) {
-      let url = new URL(request.url);
+      // let response;
+      // let name;
+      // try {
+      //   response = await actionRequest.ssrResponse();
+      //   name = await actionRequest.name();
+      // } catch (e) {
+      //   console.error(e);
+      // }
 
-      // this is it!
-      let response;
-      try {
-        let result = await actionRequest.runAction();
-        response = await actionRequest.ssrResponse({ result });
-      } catch (e) {
-        console.log(e);
-        throw e;
-      }
-
-      try {
-        console.log(actionRequest.name);
-      } catch (e) {
-        console.log(e);
-      }
+      let response = await actionRequest.ssrResponse();
+      let name = await actionRequest.name();
 
       if (response.status === 404) {
-        console.log(`🔴 Action ${actionRequest.name} rendered not found`);
+        console.log(`🔴 Action ${name} rendered not found`);
       } else if (response.status === 303) {
         let location = response.headers.get("location");
-        console.log(`🔵 Action ${actionRequest.name} redirect to ${location}`);
+        console.log(`🔵 Action ${name} redirect to ${location}`);
       } else {
-        console.log(`🟣 Running action ${actionRequest.name}`);
+        console.log(`🟣 Ran action ${name}`);
       }
 
       return response;
     }
-
-    // let [contentType] = parseHeaderValue(request.headers.get("content-type"));
-    // console.log({ contentType });
-
-    // let formData = await request.formData();
-
-    // console.log(Object.fromEntries(formData));
-
-    // let id =
-    //   "mpa.page-13ec2e29ca9b3ccff66bef1222f9d429#tf$serverFunction$0$action";
-
-    // let testServerManifest = {
-    //   [id]: build.getBuilder("rsc").serverManifest[id],
-    // };
-
-    // console.log("testServerManifest", testServerManifest);
-
-    // try {
-    //   let x = await decodeAction(formData, testServerManifest);
-    //   console.log(x);
-    //   await x();
-    // } catch (e) {
-    //   console.log(e);
-    // }
-
-    // try {
-    //   let x = await decodeReply(formData, {});
-    //   console.log(x);
-    // } catch (e) {
-    //   console.log(e);
-    // }
   });
 
   app.get("/**/*", async (ctx) => {

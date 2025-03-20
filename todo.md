@@ -3,12 +3,12 @@
 framework
 
 - MPA
-- form with client state. a form that returns something in form data
+- UI page for MPA w/ dismiss
+
+- MPA2
+- try rsdw/client as external
 - test and release new transforms package
-- test server action
-- test server action + bind (closure)
-- test server action + form
-- test server action + form + uaS
+- flash with server actions + uO
 
 - test server action + flash
 - test windows + server action + flash
