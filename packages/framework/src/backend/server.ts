@@ -101,7 +101,13 @@ async function createHandler(runtime: Runtime) {
     if (response.status === 404) {
       console.log(`🔴 Action ${name} rendered not found`);
     } else if (response.status === 303) {
-      let location = response.headers.get("location");
+      let locationHeader = response.headers.get("location");
+      let location = locationHeader?.startsWith("/__rsc/page?path=")
+        ? decodeURIComponent(
+            locationHeader.replace(/^\/__rsc\/page\?path=/, ""),
+          )
+        : locationHeader;
+
       console.log(`🔵 Action ${name} redirect to ${location}`);
     } else {
       console.log(`🟣 Ran action ${name}`);
