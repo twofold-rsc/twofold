@@ -370,6 +370,11 @@ export default function Nav() {
                         description="A login form using client components, server actions, cookies, and redirects."
                         href="/uis/login"
                       />
+                      <ExampleLink
+                        title="Progressive"
+                        description="A page and form that work both with and without JavaScript."
+                        href="/uis/mpa"
+                      />
                     </ExampleGroup>
 
                     <NavigationMenu.Indicator className="-right-5 z-10 flex h-6 items-center justify-center overflow-hidden">

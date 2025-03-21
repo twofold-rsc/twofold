@@ -5,10 +5,14 @@ framework
 - MPA
 - UI page for MPA w/ dismiss
 
+- release
+- remove flash from docs
+
+- flash with server actions + uO
+
 - MPA2
 - try rsdw/client as external
 - test and release new transforms package
-- flash with server actions + uO
 
 - test server action + flash
 - test windows + server action + flash
