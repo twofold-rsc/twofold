@@ -66,12 +66,14 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             </li>
           </ul>
 
-          {/* <div className="mt-6 font-bold">Patterns</div>
+          <div className="mt-6 font-bold">Patterns</div>
           <ul className="mt-1 space-y-1">
             <li>
-              <DocLink href="/docs/reference/flash-messages">Flash messages</DocLink>
+              <DocLink href="/docs/reference/flash-messages">
+                Flash messages
+              </DocLink>
             </li>
-          </ul> */}
+          </ul>
 
           <div className="mt-6 font-bold">Components</div>
           <ul className="mt-1 space-y-1">

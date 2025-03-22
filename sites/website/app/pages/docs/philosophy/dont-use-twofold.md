@@ -20,16 +20,6 @@ There is also a significant learning curve when it comes to understanding how to
 
 If you want to focus on other areas of application development instead of learning these new concepts then Twofold is not a good fit.
 
-## Not production ready
-
-In its current state I would refer to Twofold as a "toy" or "proof of concept" framework. I obviously hope to change this in the future, but as of now I would not recommend anyone with a serious business adopt Twofold.
-
-The bundling strategy is very naive. Twofold aggressively code splits, which in theory may sound good because it only ever loads JavaScript modules as they are needed. In practice, this leads to very small un-optimized bundles.
-
-Deployment is also a manual process. You'll be responsible for running your own Twofold production server and deploying your application to it.
-
-It is still in the early stages of development and is not yet stable enough to be used in a production environment.
-
 ## Breaking changes
 
 Due to the beta nature of the ideas in Twofold it is very likely that there will be breaking changes in the future. This means that if you build an application with Twofold today, you may need to rewrite parts of it in the future to keep up with the latest changes.
