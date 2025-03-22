@@ -16,6 +16,7 @@ import { deserializeError } from "serialize-error";
 import { ProductionBuild } from "./build/build/production.js";
 import { DevelopmentBuild } from "./build/build/development.js";
 import { ActionRequest } from "./runtime/action-request.js";
+import { injectResolver } from "./monkey-patch.js";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -89,36 +90,17 @@ export class Runtime {
   // actions
 
   actionRequest(request: Request) {
-    let url = new URL(request.url);
-    let pattern = new URLPattern({
-      protocol: "http{s}?",
-      hostname: "*",
-      pathname: "/__rsc/action/:id",
-    });
-
-    let exec = pattern.exec(url);
-    let urlId = exec?.pathname.groups.id;
-
-    if (!urlId) {
-      throw new Error("No server action specified");
-    }
-
-    let id = decodeURIComponent(urlId);
-
     let serverActionMap = this.build.getBuilder("rsc").serverActionMap;
-    let action = serverActionMap.get(id);
+    let serverManifest = this.build.getBuilder("rsc").serverManifest;
 
-    if (!action) {
-      throw new Error("Invalid action id");
-    }
-
-    let actionRequest = new ActionRequest({
-      action,
-      request,
-      runtime: this,
-    });
-
-    return actionRequest;
+    return ActionRequest.isActionRequest(request)
+      ? new ActionRequest({
+          request,
+          serverManifest,
+          serverActionMap,
+          runtime: this,
+        })
+      : null;
   }
 
   // renders
@@ -256,6 +238,16 @@ export class Runtime {
   // workers
 
   async start() {
+    // actions might try to load modules
+    injectResolver((moduleId) => {
+      let module =
+        this.#build.getBuilder("rsc").serverActionModuleMap[moduleId];
+
+      if (!module) {
+        throw new Error(`Failed to resolve module id ${moduleId}`);
+      }
+      return module.path;
+    });
     await this.createSSRWorker();
   }
 
@@ -283,8 +275,6 @@ export class Runtime {
           appPath: this.build.getBuilder("client").SSRAppPath,
           clientComponentModuleMap:
             this.build.getBuilder("client").clientComponentModuleMap,
-          ssrManifestModuleMap:
-            this.build.getBuilder("client").ssrManifestModuleMap,
         },
         execArgv: ["-C", "default"],
         env: {

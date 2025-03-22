@@ -36,18 +36,13 @@ export async function callServer(id: string, args: any) {
   let rscTree;
   let result;
 
-  if (contentType === "text/x-action-component") {
+  if (contentType === "text/x-component") {
     let streams = await createFromReadableStream(response.body, {
       callServer,
       temporaryReferences,
     });
-    rscTree = streams.render;
+    rscTree = streams.tree;
     result = streams.action;
-  } else if (contentType === "text/x-component") {
-    rscTree = createFromReadableStream(response.body, {
-      callServer,
-      temporaryReferences,
-    });
   } else if (contentType === "text/x-serialized-error") {
     let json = await response.json();
     let error = deserializeError(json);

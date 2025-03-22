@@ -90,15 +90,27 @@ async function createHandler(runtime: Runtime) {
 
     let actionRequest = runtime.actionRequest(request);
 
+    if (!actionRequest) {
+      console.log(`🔴 Action not found`);
+      return runtime.notFoundPageRequest(request).rscResponse();
+    }
+
     let response = await actionRequest.rscResponse();
+    let name = await actionRequest.name();
 
     if (response.status === 404) {
-      console.log(`🔴 Action ${actionRequest.name} rendered not found`);
+      console.log(`🔴 Action ${name} rendered not found`);
     } else if (response.status === 303) {
-      let location = response.headers.get("location");
-      console.log(`🔵 Action ${actionRequest.name} redirect to ${location}`);
+      let locationHeader = response.headers.get("location");
+      let location = locationHeader?.startsWith("/__rsc/page?path=")
+        ? decodeURIComponent(
+            locationHeader.replace(/^\/__rsc\/page\?path=/, ""),
+          )
+        : locationHeader;
+
+      console.log(`🔵 Action ${name} redirect to ${location}`);
     } else {
-      console.log(`🟣 Running action ${actionRequest.name}`);
+      console.log(`🟣 Ran action ${name}`);
     }
 
     return response;
@@ -134,6 +146,28 @@ async function createHandler(runtime: Runtime) {
 
         return response;
       }
+    }
+  });
+
+  // mpa actions
+  app.post("/**/*", async (ctx) => {
+    let request = ctx.request;
+
+    let actionRequest = runtime.actionRequest(request);
+    if (actionRequest) {
+      let response = await actionRequest.ssrResponse();
+      let name = await actionRequest.name();
+
+      if (response.status === 404) {
+        console.log(`🔴 Action ${name} rendered not found`);
+      } else if (response.status === 303) {
+        let location = response.headers.get("location");
+        console.log(`🔵 Action ${name} redirect to ${location}`);
+      } else {
+        console.log(`🟣 Ran action ${name}`);
+      }
+
+      return response;
     }
   });
 

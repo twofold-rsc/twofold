@@ -57,9 +57,12 @@ export class PageRequest {
     }
 
     let reactTree = await this.reactTree();
+    let data = {
+      tree: reactTree,
+    };
 
     let { stream, error, redirect, notFound } =
-      await this.#runtime.renderRSCStream(reactTree);
+      await this.#runtime.renderRSCStream(data);
 
     if (notFound) {
       stream.cancel();

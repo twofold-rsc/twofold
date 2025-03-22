@@ -2,13 +2,17 @@
 
 framework
 
-- update template
 - release
+- flash with server actions + uO
+
+- MPA2
+- try rsdw/client as external
+- test and release new transforms package
+
 - test server action + flash
 - test windows + server action + flash
 
 - route masking
-- redirect error boundary
 
 - error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
 
@@ -21,8 +25,6 @@ framework
 - editing config file should trigger reload
 - if build changes (stale browser, whatever) should live reload
 - production build should live reload in dev. live reload is really about the task, not the build environment
-
-- add /app/components?
 
 - perf tracking: https://github.com/facebook/react/pull/31729
 

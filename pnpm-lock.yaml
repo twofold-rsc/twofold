@@ -365,7 +365,7 @@ importers:
         version: 0.25.0
       react-server-dom-webpack:
         specifier: '>=19.0.0'
-        version: 19.0.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(webpack@5.96.1(esbuild@0.25.0))
+        version: 19.0.0(react-dom@19.1.0-canary-5398b711-20250314(react@19.1.0-canary-5398b711-20250314))(react@19.1.0-canary-5398b711-20250314)(webpack@5.96.1(esbuild@0.25.0))
     devDependencies:
       '@types/babel__core':
         specifier: ^7.20.5
@@ -3885,6 +3885,11 @@ packages:
     peerDependencies:
       react: ^19.0.0
 
+  react-dom@19.1.0-canary-5398b711-20250314:
+    resolution: {integrity: sha512-0crcLt48DTHKjLu+3+opCEg0bI6rXBq5AHCjKh2ZxLmpcCywqTfyuC/XCK0XVcfOMU4jbLBIG5S1NbmaNoV5hA==}
+    peerDependencies:
+      react: 19.1.0-canary-5398b711-20250314
+
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -3902,6 +3907,10 @@ packages:
 
   react@19.0.0:
     resolution: {integrity: sha512-V8AVnmPIICiWpGfm6GLzCR/W5FXLchHop40W4nXBmdlEceh16rCN8O8LNWm5bh5XUX91fh7KpA+W0TgMKmgTpQ==}
+    engines: {node: '>=0.10.0'}
+
+  react@19.1.0-canary-5398b711-20250314:
+    resolution: {integrity: sha512-9gpKdBbdUgEumcFhTmd85L53mOxRG85lcZatD6pButFP1ZWwK8y/1rioY99enx7fkhLo8lR6gV8qFv90+T4VAA==}
     engines: {node: '>=0.10.0'}
 
   read-yaml-file@1.1.0:
@@ -4012,6 +4021,9 @@ packages:
 
   scheduler@0.25.0:
     resolution: {integrity: sha512-xFVuu11jh+xcO7JOAGJNOXld8/TcEHK/4CituBUeUb5hqxJLj9YuemAEuvm9gQ/+pgXYfbQuqAkiYu+u7YEsNA==}
+
+  scheduler@0.26.0-canary-5398b711-20250314:
+    resolution: {integrity: sha512-/KOyIkzV0A/xFPLXkUAyJs7lzk2raa6corlkvMVJ9BqO/rgOrFsi0gvvnHtZnsKYhUil/VOer1wJ3FsqcvS+Qw==}
 
   schema-utils@3.3.0:
     resolution: {integrity: sha512-pN/yOAvcC+5rQ5nERGuwrjLlYvLTbCibnZ1I7B1LaiAz9BRBlE9GMgE/eqV30P7aJQUf7Ddimy/RsbYO/GrVGg==}
@@ -6315,7 +6327,7 @@ snapshots:
 
   acorn-loose@8.4.0:
     dependencies:
-      acorn: 8.14.0
+      acorn: 8.14.1
 
   acorn@8.14.0: {}
 
@@ -8411,6 +8423,11 @@ snapshots:
       react: 19.0.0
       scheduler: 0.25.0
 
+  react-dom@19.1.0-canary-5398b711-20250314(react@19.1.0-canary-5398b711-20250314):
+    dependencies:
+      react: 19.1.0-canary-5398b711-20250314
+      scheduler: 0.26.0-canary-5398b711-20250314
+
   react-is@16.13.1: {}
 
   react-refresh@0.16.0: {}
@@ -8433,7 +8450,18 @@ snapshots:
       webpack: 5.96.1
       webpack-sources: 3.2.3
 
+  react-server-dom-webpack@19.0.0(react-dom@19.1.0-canary-5398b711-20250314(react@19.1.0-canary-5398b711-20250314))(react@19.1.0-canary-5398b711-20250314)(webpack@5.96.1(esbuild@0.25.0)):
+    dependencies:
+      acorn-loose: 8.4.0
+      neo-async: 2.6.2
+      react: 19.1.0-canary-5398b711-20250314
+      react-dom: 19.1.0-canary-5398b711-20250314(react@19.1.0-canary-5398b711-20250314)
+      webpack: 5.96.1(esbuild@0.25.0)
+      webpack-sources: 3.2.3
+
   react@19.0.0: {}
+
+  react@19.1.0-canary-5398b711-20250314: {}
 
   read-yaml-file@1.1.0:
     dependencies:
@@ -8597,6 +8625,8 @@ snapshots:
   safer-buffer@2.1.2: {}
 
   scheduler@0.25.0: {}
+
+  scheduler@0.26.0-canary-5398b711-20250314: {}
 
   schema-utils@3.3.0:
     dependencies:

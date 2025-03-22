@@ -12,8 +12,9 @@ async function addTodo(form: FormData) {
 
   await new Promise((resolve) => setTimeout(resolve, 2500));
 
+  let randomNumber = Math.random();
   let text = form.get("text");
-  if (typeof text === "string" && Math.random() > 0.5) {
+  if (typeof text === "string" && randomNumber > 0.5) {
     todos.push({ id: todos.length + 1, text });
   } else {
     console.log("SKIPPING TODO:", text);

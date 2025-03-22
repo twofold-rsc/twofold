@@ -65,28 +65,40 @@ export async function render({
   bootstrapUrl,
 }: RenderOptions): Promise<ReadableStream<Uint8Array>> {
   let [rscStream1, rscStream2] = rscStream.tee();
+  let [rscStream3, rscStream4] = rscStream1.tee();
+
+  let { formState } = await createFromReadableStream(rscStream2, {
+    serverConsumerManifest: {
+      moduleMap: null,
+      serverModuleMap: null,
+      moduleLoading: null,
+    },
+  });
 
   let tree: Promise<any>;
-  function getTree() {
+  async function getTree() {
     if (!tree) {
-      tree = createFromReadableStream(rscStream1, {
+      let payload = await createFromReadableStream(rscStream3, {
         serverConsumerManifest: {
+          // client references
           moduleMap: null,
+          // this is a map of server references, passing in a map lets you
+          // change which module to load the references from
           serverModuleMap: null,
           moduleLoading: null,
-          // moduleMap: ?? i think this allows lookup from the ssrManifestModuleMap
-          // serverModuleMap: ssrManifestModuleMap,
           // moduleLoading: {
           //   prefix: "/_assets/client-app/",
           // },
         },
       });
+
+      tree = payload.tree;
     }
 
     return tree;
   }
 
-  let rscStreamReader = rscStream2.getReader();
+  let rscStreamReader = rscStream4.getReader();
 
   let url = new URL(urlString);
 
@@ -98,6 +110,7 @@ export async function render({
     }),
     {
       bootstrapModules: [bootstrapUrl],
+      formState,
       onError(err: unknown) {
         if (err instanceof Error && isSafeError(err)) {
           // certain errors we know are safe for client handling

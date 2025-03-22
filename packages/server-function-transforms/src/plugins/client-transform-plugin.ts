@@ -122,6 +122,7 @@ function createExportedServerReference(name: string, moduleId: string) {
   let callExpression = t.callExpression(t.identifier("createServerReference"), [
     t.stringLiteral(`${moduleId}#${name}`),
     t.identifier("callServer"),
+    t.stringLiteral(`${moduleId}#${name}`),
   ]);
 
   return name === "default"

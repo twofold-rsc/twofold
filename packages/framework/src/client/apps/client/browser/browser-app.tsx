@@ -1,5 +1,4 @@
 import {
-  StrictMode,
   useCallback,
   useEffect,
   useLayoutEffect,

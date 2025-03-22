@@ -168,8 +168,13 @@ export default function Nav() {
                       />
                       <ExampleLink
                         title="Flash messages"
-                        description="An action that flashes a toast message"
+                        description="An action that flashes a toast message."
                         href="/server-actions/flash-messages"
+                      />
+                      <ExampleLink
+                        title="MPA"
+                        description="Actions that work in MPA mode."
+                        href="/server-actions/mpa"
                       />
                     </ExampleGroup>
 
@@ -364,6 +369,11 @@ export default function Nav() {
                         title="Login"
                         description="A login form using client components, server actions, cookies, and redirects."
                         href="/uis/login"
+                      />
+                      <ExampleLink
+                        title="Progressive"
+                        description="A page and form that work both with and without JavaScript."
+                        href="/uis/mpa"
                       />
                     </ExampleGroup>
 

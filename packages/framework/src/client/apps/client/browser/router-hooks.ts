@@ -304,11 +304,12 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
       let responsePath = url.searchParams.get("path");
       let contentType = response.headers.get("content-type");
       let fetchedPath = responsePath ?? decodeURIComponent(encodedPath);
-      let treeOptions = { callServer };
+      let rscOptions = { callServer };
       let tree;
 
       if (contentType === "text/x-component") {
-        tree = createFromReadableStream(response.body, treeOptions);
+        let payload = await createFromReadableStream(response.body, rscOptions);
+        tree = payload.tree;
       } else if (contentType === "text/x-serialized-error") {
         let json = await response.json();
         let error = deserializeError(json);
@@ -317,7 +318,7 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
             controller.error(error);
           },
         });
-        tree = createFromReadableStream(stream, treeOptions);
+        tree = createFromReadableStream(stream, rscOptions);
       } else if (contentType === "application/json") {
         let json = await response.json();
         if (json.type === "twofold-offsite-redirect") {
@@ -330,7 +331,7 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
               controller.error(error);
             },
           });
-          tree = createFromReadableStream(stream, treeOptions);
+          tree = createFromReadableStream(stream, rscOptions);
         }
       } else if (!response.ok) {
         let stream = new ReadableStream({
@@ -340,7 +341,7 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
           },
         });
 
-        tree = createFromReadableStream(stream, treeOptions);
+        tree = createFromReadableStream(stream, rscOptions);
       } else {
         let stream = new ReadableStream({
           start(controller) {
@@ -348,7 +349,7 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
             controller.error(error);
           },
         });
-        tree = createFromReadableStream(stream, treeOptions);
+        tree = createFromReadableStream(stream, rscOptions);
       }
 
       return {
@@ -374,10 +375,10 @@ async function getInitialRouterState() {
   let path = initialPath;
 
   if (window.initialRSC?.stream) {
-    let tree = createFromReadableStream(window.initialRSC.stream, {
+    let payload = await createFromReadableStream(window.initialRSC.stream, {
       callServer,
     });
-    cache.set(initialPath, tree);
+    cache.set(initialPath, payload.tree);
   } else {
     let rscPayload = await fetchRSCPayload(initialPath, {
       initiator: "initial-render",
