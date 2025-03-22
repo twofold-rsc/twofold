@@ -8,7 +8,7 @@ export type State = {
   error: string | null;
 };
 
-export const formSchema = z.object({
+const formSchema = z.object({
   username: z.string(),
 });
 
@@ -36,8 +36,8 @@ export default function MPAPage() {
       </h1>
       <div className="mt-6">
         <p className="max-w-prose">
-          This page renders an form in React that is usable even if JavaScript
-          is turned off.
+          This page renders a form in React that is usable even if JavaScript is
+          turned off.
         </p>
         <div className="mt-4">
           <JavaScriptEnabled />

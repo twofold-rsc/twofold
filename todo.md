@@ -2,12 +2,7 @@
 
 framework
 
-- MPA
-- UI page for MPA w/ dismiss
-
 - release
-- remove flash from docs
-
 - flash with server actions + uO
 
 - MPA2
