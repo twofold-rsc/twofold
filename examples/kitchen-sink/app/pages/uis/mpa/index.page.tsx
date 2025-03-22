@@ -15,6 +15,8 @@ export const formSchema = z.object({
 async function signup(prev: State, formData: FormData): Promise<State> {
   "use server";
 
+  await new Promise((resolve) => setTimeout(resolve, 700));
+
   let { username } = formSchema.parse(Object.fromEntries(formData.entries()));
 
   const isValid = username === "ryanto";
