@@ -3,11 +3,11 @@
 framework
 
 - release
-- flash with server actions + uO
+- test and release new transforms package
+- deploy website w/ flash
 
 - MPA2
 - try rsdw/client as external
-- test and release new transforms package
 
 - test server action + flash
 - test windows + server action + flash

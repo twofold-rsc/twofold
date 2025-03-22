@@ -65,7 +65,7 @@ describe("module transform", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
-      export const increment = createServerReference("test#increment", callServer);"
+      export const increment = createServerReference("test#increment", callServer, "test#increment");"
     `);
   });
 
@@ -99,7 +99,7 @@ describe("module transform", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
-      export const increment = createServerReference("test#increment", callServer);"
+      export const increment = createServerReference("test#increment", callServer, "test#increment");"
     `);
   });
 
@@ -155,11 +155,11 @@ describe("module transform", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
-      export const add1 = createServerReference("test#add1", callServer);
-      export const add10 = createServerReference("test#add10", callServer);
-      export const addOneHundred = createServerReference("test#addOneHundred", callServer);
-      export default createServerReference("test#default", callServer);
-      export const newAdd1_000 = createServerReference("test#newAdd1_000", callServer);"
+      export const add1 = createServerReference("test#add1", callServer, "test#add1");
+      export const add10 = createServerReference("test#add10", callServer, "test#add10");
+      export const addOneHundred = createServerReference("test#addOneHundred", callServer, "test#addOneHundred");
+      export default createServerReference("test#default", callServer, "test#default");
+      export const newAdd1_000 = createServerReference("test#newAdd1_000", callServer, "test#newAdd1_000");"
     `);
   });
 
@@ -191,7 +191,7 @@ describe("module transform", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
-      export const increment = createServerReference("test#increment", callServer);"
+      export const increment = createServerReference("test#increment", callServer, "test#increment");"
     `);
   });
 
@@ -223,7 +223,7 @@ describe("module transform", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
-      export const addOne = createServerReference("test#addOne", callServer);"
+      export const addOne = createServerReference("test#addOne", callServer, "test#addOne");"
     `);
   });
 
@@ -253,7 +253,7 @@ describe("module transform", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
-      export default createServerReference("test#default", callServer);"
+      export default createServerReference("test#default", callServer, "test#default");"
     `);
   });
 
@@ -286,8 +286,8 @@ describe("module transform", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
-      export const count = createServerReference("test#count", callServer);
-      export const database = createServerReference("test#database", callServer);"
+      export const count = createServerReference("test#count", callServer, "test#count");
+      export const database = createServerReference("test#database", callServer, "test#database");"
     `);
   });
 });
@@ -326,7 +326,7 @@ describe("factory functions", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
-      export const increment = createServerReference("test#increment", callServer);"
+      export const increment = createServerReference("test#increment", callServer, "test#increment");"
     `);
   });
 });
@@ -361,7 +361,7 @@ describe("JS tests", () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { createServerReference } from "react-server-dom-webpack/client";
       import { callServer } from "framework/call-server";
-      export const increment = createServerReference("test#increment", callServer);"
+      export const increment = createServerReference("test#increment", callServer, "test#increment");"
     `);
   });
 });
