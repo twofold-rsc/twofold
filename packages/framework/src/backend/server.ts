@@ -155,15 +155,6 @@ async function createHandler(runtime: Runtime) {
 
     let actionRequest = runtime.actionRequest(request);
     if (actionRequest) {
-      // let response;
-      // let name;
-      // try {
-      //   response = await actionRequest.ssrResponse();
-      //   name = await actionRequest.name();
-      // } catch (e) {
-      //   console.error(e);
-      // }
-
       let response = await actionRequest.ssrResponse();
       let name = await actionRequest.name();
 

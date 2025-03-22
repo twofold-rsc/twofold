@@ -5,8 +5,6 @@ import { injectResolver } from "../monkey-patch.js";
 import { serializeError } from "serialize-error";
 import { pageSSR } from "./page-ssr.js";
 import { staticSSR } from "./static-ssr.js";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 
 if (!parentPort) {
   throw new Error("Must be run as a worker");
