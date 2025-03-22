@@ -64,16 +64,14 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             <li>
               <DocLink href="/docs/reference/middleware">Middleware</DocLink>
             </li>
-
           </ul>
 
-
-          <div className="mt-6 font-bold">Patterns</div>
+          {/* <div className="mt-6 font-bold">Patterns</div>
           <ul className="mt-1 space-y-1">
             <li>
               <DocLink href="/docs/reference/flash-messages">Flash messages</DocLink>
             </li>
-          </ul>
+          </ul> */}
 
           <div className="mt-6 font-bold">Components</div>
           <ul className="mt-1 space-y-1">
@@ -93,9 +91,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
               </DocLink>
             </li>
             <li>
-              <DocLink href="/docs/reference/use-flash">
-                useFlash
-              </DocLink>
+              <DocLink href="/docs/reference/use-flash">useFlash</DocLink>
             </li>
           </ul>
 
