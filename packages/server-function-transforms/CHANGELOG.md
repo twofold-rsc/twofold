@@ -1,5 +1,11 @@
 # @twofold/server-function-transforms
 
+## 0.0.8
+
+### Patch Changes
+
+- MPA mode, flash messages
+
 ## 0.0.7
 
 ### Patch Changes

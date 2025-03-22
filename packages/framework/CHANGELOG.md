@@ -1,5 +1,13 @@
 # @twofold/framework
 
+## 0.0.56
+
+### Patch Changes
+
+- MPA mode, flash messages
+- Updated dependencies
+  - @twofold/server-function-transforms@0.0.8
+
 ## 0.0.55
 
 ### Patch Changes
