@@ -2,11 +2,23 @@
 
 framework
 
+<<<<<<< HEAD
+=======
+- catchall docs
+- deploy index
+
+- deploy guide
+- do deploy
+- node_env, twofold secret, port 3000
+
+- base app default flash should be 1.5s
+- add readme to base app
+
+- generate secret key
+
+>>>>>>> 5bffb24 (first pass at deploy)
 - MPA2
 - try rsdw/client as external
-
-- test server action + flash
-- test windows + server action + flash
 
 - route masking
 
