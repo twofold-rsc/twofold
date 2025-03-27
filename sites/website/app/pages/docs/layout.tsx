@@ -48,6 +48,9 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             <li>
               <DocLink href="/docs/guides/styling">Styling</DocLink>
             </li>
+            <li>
+              <DocLink href="/docs/guides/deployment">Deployment</DocLink>
+            </li>
           </ul>
 
           <div className="mt-6 font-bold">Server</div>

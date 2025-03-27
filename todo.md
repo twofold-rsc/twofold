@@ -2,15 +2,13 @@
 
 framework
 
-- release
-- test and release new transforms package
-- deploy website w/ flash
+- base app default flash should be 1.5s
+- add readme to base app
+
+- cli generate secret key
 
 - MPA2
 - try rsdw/client as external
-
-- test server action + flash
-- test windows + server action + flash
 
 - route masking
 
