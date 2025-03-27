@@ -2,8 +2,6 @@
 
 framework
 
-<<<<<<< HEAD
-=======
 - catchall docs
 - deploy index
 
@@ -14,9 +12,8 @@ framework
 - base app default flash should be 1.5s
 - add readme to base app
 
-- generate secret key
+- cli generate secret key
 
->>>>>>> 5bffb24 (first pass at deploy)
 - MPA2
 - try rsdw/client as external
 
