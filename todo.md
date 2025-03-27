@@ -2,17 +2,10 @@
 
 framework
 
-- catchall docs
-- deploy index
-
-- deploy guide
-- do deploy
-- node_env, twofold secret, port 3000
-
 - base app default flash should be 1.5s
 - add readme to base app
 
-- generate secret key
+- cli generate secret key
 
 - MPA2
 - try rsdw/client as external
