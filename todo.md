@@ -2,10 +2,18 @@
 
 framework
 
+- website footer
+
 - base app default flash should be 1.5s
+- add comment to toaster explaining what it is, link to docs
 - add readme to base app
 
+- add streaming to demo, test fly
+- change deploy demo app to use cookies
+
+- add pnpm start (twofold start alias to serve)
 - cli generate secret key
+- cli docs
 
 - MPA2
 - try rsdw/client as external
