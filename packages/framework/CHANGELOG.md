@@ -1,5 +1,13 @@
 # @twofold/framework
 
+## 0.0.57
+
+### Patch Changes
+
+- React 19.1 support
+- Updated dependencies
+  - @twofold/server-function-transforms@0.0.9
+
 ## 0.0.56
 
 ### Patch Changes

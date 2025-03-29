@@ -1,5 +1,11 @@
 # @twofold/server-function-transforms
 
+## 0.0.9
+
+### Patch Changes
+
+- React 19.1 support
+
 ## 0.0.8
 
 ### Patch Changes

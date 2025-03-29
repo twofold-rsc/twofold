@@ -1,5 +1,11 @@
 # eslint-plugin-twofold
 
+## 0.0.57
+
+### Patch Changes
+
+- React 19.1 support
+
 ## 0.0.56
 
 ## 0.0.55
