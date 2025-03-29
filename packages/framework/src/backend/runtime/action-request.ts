@@ -199,7 +199,7 @@ export class ActionRequest {
       let parts = name.split("$");
       return parts[3] ?? id;
     } else {
-      return id;
+      return name;
     }
   }
 

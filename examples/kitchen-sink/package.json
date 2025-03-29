@@ -20,23 +20,23 @@
     "@radix-ui/react-navigation-menu": "^1.2.5",
     "@radix-ui/react-toast": "^1.2.6",
     "@twofold/framework": "workspace:*",
-    "framer-motion": "^12.5.0",
+    "framer-motion": "^12.6.2",
     "open-graph-scraper": "^6.9.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-server-dom-webpack": "catalog:",
     "sharp": "^0.33.5",
-    "tailwindcss": "^4.0.14",
+    "tailwindcss": "^4.0.17",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "eslint": "^9.20.1",
+    "eslint": "^9.23.0",
     "eslint-plugin-twofold": "workspace:*",
     "nodemon": "^3.1.9",
-    "prettier": "^3.5.1",
+    "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "typescript": "catalog:"
   }

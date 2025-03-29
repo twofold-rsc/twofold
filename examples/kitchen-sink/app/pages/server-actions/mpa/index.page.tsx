@@ -1,3 +1,4 @@
+import { logFromActionFile } from "./actions";
 import { FormWithClientState, State } from "./form-with-client-state";
 import { FormWithServerState } from "./form-with-server-state";
 
@@ -39,7 +40,8 @@ export default function MPAPage() {
       </p>
       <div className="mt-4 space-y-3">
         <div className="border border-gray-200 p-4">
-          <form action={log}>
+          <div>Form with action</div>
+          <form action={log} className="pt-3">
             <button
               type="submit"
               className="inline-flex items-center justify-center rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"
@@ -61,6 +63,18 @@ export default function MPAPage() {
           <div className="pt-3">
             <FormWithClientState action={clientFormAction} />
           </div>
+        </div>
+
+        <div className="border border-gray-200 p-4">
+          <div>Imported action</div>
+          <form action={logFromActionFile} className="pt-3">
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"
+            >
+              Run action
+            </button>
+          </form>
         </div>
       </div>
     </div>

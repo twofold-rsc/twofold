@@ -2,10 +2,6 @@
 
 framework
 
-- release
-- test and release new transforms package
-- deploy website w/ flash
-
 - MPA2
 - try rsdw/client as external
 

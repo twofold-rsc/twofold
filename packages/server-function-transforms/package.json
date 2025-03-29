@@ -22,14 +22,14 @@
     "@types/babel__generator": "^7.6.8",
     "@types/node": "catalog:",
     "dedent": "^1.5.3",
-    "prettier": "^3.5.1",
+    "prettier": "^3.5.3",
     "typescript": "catalog:",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.9"
   },
   "dependencies": {
-    "@babel/core": "^7.26.9",
-    "@babel/generator": "^7.26.9",
-    "@babel/types": "^7.26.9",
+    "@babel/core": "^7.26.10",
+    "@babel/generator": "^7.27.0",
+    "@babel/types": "^7.27.0",
     "esbuild": "0.25.0",
     "react-server-dom-webpack": ">=19.0.0"
   }
