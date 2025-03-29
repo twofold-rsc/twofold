@@ -10,6 +10,7 @@ export default function Layout({ children }: LayoutProps) {
       <head>
         <title>Kitchen sink</title>
         <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+        <meta charSet="utf-8" />
       </head>
       <body className="subpixel-antialiased">
         <div>

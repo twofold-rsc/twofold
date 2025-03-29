@@ -40,7 +40,7 @@
     "node": ">=22.12.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.20.0",
+    "@eslint/js": "^9.23.0",
     "@types/babel__core": "^7.20.5",
     "@types/etag": "^1.8.3",
     "@types/mime-types": "^2.1.4",
@@ -50,11 +50,11 @@
     "cookie": "^1.0.2",
     "eslint": "^9.20.1",
     "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-hooks": "5.1.0",
-    "globals": "^15.15.0",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "globals": "^16.0.0",
     "nodemon": "^3.1.9",
     "typescript": "catalog:",
-    "typescript-eslint": "^8.25.0"
+    "typescript-eslint": "^8.28.0"
   },
   "peerDependencies": {
     "react": "catalog:",
@@ -88,9 +88,9 @@
     "esbuild": "0.25.0",
     "etag": "^1.8.1",
     "jiti": "^2.4.2",
-    "mime-types": "^2.1.35",
+    "mime-types": "^3.0.1",
     "minimatch": "^10.0.1",
-    "react-refresh": "^0.16.0",
+    "react-refresh": "^0.17.0",
     "serialize-error": "^12.0.0",
     "server-only": "^0.0.1",
     "urlpattern-polyfill": "10.0.0",

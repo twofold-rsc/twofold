@@ -96,7 +96,6 @@ export async function transform({
   }
 
   // babel types are currently being reworked and this is broken
-  // @ts-expect-error
   let result = generate.default(ast, { compact: false });
 
   return {

@@ -3,7 +3,7 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { useRouter } from "@twofold/framework/use-router";
 import Link from "@twofold/framework/link";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 
 export default function Nav() {
   let { path } = useRouter();
