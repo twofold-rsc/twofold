@@ -12,14 +12,13 @@ import { PageProps } from "@twofold/framework/types";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import React, { cache } from "react";
-import { Counter } from "./components/counter";
 import { Fence } from "./components/fence";
 import { CreateTwofoldApp } from "./components/create-twofold-app";
 import { DeploymentGrid } from "./components/deployment-grid";
 import { Callout } from "./components/callout";
 import { Image } from "./components/image";
 
-let allowedDirectories = ["reference", "guides", "deploy", "philosophy"];
+let allowedDirectories = ["reference", "guides", "philosophy"];
 
 export default async function DocPage({ params }: PageProps<"doc">) {
   let parts = params.doc.split("/");
@@ -28,6 +27,8 @@ export default async function DocPage({ params }: PageProps<"doc">) {
   if (!type || !allowedDirectories.includes(type)) {
     notFound();
   }
+
+  let subtype = path.length > 1 ? path[0] : undefined;
 
   let slug = [type, ...path].join("/");
 
@@ -53,6 +54,16 @@ export default async function DocPage({ params }: PageProps<"doc">) {
                   : "Reference"}
             </span>
             <span className="text-xs text-gray-400">/</span>
+
+            {subtype && (
+              <>
+                <span className="text-gray-500">
+                  {subtype.charAt(0).toUpperCase() + subtype.slice(1)}
+                </span>
+                <span className="text-xs text-gray-400">/</span>
+              </>
+            )}
+
             <Link
               href={`/docs/${slug}`}
               className="text-blue-500 hover:underline active:text-blue-600"
@@ -108,11 +119,6 @@ let loadDocContent = cache(async (slug: string) => {
         children: ["inline"],
         attributes: {},
       },
-      counter: {
-        render: "Counter",
-        children: [],
-        attributes: {},
-      },
       ["create-twofold-app"]: {
         render: "CreateTwofoldApp",
         children: [],
@@ -129,6 +135,11 @@ let loadDocContent = cache(async (slug: string) => {
         attributes: {
           src: { type: String, required: true },
           alt: { type: String, required: false },
+          border: {
+            type: Boolean,
+            default: false,
+            required: false,
+          },
         },
       },
     },
@@ -146,7 +157,6 @@ let loadDocContent = cache(async (slug: string) => {
 async function MarkdocContent({ content }: { content: RenderableTreeNodes }) {
   let components = {
     Callout,
-    Counter,
     Fence,
     CreateTwofoldApp,
     DeploymentGrid,

@@ -14,7 +14,7 @@ export function DocLink({
   let { path } = useRouter();
 
   return (
-    <Link href={href} className={href === path ? "text-blue-500" : ""}>
+    <Link href={href} className={path.startsWith(href) ? "text-blue-500" : ""}>
       {children}
     </Link>
   );

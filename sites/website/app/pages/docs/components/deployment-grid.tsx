@@ -5,7 +5,7 @@ export function DeploymentGrid() {
   return (
     <div className="not-prose mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
       <Link
-        href="/docs/deploy/digitalocean-app-platform"
+        href="/docs/guides/deployment/digitalocean-app-platform"
         className="group flex aspect-[16/9] h-full w-full flex-col items-center justify-center rounded-lg ring-[0.5px] shadow ring-gray-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md"
       >
         <DigitalOceanIcon className="size-12 grayscale-100 transition-[filter] group-hover:grayscale-0" />
@@ -14,7 +14,7 @@ export function DeploymentGrid() {
       </Link>
 
       <Link
-        href="/docs/deploy/fly-io"
+        href="/docs/guides/deployment/fly-io"
         className="group flex aspect-[16/9] h-full w-full flex-col items-center justify-center rounded-lg ring-[0.5px] shadow ring-gray-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md"
       >
         <FlyIOIcon className="size-12 grayscale-100 transition-[filter] group-hover:grayscale-0" />

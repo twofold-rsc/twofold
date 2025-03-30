@@ -8,7 +8,10 @@ framework
 - deploy guide
 - do deploy
 - node_env, twofold secret, port 3000
+- rebase main
 - website footer
+- mobile deploy styles
+- code samples margin
 
 - base app default flash should be 1.5s
 - add comment to toaster explaining what it is, link to docs
@@ -21,8 +24,9 @@ framework
 - cli generate secret key
 - cli docs
 
-- MPA2
-- try rsdw/client as external
+- components
+- SubmitButton
+- NavigationLink
 
 - route masking
 
