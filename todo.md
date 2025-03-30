@@ -2,12 +2,6 @@
 
 framework
 
-- catchall docs
-- deploy index
-
-- deploy guide
-- do deploy
-- node_env, twofold secret, port 3000
 - rebase main
 - website footer
 - mobile deploy styles
