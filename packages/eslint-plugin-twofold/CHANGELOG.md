@@ -1,5 +1,7 @@
 # eslint-plugin-twofold
 
+## 0.0.58
+
 ## 0.0.57
 
 ### Patch Changes

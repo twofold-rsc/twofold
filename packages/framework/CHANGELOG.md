@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.58
+
+### Patch Changes
+
+- Add start command
+
 ## 0.0.57
 
 ### Patch Changes
