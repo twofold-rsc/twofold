@@ -2,9 +2,6 @@
 
 framework
 
-- proof guides
-- write intro for fly
-
 - cli generate secret key
 - cli docs
 
