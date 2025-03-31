@@ -21,7 +21,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
         </a>
       </header>
 
-      <div className="mx-auto mt-8 grid w-full max-w-[1190px] grid-cols-5 gap-x-12 px-4">
+      <div className="mx-auto mt-8 grid w-full max-w-[1190px] grid-cols-5 gap-x-12 px-4 pb-24">
         <div className="hidden sm:block">
           <div className="font-bold">Guides</div>
           <ul className="mt-1 space-y-1">
@@ -126,6 +126,8 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
 
         {children}
       </div>
+
+      <div></div>
     </EnterDocsAnimation>
   );
 }

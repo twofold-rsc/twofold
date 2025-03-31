@@ -23,7 +23,7 @@ Next, you should see a list of your GitHub repositories. Select the repository t
 {% image src="/images/guides/deploy/digitalocean-app-platform/select-repo.png" alt="Select your GitHub repository" /%}
 
 {% callout %}
-Before seeing your repository, you may be asked to allow DigitalOcean to access your GitHub repositories. Follow the prompts to do so.
+Before seeing your repository, you may be asked to grant DigitalOcean access to your GitHub repositories. Follow the prompts to do so.
 {% /callout %}
 
 Select your main branch and click "Next".

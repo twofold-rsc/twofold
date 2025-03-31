@@ -17,6 +17,7 @@ import { CreateTwofoldApp } from "./components/create-twofold-app";
 import { DeploymentGrid } from "./components/deployment-grid";
 import { Callout } from "./components/callout";
 import { Image } from "./components/image";
+import "./docs.css";
 
 let allowedDirectories = ["reference", "guides", "philosophy"];
 
@@ -30,6 +31,7 @@ export default async function DocPage({ params }: PageProps<"doc">) {
 
   let subtype = path.length > 1 ? path[0] : undefined;
 
+  let subtypeSlug = [type, subtype].filter(Boolean).join("/");
   let slug = [type, ...path].join("/");
 
   let content = await loadDocContent(slug);
@@ -57,9 +59,12 @@ export default async function DocPage({ params }: PageProps<"doc">) {
 
             {subtype && (
               <>
-                <span className="text-gray-500">
+                <Link
+                  href={`/docs/${subtypeSlug}`}
+                  className="text-gray-500 hover:underline active:text-gray-600"
+                >
                   {subtype.charAt(0).toUpperCase() + subtype.slice(1)}
-                </span>
+                </Link>
                 <span className="text-xs text-gray-400">/</span>
               </>
             )}

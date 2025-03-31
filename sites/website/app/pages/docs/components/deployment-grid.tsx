@@ -3,23 +3,32 @@ import { ComponentProps } from "react";
 
 export function DeploymentGrid() {
   return (
-    <div className="not-prose mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div className="not-prose mx-auto mt-4 grid max-w-sm grid-cols-1 gap-4 sm:max-w-none sm:grid-cols-2 md:grid-cols-3">
+      <Link
+        href="/docs/guides/deployment/fly-io"
+        className="group flex aspect-[2.2/1] h-full w-full flex-col items-center justify-center rounded-lg ring-[0.5px] shadow ring-gray-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md sm:aspect-[16/9]"
+      >
+        <FlyIOIcon className="aspect-square size-16 grayscale-100 transition-[filter] group-hover:grayscale-0 sm:size-12" />
+
+        <div className="mt-2.5 text-sm">Fly.io</div>
+      </Link>
+
       <Link
         href="/docs/guides/deployment/digitalocean-app-platform"
-        className="group flex aspect-[16/9] h-full w-full flex-col items-center justify-center rounded-lg ring-[0.5px] shadow ring-gray-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md"
+        className="group flex aspect-[2.2/1] h-full w-full flex-col items-center justify-center rounded-lg ring-[0.5px] shadow ring-gray-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md sm:aspect-[16/9]"
       >
-        <DigitalOceanIcon className="size-12 grayscale-100 transition-[filter] group-hover:grayscale-0" />
+        <DigitalOceanIcon className="aspect-square size-16 grayscale-100 transition-[filter] group-hover:grayscale-0 sm:size-12" />
 
         <div className="mt-2.5 text-sm">DigitalOcean App Platform</div>
       </Link>
 
       <Link
-        href="/docs/guides/deployment/fly-io"
-        className="group flex aspect-[16/9] h-full w-full flex-col items-center justify-center rounded-lg ring-[0.5px] shadow ring-gray-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md"
+        href="/docs/guides/deployment/docker"
+        className="group flex aspect-[2.2/1] h-full w-full flex-col items-center justify-center rounded-lg ring-[0.5px] shadow ring-gray-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md sm:aspect-[16/9]"
       >
-        <FlyIOIcon className="size-12 grayscale-100 transition-[filter] group-hover:grayscale-0" />
+        <DockerIcon className="aspect-square size-16 grayscale-100 transition-[filter] group-hover:grayscale-0 sm:size-12" />
 
-        <div className="mt-2.5 text-sm">Fly.io</div>
+        <div className="mt-2.5 text-sm">Docker</div>
       </Link>
     </div>
   );
@@ -67,6 +76,14 @@ function FlyIOIcon(props: ComponentProps<"svg">) {
         d="M71.203 148.661l19.927-16.817a2.035 2.035 0 012.606-.006l20.216 16.823a6.906 6.906 0 004.351 1.55H66.877a6.805 6.805 0 004.326-1.55zm12.404-60.034l.195.057c.063.03.116.075.173.114l.163.144c.402.37.793.759 1.169 1.157.265.283.523.574.771.875.315.38.61.779.879 1.194.116.183.224.368.325.561.088.167.167.34.236.515.122.305.214.627.242.954l-.006.614a3.507 3.507 0 01-1.662 2.732 4.747 4.747 0 01-2.021.665l-.759.022-.641-.056a4.964 4.964 0 01-.881-.214 4.17 4.17 0 01-.834-.391l-.5-.366a3.431 3.431 0 01-1.139-1.952 5.016 5.016 0 01-.059-.387l-.018-.586c.01-.158.034-.315.069-.472.087-.341.213-.673.372-.988.205-.396.439-.776.7-1.137.433-.586.903-1.143 1.405-1.67.324-.342.655-.673 1.001-.993l.246-.221c.171-.114.173-.114.368-.171h.206zM82.348 6.956l.079-.006v68.484l-.171-.315a191.264 191.264 0 01-6.291-12.75 136.318 136.318 0 01-4.269-10.688 84.358 84.358 0 01-2.574-8.802c-.541-2.365-.956-4.765-1.126-7.19a35.028 35.028 0 01-.059-3.108c.016-.903.053-1.804.109-2.705.09-1.418.234-2.832.442-4.235.165-1.104.368-2.205.62-3.293.2-.865.431-1.723.696-2.567.382-1.22.84-2.412 1.373-3.576.195-.419.405-.836.624-1.245 1.322-2.449 3.116-4.704 5.466-6.214a11.422 11.422 0 015.081-1.79zm8.88.173l4.607 1.314a28.193 28.193 0 016.076 3.096 24.387 24.387 0 016.533 6.517 24.618 24.618 0 012.531 4.878 28.586 28.586 0 011.761 7.898c.061.708.096 1.418.11 2.127.016.659.012 1.321-.041 1.98a22.306 22.306 0 01-.828 4.352 34.281 34.281 0 01-1.194 3.426 49.43 49.43 0 01-1.895 4.094c-1.536 2.966-3.304 5.803-5.195 8.547a133.118 133.118 0 01-7.491 9.776 185.466 185.466 0 01-8.987 9.96c2.114-3.963 4.087-8 5.915-12.102a149.96 149.96 0 002.876-6.93 108.799 108.799 0 002.679-7.792 76.327 76.327 0 001.54-5.976c.368-1.727.657-3.472.836-5.228.15-1.464.205-2.937.169-4.406a62.154 62.154 0 00-.1-2.695c-.216-3.612-.765-7.212-1.818-10.676a31.255 31.255 0 00-1.453-3.849c-1.348-2.937-3.23-5.683-5.776-7.686l-.855-.625z"
         fill="#fff"
       />
+    </svg>
+  );
+}
+
+function DockerIcon(props: ComponentProps<"svg">) {
+  return (
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137a15.74 15.74 0 002.93-.266 12.248 12.248 0 003.823-1.389 10.51 10.51 0 002.61-2.136c1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288z" />
     </svg>
   );
 }

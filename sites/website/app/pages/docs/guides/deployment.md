@@ -4,6 +4,6 @@ Twofold can be deployed to any hosting provider that can run a long running Node
 
 ## Examples
 
-Here are a few examples of how to deploy Twofold to different hosting providers:
+Guides for how to deploy your Twofold app to various hosting providers.
 
 {% deployment-grid %}

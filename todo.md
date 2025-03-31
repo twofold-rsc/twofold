@@ -2,21 +2,21 @@
 
 framework
 
-- rebase main
-- website footer
-- mobile deploy styles
-- code samples margin
+- proof guides
 
-- base app default flash should be 1.5s
+- add pnpm start (twofold start alias to serve)
+- base app default flash should be 2s
 - add comment to toaster explaining what it is, link to docs
 - add readme to base app
 
-- add streaming to demo, test fly
-- change deploy demo app to use cookies
-
-- add pnpm start (twofold start alias to serve)
 - cli generate secret key
 - cli docs
+
+- code samples margin
+- wider layout
+
+- create twofold app initial output
+- show version
 
 - components
 - SubmitButton
