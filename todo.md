@@ -3,8 +3,7 @@
 framework
 
 - proof guides
-
-- add readme to base app
+- write intro for fly
 
 - cli generate secret key
 - cli docs

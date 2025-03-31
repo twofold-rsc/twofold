@@ -10,7 +10,7 @@ This guide will show you how to deploy a Twofold app to [Fly.io](https://fly.io)
 
 ## Step 1: Launch an app on Fly.io
 
-Login to your Fly.io account and visit the [Fly.io dashboard](https://fly.io/dashboard). Click the "Launch App" button.
+Login to your Fly.io account and visit the [dashboard](https://fly.io/dashboard). Click the "Launch App" button.
 
 When asked, select "Launch from GitHub" and choose your repository.
 
@@ -24,13 +24,13 @@ Before seeing your repository, you may be asked to grant Fly.io access to your G
 
 ## Step 2: Customize your deploy
 
-Once your GitHub repository is selected, click the button that say "Customize deploy".
+Once your GitHub repository is selected, click the button that says "Customize deploy".
 
 {% image src="/images/guides/deploy/fly-io/customize-deploy.png" alt="Customize deploy" border=true /%}
 
 #### Region
 
-Select the region that's closest to you.
+Select the location that's closest to you.
 
 #### Internal port
 
@@ -58,7 +58,7 @@ After about a minute, your app should be deployed and you should see a success m
 
 {% image src="/images/guides/deploy/fly-io/deploy-success.png" alt="Deploy success" /%}
 
-You can click the "Visit your app" button to see your Twofold app running on Fly.io!
+You can click the "Visit your app" button to see your Twofold app running on Fly!
 
 ## Step 4: Create the Fly Pull Request
 
@@ -70,7 +70,7 @@ And then click the "See Pull Request" button.
 
 This will take you to the pull request in your GitHub repository.
 
-{% image src="/images/guides/deploy/fly-io/create-pull-request.png" alt="Create PR" border=true /%}
+{% image src="/images/guides/deploy/fly-io/create-pull-request.png" alt="Create PR" /%}
 
 You can merge this pull request into your main branch.
 
@@ -92,10 +92,10 @@ By default, Fly.io apps automatically suspend after a time period of inactivity.
 - Pro: You don't have to pay for an app that isn't being used. This is great for demo applications.
 - Con: Your app will take a few seconds to start up when it is accessed after being suspended. This is not ideal for production applications.
 
-In order to keep your Twofold app fast and responsive, we'll disable the automatic suspension.
+In order to keep your Twofold app fast and responsive, it's recommended that you disable the automatic suspension.
 
 {% callout %}
-You can skip the rest of this step if you are just testing your app and don't mind the cold-starts that happen when an app is suspended.
+You can skip the rest of this step if you are just testing your app and don't mind the slow startup time that is associated with suspended apps.
 {% /callout %}
 
 #### Pull main down to your computer
@@ -141,4 +141,4 @@ Commit these changes to your local repository and push them to GitHub.
 
 ## Step 7: All done
 
-That's it! Your Twofold app is now deployed to Fly.io and will automatically deploy whenever you push to GitHub. 🎉
+That's it! Your Twofold app is now deployed to Fly.io and will automatically redeploy whenever you push to GitHub. 🎉
