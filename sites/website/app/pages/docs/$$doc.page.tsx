@@ -1,33 +1,42 @@
-import "server-only";
 import Markdoc, {
   Config,
-  Tag,
-  Schema,
-  RenderableTreeNodes,
   RenderableTreeNode,
+  RenderableTreeNodes,
+  Schema,
+  Tag,
 } from "@markdoc/markdoc";
-import { readFile, readdir } from "fs/promises";
-import * as path from "path";
+import slugify from "@sindresorhus/slugify";
+import Link from "@twofold/framework/link";
+import { notFound } from "@twofold/framework/not-found";
+import { PageProps } from "@twofold/framework/types";
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
 import React, { cache } from "react";
-import { Counter } from "./components/counter";
 import { Fence } from "./components/fence";
 import { CreateTwofoldApp } from "./components/create-twofold-app";
-import { notFound } from "@twofold/framework/not-found";
-import Link from "@twofold/framework/link";
-import slugify from "@sindresorhus/slugify";
+import { DeploymentGrid } from "./components/deployment-grid";
+import { Callout } from "./components/callout";
+import { Image } from "./components/image";
+import "./docs.css";
 
-export async function DocPage({
-  type,
-  slug,
-}: {
-  type: "guide" | "reference" | "philosophy";
-  slug: string;
-}) {
-  let content = await loadDocContent(type, slug);
+let allowedDirectories = ["reference", "guides", "philosophy"];
+
+export default async function DocPage({ params }: PageProps<"doc">) {
+  let parts = params.doc.split("/");
+  let [type, ...path] = parts;
+
+  if (!type || !allowedDirectories.includes(type)) {
+    notFound();
+  }
+
+  let subtype = path.length > 1 ? path[0] : undefined;
+
+  let subtypeSlug = [type, subtype].filter(Boolean).join("/");
+  let slug = [type, ...path].join("/");
+
+  let content = await loadDocContent(slug);
   let title = getTitle(content);
   let headings = getHeadings(content);
-
-  let basePath = `/docs/${type === "guide" ? "guides" : type === "philosophy" ? "philosophy" : "reference"}`;
 
   return (
     <>
@@ -40,15 +49,28 @@ export async function DocPage({
             <span className="text-gray-500">Docs</span>
             <span className="text-xs text-gray-400">/</span>
             <span className="text-gray-500">
-              {type === "guide"
+              {type === "guides"
                 ? "Guides"
                 : type === "philosophy"
                   ? "Philosophy"
                   : "Reference"}
             </span>
             <span className="text-xs text-gray-400">/</span>
+
+            {subtype && (
+              <>
+                <Link
+                  href={`/docs/${subtypeSlug}`}
+                  className="text-gray-500 hover:underline active:text-gray-600"
+                >
+                  {subtype.charAt(0).toUpperCase() + subtype.slice(1)}
+                </Link>
+                <span className="text-xs text-gray-400">/</span>
+              </>
+            )}
+
             <Link
-              href={`${basePath}/${slug}`}
+              href={`/docs/${slug}`}
               className="text-blue-500 hover:underline active:text-blue-600"
             >
               {title}
@@ -70,7 +92,7 @@ export async function DocPage({
               .map((heading) => (
                 <li key={heading.title}>
                   <Link
-                    href={`${basePath}/${slug}${heading.level > 1 ? `#${heading.id}` : ""}`}
+                    href={`/docs/${slug}${heading.level > 1 ? `#${heading.id}` : ""}`}
                   >
                     {heading.title}
                   </Link>
@@ -83,64 +105,88 @@ export async function DocPage({
   );
 }
 
+let loadDocContent = cache(async (slug: string) => {
+  let allDocs = await getDocFiles();
+
+  if (!allDocs.includes(slug)) {
+    console.error(`Doc not found: ${slug}`);
+    notFound();
+  }
+
+  let filePath = path.join(process.cwd(), `./app/pages/docs/${slug}.md`);
+  let raw = await readFile(filePath, "utf-8");
+  let ast = Markdoc.parse(raw);
+
+  let config: Config = {
+    tags: {
+      callout: {
+        render: "Callout",
+        children: ["inline"],
+        attributes: {},
+      },
+      ["create-twofold-app"]: {
+        render: "CreateTwofoldApp",
+        children: [],
+        attributes: {},
+      },
+      ["deployment-grid"]: {
+        render: "DeploymentGrid",
+        children: [],
+        attributes: {},
+      },
+      image: {
+        render: "Image",
+        children: [],
+        attributes: {
+          src: { type: String, required: true },
+          alt: { type: String, required: false },
+          border: {
+            type: Boolean,
+            default: false,
+            required: false,
+          },
+        },
+      },
+    },
+    nodes: {
+      heading,
+      fence,
+    },
+    variables: {},
+  };
+
+  let content = Markdoc.transform(ast, config);
+  return content;
+});
+
 async function MarkdocContent({ content }: { content: RenderableTreeNodes }) {
   let components = {
-    Counter,
+    Callout,
     Fence,
     CreateTwofoldApp,
+    DeploymentGrid,
+    Image,
   };
 
   return <>{Markdoc.renderers.react(content, React, { components })}</>;
 }
 
-let loadDocContent = cache(
-  async (type: "guide" | "reference" | "philosophy", slug: string) => {
-    let allDocs = await availableDocs();
-    let docs = allDocs[type];
+async function getDocFiles() {
+  let directoryPath = path.join(process.cwd(), `./app/pages/docs`);
+  let files = await readdir(directoryPath, {
+    recursive: true,
+    withFileTypes: true,
+  });
 
-    let basePath =
-      type === "guide"
-        ? "guides"
-        : type === "philosophy"
-          ? "philosophy"
-          : "reference";
-
-    if (!docs.includes(slug)) {
-      console.error(`Doc not found: ${type} ${slug}`);
-      notFound();
-    }
-
-    let filePath = path.join(
-      process.cwd(),
-      `./app/pages/docs/${basePath}/${slug}.md`,
+  return files
+    .filter((file) => file.isFile())
+    .filter((file) => file.name.endsWith(".md"))
+    .map((file) =>
+      path
+        .relative(directoryPath, path.join(file.parentPath, file.name))
+        .replace(/\.md$/, ""),
     );
-    let raw = await readFile(filePath, "utf-8");
-    let ast = Markdoc.parse(raw);
-
-    let config: Config = {
-      tags: {
-        counter: {
-          render: "Counter",
-          children: [],
-          attributes: {},
-        },
-        ["create-twofold-app"]: {
-          render: "CreateTwofoldApp",
-          children: [],
-          attributes: {},
-        },
-      },
-      nodes: {
-        heading,
-        fence,
-      },
-      variables: {},
-    };
-
-    let content = Markdoc.transform(ast, config);
-    return content;
-  },
-);
+}
 
 let heading: Schema = {
   children: ["inline"],
@@ -175,26 +221,6 @@ let fence: Schema = {
     },
   },
 };
-
-async function getDocSlugs(dir: "guides" | "reference" | "philosophy") {
-  let directoryPath = path.join(process.cwd(), `./app/pages/docs/${dir}`);
-  let files = await readdir(directoryPath);
-  return files
-    .filter((file) => file.endsWith(".md"))
-    .map((file) => path.parse(file).name);
-}
-
-let availableDocs = cache(async () => {
-  let guide = await getDocSlugs("guides");
-  let reference = await getDocSlugs("reference");
-  let philosophy = await getDocSlugs("philosophy");
-
-  return {
-    guide,
-    reference,
-    philosophy,
-  };
-});
 
 function getTitle(node: RenderableTreeNode): string | undefined {
   if (!node) {

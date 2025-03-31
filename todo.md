@@ -2,11 +2,18 @@
 
 framework
 
-- MPA2
-- try rsdw/client as external
+- cli generate secret key
+- cli docs
 
-- test server action + flash
-- test windows + server action + flash
+- code samples margin
+- wider layout
+
+- create twofold app initial output
+- show version
+
+- components
+- SubmitButton
+- NavigationLink
 
 - route masking
 

@@ -2,14 +2,9 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  /* --default-font-family: "Inter", ui-sans-serif, system-ui, sans-serif; */
-}
-
-.caveat-font {
-  font-family: "Caveat", cursive;
-  font-optical-sizing: auto;
-  font-weight: 700;
-  font-style: normal;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 }
 
 .inter-font {

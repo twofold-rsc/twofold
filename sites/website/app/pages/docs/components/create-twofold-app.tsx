@@ -2,8 +2,8 @@ import { ReactNode } from "react";
 
 export function CreateTwofoldApp() {
   return (
-    <div>
-      <pre className="bg-[#282A36] color-[#F8F8F2]" tabIndex={0}>
+    <div className="not-prose relative my-6 rounded-md bg-[#24292e] p-4 text-sm">
+      <pre className="text-sm leading-[1.7] text-[#e1e4e8]" tabIndex={0}>
         <code>
           <Line>pnpm create twofold-app@latest</Line>
 
@@ -39,6 +39,8 @@ export function CreateTwofoldApp() {
           <Output type="info">Run app: cd my-app && pnpm dev</Output>
         </code>
       </pre>
+
+      <div className="pointer-events-none absolute inset-0 rounded-md ring ring-white/20 ring-inset" />
     </div>
   );
 }
