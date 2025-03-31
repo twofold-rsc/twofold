@@ -4,9 +4,6 @@ framework
 
 - proof guides
 
-- add pnpm start (twofold start alias to serve)
-- base app default flash should be 2s
-- add comment to toaster explaining what it is, link to docs
 - add readme to base app
 
 - cli generate secret key

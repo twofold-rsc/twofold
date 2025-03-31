@@ -3,10 +3,17 @@
 import { useFlash } from "@twofold/framework/flash";
 import z from "zod";
 
+/**
+ * This component displays a toast notification when you call `flash()`
+ * in an action.
+ *
+ * For more information, see the Flash documentation:
+ * https://twofoldframework.com/docs/reference/flash-messages
+ */
 export function Toaster() {
   let { messages } = useFlash({
     schema: z.string(),
-    clearAfter: 3000,
+    clearAfter: 2000,
   });
 
   let latestMessage = messages.at(-1);

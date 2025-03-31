@@ -54,6 +54,7 @@ program
 
 program
   .command("serve")
+  .alias("start")
   .description("Serve a production build")
   .action(async () => {
     let build =

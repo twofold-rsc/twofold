@@ -8,7 +8,8 @@
     "dev": "twofold dev",
     "lint": "eslint .",
     "build": "twofold build",
-    "serve": "twofold serve"
+    "serve": "twofold serve",
+    "start": "twofold start"
   },
   "keywords": [],
   "license": "ISC",
