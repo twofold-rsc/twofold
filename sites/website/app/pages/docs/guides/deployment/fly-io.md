@@ -2,6 +2,8 @@
 
 This guide will show you how to deploy a Twofold app to [Fly.io](https://fly.io).
 
+Fly.io is a developer-friendly cloud platform that lets you deploy your app with minimal configuration. They take care of all the infrastructure, including auto-scaling and managing SSL certificates.
+
 ## Prerequisites
 
 - A Twofold app
@@ -66,9 +68,7 @@ Fly will create a pull request in your GitHub repository with the necessary conf
 
 Click the purple "Create Pull Request" button.
 
-And then click the "See Pull Request" button.
-
-This will take you to the pull request in your GitHub repository.
+And then click the "See Pull Request" button. This will take you to the pull request in your GitHub repository.
 
 {% image src="/images/guides/deploy/fly-io/create-pull-request.png" alt="Create PR" /%}
 
@@ -76,7 +76,7 @@ You can merge this pull request into your main branch.
 
 ## Step 5: Enable auto deploy
 
-Setup Fly.io to automatically deploy your app whenever you push to GitHub.
+Setup Fly to automatically deploy your app whenever you push to GitHub.
 
 Go back to the [Fly.io dashboard](https://fly.io/dashboard) and select your app.
 Then navigate to `Deployments -> Settings` and enable the `Auto Deploy` option.
