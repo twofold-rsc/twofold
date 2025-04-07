@@ -10,8 +10,8 @@ framework
 - add details + new photos
 
 - docs
-- link
-- useRouter
+- link (mask, as)
+- useRouter (mask prop, push options)
 - masking?
 
 - cli generate secret key

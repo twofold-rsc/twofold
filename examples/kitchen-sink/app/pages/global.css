@@ -3,7 +3,3 @@
 @theme {
   --color-primary: var(--color-blue-500);
 }
-
-.bg-test {
-  background-color: orange;
-}
