@@ -6,6 +6,16 @@ import {
 } from "react-server-dom-webpack/client";
 import { deserializeError } from "serialize-error";
 
+declare global {
+  interface Window {
+    __twofold?: WindowTwofold | undefined;
+  }
+
+  interface WindowTwofold {
+    currentPath?: string;
+  }
+}
+
 export async function callServer(id: string, args: any) {
   // console.log("requesting action", id);
 
@@ -14,7 +24,11 @@ export async function callServer(id: string, args: any) {
   let body = await encodeReply(args, {
     temporaryReferences: temporaryReferences,
   });
-  let path = `${location.pathname}${location.search}${location.hash}`;
+
+  let browserPath = `${location.pathname}${location.search}${location.hash}`;
+  let twofoldPath = window.__twofold?.currentPath;
+
+  let path = twofoldPath ?? browserPath;
   let encodedPath = encodeURIComponent(path);
   let encodedId = encodeURIComponent(id);
 

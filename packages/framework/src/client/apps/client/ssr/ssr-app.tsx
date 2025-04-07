@@ -37,6 +37,7 @@ export function SSRApp({
   return (
     <RoutingContext
       path={url.pathname}
+      mask={undefined}
       searchParams={url.searchParams}
       optimisticPath={url.pathname}
       optimisticSearchParams={url.searchParams}

@@ -1,25 +1,32 @@
 "use client";
 
-import { ComponentProps, MouseEvent, ReactNode, Ref } from "react";
+import { ComponentProps, ElementType, MouseEvent, ReactNode, Ref } from "react";
 import { useRouter } from "../hooks/use-router";
 
-type Props = ComponentProps<"a"> & {
+type Props<C extends ElementType> = {
+  as?: C;
   ref?: Ref<HTMLAnchorElement>;
   href: string;
   replace?: boolean;
-  children: ReactNode;
-};
+  scroll?: "top" | "preserve";
+  mask?: string;
+  children?: ReactNode;
+} & ComponentProps<C>;
 
-export default function Link({
+export default function Link<T extends ElementType = "a">({
+  as,
   href,
   children,
   replace,
+  scroll,
+  mask,
   onClick,
   ref,
   ...props
-}: Props) {
+}: Props<T>) {
   let router = useRouter();
   let using: "replace" | "navigate" = replace ? "replace" : "navigate";
+  let shouldScroll = !scroll || scroll == "top";
 
   function handleClick(e: MouseEvent<HTMLAnchorElement>) {
     if (onClick) {
@@ -36,14 +43,19 @@ export default function Link({
       isLocal
     ) {
       e.preventDefault();
-      router[using](href);
+      router[using](href, {
+        scroll: shouldScroll,
+        ...(mask ? { mask: mask } : {}),
+      });
     }
   }
 
+  const Tag = as || "a";
+
   return (
-    <a {...props} ref={ref} href={href} onClick={handleClick}>
+    <Tag {...props} ref={ref} href={mask ? mask : href} onClick={handleClick}>
       {children}
-    </a>
+    </Tag>
   );
 }
 

@@ -99,6 +99,9 @@ importers:
       '@twofold/framework':
         specifier: workspace:*
         version: link:../../packages/framework
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       framer-motion:
         specifier: ^12.6.2
         version: 12.6.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
