@@ -6,6 +6,7 @@ export function useRouter() {
 
   return {
     path: context.path,
+    mask: context.mask,
     searchParams: context.searchParams,
     navigate: context.navigate,
     replace: context.replace,

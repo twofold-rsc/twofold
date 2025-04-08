@@ -22,6 +22,7 @@ declare global {
   interface WindowTwofold {
     updateTree?: (path: string, tree: any) => void;
     navigate?: (path: string) => void;
+    currentPath?: string;
   }
 }
 
@@ -40,10 +41,14 @@ function Router() {
   let [optimisticPath, setOptimisticPath] = useOptimistic(routerState.path);
   let [isTransitioning, startTransition] = useTransition();
 
-  let navigate = useCallback(
+  let navigateToPath = useCallback(
     (
       toPath: string,
-      options: { addHistory: boolean } = { addHistory: true },
+      options: {
+        addHistory: boolean;
+        scroll: boolean;
+        mask?: string;
+      },
     ) => {
       let url = new URL(toPath, window.location.href);
 
@@ -59,7 +64,9 @@ function Router() {
         dispatch({
           type: "NAVIGATE",
           path: newPath,
+          mask: options.mask,
           using: options.addHistory ? "push" : "replace",
+          scroll: options.scroll ? "top" : "preserve",
           fetch: true,
         });
       });
@@ -67,11 +74,26 @@ function Router() {
     [dispatch, setOptimisticPath],
   );
 
-  let replace = useCallback(
-    (toPath: string) => {
-      navigate(toPath, { addHistory: false });
+  let navigate = useCallback(
+    (toPath: string, options: { scroll?: boolean; mask?: string } = {}) => {
+      navigateToPath(toPath, {
+        addHistory: true,
+        scroll: options.scroll ?? true,
+        mask: options.mask,
+      });
     },
-    [navigate],
+    [navigateToPath],
+  );
+
+  let replace = useCallback(
+    (toPath: string, options: { scroll?: boolean; mask?: string } = {}) => {
+      navigateToPath(toPath, {
+        addHistory: false,
+        scroll: options.scroll ?? true,
+        mask: options.mask,
+      });
+    },
+    [navigateToPath],
   );
 
   let refresh = useCallback(() => {
@@ -87,11 +109,19 @@ function Router() {
   }, [dispatch, routerState.path]);
 
   useEffect(() => {
-    function onPopState(_event: PopStateEvent) {
-      let path = `${location.pathname}${location.search}${location.hash}`;
+    function onPopState(event: PopStateEvent) {
+      let path = event.state?.path
+        ? event.state.path
+        : `${location.pathname}${location.search}${location.hash}`;
+      let mask = event.state?.mask ? event.state.mask : undefined;
+
       startTransition(() => {
         setOptimisticPath(path);
-        dispatch({ type: "POP", path });
+        dispatch({
+          type: "POP",
+          path,
+          mask,
+        });
       });
     }
 
@@ -104,16 +134,41 @@ function Router() {
   useLayoutEffect(() => {
     if (routerState.history === "push") {
       let current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-      let isOnPath = current === routerState.path;
+      let display = routerState.mask ? routerState.mask : routerState.path;
+      let isOnPath = current === display;
       if (!isOnPath) {
-        window.history.pushState({}, "", routerState.path);
+        window.history.pushState(
+          {
+            path: routerState.path,
+            mask: routerState.mask,
+          },
+          "",
+          display,
+        );
       }
-      document.documentElement.scrollTop = 0;
+      if (routerState.scroll === "top") {
+        document.documentElement.scrollTop = 0;
+      }
     } else if (routerState.history === "replace") {
-      window.history.replaceState({}, "", routerState.path);
-      document.documentElement.scrollTop = 0;
+      let display = routerState.mask ? routerState.mask : routerState.path;
+      window.history.replaceState(
+        {
+          path: routerState.path,
+          mask: routerState.mask,
+        },
+        "",
+        display,
+      );
+      if (routerState.scroll === "top") {
+        document.documentElement.scrollTop = 0;
+      }
     }
-  }, [routerState.path, routerState.history]);
+  }, [
+    routerState.path,
+    routerState.mask,
+    routerState.history,
+    routerState.scroll,
+  ]);
 
   useLayoutEffect(() => {
     let url = new URL(routerState.path, window.location.href);
@@ -131,6 +186,15 @@ function Router() {
   }, [routerState.path, routerState.action]);
 
   useEffect(() => {
+    let url = new URL(routerState.path, window.location.href);
+    let currentPath = `${url.pathname}${url.search}${url.hash}`;
+
+    if (window.__twofold && window.__twofold.currentPath !== routerState.path) {
+      window.__twofold.currentPath = currentPath;
+    }
+  }, [routerState.path]);
+
+  useEffect(() => {
     window.__twofold = {
       ...window.__twofold,
       updateTree(path: string, tree: any) {
@@ -140,6 +204,7 @@ function Router() {
             type: "UPDATE",
             path,
             tree,
+            // TODO change me
             updateId: crypto.randomUUID(),
           });
         });
@@ -150,7 +215,9 @@ function Router() {
           dispatch({
             type: "NAVIGATE",
             path,
+            mask: undefined,
             using: "push",
+            scroll: "top",
             fetch: false,
           });
         });
@@ -178,6 +245,7 @@ function Router() {
     <ErrorBoundary>
       <RoutingContext
         path={url.pathname}
+        mask={routerState.mask}
         searchParams={url.searchParams}
         optimisticPath={optimisticURL.pathname}
         optimisticSearchParams={optimisticSearchParams}

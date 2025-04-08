@@ -320,6 +320,11 @@ export default function Nav() {
                         href="/routing/scroll-position"
                       />
                       <ExampleLink
+                        title="Masking"
+                        description="Mask the URL of a page."
+                        href="/routing/masking"
+                      />
+                      <ExampleLink
                         title="Path normalization"
                         description="Remove trailing slashes from URLs."
                         href="/routing/path-normalization/"
