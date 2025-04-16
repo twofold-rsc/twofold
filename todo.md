@@ -2,22 +2,22 @@
 
 framework
 
+- redo intro
+
 - cli generate secret key
 - cli docs
-
-- code samples margin
-- wider layout
 
 - create twofold app initial output
 - show version
 
+- scroll position when going back
+- get rid of assets (instead importing a css file should give the url)
+
 - components
-- SubmitButton
+- SubmitButton?
 - NavigationLink
 
 - error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
-
-- get rid of assets (instead importing a css file should give the url)
 
 - prefix encrypted cookie with app name
 
@@ -40,14 +40,12 @@ website
 
 - Loading screens
 - Error handling
-- Deploying
 
 - One app
 - Server, client, server
 
 - mobile menu
 
-- line length in md files
 - docs md files should use <Link>
 
 framework
@@ -56,7 +54,7 @@ framework
 - put all error boundaries in same client component
 - monkey patch console.error for not found/redirect boundaries
 
-- run middleware in RSC
+- run middleware in RSC?
 
 - reload on file changes under pages? (ex editing an md file)
 
