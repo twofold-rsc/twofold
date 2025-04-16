@@ -2,7 +2,7 @@
 
 import { ReactNode, useActionState } from "react";
 import { State } from "./index.page";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 
 export function Form({
   signup,

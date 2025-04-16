@@ -33,27 +33,38 @@ import { useEffect } from "react";
 export default function ClientComponent() {
   let { navigate } = useRouter();
 
-  useEffect(() => {
-    let id = setTimeout(() => {
-      navigate("/new-page");
-    }, 1_000 * 60);
+  function navigateOnClick() {
+    navigate("/new-page");
+  }
 
-    return () => {
-      clearTimeout(id);
-    };
-  }, [navigate]);
-
-  return <p>You can only read this page for 1 minute, then we kick you out!</p>;
+  return <button onClick={navigateOnClick}>Go to new page</button>;
 }
 ```
 
-In the example above, the user will automatically navigate to `/new-page` after 1 minute.
+## Replacing pages
 
 The `replace` function from `useRouter` can be used instead of `navigate`. The only difference is that unlike `navigate`, it will replace the current page in the history stack instead of pushing a new entry.
 
+```tsx
+"use client";
+
+import { useRouter } from "@twofold/framework/use-router";
+import { useEffect } from "react";
+
+export default function ClientComponent() {
+  let { replace } = useRouter();
+
+  function replaceOnClick() {
+    replace("/new-page");
+  }
+
+  return <button onClick={replaceOnClick}>Replace page</button>;
+}
+```
+
 ## Refreshing Pages & Layouts
 
-The `refresh` function from `useRouter` can be used to refresh the current page and its layouts:
+The `refresh` function from `useRouter` is used to refresh the current page and its layouts:
 
 ```tsx
 "use client";
@@ -64,21 +75,11 @@ import { useEffect } from "react";
 export default function ClientComponent() {
   let { refresh } = useRouter();
 
-  useEffect(() => {
-    let id = setInterval(() => {
-      refresh();
-    }, 1_000 * 60);
-
-    return () => {
-      clearTimeout(id);
-    };
-  }, [refresh]);
-
-  return <p>Data will be updated every minute!</p>;
+  return <button onClick={refresh}>Refresh page</button>;
 }
 ```
 
-This component will refresh the data fetched from the page and layouts once a minute. The `refresh` function will only update the data from server components, it leaves data and state associated with client components intact.
+The `refresh` function will only update the data from server components, it leaves data and state associated with client components intact.
 
 ## Return values
 
@@ -98,10 +99,19 @@ function ClientComponent() {
 
 The `useRouter` hook returns an object with the following properties:
 
-| Property       | Type                     | Description                                                  |
-| -------------- | ------------------------ | ------------------------------------------------------------ |
-| `path`         | `string`                 | The current path of the router.                              |
-| `searchParams` | `URLSearchParams`        | The current search params of the router.                     |
-| `navigate`     | `(path: string) => void` | A function to navigate to a new page.                        |
-| `replace`      | `(path: string) => void` | A function to replace the current page in the history stack. |
-| `refresh`      | `() => void`             | A function to refresh the current page and its layouts.      |
+| Property       | Type                                                | Description                                                  |
+| -------------- | --------------------------------------------------- | ------------------------------------------------------------ |
+| `path`         | `string`                                            | The current path of the router.                              |
+| `searchParams` | `URLSearchParams`                                   | The current search params of the router.                     |
+| `navigate`     | `(path: string, options?: NavigateOptions) => void` | A function to navigate to a new page.                        |
+| `replace`      | `(path: string, options?: NavigateOptions) => void` | A function to replace the current page in the history stack. |
+| `refresh`      | `() => void`                                        | A function to refresh the current page and its layouts.      |
+
+### Navigate options
+
+The following options can be passed to the `navigate` and `replace` functions:
+
+| Option   | Type                  | Description                                                                        |
+| -------- | --------------------- | ---------------------------------------------------------------------------------- |
+| `scroll` | `'top' \| 'preserve'` | Default `top`. If `preserve` the page will not scroll to the top after navigation. |
+| `mask`   | `string`              | When set this path will be used in the browser's location bar.                     |

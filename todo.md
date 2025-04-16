@@ -2,18 +2,6 @@
 
 framework
 
-- gallery
-- upgrade to motion/react
-- ring
-- shadow
-- slide up info
-- add details + new photos
-
-- docs
-- link (mask, as)
-- useRouter (mask prop, push options)
-- masking?
-
 - cli generate secret key
 - cli docs
 
