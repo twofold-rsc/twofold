@@ -17,7 +17,7 @@ export async function Fence({
   });
 
   return (
-    <div className="not-prose my-6 overflow-x-scroll rounded-md bg-[#24292e] text-sm font-medium [&_pre]:leading-[1.7]">
+    <div className="not-prose my-6 overflow-x-scroll rounded-md bg-[#24292e] text-sm font-medium [&_pre]:text-[13px] [&_pre]:leading-[1.7] [&_pre]:subpixel-antialiased">
       <div className="relative inline-block w-max min-w-full p-4">
         <div dangerouslySetInnerHTML={{ __html: result }} className="" />
         <div className="pointer-events-none absolute inset-0 rounded-md ring ring-white/20 ring-inset" />
