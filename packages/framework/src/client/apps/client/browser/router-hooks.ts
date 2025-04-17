@@ -10,8 +10,10 @@ type Tree = any;
 
 type State = {
   path: string;
+  mask: string | undefined;
   action: "seed" | "render" | "refresh" | "navigate" | "popstate";
   history: "none" | "push" | "replace";
+  scroll: "top" | "preserve";
   cache: Map<string, Tree>;
 };
 
@@ -22,13 +24,14 @@ export function useRouterReducer() {
   let [thenableState, dispatch] = useReducer(reducer, initialState);
   let finalizedState = use(thenableState);
 
-  let { cache, path } = finalizedState;
+  let { cache, mask, path } = finalizedState;
 
   if (!cache.has(path)) {
     // we got asked to render a path and we don't have a tree for it.
     dispatch({
       type: "RENDER",
       path,
+      mask,
     });
   }
 
@@ -39,8 +42,10 @@ export function useRouterReducer() {
 
   let returnedState = {
     path: finalizedState.path,
+    mask: finalizedState.mask,
     action: finalizedState.action,
     history: finalizedState.history,
+    scroll: finalizedState.scroll,
     tree: cache.get(path),
   };
 
@@ -50,13 +55,16 @@ export function useRouterReducer() {
 type NavigateAction = {
   type: "NAVIGATE";
   path: string;
+  mask: string | undefined;
   using: "push" | "replace";
+  scroll: "top" | "preserve";
   fetch: boolean;
 };
 
 type PopAction = {
   type: "POP";
   path: string;
+  mask: string | undefined;
 };
 
 type RefreshAction = {
@@ -71,6 +79,7 @@ type PopulateAction = {
 type RenderAction = {
   type: "RENDER";
   path: string;
+  mask: string | undefined;
 };
 
 type UpdateAction = {
@@ -116,8 +125,10 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           return {
             ...previous,
             path,
+            mask: action.mask,
             action: "navigate",
             history: action.using,
+            scroll: action.scroll,
             cache: newCache,
           };
         },
@@ -131,6 +142,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           return {
             ...previous,
             path: action.path,
+            mask: action.mask,
             action: "popstate",
             history: "none",
             cache: previous.cache,
@@ -204,6 +216,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           return {
             ...previous,
             path: rsc.path,
+            mask: action.mask,
             action: "render",
             history: "replace",
             cache: newCache,
@@ -387,10 +400,14 @@ async function getInitialRouterState() {
     path = rscPayload.path;
   }
 
-  return {
+  let state: State = {
     path,
+    mask: undefined,
     action: "seed",
     history: "none",
+    scroll: "preserve",
     cache,
-  } as const;
+  };
+
+  return state;
 }

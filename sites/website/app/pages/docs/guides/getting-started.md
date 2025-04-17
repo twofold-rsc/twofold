@@ -1,8 +1,17 @@
 # Getting started
 
-Welcome to the Twofold documentation! This guide will help you setup your first RSC application.
+Welcome to the Twofold documentation! This guide will help you setup your first request-response based RSC application.
 
-Before setting up your application it's recommended you read [Don't use Twofold](/docs/philosophy/dont-use-twofold).
+## What's Twofold?
+
+Twofold is a framework for building RSC applications. Every Twofold app comes with:
+
+- An **RSC Router** built on top of React's new Suspense and Transition APIs.
+- Full support for **Server Components** and **Client Components**.
+- Secure **Server Functions** that automatically handle encryption and decryption of sensitive data.
+- Automatic configuration and setup for React Compiler, Tailwind, TypeScript, Prettier, React refresh, and React linting.
+
+Before continuing it's recommended you read [Don't use Twofold](/docs/philosophy/dont-use-twofold).
 
 ## Prerequisites
 
@@ -18,11 +27,11 @@ pnpm create twofold-app@latest
 
 You'll be prompted to enter a name for your application.
 
-Enter any name you'd like, for this guide we'll use the name: **my-app**.
+For this guide we'll use the name: **my-app**.
 
 {% create-twofold-app /%}
 
-Once the installer has finished it will create a new directory with the name of your application.
+Once the installer finishes it will create a new directory with the name of your application.
 
 Move into the new directory:
 

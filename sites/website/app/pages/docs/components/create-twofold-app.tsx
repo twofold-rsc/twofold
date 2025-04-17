@@ -3,7 +3,10 @@ import { ReactNode } from "react";
 export function CreateTwofoldApp() {
   return (
     <div className="not-prose relative my-6 rounded-md bg-[#24292e] p-4 text-sm">
-      <pre className="text-sm leading-[1.7] text-[#e1e4e8]" tabIndex={0}>
+      <pre
+        className="text-[13px] leading-[1.7] text-[#e1e4e8] subpixel-antialiased"
+        tabIndex={0}
+      >
         <code>
           <Line>pnpm create twofold-app@latest</Line>
 
