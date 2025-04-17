@@ -10,7 +10,7 @@ Personally, I believe architecture behind React Server Components is so powerful
 
 ## New concepts
 
-Many concepts that fall under the RSC umbrella are still being fleshed out and are not widely adopted by today's most popular React libraries. You might face friction when trying to integrate Twofold with other libraries that are not built with RSC in mind.
+Many concepts that fall under the RSC umbrella are still being worked out and are not widely adopted by today's most popular React libraries. You might face friction when trying to integrate Twofold with other libraries that are not built with RSC in mind.
 
 There is also a significant learning curve when it comes to understanding how to build applications with these new concepts. While I want to Twofold to help make this learning as easy as possible, in its current state to be successful with Twofold you'll need to have a strong understanding of:
 
@@ -34,4 +34,4 @@ I made Twofold to better write request-response based applications, backed by a 
 
 I believe the best use case for Twofold is for developers who are excited to experiment with React Server Components on small demo projects and weekend applications.
 
-If you're still reading this, and you're still interested in Twofold, then I'd love to hear about the applications your building and any feedback you have on Twofold!
+If you're still reading this, and you're still interested in Twofold, then check out the [getting started](/docs/guides/getting-started) guides to create your first app.

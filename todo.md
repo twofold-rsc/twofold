@@ -2,13 +2,13 @@
 
 framework
 
-- redo intro
+- create twofold app initial output
+- show version
+- show twofold version
+- add npm
 
 - cli generate secret key
 - cli docs
-
-- create twofold app initial output
-- show version
 
 - scroll position when going back
 - get rid of assets (instead importing a css file should give the url)
