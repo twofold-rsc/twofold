@@ -1,7 +1,14 @@
 # TODO
 
-framework
+blog
 
+- blog breadcrumbs
+- newsletter signup
+- author bio
+- kitchen sink test for pathless router: with index, fixed dynamic segments, and catchall
+- api routes under pathless segments
+
+- ink
 - create twofold app initial output
 - show version
 - show twofold version
@@ -9,6 +16,8 @@ framework
 
 - cli generate secret key
 - cli docs
+
+- pages & layouts can "use client";
 
 - scroll position when going back
 - get rid of assets (instead importing a css file should give the url)

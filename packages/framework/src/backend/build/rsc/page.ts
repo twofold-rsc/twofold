@@ -48,6 +48,7 @@ export class Page {
 
   get pattern() {
     let pathname = this.#path
+      .replace(/\/\(.*\)\//g, "/")
       .replace(/\/\$\$(\w+)/g, "/:$1(.*)")
       .replace(/\/\$/g, "/:");
 

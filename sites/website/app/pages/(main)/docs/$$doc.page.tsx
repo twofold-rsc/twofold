@@ -21,7 +21,7 @@ import "./docs.css";
 
 let allowedDirectories = ["reference", "guides", "philosophy"];
 
-export default async function DocPage({ params }: PageProps<"doc">) {
+export default async function DocPage({ params, request }: PageProps<"doc">) {
   let parts = params.doc.split("/");
   let [type, ...path] = parts;
 
@@ -38,10 +38,19 @@ export default async function DocPage({ params }: PageProps<"doc">) {
   let title = getTitle(content);
   let headings = getHeadings(content);
 
+  let url = new URL(request.url);
+  let ogImageUrl = new URL("/og-image.png", url.origin);
+
   return (
     <>
       <title>{title}</title>
       <meta property="og:title" content={title} />
+      <meta property="og:site_name" content="Twofold" />
+      <meta property="og:image" content={ogImageUrl.href} />
+
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:image" content={ogImageUrl.href} />
 
       <div className="col-span-5 min-w-0 sm:col-span-4 lg:col-span-3 lg:flex lg:justify-center">
         <div>
@@ -113,7 +122,7 @@ let loadDocContent = cache(async (slug: string) => {
     notFound();
   }
 
-  let filePath = path.join(process.cwd(), `./app/pages/docs/${slug}.md`);
+  let filePath = path.join(process.cwd(), `./app/pages/(main)/docs/${slug}.md`);
   let raw = await readFile(filePath, "utf-8");
   let ast = Markdoc.parse(raw);
 
@@ -172,7 +181,7 @@ async function MarkdocContent({ content }: { content: RenderableTreeNodes }) {
 }
 
 async function getDocFiles() {
-  let directoryPath = path.join(process.cwd(), `./app/pages/docs`);
+  let directoryPath = path.join(process.cwd(), `./app/pages/(main)/docs/`);
   let files = await readdir(directoryPath, {
     recursive: true,
     withFileTypes: true,

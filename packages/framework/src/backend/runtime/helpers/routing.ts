@@ -66,17 +66,16 @@ function comparePaths(
 
   // normalize template path by removing pathless segments
   let templateWithoutPathless = templatePath
-    .slice(1)
     .split("/")
     .filter((segment) => !/^\(.*\)$/.test(segment))
+    .filter((segment) => segment !== "")
     .join("/");
-  templateWithoutPathless = `/${templateWithoutPathless}`;
 
   let templateSegments = templateWithoutPathless
     .split("/")
-    .filter((segment) => !/^\(.*\)$/.test(segment))
-    .slice(1);
-  let realSegments = realPath.split("/").slice(1);
+    .filter((segment) => segment !== "");
+
+  let realSegments = realPath.split("/").filter((segment) => segment !== "");
 
   let hasWildcard =
     templateSegments[templateSegments.length - 1]?.startsWith("$$");

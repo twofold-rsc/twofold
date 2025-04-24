@@ -1,10 +1,14 @@
-import { EnterDocsLink } from "./contexts/enter-docs";
+import { PageProps } from "@twofold/framework/types";
+import { EnterDocsLink } from "./enter-docs";
 
-export default async function Page() {
+export default async function Page({ request }: PageProps) {
   let rows = 25;
   let cols = 25;
 
   let grid = new Array(rows).fill(0).map((_, i) => new Array(cols).fill(false));
+
+  let url = new URL(request.url);
+  let ogImageUrl = new URL("/og-image.png", url.origin);
 
   return (
     <>
@@ -14,6 +18,13 @@ export default async function Page() {
         property="og:description"
         content="A React Server Component framework"
       />
+      <meta property="og:site_name" content="Twofold" />
+      <meta property="og:image" content={ogImageUrl.href} />
+      <meta property="og:type" content="website" />
+
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="Twofold" />
+      <meta name="twitter:image" content={ogImageUrl.href} />
 
       <div className="relative flex grow flex-col items-center justify-center">
         <div

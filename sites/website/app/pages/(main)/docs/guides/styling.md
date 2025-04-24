@@ -2,7 +2,7 @@
 
 Twofold uses [Tailwind CSS](https://tailwindcss.com/) for a streamlined and consistent styling experience.
 
-## Tailwind CSS V4
+## Tailwind CSS
 
 New Twofold apps are automatically set up to use Tailwind CSS v4.
 
