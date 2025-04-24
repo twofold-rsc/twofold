@@ -17,20 +17,24 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@markdoc/markdoc": "^0.5.1",
+    "@radix-ui/react-hover-card": "^1.1.11",
     "@sindresorhus/slugify": "^2.2.1",
     "@tailwindcss/typography": "^0.5.16",
     "@twofold/framework": "workspace:*",
     "clsx": "^2.1.1",
     "framer-motion": "^12.4.3",
+    "js-yaml": "^4.1.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-server-dom-webpack": "catalog:",
     "server-only": "^0.0.1",
     "shiki": "^3.2.1",
-    "tailwindcss": "^4.0.6"
+    "tailwindcss": "^4.0.6",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@shikijs/transformers": "^3.2.1",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

@@ -6,10 +6,10 @@ Welcome to the Twofold documentation! This guide will help you setup your first 
 
 Twofold is a framework for building RSC applications. Every Twofold app comes with:
 
-- An **RSC Router** built on top of React's new Suspense and Transition APIs.
-- Full support for **Server Components** and **Client Components**.
+- An **RSC Router** built on top of React's Suspense and Transition APIs.
+- Bundling and splitting support for **Server Components** and **Client Components**.
 - Secure **Server Functions** that automatically handle encryption and decryption of sensitive data.
-- Automatic configuration and setup for React Compiler, Tailwind, TypeScript, Prettier, React refresh, and React linting.
+- Automatic configuration and setup for React Compiler, Tailwind, TypeScript, Prettier, HMR, and linting rules.
 
 Before continuing it's recommended you read [Don't use Twofold](/docs/philosophy/dont-use-twofold).
 

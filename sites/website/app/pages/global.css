@@ -7,6 +7,7 @@
     "Liberation Mono", "Courier New", monospace; */
   --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas,
     Liberation Mono, monospace;
+  --font-serif: "Merriweather", ui-serif, Georgia, Cambria, "Times New Roman";
 }
 
 .inter-font {
@@ -14,4 +15,11 @@
   font-optical-sizing: auto;
   font-style: normal;
   font-variation-settings: "slnt" 0;
+}
+
+.merriweather-font {
+  font-family: "Merriweather", serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
 }
