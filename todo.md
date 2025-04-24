@@ -1,15 +1,12 @@
 # TODO
 
-- proof read
-- deploy
-- post to socials
-
 blog
 
 - blog breadcrumbs
 - newsletter signup
 - author bio
 - kitchen sink test for pathless router: with index, fixed dynamic segments, and catchall
+- api routes under pathless segments
 
 - ink
 - create twofold app initial output
