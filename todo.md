@@ -2,6 +2,10 @@
 
 blog
 
+- test demos on mobile
+- test getting started overflow on mobile
+- font loading on mobile (opt in to suspense on blog)
+
 - blog breadcrumbs
 - newsletter signup
 - author bio

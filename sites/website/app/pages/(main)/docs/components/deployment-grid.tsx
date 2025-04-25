@@ -1,5 +1,5 @@
 import Link from "@twofold/framework/link";
-import { ComponentProps, ReactNode, JSX } from "react";
+import { ComponentProps, JSX } from "react";
 
 export function DeploymentGrid() {
   return (
@@ -37,7 +37,7 @@ function LinkItem({
   return (
     <Link
       href={href}
-      className="group flex aspect-[2.2/1] h-full w-full flex-col items-center justify-center rounded-lg px-4 ring-[0.5px] shadow ring-gray-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md sm:aspect-[16/9]"
+      className="group flex aspect-[2.2/1] h-full w-full transform-gpu flex-col items-center justify-center rounded-lg px-4 ring-[0.5px] shadow ring-gray-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md sm:aspect-[16/9]"
     >
       <div className="flex flex-col items-center justify-center">
         <Icon className="h-10 max-w-12 text-gray-700 transition-colors group-hover:text-gray-900" />
