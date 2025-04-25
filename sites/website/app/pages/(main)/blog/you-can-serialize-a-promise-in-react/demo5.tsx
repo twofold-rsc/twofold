@@ -46,7 +46,7 @@ export function Demo5({ children }: { children: ReactNode }) {
     <div className="not-prose relative">
       <div>{children}</div>
       <div className="relative flex min-h-[158px] items-center justify-center rounded-b-md border-x-2 border-b-2 border-gray-200">
-        {isPending ? (
+        {isPending && value === null ? (
           <div className="text-gray-500">
             Waiting for the promise to deserialize...
           </div>

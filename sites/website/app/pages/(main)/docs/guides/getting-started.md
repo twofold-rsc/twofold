@@ -1,6 +1,6 @@
 # Getting started
 
-Welcome to the Twofold documentation! This guide will help you setup your first request-response based RSC application.
+Welcome to the Twofold documentation! This guide will help you setup your first application.
 
 ## What's Twofold?
 

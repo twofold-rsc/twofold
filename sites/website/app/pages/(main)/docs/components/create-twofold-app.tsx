@@ -2,48 +2,50 @@ import { ReactNode } from "react";
 
 export function CreateTwofoldApp() {
   return (
-    <div className="not-prose relative my-6 rounded-md bg-[#24292e] p-4 text-sm">
-      <pre
-        className="text-[13px] leading-[1.7] text-[#e1e4e8] subpixel-antialiased"
-        tabIndex={0}
-      >
-        <code>
-          <Line>pnpm create twofold-app@latest</Line>
+    <div className="not-prose relative my-6 overflow-x-scroll rounded-md bg-[#24292e] text-sm">
+      <div className="relative inline-block w-max min-w-full p-4">
+        <pre
+          className="text-[13px] leading-[1.7] text-[#e1e4e8] subpixel-antialiased"
+          tabIndex={0}
+        >
+          <code>
+            <Line>pnpm create twofold-app@latest</Line>
 
-          <Line />
+            <Line />
 
-          <Output type="info">Welcome to the Twofold app generator!</Output>
+            <Output type="info">Welcome to the Twofold app generator!</Output>
 
-          <Line />
+            <Line />
 
-          <Output type="question">
-            What is the name of your app?{"  "}
-            <span className="font-bold">my-app</span>
-          </Output>
+            <Output type="question">
+              What is the name of your app?{"  "}
+              <span className="font-bold">my-app</span>
+            </Output>
 
-          <Line />
+            <Line />
 
-          <Output type="pending">Setting up a new Twofold app...</Output>
-          <Output type="complete">App created!</Output>
-          <Output type="pending">
-            Installing dependencies. This may take a minute...
-          </Output>
-          <Output type="complete">Dependencies installed!</Output>
-          <Output type="pending">Initializing git repository...</Output>
-          <Output type="complete">Git repository created!</Output>
+            <Output type="pending">Setting up a new Twofold app...</Output>
+            <Output type="complete">App created!</Output>
+            <Output type="pending">
+              Installing dependencies. This may take a minute...
+            </Output>
+            <Output type="complete">Dependencies installed!</Output>
+            <Output type="pending">Initializing git repository...</Output>
+            <Output type="complete">Git repository created!</Output>
 
-          <Line />
+            <Line />
 
-          <Output type="success">All set!</Output>
+            <Output type="success">All set!</Output>
 
-          <Line />
+            <Line />
 
-          <Output type="info">App installed at: ./my-app/</Output>
-          <Output type="info">Run app: cd my-app && pnpm dev</Output>
-        </code>
-      </pre>
+            <Output type="info">App installed at: ./my-app/</Output>
+            <Output type="info">Run app: cd my-app && pnpm dev</Output>
+          </code>
+        </pre>
 
-      <div className="pointer-events-none absolute inset-0 rounded-md ring ring-white/20 ring-inset" />
+        <div className="pointer-events-none absolute inset-0 rounded-md ring ring-white/20 ring-inset" />
+      </div>
     </div>
   );
 }

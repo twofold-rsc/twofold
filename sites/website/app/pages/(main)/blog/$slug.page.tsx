@@ -56,7 +56,7 @@ export default async function DocPage({ params, request }: PageProps<"slug">) {
           <div className="flex items-center space-x-2 font-medium">
             <Link
               href={`/blog`}
-              className="text-sm text-gray-500 hover:underline active:text-blue-600"
+              className="text-sm text-gray-500 hover:underline active:text-gray-600"
             >
               Blog
             </Link>

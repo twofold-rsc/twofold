@@ -23,7 +23,7 @@ export function Demo1({ children }: { children: ReactNode }) {
       <div className="relative flex min-h-[158px] items-center justify-center rounded-b-md border-x-2 border-b-2 border-gray-200">
         {jsx ? (
           <div>
-            {jsx}
+            <div className="flex items-center justify-center px-8">{jsx}</div>
 
             <form
               className="absolute top-1.5 right-3"

@@ -22,7 +22,7 @@ If you want to focus on other areas of application development instead of learni
 
 ## Breaking changes
 
-Due to the beta nature of the ideas in Twofold it is very likely that there will be breaking changes in the future. This means that if you build an application with Twofold today, you may need to rewrite parts of it in the future to keep up with the latest changes.
+This project is new and it's likely going to have many breaking changes in the future. If you build an application with Twofold today, you may need to rewrite parts of it to keep up with the latest features.
 
 ## My opinions
 

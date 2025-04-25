@@ -136,3 +136,21 @@ export function generateId() {
     "",
   );
 }
+
+// polyfill safari to make streams iterable
+if (!ReadableStream.prototype[Symbol.asyncIterator]) {
+  ReadableStream.prototype[Symbol.asyncIterator] =
+    async function* (): AsyncGenerator<any, undefined, unknown> {
+      const reader = this.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          yield value;
+        }
+        return undefined;
+      } finally {
+        reader.releaseLock();
+      }
+    };
+}
