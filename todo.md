@@ -2,9 +2,10 @@
 
 blog
 
-- blog breadcrumbs
+- blog index seo
+- should we respond to head requests?
+
 - newsletter signup
-- author bio
 - kitchen sink test for pathless router: with index, fixed dynamic segments, and catchall
 - api routes under pathless segments
 
