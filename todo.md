@@ -1,13 +1,18 @@
 # TODO
 
-blog
-
-- blog index seo
-- should we respond to head requests?
-
-- newsletter signup
 - kitchen sink test for pathless router: with index, fixed dynamic segments, and catchall
 - api routes under pathless segments
+- respond to head requests
+- endpoints (rss)
+
+- release
+
+- blog rss: https://bsky.app/profile/sebastienlorber.com/post/3lnxq4yqids2a
+- when blog traffic dies down, take a look at cloud cdn configuration
+- billing
+
+- blog index seo
+- newsletter signup
 
 - ink
 - create twofold app initial output
