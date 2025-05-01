@@ -195,6 +195,11 @@ function Router() {
   }, [routerState.path]);
 
   useEffect(() => {
+    function genUpdateId() {
+      let random = Math.random().toString(36).slice(2, 18);
+      return `${random}-${Date.now()}`;
+    }
+
     window.__twofold = {
       ...window.__twofold,
       updateTree(path: string, tree: any) {
@@ -204,8 +209,7 @@ function Router() {
             type: "UPDATE",
             path,
             tree,
-            // TODO change me
-            updateId: crypto.randomUUID(),
+            updateId: genUpdateId(),
           });
         });
       },
