@@ -1,7 +1,5 @@
 # TODO
 
-- sending a random post request to an existing page (triggers mpa) errors
-- respond to head requests
 - dont use uuid for server action ids
 - toast component add link to docs
 - endpoints (rss)
