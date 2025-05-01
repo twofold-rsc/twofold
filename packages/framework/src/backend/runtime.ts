@@ -56,9 +56,10 @@ export class Runtime {
   apiRequest(request: Request) {
     let url = new URL(request.url);
 
-    let api = this.build
-      .getBuilder("rsc")
-      .apiEndpoints.find((api) => api.pattern.test(url.pathname, this.baseUrl));
+    let api = this.build.getBuilder("rsc").apiEndpoints.find((api) => {
+      // change to use something like api.match
+      return api.pattern.test(url.pathname, this.baseUrl);
+    });
 
     if (api) {
       return new APIRequest({ api, request, runtime: this });

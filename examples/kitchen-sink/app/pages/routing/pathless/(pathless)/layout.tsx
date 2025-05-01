@@ -47,6 +47,15 @@ export default function PathlessLayout({ children }: LayoutProps) {
 
           <div>
             <Link
+              href="/routing/pathless/api"
+              className="text-blue-500 hover:underline"
+            >
+              API route
+            </Link>
+          </div>
+
+          <div>
+            <Link
               href="/routing/pathless/wildcard/1"
               className="text-blue-500 hover:underline"
             >
