@@ -1,8 +1,6 @@
 # TODO
 
-- dont use uuid for server action ids
 - toast component add link to docs
-- endpoints (rss)
 
 - test
 - release
