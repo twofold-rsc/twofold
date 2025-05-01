@@ -171,6 +171,21 @@ async function createHandler(runtime: Runtime) {
     }
   });
 
+  app.head("/**/*", async (ctx) => {
+    let request = ctx.request;
+    let pageRequest = runtime.pageRequest(request);
+    let response = await pageRequest.rscResponse();
+
+    let headers = new Headers(response.headers);
+    headers.delete("content-length");
+    headers.delete("content-type");
+
+    return new Response(null, {
+      status: response.status,
+      headers,
+    });
+  });
+
   app.get("/**/*", async (ctx) => {
     let url = new URL(ctx.request.url);
     let request = ctx.request;

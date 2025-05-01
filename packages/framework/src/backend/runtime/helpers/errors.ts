@@ -43,3 +43,13 @@ export function redirectErrorInfo(err: unknown) {
     throw new Error("Invalid redirect");
   }
 }
+
+export class NotFoundError extends Error {
+  isTwofoldError = true;
+  name = "TwofoldNotFoundError";
+  digest = "TwofoldNotFoundError";
+
+  constructor() {
+    super("TwofoldNotFoundError");
+  }
+}

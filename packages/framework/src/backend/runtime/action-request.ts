@@ -10,6 +10,7 @@ import {
 import {
   isNotFoundError,
   isRedirectError,
+  NotFoundError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
 import { CompiledAction } from "../build/builders/rsc-builder.js";
@@ -315,7 +316,7 @@ class SPAAction implements Action {
     let id = urlId ? decodeURIComponent(urlId) : null;
 
     if (!id) {
-      throw new Error("No server action specified");
+      throw new NotFoundError();
     }
 
     return id;
@@ -408,7 +409,9 @@ class MPAAction implements Action {
     let [contentType] = parseHeaderValue(request.headers.get("content-type"));
 
     return (
-      request.method === "POST" && contentType.value === "multipart/form-data"
+      request.method === "POST" &&
+      contentType &&
+      contentType.value === "multipart/form-data"
     );
   }
 
@@ -453,7 +456,7 @@ class MPAAction implements Action {
     }
 
     // if were here we don't have an id
-    throw new Error("No server action specified");
+    throw new NotFoundError();
   }
 
   get renderPath() {
@@ -464,6 +467,11 @@ class MPAAction implements Action {
   async getAction() {
     let formData = await this.formData();
     let fn = await decodeAction(formData, this.#serverManifest);
+
+    if (!fn || typeof fn !== "function") {
+      throw new NotFoundError();
+    }
+
     return fn;
   }
 
