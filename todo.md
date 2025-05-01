@@ -1,13 +1,23 @@
 # TODO
 
-blog
+- sending a random post request to an existing page (triggers mpa) errors
+- respond to head requests
+- dont use uuid for server action ids
+- toast component add link to docs
+- endpoints (rss)
+
+- test
+- release
+
+- blog rss: https://bsky.app/profile/sebastienlorber.com/post/3lnxq4yqids2a
+- when blog traffic dies down, take a look at cloud cdn configuration
+- billing
 
 - blog index seo
-- should we respond to head requests?
-
 - newsletter signup
-- kitchen sink test for pathless router: with index, fixed dynamic segments, and catchall
-- api routes under pathless segments
+
+- docs for pathless layouts
+- public folder + docs
 
 - ink
 - create twofold app initial output
@@ -22,6 +32,8 @@ blog
 
 - scroll position when going back
 - get rid of assets (instead importing a css file should give the url)
+
+- api routes should use route matchers
 
 - components
 - SubmitButton?

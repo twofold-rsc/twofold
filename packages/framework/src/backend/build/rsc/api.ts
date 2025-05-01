@@ -15,8 +15,11 @@ export class API {
     return this.#path.includes("$$");
   }
 
+  // todo: add matches function
+
   get pattern() {
     let pathname = this.#path
+      .replace(/\/\(.*\)\//g, "/")
       .replace(/\/\$\$(\w+)/g, "/:$1(.*)")
       .replace(/\/\$/g, "/:");
 
