@@ -1,0 +1,66 @@
+import { APIProps } from "@twofold/framework/types";
+import { getTitle } from "../../../markdoc/utils";
+import { getPostSlugs, loadContent, loadMetadata } from "./data-layer/posts";
+
+export async function GET({ request }: APIProps) {
+  let baseUrl = new URL(request.url);
+  let rssXml = await generateRSS({ baseUrl });
+
+  return new Response(rssXml, {
+    headers: { "Content-Type": "application/rss+xml" },
+  });
+}
+
+async function generateRSS({ baseUrl }: { baseUrl: URL }) {
+  let items = await getItems();
+
+  let rssFeed = `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+  <channel>
+    <title>Twofold Blog</title>
+    <link>${new URL("/blog", baseUrl).href}</link>
+    <description>Writings about React Server Components</description>
+    ${items
+      .map(
+        (item) => `<item>
+      <title><![CDATA[${item.title}]]></title>
+      <link>${new URL(`/blog/${item.slug}`, baseUrl).href}</link>
+      <pubDate>${item.date ? item.date.toUTCString() : ""}</pubDate>
+      <description><![CDATA[${item.description}]]></description>
+    </item>`,
+      )
+      .join("")}
+  </channel>
+</rss>`;
+
+  return rssFeed.trim();
+}
+
+let itemsCache:
+  | { title: string; slug: string; date: Date | null; description: string }[]
+  | null = null;
+
+async function getItems() {
+  if (!itemsCache) {
+    let posts = await getPostSlugs();
+
+    let itemsPromise = posts.map(async (slug) => {
+      let content = await loadContent(slug);
+      let frontmatter = await loadMetadata(slug);
+      let title = getTitle(content);
+
+      return {
+        title: title ?? "No title",
+        slug,
+        date: frontmatter.lastUpdated
+          ? new Date(frontmatter.lastUpdated)
+          : null,
+        description: frontmatter.description ?? "",
+      };
+    });
+
+    itemsCache = await Promise.all(itemsPromise);
+  }
+
+  return itemsCache;
+}

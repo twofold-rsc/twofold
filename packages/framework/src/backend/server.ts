@@ -129,7 +129,12 @@ async function createHandler(runtime: Runtime) {
       let pageExists = !pageRequest.isNotFound;
       let accepts = parseHeaderValue(request.headers.get("accept"));
       let acceptsHTML = accepts.some((a) => a.value === "text/html");
-      let skipAPI = pageExists && acceptsHTML;
+      let pageIsDynamic =
+        pageRequest.page.isDynamic || pageRequest.page.isCatchAll;
+      let apiIsDynamic = apiRequest.api.isDynamic || apiRequest.api.isCatchAll;
+      let apiTakesPrecedence = !apiIsDynamic && pageIsDynamic;
+
+      let skipAPI = pageExists && acceptsHTML && !apiTakesPrecedence;
 
       if (!skipAPI) {
         let response = await apiRequest.response();

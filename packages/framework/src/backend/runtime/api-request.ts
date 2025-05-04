@@ -29,6 +29,10 @@ export class APIRequest {
     return this.#request.method.toUpperCase();
   }
 
+  get api() {
+    return this.#api;
+  }
+
   async response() {
     let request = this.#request;
     let module = await this.#api.loadModule();
