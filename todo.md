@@ -1,15 +1,13 @@
 # TODO
 
-- toast component add link to docs
-
 - test
 - release
 
 - blog rss: https://bsky.app/profile/sebastienlorber.com/post/3lnxq4yqids2a
+- blog index seo
 - when blog traffic dies down, take a look at cloud cdn configuration
 - billing
 
-- blog index seo
 - newsletter signup
 
 - docs for pathless layouts

@@ -36,6 +36,10 @@ export class PageRequest {
     return this.#conditions.includes("not-found");
   }
 
+  get page() {
+    return this.#page;
+  }
+
   async rscResponse(): Promise<Response> {
     // middleware
     try {
