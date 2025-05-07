@@ -15,17 +15,19 @@ async function generateRSS({ baseUrl }: { baseUrl: URL }) {
   let items = await getItems();
 
   let rssFeed = `<?xml version="1.0" encoding="UTF-8" ?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Twofold Blog</title>
     <link>${new URL("/blog", baseUrl).href}</link>
     <description>Writings about React Server Components</description>
+    <atom:link href="${new URL("/blog/rss", baseUrl).href}" rel="self" type="application/rss+xml" />
     ${items
       .map(
         (item) => `<item>
       <title><![CDATA[${item.title}]]></title>
       <link>${new URL(`/blog/${item.slug}`, baseUrl).href}</link>
       <pubDate>${item.date ? item.date.toUTCString() : ""}</pubDate>
+      <guid>${new URL(`/blog/${item.slug}`, baseUrl).href}</guid>
       <description><![CDATA[${item.description}]]></description>
     </item>`,
       )
