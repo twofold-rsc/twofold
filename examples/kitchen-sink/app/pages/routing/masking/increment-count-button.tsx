@@ -19,6 +19,7 @@ export function IncrementCountButton({ count }: { count: number }) {
       <div className="mt-4">
         <button
           onClick={handleClick}
+          disabled={isPending}
           className={clsx(
             "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white",
             isPending ? "bg-black/60" : "bg-black hover:bg-gray-800",
