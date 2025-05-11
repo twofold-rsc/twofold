@@ -78,6 +78,9 @@ export class EntriesBuilder extends Builder {
       write: false,
       outdir: "./.twofold/temp/",
       outbase: "app",
+      loader: {
+        ".jpg": "empty",
+      },
       external: [...externalPackages, ...userDefinedExternalPackages],
       plugins: [
         externalsPlugin({

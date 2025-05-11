@@ -49,6 +49,11 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
           <li>
             <DocLink href="/docs/reference/middleware">Middleware</DocLink>
           </li>
+          <li>
+            <DocLink href="/docs/reference/static-assets">
+              Static assets
+            </DocLink>
+          </li>
         </ul>
 
         <div className="mt-6 font-bold">Patterns</div>

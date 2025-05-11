@@ -20,6 +20,7 @@ import { Build } from "../build/build.js";
 import { Layout } from "../rsc/layout.js";
 import { API } from "../rsc/api.js";
 import { esbuildPluginTailwind } from "@ryanto/esbuild-plugin-tailwind";
+import { Image, imagesPlugin } from "../plugins/images-plugin.js";
 
 export type CompiledAction = {
   id: string;
@@ -36,6 +37,7 @@ export class RSCBuilder extends Builder {
   #entriesBuilder: EntriesBuilder;
   #build: Build;
   #serverActionMap = new Map<string, CompiledAction>();
+  #imagesMap = new Map<string, Image>();
 
   constructor({
     entriesBuilder,
@@ -51,6 +53,10 @@ export class RSCBuilder extends Builder {
 
   get serverActionMap() {
     return this.#serverActionMap;
+  }
+
+  get imagesMap() {
+    return this.#imagesMap;
   }
 
   get entries() {
@@ -69,10 +75,11 @@ export class RSCBuilder extends Builder {
 
     // files need to be sorted for deterministic builds
     let serverActionEntries = Array.from(
-      this.#entriesBuilder.serverActionEntryMap.keys(),
+      this.#entriesBuilder.serverActionEntryMap.keys()
     ).sort();
 
     this.#serverActionMap = new Map();
+    this.#imagesMap = new Map();
     this.#metafile = undefined;
     this.clearError();
 
@@ -116,14 +123,17 @@ export class RSCBuilder extends Builder {
           esbuildPluginTailwind({
             base: fileURLToPath(appAppDir),
           }),
-          // tailwindPlugin({ base: fileURLToPath(appAppDir) }),
+          imagesPlugin({
+            builder,
+            prefixPath: "/_assets/images",
+          }),
           {
             name: "stores",
             setup(build) {
               let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
               let storeUrl = new URL(
                 "./backend/stores/rsc-store.js",
-                frameworkCompiledDir,
+                frameworkCompiledDir
               );
 
               build.onResolve({ filter: /\/stores\/rsc-store/ }, (args) => {
@@ -197,7 +207,7 @@ export class RSCBuilder extends Builder {
       fileURLToPath(frameworkSrcDir),
       "client",
       "components",
-      "inner-root-wrapper.tsx",
+      "inner-root-wrapper.tsx"
     );
   }
 
@@ -206,7 +216,7 @@ export class RSCBuilder extends Builder {
       fileURLToPath(frameworkSrcDir),
       "client",
       "components",
-      "outer-root-wrapper.tsx",
+      "outer-root-wrapper.tsx"
     );
   }
 
@@ -383,7 +393,7 @@ export class RSCBuilder extends Builder {
 
     let outputFilePath = getCompiledEntrypoint(
       this.innerRootWrapperSrcPath,
-      metafile,
+      metafile
     );
     let outputFileUrl = pathToFileURL(outputFilePath);
 
@@ -404,7 +414,7 @@ export class RSCBuilder extends Builder {
 
     let outputFilePath = getCompiledEntrypoint(
       this.outerRootWrapperSrcPath,
-      metafile,
+      metafile
     );
     let outputFileUrl = pathToFileURL(outputFilePath);
 
@@ -491,7 +501,7 @@ export class RSCBuilder extends Builder {
           };
         }
       },
-      {},
+      {}
     );
   }
 }

@@ -28,6 +28,7 @@ export class StaticFilesBuilder extends Builder {
   async build() {
     let exists = await this.exists();
     if (exists) {
+      this.clear();
       let files = await statsUnderPath(fileURLToPath(this.#staticUrl));
       for (let file of files) {
         this.addFile(file);
