@@ -16,18 +16,13 @@ export function imagesPlugin({
   builder,
   prefixPath,
 }: {
-  builder: RSCBuilder;
+  builder: RSCBuilder | ClientAppBuilder;
   prefixPath: string;
 }): Plugin {
   return {
     name: "images",
     async setup(build) {
       const { h32Raw } = await xxhash();
-      const imagesMap = builder.imagesMap;
-
-      build.onStart(() => {
-        imagesMap.clear();
-      });
 
       build.onLoad(
         { filter: /\.(png|jpg|jpeg|gif|webp|svg)$/ },

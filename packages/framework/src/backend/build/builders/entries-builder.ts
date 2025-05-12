@@ -55,7 +55,7 @@ export class EntriesBuilder extends Builder {
   async setup() {
     let frameworkComponentsUrl = new URL(
       "./client/components/",
-      frameworkSrcDir,
+      frameworkSrcDir
     );
     let frameworkComponentsPath = fileURLToPath(frameworkComponentsUrl);
 
@@ -79,7 +79,12 @@ export class EntriesBuilder extends Builder {
       outdir: "./.twofold/temp/",
       outbase: "app",
       loader: {
+        ".png": "empty",
         ".jpg": "empty",
+        ".jpeg": "empty",
+        ".gif": "empty",
+        ".webp": "empty",
+        ".svg": "empty",
       },
       external: [...externalPackages, ...userDefinedExternalPackages],
       plugins: [
@@ -143,10 +148,10 @@ export class EntriesBuilder extends Builder {
   serialize() {
     return {
       clientComponentModuleMap: Object.fromEntries(
-        this.#clientComponentModuleMap.entries(),
+        this.#clientComponentModuleMap.entries()
       ),
       serverActionEntryMap: Object.fromEntries(
-        this.#serverActionEntryMap.entries(),
+        this.#serverActionEntryMap.entries()
       ),
       discoveredExternals: Array.from(this.#discoveredExternals),
     };
@@ -154,10 +159,10 @@ export class EntriesBuilder extends Builder {
 
   load(data: any) {
     this.#clientComponentModuleMap = new Map(
-      Object.entries(data.clientComponentModuleMap),
+      Object.entries(data.clientComponentModuleMap)
     );
     this.#serverActionEntryMap = new Map(
-      Object.entries(data.serverActionEntryMap),
+      Object.entries(data.serverActionEntryMap)
     );
     this.#discoveredExternals = new Set(data.discoveredExternals);
   }
@@ -206,7 +211,7 @@ function getExports(ast: ParseResult | null) {
           ...node.specifiers.map((specifier) =>
             specifier.exported.type === "Identifier"
               ? specifier.exported.name
-              : specifier.exported.value,
+              : specifier.exported.value
           ),
         ];
       } else if (node.type === "ExportDefaultDeclaration") {

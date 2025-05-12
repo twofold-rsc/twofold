@@ -17,8 +17,12 @@
     "dist",
     "src"
   ],
+  "types": "src/types/global.d.ts",
   "exports": {
-    "./types": "./src/client/types/index.ts",
+    ".": {
+      "types": "./src/types/global.d.ts"
+    },
+    "./types": "./src/types/importable.ts",
     "./twofold-framework": "./src/client/components/twofold-framework.tsx",
     "./link": "./src/client/components/link.tsx",
     "./use-router": "./src/client/hooks/use-router.ts",

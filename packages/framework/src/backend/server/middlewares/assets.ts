@@ -98,7 +98,9 @@ export function assets(build: Build): RouteHandler {
 
   router.get<{ id: string }>("/_assets/images/:id", async ({ params }) => {
     let id = params.id;
-    let image = build.getBuilder("rsc").imagesMap.get(id);
+    let image =
+      build.getBuilder("rsc").imagesMap.get(id) ||
+      build.getBuilder("client").imagesMap.get(id);
 
     if (image) {
       let contents = await readFile(image.path);

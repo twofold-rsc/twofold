@@ -6,13 +6,11 @@
 - docs for pathless layouts
 
 - public folder + docs
-- importing images
-  - fix typescript
-  - client component imports
-  - dont process image if it exists in the map
+- build+serve: client builder
+- build+serve: rsc builder
+- import images docs
 - add public to base app
-- typescript allow imports: jpg
-- build+serve
+- add types to base app "@twofold/framework"
 
 - ink
 - create twofold app initial output

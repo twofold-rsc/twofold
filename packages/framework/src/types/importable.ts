@@ -1,3 +1,5 @@
+// these types are importable by the application
+
 import type { ReactNode } from "react";
 
 export type PageProps<T extends string | never = never> = {
