@@ -1,14 +1,15 @@
 # TODO
 
-- blog rss: https://bsky.app/profile/sebastienlorber.com/post/3lnxq4yqids2a
 - blog index seo
-- when blog traffic dies down, take a look at cloud cdn configuration
-- billing
-
-- newsletter signup
+- newsletter signup (after 3 posts)
 
 - docs for pathless layouts
-- public folder + docs
+
+- allow npm
+- README
+- chrome well-known folder
+
+- all URL(request.url) to PageProps
 
 - ink
 - create twofold app initial output
@@ -62,6 +63,8 @@ website
 - docs md files should use <Link>
 
 framework
+
+- pg-lite + pg+gateway: https://github.com/supabase-community/pg-gateway
 
 - not found and redirect should be server only
 - put all error boundaries in same client component

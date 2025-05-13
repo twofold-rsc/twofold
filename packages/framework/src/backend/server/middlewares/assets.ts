@@ -42,7 +42,7 @@ export function assets(build: Build): RouteHandler {
           },
         });
       }
-    },
+    }
   );
 
   router.get(
@@ -60,7 +60,7 @@ export function assets(build: Build): RouteHandler {
       // crappy O(n) lookup, change this
       let keys = Object.keys(clientComponentModuleMap);
       let moduleKey = keys.find(
-        (key) => clientComponentModuleMap[key].path === filePath,
+        (key) => clientComponentModuleMap[key].path === filePath
       );
       let module = moduleKey ? clientComponentModuleMap[moduleKey] : null;
 
@@ -74,7 +74,7 @@ export function assets(build: Build): RouteHandler {
           },
         });
       }
-    },
+    }
   );
 
   router.get("/_assets/styles/**/*", async ({ request }) => {
@@ -90,6 +90,24 @@ export function assets(build: Build): RouteHandler {
       return new Response(contents, {
         headers: {
           "Content-Type": "text/css",
+          "Cache-Control": cacheControlHeader,
+        },
+      });
+    }
+  });
+
+  router.get<{ id: string }>("/_assets/images/:id", async ({ params }) => {
+    let id = params.id;
+    let image =
+      build.getBuilder("rsc").imagesMap.get(id) ||
+      build.getBuilder("client").imagesMap.get(id);
+
+    if (image) {
+      let contents = await readFile(image.path);
+      return new Response(contents, {
+        headers: {
+          "Content-Type": image.type,
+          "Content-Length": contents.byteLength.toString(),
           "Cache-Control": cacheControlHeader,
         },
       });
