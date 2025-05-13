@@ -5,7 +5,7 @@
 
 - docs for pathless layouts
 
-- allow npm
+- npm/pnpm switcher
 - README
 - chrome well-known folder
 
@@ -15,7 +15,6 @@
 - create twofold app initial output
 - show version
 - show twofold version
-- add npm
 
 - cli generate secret key
 - cli docs
