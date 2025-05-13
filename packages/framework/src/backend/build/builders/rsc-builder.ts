@@ -162,12 +162,14 @@ export class RSCBuilder extends Builder {
     return {
       metafile: this.#metafile,
       serverActionMap: Object.fromEntries(this.#serverActionMap.entries()),
+      imagesMap: Object.fromEntries(this.#imagesMap.entries()),
     };
   }
 
   load(data: any) {
     this.#metafile = data.metafile;
     this.#serverActionMap = new Map(Object.entries(data.serverActionMap));
+    this.#imagesMap = new Map(Object.entries(data.imagesMap));
   }
 
   get files() {

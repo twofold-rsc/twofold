@@ -278,6 +278,7 @@ export class ClientAppBuilder extends Builder {
       clientComponentOutputMap: Object.fromEntries(
         this.#clientComponentOutputMap.entries()
       ),
+      imagesMap: Object.fromEntries(this.#imagesMap.entries()),
     };
   }
 
@@ -286,6 +287,7 @@ export class ClientAppBuilder extends Builder {
     this.#clientComponentOutputMap = new Map(
       Object.entries(data.clientComponentOutputMap)
     );
+    this.#imagesMap = new Map(Object.entries(data.imagesMap));
   }
 
   private get initializeBrowserPath() {

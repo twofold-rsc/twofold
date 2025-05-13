@@ -6,11 +6,12 @@
 - docs for pathless layouts
 
 - public folder + docs
-- build+serve: client builder
-- build+serve: rsc builder
 - import images docs
 - add public to base app
 - add types to base app "@twofold/framework"
+
+- allow npm
+- chrome well-known folder
 
 - ink
 - create twofold app initial output
