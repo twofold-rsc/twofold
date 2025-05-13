@@ -6,11 +6,11 @@
 - docs for pathless layouts
 
 - public folder + docs
-- import images docs
-- add public to base app
-- add types to base app "@twofold/framework"
+- proof docs
+- what happens if you import a missing image
 
 - allow npm
+- README
 - chrome well-known folder
 
 - ink
