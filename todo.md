@@ -5,13 +5,11 @@
 
 - docs for pathless layouts
 
-- public folder + docs
-- proof docs
-- what happens if you import a missing image
-
 - allow npm
 - README
 - chrome well-known folder
+
+- all URL(request.url) to PageProps
 
 - ink
 - create twofold app initial output

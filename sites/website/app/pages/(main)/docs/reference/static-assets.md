@@ -4,7 +4,7 @@ Use static assets to serve images, fonts, and other public files from your Twofo
 
 ## Public folder
 
-Files placed in the `/public` folder are served at the root of your app. For example, a file at `public/logo.png` will be available at `https://example.com/logo.png`.
+Files placed in the `/public` folder are served at the root of your app. For example, the file `public/logo.png` will be available at `https://example.com/logo.png`.
 
 ```text
 ├─ app
@@ -19,7 +19,7 @@ Files placed in the `/public` folder are served at the root of your app. For exa
 
 ## Images
 
-Images are importable by any component in your app. Importing an image will give a URL to use in `src` or `href` attributes.
+Images are importable by any component in your app. Importing an image will give a URL that's usable in `src` or `href` attributes.
 
 ```tsx
 // app/pages/index.page.tsx
@@ -53,7 +53,7 @@ export default function IndexPage({ request }: PageProps) {
 
   return (
     <div>
-      <img src={absolutePictureUrl} />
+      <img src={absolutePictureUrl.href} />
     </div>
   );
 }
