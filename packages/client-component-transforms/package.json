@@ -1,0 +1,36 @@
+{
+  "name": "@twofold/client-component-transforms",
+  "version": "0.0.1",
+  "description": "Transform components into React Client Components",
+  "type": "module",
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "compile": "node compile.js && tsc --emitDeclarationOnly --declaration --outDir ./dist",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "Ryan Toronto",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/babel__core": "^7.20.5",
+    "@types/babel__generator": "^7.6.8",
+    "@types/node": "catalog:",
+    "dedent": "^1.5.3",
+    "prettier": "^3.5.3",
+    "typescript": "catalog:",
+    "vitest": "^3.0.9"
+  },
+  "dependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/generator": "^7.27.0",
+    "@babel/types": "^7.27.0",
+    "esbuild": "0.25.0",
+    "react-server-dom-webpack": ">=19.0.0"
+  }
+}

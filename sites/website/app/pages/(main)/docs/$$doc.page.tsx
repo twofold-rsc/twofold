@@ -1,10 +1,4 @@
-import Markdoc, {
-  Config,
-  RenderableTreeNode,
-  RenderableTreeNodes,
-  Schema,
-  Tag,
-} from "@markdoc/markdoc";
+import Markdoc, { Config, RenderableTreeNodes, Tag } from "@markdoc/markdoc";
 import slugify from "@sindresorhus/slugify";
 import Link from "@twofold/framework/link";
 import { notFound } from "@twofold/framework/not-found";
@@ -18,6 +12,8 @@ import { DeploymentGrid } from "./components/deployment-grid";
 import { Callout } from "./components/callout";
 import { Image } from "./components/image";
 import "./docs.css";
+import { getHeadings, getTitle } from "../../../markdoc/utils";
+import { CLICommand } from "./components/cli-command";
 
 let allowedDirectories = ["reference", "guides", "philosophy"];
 
@@ -133,12 +129,12 @@ let loadDocContent = cache(async (slug: string) => {
         children: ["inline"],
         attributes: {},
       },
-      ["create-twofold-app"]: {
+      "create-twofold-app": {
         render: "CreateTwofoldApp",
         children: [],
         attributes: {},
       },
-      ["deployment-grid"]: {
+      "deployment-grid": {
         render: "DeploymentGrid",
         children: [],
         attributes: {},
@@ -156,10 +152,74 @@ let loadDocContent = cache(async (slug: string) => {
           },
         },
       },
+      "cli-command": {
+        render: "CLICommand",
+        children: ["tool"],
+        attributes: {},
+        transform(node, config) {
+          const tools = node.transformChildren(config);
+          return new Tag(this.render, { tools }, []);
+        },
+      },
+      "cli-tool": {
+        children: ["paragraph", "text", "raw"],
+        attributes: {
+          name: { type: String, required: true },
+        },
+        transform(node, config) {
+          let { name } = node.transformAttributes(config);
+          let children = node.transformChildren(config);
+
+          let command = children
+            .map((child) =>
+              typeof child === "object" && child !== null && "children" in child
+                ? child.children
+                : "",
+            )
+            .join("");
+
+          return {
+            name,
+            command,
+          };
+        },
+      },
     },
     nodes: {
-      heading,
-      fence,
+      heading: {
+        children: ["inline"],
+        attributes: {
+          id: { type: String },
+          level: { type: Number, required: true, default: 1 },
+        },
+        transform(node, config) {
+          let attributes = node.transformAttributes(config);
+          let children = node.transformChildren(config);
+
+          let id =
+            attributes.id && typeof attributes.id === "string"
+              ? attributes.id
+              : slugify(
+                  children
+                    .filter((child) => typeof child === "string")
+                    .join(" "),
+                );
+
+          return new Tag(
+            `h${node.attributes["level"]}`,
+            { ...attributes, id },
+            children,
+          );
+        },
+      },
+      fence: {
+        render: "Fence",
+        attributes: {
+          language: {
+            type: String,
+          },
+        },
+      },
     },
     variables: {},
   };
@@ -168,15 +228,16 @@ let loadDocContent = cache(async (slug: string) => {
   return content;
 });
 
-async function MarkdocContent({ content }: { content: RenderableTreeNodes }) {
-  let components = {
-    Callout,
-    Fence,
-    CreateTwofoldApp,
-    DeploymentGrid,
-    Image,
-  };
+let components = {
+  Callout,
+  Fence,
+  CreateTwofoldApp,
+  DeploymentGrid,
+  Image,
+  CLICommand,
+};
 
+async function MarkdocContent({ content }: { content: RenderableTreeNodes }) {
   return <>{Markdoc.renderers.react(content, React, { components })}</>;
 }
 
@@ -195,130 +256,4 @@ async function getDocFiles() {
         .relative(directoryPath, path.join(file.parentPath, file.name))
         .replace(/\.md$/, ""),
     );
-}
-
-let heading: Schema = {
-  children: ["inline"],
-  attributes: {
-    id: { type: String },
-    level: { type: Number, required: true, default: 1 },
-  },
-  transform(node, config) {
-    let attributes = node.transformAttributes(config);
-    let children = node.transformChildren(config);
-
-    let id =
-      attributes.id && typeof attributes.id === "string"
-        ? attributes.id
-        : slugify(
-            children.filter((child) => typeof child === "string").join(" "),
-          );
-
-    return new Tag(
-      `h${node.attributes["level"]}`,
-      { ...attributes, id },
-      children,
-    );
-  },
-};
-
-let fence: Schema = {
-  render: "Fence",
-  attributes: {
-    language: {
-      type: String,
-    },
-  },
-};
-
-function getTitle(node: RenderableTreeNode): string | undefined {
-  if (!node) {
-    return;
-  }
-
-  if (!(typeof node === "object")) {
-    return;
-  }
-
-  if (!("children" in node)) {
-    return;
-  }
-
-  if (!Array.isArray(node.children)) {
-    return;
-  }
-
-  let title = node.children.reduce(
-    (acc: undefined | string, child: RenderableTreeNode) => {
-      if (acc || !child || typeof child !== "object") {
-        return acc;
-      }
-
-      if (
-        "name" in child &&
-        child.name === "h1" &&
-        Array.isArray(child.children) &&
-        typeof child.children[0] === "string"
-      ) {
-        let potentialTitle = child.children[0];
-        return potentialTitle;
-      }
-
-      return getTitle(child);
-    },
-    undefined,
-  );
-
-  return title;
-}
-
-function getHeadings(
-  node: RenderableTreeNode,
-  sections: { title: string; level: number; id: string }[] = [],
-) {
-  if (!node) {
-    return [];
-  }
-
-  if (!(typeof node === "object")) {
-    return [];
-  }
-
-  if (!("children" in node)) {
-    return [];
-  }
-
-  if (!Array.isArray(node.children)) {
-    return [];
-  }
-
-  if (typeof node.name !== "string") {
-    return [];
-  }
-
-  let match = node.name.match(/h\d+/);
-  if (match) {
-    let title = node.children[0];
-    let attributes = node.attributes;
-
-    if (
-      typeof title === "string" &&
-      attributes &&
-      typeof attributes === "object" &&
-      "id" in attributes &&
-      "level" in attributes
-    ) {
-      sections.push({
-        title,
-        id: attributes.id,
-        level: attributes.level,
-      });
-    }
-  } else if (node.children) {
-    for (let child of node.children) {
-      getHeadings(child, sections);
-    }
-  }
-
-  return sections;
 }

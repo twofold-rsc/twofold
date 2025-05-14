@@ -18,6 +18,7 @@
     "@heroicons/react": "^2.2.0",
     "@markdoc/markdoc": "^0.5.1",
     "@radix-ui/react-popover": "^1.1.11",
+    "@radix-ui/react-tabs": "^1.1.11",
     "@sindresorhus/slugify": "^2.2.1",
     "@tailwindcss/typography": "^0.5.16",
     "@twofold/framework": "workspace:*",

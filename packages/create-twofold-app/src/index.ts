@@ -14,27 +14,33 @@ import { randomBytes } from "crypto";
 let exec = util.promisify(childProcess.exec);
 
 async function main() {
-  // verify pnpm exists
-  let npmUserAgent = process.env.npm_config_user_agent;
-  if (
-    !npmUserAgent ||
-    typeof npmUserAgent !== "string" ||
-    !npmUserAgent.includes("pnpm")
-  ) {
-    signale.error("You must use pnpm to create a new app:");
-    signale.error("$ pnpm create twofold-app@latest");
+  let npmUserAgent = process.env.npm_config_user_agent ?? "";
+  let packageManager = npmUserAgent.startsWith("pnpm/")
+    ? "pnpm"
+    : npmUserAgent.startsWith("npm/")
+      ? "npm"
+      : null;
+
+  // verify npm or pnpm
+  if (!packageManager) {
+    signale.error(
+      "You must use npm or pnpm to create a new app. Please install npm or pnpm.",
+    );
     process.exit(1);
   }
 
-  let [agentVersion] = npmUserAgent.split(/\s/);
-  let [_, versionString] = agentVersion.split(/\//);
-  let pnpmVersion = versionString.split(".").map(Number);
-  let hasRequiredPnpmVersion = pnpmVersion[0] >= 9;
-  if (!hasRequiredPnpmVersion) {
-    signale.error(
-      "You must use pnpm version 9.0.0 or higher to create a new app.",
-    );
-    process.exit(1);
+  // if using pnpm, verify the version
+  if (packageManager === "pnpm") {
+    let [agentVersion] = npmUserAgent.split(/\s/);
+    let [_, versionString] = agentVersion.split(/\//);
+    let pnpmVersion = versionString.split(".").map(Number);
+    let hasRequiredPnpmVersion = pnpmVersion[0] >= 9;
+    if (!hasRequiredPnpmVersion) {
+      signale.error(
+        "You must use pnpm version 9.0.0 or higher to create a new app.",
+      );
+      process.exit(1);
+    }
   }
 
   // verify node version
@@ -213,9 +219,11 @@ async function main() {
   modifyVersions(pkg.dependencies);
   modifyVersions(pkg.devDependencies);
 
-  pkg.pnpm = {
-    neverBuiltDependencies: [],
-  };
+  if (packageManager === "pnpm") {
+    pkg.pnpm = {
+      neverBuiltDependencies: [],
+    };
+  }
 
   let newPackage = JSON.stringify(pkg, null, 2);
   await writeFile(new URL("./package.json", appUrl), newPackage);
@@ -230,8 +238,12 @@ async function main() {
 
   signale.pending("Installing dependencies. This may take a minute...");
 
+  let cliCommand = packageManager === "pnpm" ? "pnpm" : "npm";
+  let installCommand =
+    packageManager === "pnpm" ? "pnpm install" : "npm install --loglevel=error";
+
   try {
-    let { stderr } = await exec(`pnpm install`, {
+    let { stderr } = await exec(installCommand, {
       cwd: appPath,
       env: {
         ...process.env,
@@ -260,9 +272,11 @@ async function main() {
     signale.complete("Git repository created!");
   }
 
+  let runCommand = packageManager === "pnpm" ? "pnpm dev" : "npm run dev";
+
   signale.success("All set!");
   signale.info(`App installed at: ${appPath}`);
-  signale.info(`Run app: cd ${appFolderName} && pnpm dev`);
+  signale.info(`Run app: cd ${appFolderName} && ${runCommand}`);
 }
 
 main();

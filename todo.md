@@ -5,17 +5,23 @@
 
 - docs for pathless layouts
 
-- allow npm
-- README
+- create-twofold-app should use cjs
+- npm/pnpm switcher
+- install
+- docker/deploy
+- edit README
+
+- Add README for npm
 - chrome well-known folder
 
-- all URL(request.url) to PageProps
+- add URL(request.url) to PageProps
+
+- Run through windows
 
 - ink
 - create twofold app initial output
 - show version
 - show twofold version
-- add npm
 
 - cli generate secret key
 - cli docs

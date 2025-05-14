@@ -38,9 +38,7 @@ export class ClientAppBuilder extends Builder {
   }
 
   get clientEntryPoints() {
-    let files = Array.from(
-      this.#entriesBuilder.clientComponentModuleMap.keys()
-    );
+    let files = Array.from(this.#entriesBuilder.clientComponentEntryMap.keys());
 
     // entry point order matters for deterministic builds
     return files.sort();
@@ -344,7 +342,7 @@ export class ClientAppBuilder extends Builder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentModuleMap.values()
+      this.#entriesBuilder.clientComponentEntryMap.values()
     );
     let clientComponentModuleMap = new Map<
       string,
@@ -371,7 +369,7 @@ export class ClientAppBuilder extends Builder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentModuleMap.values()
+      this.#entriesBuilder.clientComponentEntryMap.values()
     );
     let clientComponentMap = new Map<
       string,
@@ -395,6 +393,7 @@ export class ClientAppBuilder extends Builder {
       let chunk1 = `${moduleId}:${output.name}:${output.hash}`;
       let chunk2 = `${output.name}-${output.hash}.js`;
 
+      // TODO
       for (let exportName of clientComponent.exports) {
         let id = `${moduleId}#${exportName}`;
 
@@ -418,7 +417,7 @@ export class ClientAppBuilder extends Builder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentModuleMap.values()
+      this.#entriesBuilder.clientComponentEntryMap.values()
     );
     let ssrManifestModuleMap = new Map<
       string,
@@ -443,6 +442,7 @@ export class ClientAppBuilder extends Builder {
       let chunk1 = `${moduleId}:${output.name}:${output.hash}`;
       let chunk2 = `${output.name}-${output.hash}.js`;
 
+      // TODO
       for (let exportName of clientComponent.exports) {
         let id = `${moduleId}#${exportName}`;
 

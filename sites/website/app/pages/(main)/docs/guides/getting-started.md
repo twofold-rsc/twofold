@@ -21,6 +21,15 @@ You'll need to have [Node.js](https://nodejs.org) (>=22.12.0) and [PNPM](https:/
 
 Run the following command to create a new Twofold application:
 
+{% cli-command %}
+{% cli-tool name="pnpm" %}
+pnpm create twofold-app@latest
+{% /cli-tool %}
+{% cli-tool name="npm" %}
+npx create-twofold-app@latest
+{% /cli-tool %}
+{% /cli-command %}
+
 ```text
 pnpm create twofold-app@latest
 ```

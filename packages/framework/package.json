@@ -84,6 +84,7 @@
     "@ryanto/esbuild-plugin-tailwind": "^0.0.2",
     "@tailwindcss/node": "4.0.14",
     "@tailwindcss/oxide": "4.0.14",
+    "@twofold/client-component-transforms": "workspace:*",
     "@twofold/server-function-transforms": "workspace:*",
     "babel-plugin-react-compiler": "19.0.0-beta-bafa41b-20250307",
     "client-only": "^0.0.1",
