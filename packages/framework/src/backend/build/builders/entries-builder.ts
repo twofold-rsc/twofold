@@ -2,7 +2,6 @@ import { readFirstNBytes } from "../helpers/file.js";
 import { externalPackages } from "../packages.js";
 import { BuildContext, context, transform } from "esbuild";
 import { readFile } from "fs/promises";
-import { ParseResult, parseAsync } from "@babel/core";
 import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
 import { Builder } from "./builder.js";
@@ -10,13 +9,7 @@ import { Build } from "../build/build.js";
 import { getModuleId } from "../helpers/module.js";
 import { externalsPlugin } from "../plugins/externals-plugin.js";
 
-type ClientComponentModule = {
-  moduleId: string;
-  path: string;
-  exports: string[];
-};
-
-type ServerActionEntry = {
+type Entry = {
   moduleId: string;
   path: string;
 };
@@ -30,8 +23,8 @@ export class EntriesBuilder extends Builder {
   #context?: BuildContext;
   #build: Build;
 
-  #clientComponentModuleMap = new Map<string, ClientComponentModule>();
-  #serverActionEntryMap = new Map<string, ServerActionEntry>();
+  #clientComponentEntryMap = new Map<string, Entry>();
+  #serverActionEntryMap = new Map<string, Entry>();
   #discoveredExternals = new Set<string>();
 
   constructor({ build }: { build: Build }) {
@@ -40,8 +33,8 @@ export class EntriesBuilder extends Builder {
     this.#build = build;
   }
 
-  get clientComponentModuleMap() {
-    return this.#clientComponentModuleMap;
+  get clientComponentEntryMap() {
+    return this.#clientComponentEntryMap;
   }
 
   get serverActionEntryMap() {
@@ -99,18 +92,14 @@ export class EntriesBuilder extends Builder {
           setup(build) {
             build.onLoad({ filter: /\.(tsx|ts|jsx|js)$/ }, async ({ path }) => {
               let contents = await readFile(path, "utf-8");
-              // let contents = await readFirstNBytes(path, 12);
-
-              let contentsStartsWithMarker = (marker: string) =>
-                contents.startsWith(marker);
               let contentsHasMarker = (marker: string) =>
                 contents.includes(marker);
 
-              if (clientMarkers.some(contentsStartsWithMarker)) {
-                let module = await pathToClientComponentModule(path);
-                builder.#clientComponentModuleMap.set(path, module);
+              if (clientMarkers.some(contentsHasMarker)) {
+                let module = await pathToEntry(path);
+                builder.#clientComponentEntryMap.set(path, module);
               } else if (serverMarkers.some(contentsHasMarker)) {
-                let module = await pathToServerActionEntry(path);
+                let module = await pathToEntry(path);
                 builder.#serverActionEntryMap.set(path, module);
               }
 
@@ -127,7 +116,7 @@ export class EntriesBuilder extends Builder {
       throw new Error("setup must be called before build");
     }
 
-    this.#clientComponentModuleMap = new Map();
+    this.#clientComponentEntryMap = new Map();
     this.#serverActionEntryMap = new Map();
     this.#discoveredExternals = new Set();
 
@@ -147,8 +136,8 @@ export class EntriesBuilder extends Builder {
 
   serialize() {
     return {
-      clientComponentModuleMap: Object.fromEntries(
-        this.#clientComponentModuleMap.entries()
+      clientComponentEntryMap: Object.fromEntries(
+        this.#clientComponentEntryMap.entries()
       ),
       serverActionEntryMap: Object.fromEntries(
         this.#serverActionEntryMap.entries()
@@ -158,7 +147,7 @@ export class EntriesBuilder extends Builder {
   }
 
   load(data: any) {
-    this.#clientComponentModuleMap = new Map(
+    this.#clientComponentEntryMap = new Map(
       Object.entries(data.clientComponentModuleMap)
     );
     this.#serverActionEntryMap = new Map(
@@ -168,58 +157,11 @@ export class EntriesBuilder extends Builder {
   }
 }
 
-async function pathToClientComponentModule(path: string) {
-  let moduleId = getModuleId(path);
-  let ast = await getAst(path);
-
-  return {
-    moduleId,
-    path,
-    exports: getExports(ast),
-  };
-}
-
-async function pathToServerActionEntry(path: string) {
+async function pathToEntry(path: string) {
   let moduleId = getModuleId(path);
 
   return {
     moduleId,
     path,
   };
-}
-
-async function getAst(path: string) {
-  let contents = await readFile(path, "utf-8");
-
-  let { code } = await transform(contents, {
-    loader: "tsx",
-    jsx: "automatic",
-    format: "esm",
-  });
-
-  let ast = await parseAsync(code);
-
-  return ast;
-}
-
-function getExports(ast: ParseResult | null) {
-  let exports =
-    ast?.program.body.reduce<string[]>((exports, node) => {
-      if (node.type === "ExportNamedDeclaration") {
-        return [
-          ...exports,
-          ...node.specifiers.map((specifier) =>
-            specifier.exported.type === "Identifier"
-              ? specifier.exported.name
-              : specifier.exported.value
-          ),
-        ];
-      } else if (node.type === "ExportDefaultDeclaration") {
-        return [...exports, "default"];
-      } else {
-        return exports;
-      }
-    }, []) ?? [];
-
-  return exports;
 }
