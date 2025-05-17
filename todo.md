@@ -5,13 +5,11 @@
 
 - docs for pathless layouts
 
-- create-twofold-app should use cjs
-- npm/pnpm switcher for install
 - update fence to match switcher
-- remember selection with cookie
 - unhandled rejection promise
-- docker/deploy ?
-- edit README
+- docker/deploy should use cli-command?
+- edit README (remove pnpm reference)
+- test all server functions in kitchen sink (especially the reject/return ones)
 
 - Add README for npm
 - chrome well-known folder

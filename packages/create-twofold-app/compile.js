@@ -1,13 +1,14 @@
-import { build } from "esbuild";
-import { rm } from "fs/promises";
+let { build } = require("esbuild");
+let { rm } = require("fs/promises");
+let path = require("path");
 
 async function main() {
-  let dir = new URL("./dist/", import.meta.url);
+  let dir = path.resolve(__dirname, "dist");
 
   await rm(dir, { recursive: true, force: true });
 
   await build({
-    format: "esm",
+    format: "cjs",
     platform: "node",
     logLevel: "info",
     entryPoints: ["./src/**/*.ts"],
@@ -16,4 +17,4 @@ async function main() {
   });
 }
 
-await main();
+main();
