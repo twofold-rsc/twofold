@@ -1,6 +1,11 @@
-import { ReactNode } from "react";
+"use client";
+
+import { ReactNode, use } from "react";
+import { Context } from "./cli/provider";
 
 export function CreateTwofoldApp() {
+  let { command } = use(Context);
+
   return (
     <div className="not-prose relative my-6 overflow-x-scroll rounded-md bg-[#24292e] text-sm">
       <div className="relative inline-block w-max min-w-full p-4">
@@ -9,7 +14,11 @@ export function CreateTwofoldApp() {
           tabIndex={0}
         >
           <code>
-            <Line>pnpm create twofold-app@latest</Line>
+            {command === "pnpm" ? (
+              <Line>pnpm create twofold-app@latest</Line>
+            ) : (
+              <Line>npx create-twofold-app@latest</Line>
+            )}
 
             <Line />
 

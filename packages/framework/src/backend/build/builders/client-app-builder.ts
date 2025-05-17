@@ -8,7 +8,7 @@ import { transformAsync } from "@babel/core";
 import { fileURLToPath } from "url";
 import { appCompiledDir, appAppDir, frameworkSrcDir } from "../../files.js";
 import { dirname } from "path";
-import * as path from "path";
+import path from "path";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder.js";
 import { serverActionClientReferencePlugin } from "../plugins/server-action-client-reference-plugin.js";
@@ -363,7 +363,6 @@ export class ClientAppBuilder extends Builder {
 
   get clientComponentMap() {
     let outputMap = this.#clientComponentOutputMap;
-
     if (!outputMap) {
       return {};
     }
@@ -393,8 +392,7 @@ export class ClientAppBuilder extends Builder {
       let chunk1 = `${moduleId}:${output.name}:${output.hash}`;
       let chunk2 = `${output.name}-${output.hash}.js`;
 
-      // TODO
-      for (let exportName of clientComponent.exports) {
+      for (let exportName of output.exports) {
         let id = `${moduleId}#${exportName}`;
 
         clientComponentMap.set(id, {
@@ -409,6 +407,7 @@ export class ClientAppBuilder extends Builder {
     return Object.fromEntries(clientComponentMap.entries());
   }
 
+  // see if we can derive this from clientComponentMap
   get ssrManifestModuleMap() {
     let outputMap = this.#clientComponentOutputMap;
 
@@ -442,8 +441,7 @@ export class ClientAppBuilder extends Builder {
       let chunk1 = `${moduleId}:${output.name}:${output.hash}`;
       let chunk2 = `${output.name}-${output.hash}.js`;
 
-      // TODO
-      for (let exportName of clientComponent.exports) {
+      for (let exportName of output.exports) {
         let id = `${moduleId}#${exportName}`;
 
         ssrManifestModuleMap.set(id, {

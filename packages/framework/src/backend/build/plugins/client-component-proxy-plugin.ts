@@ -2,16 +2,9 @@ import { Plugin } from "esbuild";
 import { RSCBuilder } from "../builders/rsc-builder.js";
 import { readFile } from "fs/promises";
 import { getModuleId } from "../helpers/module.js";
-import { extname } from "path";
-import { z } from "zod";
 import { transform as clientComponentTransform } from "@twofold/client-component-transforms";
-
-let languageSchema = z.union([
-  z.literal("ts"),
-  z.literal("tsx"),
-  z.literal("js"),
-  z.literal("jsx"),
-]);
+import { pathToLanguage } from "../helpers/languages.js";
+import { shouldIgnoreUseClient } from "../helpers/excluded.js";
 
 export function clientComponentProxyPlugin({
   builder,
@@ -24,16 +17,17 @@ export function clientComponentProxyPlugin({
     setup(build) {
       build.initialOptions.metafile = true;
 
-      build.onLoad({ filter: /\.(ts|tsx|js|jsx)$/ }, async ({ path }) => {
+      build.onLoad({ filter: /\.(ts|tsx|js|jsx|mjs)$/ }, async ({ path }) => {
+        if (shouldIgnoreUseClient(path)) {
+          return null;
+        }
+
         let contents = await readFile(path, "utf-8");
         let hasUseClient = contents.includes("use client");
 
         if (hasUseClient) {
-          console.log("Client component detected:", path);
-
           let moduleId = getModuleId(path);
-          let extension = extname(path).slice(1);
-          let language = languageSchema.parse(extension);
+          let language = pathToLanguage(path);
 
           let transformed = await clientComponentTransform({
             input: {
@@ -41,9 +35,8 @@ export function clientComponentProxyPlugin({
               language,
             },
             moduleId,
+            rscClientPath: "react-server-dom-webpack/server.edge",
           });
-
-          // we also need to cache the exports somewhere?
 
           return {
             contents: transformed.code,

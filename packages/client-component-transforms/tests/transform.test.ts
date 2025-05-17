@@ -1,8 +1,8 @@
 import { expect, test, describe } from "vitest";
-import { transform } from "../../src/index.js";
+import { transform } from "../src/index.js";
 import dedent from "dedent";
 
-describe("transforms", () => {
+describe("transform", () => {
   test("it should not alter a module that does not have the use client directive", async () => {
     let code = dedent`
       export function Title() {
@@ -16,9 +16,10 @@ describe("transforms", () => {
         language: "jsx",
       },
       moduleId: "test",
+      rscClientPath: "react-server-dom-webpack/server.edge",
     });
 
-    expect(result.clientComponents).toHaveLength(0);
+    expect(result.clientExports).toHaveLength(0);
     expect(result.code).toMatchInlineSnapshot(`
       "import { jsx } from "react/jsx-runtime";
       function Title() {
@@ -46,9 +47,10 @@ describe("transforms", () => {
         language: "jsx",
       },
       moduleId: "test",
+      rscClientPath: "react-server-dom-webpack/server.edge",
     });
 
-    expect(result.clientComponents).toHaveLength(1);
+    expect(result.clientExports).toHaveLength(1);
     expect(result.code).toMatchInlineSnapshot(`
       "import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
       let proxy = createClientModuleProxy("test");
@@ -72,9 +74,10 @@ describe("transforms", () => {
         language: "jsx",
       },
       moduleId: "test",
+      rscClientPath: "react-server-dom-webpack/server.edge",
     });
 
-    expect(result.clientComponents).toHaveLength(1);
+    expect(result.clientExports).toHaveLength(1);
     expect(result.code).toMatchInlineSnapshot(`
       "import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
       let proxy = createClientModuleProxy("test");
@@ -106,12 +109,13 @@ describe("transforms", () => {
         language: "jsx",
       },
       moduleId: "test",
+      rscClientPath: "react-server-dom-webpack/server.edge",
     });
 
-    expect(result.clientComponents).toHaveLength(3);
-    expect(result.clientComponents).toContain("default");
-    expect(result.clientComponents).toContain("Subtitle");
-    expect(result.clientComponents).toContain("Footer");
+    expect(result.clientExports).toHaveLength(3);
+    expect(result.clientExports).toContain("default");
+    expect(result.clientExports).toContain("Subtitle");
+    expect(result.clientExports).toContain("Footer");
     expect(result.code).toMatchInlineSnapshot(`
       "import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
       let proxy = createClientModuleProxy("test");
@@ -139,11 +143,12 @@ describe("transforms", () => {
         language: "jsx",
       },
       moduleId: "test",
+      rscClientPath: "react-server-dom-webpack/server.edge",
     });
 
-    expect(result.clientComponents).toHaveLength(2);
-    expect(result.clientComponents).toContain("add");
-    expect(result.clientComponents).toContain("pi");
+    expect(result.clientExports).toHaveLength(2);
+    expect(result.clientExports).toContain("add");
+    expect(result.clientExports).toContain("pi");
     expect(result.code).toMatchInlineSnapshot(`
       "import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
       let proxy = createClientModuleProxy("test");
@@ -170,10 +175,11 @@ describe("transforms", () => {
         language: "jsx",
       },
       moduleId: "test",
+      rscClientPath: "react-server-dom-webpack/server.edge",
     });
 
-    expect(result.clientComponents).toHaveLength(1);
-    expect(result.clientComponents).toContain("MyTitle");
+    expect(result.clientExports).toHaveLength(1);
+    expect(result.clientExports).toContain("MyTitle");
     expect(result.code).toMatchInlineSnapshot(`
       "import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
       let proxy = createClientModuleProxy("test");
@@ -194,10 +200,11 @@ describe("transforms", () => {
         language: "jsx",
       },
       moduleId: "test",
+      rscClientPath: "react-server-dom-webpack/server.edge",
     });
 
-    expect(result.clientComponents).toHaveLength(1);
-    expect(result.clientComponents).toContain("Title");
+    expect(result.clientExports).toHaveLength(1);
+    expect(result.clientExports).toContain("Title");
     expect(result.code).toMatchInlineSnapshot(`
       "import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
       let proxy = createClientModuleProxy("test");
@@ -222,9 +229,10 @@ describe("transforms", () => {
         language: "jsx",
       },
       moduleId: "test",
+      rscClientPath: "react-server-dom-webpack/server.edge",
     });
 
-    expect(result.clientComponents).toHaveLength(1);
+    expect(result.clientExports).toHaveLength(1);
     expect(result.code).toMatchInlineSnapshot(`
       "import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
       let proxy = createClientModuleProxy("test");

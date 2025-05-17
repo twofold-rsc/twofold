@@ -1,7 +1,6 @@
 import { NodePath, PluginObj } from "@babel/core";
 import * as t from "@babel/types";
-
-let DEBUG = false;
+import { hasUseClientDirective } from "./utils.js";
 
 type Options = {
   moduleId: string;
@@ -10,7 +9,7 @@ type Options = {
 type State = {
   moduleId: string;
   isClientModule: boolean;
-  clientComponents: Set<string>;
+  clientExports: Set<string>;
 };
 
 export function TransformPlugin(
@@ -21,7 +20,7 @@ export function TransformPlugin(
     pre() {
       this.moduleId = options.moduleId;
       this.isClientModule = false;
-      this.clientComponents = new Set();
+      this.clientExports = new Set();
     },
 
     visitor: {
@@ -39,9 +38,9 @@ export function TransformPlugin(
 
           for (let specifier of specifiers) {
             if (t.isIdentifier(specifier.exported)) {
-              state.clientComponents.add(specifier.exported.name);
+              state.clientExports.add(specifier.exported.name);
             } else if (t.isStringLiteral(specifier.exported)) {
-              state.clientComponents.add(specifier.exported.value);
+              state.clientExports.add(specifier.exported.value);
             }
           }
         }
@@ -51,15 +50,8 @@ export function TransformPlugin(
     post(file) {
       file.metadata = file.metadata || {};
       file.metadata = {
-        clientComponents: this.clientComponents,
+        clientExports: this.clientExports,
       };
     },
   };
-}
-
-function hasUseClientDirective(program: t.Program | undefined) {
-  if (!program || !program.directives) return false;
-  return program.directives.some((directive) =>
-    t.isDirectiveLiteral(directive.value, { value: "use client" }),
-  );
 }

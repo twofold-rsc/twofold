@@ -1,6 +1,5 @@
-import { readFirstNBytes } from "../helpers/file.js";
 import { externalPackages } from "../packages.js";
-import { BuildContext, context, transform } from "esbuild";
+import { BuildContext, context } from "esbuild";
 import { readFile } from "fs/promises";
 import { frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
@@ -8,6 +7,13 @@ import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";
 import { getModuleId } from "../helpers/module.js";
 import { externalsPlugin } from "../plugins/externals-plugin.js";
+import { check as checkClientModule } from "@twofold/client-component-transforms";
+import { check as checkServerModule } from "@twofold/server-function-transforms";
+import { pathToLanguage } from "../helpers/languages.js";
+import {
+  shouldIgnoreUseClient,
+  shouldIgnoreUseServer,
+} from "../helpers/excluded.js";
 
 type Entry = {
   moduleId: string;
@@ -90,21 +96,53 @@ export class EntriesBuilder extends Builder {
         {
           name: "find-entry-points-plugin",
           setup(build) {
-            build.onLoad({ filter: /\.(tsx|ts|jsx|js)$/ }, async ({ path }) => {
-              let contents = await readFile(path, "utf-8");
-              let contentsHasMarker = (marker: string) =>
-                contents.includes(marker);
+            build.onLoad(
+              { filter: /\.(tsx|ts|jsx|js|mjs)$/ },
+              async ({ path }) => {
+                let contents = await readFile(path, "utf-8");
+                let contentsHasMarker = (marker: string) =>
+                  contents.includes(marker);
 
-              if (clientMarkers.some(contentsHasMarker)) {
-                let module = await pathToEntry(path);
-                builder.#clientComponentEntryMap.set(path, module);
-              } else if (serverMarkers.some(contentsHasMarker)) {
-                let module = await pathToEntry(path);
-                builder.#serverActionEntryMap.set(path, module);
+                if (
+                  clientMarkers.some(contentsHasMarker) &&
+                  !shouldIgnoreUseClient(path)
+                ) {
+                  let moduleId = getModuleId(path);
+                  let language = pathToLanguage(path);
+                  let isClientModule = await checkClientModule({
+                    input: {
+                      code: contents,
+                      language,
+                    },
+                    moduleId,
+                  });
+
+                  if (isClientModule) {
+                    let module = await pathToEntry(path);
+                    builder.#clientComponentEntryMap.set(path, module);
+                  }
+                } else if (
+                  serverMarkers.some(contentsHasMarker) &&
+                  !shouldIgnoreUseServer(path)
+                ) {
+                  let moduleId = getModuleId(path);
+                  let language = pathToLanguage(path);
+                  let isServerModule = await checkServerModule({
+                    input: {
+                      code: contents,
+                      language,
+                    },
+                    moduleId,
+                  });
+                  if (isServerModule) {
+                    let module = await pathToEntry(path);
+                    builder.#serverActionEntryMap.set(path, module);
+                  }
+                }
+
+                return null;
               }
-
-              return null;
-            });
+            );
           },
         },
       ],

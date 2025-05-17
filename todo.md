@@ -6,13 +6,21 @@
 - docs for pathless layouts
 
 - create-twofold-app should use cjs
-- npm/pnpm switcher
-- install
-- docker/deploy
+- npm/pnpm switcher for install
+- update fence to match switcher
+- remember selection with cookie
+- unhandled rejection promise
+- docker/deploy ?
 - edit README
 
 - Add README for npm
 - chrome well-known folder
+
+- release
+
+- add cache support to the build
+- rework build/startup
+- let externals plugin use the cache
 
 - add URL(request.url) to PageProps
 

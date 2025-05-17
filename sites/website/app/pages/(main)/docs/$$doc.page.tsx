@@ -13,7 +13,7 @@ import { Callout } from "./components/callout";
 import { Image } from "./components/image";
 import "./docs.css";
 import { getHeadings, getTitle } from "../../../markdoc/utils";
-import { CLICommand } from "./components/cli-command";
+import { CLICommand } from "./components/cli/command";
 
 let allowedDirectories = ["reference", "guides", "philosophy"];
 
@@ -155,10 +155,17 @@ let loadDocContent = cache(async (slug: string) => {
       "cli-command": {
         render: "CLICommand",
         children: ["tool"],
-        attributes: {},
+        attributes: {
+          selectable: {
+            type: Boolean,
+            default: false,
+            required: false,
+          },
+        },
         transform(node, config) {
+          const attributes = node.transformAttributes(config);
           const tools = node.transformChildren(config);
-          return new Tag(this.render, { tools }, []);
+          return new Tag(this.render, { tools, ...attributes }, []);
         },
       },
       "cli-tool": {

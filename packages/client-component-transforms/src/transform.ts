@@ -8,17 +8,22 @@ type TransformOptions = {
     code: string;
     language: "js" | "jsx" | "ts" | "tsx";
   };
+  rscClientPath: string;
   moduleId: string;
 };
 
-export async function transform({ input, moduleId }: TransformOptions) {
+export async function transform({
+  input,
+  moduleId,
+  rscClientPath,
+}: TransformOptions) {
   let esResult = await esbuildTransform(input.code, {
     loader: input.language,
     jsx: "automatic",
     format: "esm",
   });
 
-  let codeAst = await transformAsync(esResult.code, {
+  let result = await transformAsync(esResult.code, {
     plugins: [
       [
         TransformPlugin,
@@ -31,21 +36,21 @@ export async function transform({ input, moduleId }: TransformOptions) {
     code: false,
   });
 
-  let clientComponents: string[] =
-    codeAst?.metadata &&
-    "clientComponents" in codeAst.metadata &&
-    codeAst.metadata.clientComponents instanceof Set
-      ? Array.from(codeAst.metadata.clientComponents)
+  let clientExports: string[] =
+    result?.metadata &&
+    "clientExports" in result.metadata &&
+    result.metadata.clientExports instanceof Set
+      ? Array.from(result.metadata.clientExports)
       : [];
 
-  if (clientComponents.length === 0) {
+  if (clientExports.length === 0) {
     return {
-      clientComponents: [],
+      clientExports: [],
       code: esResult.code,
     };
   }
 
-  let exports = clientComponents.map((name) => {
+  let exports = clientExports.map((name) => {
     if (name === "default") {
       return `export default proxy['default'];`;
     } else {
@@ -54,7 +59,7 @@ export async function transform({ input, moduleId }: TransformOptions) {
   });
 
   let newCode = dedent`
-    import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
+    import { createClientModuleProxy } from "${rscClientPath}";
     let proxy = createClientModuleProxy("${moduleId}");
 
     ${exports.join("\n")}
@@ -62,6 +67,6 @@ export async function transform({ input, moduleId }: TransformOptions) {
 
   return {
     code: newCode,
-    clientComponents,
+    clientExports,
   };
 }

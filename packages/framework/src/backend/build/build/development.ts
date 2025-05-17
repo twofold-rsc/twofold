@@ -53,7 +53,7 @@ export class DevelopmentBuild extends Build {
     return await this.createNewBuild(async () => {
       if (!this.error) {
         this.#clientComponentMapSnapshot.take(
-          this.getBuilder("client").clientComponentMap,
+          this.getBuilder("client").clientComponentMap
         );
         this.#clientChunksSnapshot.take(this.getBuilder("client").chunks);
         this.#rscSnapshot.take(this.getBuilder("rsc").files);
@@ -103,7 +103,7 @@ export class DevelopmentBuild extends Build {
     }
 
     this.#clientComponentMapSnapshot.latest(
-      this.getBuilder("client").clientComponentMap,
+      this.getBuilder("client").clientComponentMap
     );
 
     this.#clientChunksSnapshot.latest(this.getBuilder("client").chunks);
