@@ -5,11 +5,7 @@
 
 - docs for pathless layouts
 
-- update fence to match switcher
-- unhandled rejection promise
-- docker/deploy should use cli-command?
-- edit README (remove pnpm reference)
-- test all server functions in kitchen sink (especially the reject/return ones)
+- kitchen sink run through
 
 - Add README for npm
 - chrome well-known folder
@@ -31,6 +27,7 @@
 
 - cli generate secret key
 - cli docs
+- docker/deploy should use cli-command
 
 - pages & layouts can "use client";
 

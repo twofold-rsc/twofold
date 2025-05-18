@@ -115,13 +115,11 @@ function Router() {
         : `${location.pathname}${location.search}${location.hash}`;
       let mask = event.state?.mask ? event.state.mask : undefined;
 
-      startTransition(() => {
-        setOptimisticPath(path);
-        dispatch({
-          type: "POP",
-          path,
-          mask,
-        });
+      // don't transition here because we want this to instantly paint
+      dispatch({
+        type: "POP",
+        path,
+        mask,
       });
     }
 

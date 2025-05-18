@@ -43,6 +43,8 @@ EXPOSE 3000
 CMD [ "pnpm", "serve" ]
 ```
 
+Note that this Dockerfile uses the `pnpm` package manager. If you are using `npm`, you will need to modify the Dockerfile accordingly.
+
 ## Step 2: Create a .dockerignore file
 
 Create a file called `.dockerignore` in the root of your app. This file will contain the files and directories that should be ignored when building the Docker image.

@@ -15,10 +15,14 @@ import {
   useState,
 } from "react";
 
-let Context = createContext({
-  state: "visible",
-  animateHomepageExit: () => Promise.resolve("homepage-exited"),
-  animateDocsEntrance: () => Promise.resolve("docs-entered"),
+type State = "initial" | "homepage-exited" | "docs-entered";
+
+let Context = createContext<{
+  state: State;
+  animateHomepageExit?: () => ReturnType<ReturnType<typeof useAnimate>[1]>;
+  animateDocsEntrance?: () => ReturnType<ReturnType<typeof useAnimate>[1]>;
+}>({
+  state: "initial",
 });
 
 export function EnterDocs({
@@ -26,10 +30,11 @@ export function EnterDocs({
   ...rest
 }: HTMLAttributes<HTMLDivElement>) {
   let [scope, animate] = useAnimate();
-  let [animation, setAnimation] = useState<Promise<string>>();
+  let [animation, setAnimation] =
+    useState<Promise<"homepage-exited" | "docs-entered">>();
 
   // initial, homepage-exited, docs-entered
-  let state = animation ? use(animation) : "initial";
+  let state: State = animation ? use(animation) : "initial";
 
   function animateHomepageExit() {
     let controls = animate([
@@ -55,13 +60,15 @@ export function EnterDocs({
       ],
     ]);
 
-    let promise = new Promise<string>((resolve) => {
-      controls.then(() => resolve("homepage-exited"));
+    let promise = new Promise<"homepage-exited">((resolve) => {
+      controls.then(() => {
+        resolve("homepage-exited");
+      });
     });
 
     setAnimation(promise);
 
-    return promise;
+    return controls;
   }
 
   function animateDocsEntrance() {
@@ -79,13 +86,19 @@ export function EnterDocs({
       ],
     ]);
 
-    let promise = new Promise<string>((resolve) => {
-      controls.then(() => resolve("docs-entered"));
+    let promise = new Promise<"docs-entered">((resolve) => {
+      controls
+        .then(() => {
+          resolve("docs-entered");
+        })
+        .catch((e) => {
+          //
+        });
     });
 
     setAnimation(promise);
 
-    return promise;
+    return controls;
   }
 
   return (
@@ -122,7 +135,9 @@ export function EnterDocsLink({
       e.preventDefault();
 
       startTransition(() => {
-        animateHomepageExit();
+        if (animateHomepageExit) {
+          animateHomepageExit();
+        }
         navigate(href);
       });
     }
@@ -142,8 +157,9 @@ export function EnterDocsAnimation({
   let { animateDocsEntrance, state } = useContext(Context);
 
   useEffect(() => {
-    if (state === "homepage-exited") {
-      animateDocsEntrance();
+    if (state === "homepage-exited" && animateDocsEntrance) {
+      let controls = animateDocsEntrance();
+      return () => controls.stop();
     }
   }, [animateDocsEntrance, state]);
 

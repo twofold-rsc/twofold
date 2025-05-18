@@ -7,8 +7,8 @@ export function CreateTwofoldApp() {
   let { command } = use(Context);
 
   return (
-    <div className="not-prose relative my-6 overflow-x-scroll rounded-md bg-[#24292e] text-sm">
-      <div className="relative inline-block w-max min-w-full p-4">
+    <div className="not-prose relative my-6 overflow-x-scroll rounded-md bg-[#24292e] text-sm shadow-md ring shadow-black/20 ring-slate-950/10">
+      <div className="inline-block w-max min-w-full p-4">
         <pre
           className="text-[13px] leading-[1.7] text-[#e1e4e8] subpixel-antialiased"
           tabIndex={0}
@@ -52,8 +52,6 @@ export function CreateTwofoldApp() {
             <Output type="info">Run app: cd my-app && pnpm dev</Output>
           </code>
         </pre>
-
-        <div className="pointer-events-none absolute inset-0 rounded-md ring ring-white/20 ring-inset" />
       </div>
     </div>
   );

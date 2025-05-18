@@ -15,7 +15,7 @@ Before continuing it's recommended you read [Don't use Twofold](/docs/philosophy
 
 ## Prerequisites
 
-You'll need to have [Node.js](https://nodejs.org) (>=22.12.0) and [PNPM](https://pnpm.io) (>=9.0.0) installed on your machine.
+You'll need to have [Node.js](https://nodejs.org) (>=22.12.0) installed on your machine.
 
 ## Installation
 

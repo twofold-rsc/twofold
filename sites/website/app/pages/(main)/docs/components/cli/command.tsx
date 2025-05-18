@@ -18,14 +18,7 @@ export function CLICommand({
 
   return (
     <div className="not-prose my-6">
-      <Tabs.Root
-        value={command}
-        onValueChange={(v) => {
-          console.log("value changed", v);
-          setCommand(v);
-        }}
-        className="w-full"
-      >
+      <Tabs.Root value={command} onValueChange={setCommand} className="w-full">
         {selectable && (
           <Tabs.List className="pb-[2px]">
             {tools.map((tool) => (
@@ -53,7 +46,7 @@ export function CLICommand({
               value={tool.name}
               key={tool.name}
               className={clsx(
-                "overflow-x-scroll rounded-tr-md rounded-b-md bg-[#24292e] text-sm font-medium shadow-md ring shadow-black/20 ring-slate-950/10",
+                "overflow-x-scroll rounded-tr-md rounded-b-md bg-[#24292e] text-sm shadow-md ring shadow-black/20 ring-slate-950/10",
                 selectable ? "not-first:rounded-tl-md" : "rounded-tl-md",
                 "text-[13px] leading-[1.7] subpixel-antialiased",
               )}

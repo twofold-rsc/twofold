@@ -9,7 +9,7 @@ function main() {
     document,
     <StrictMode>
       <BrowserApp />
-    </StrictMode>,
+    </StrictMode>
   );
 }
 
