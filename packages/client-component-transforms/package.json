@@ -1,6 +1,6 @@
 {
   "name": "@twofold/client-component-transforms",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Transform components into React Client Components",
   "type": "module",
   "main": "./dist/index.js",

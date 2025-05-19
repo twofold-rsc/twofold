@@ -1,5 +1,14 @@
 # @twofold/framework
 
+## 0.0.61
+
+### Patch Changes
+
+- Support npm + many bug fixes
+- Updated dependencies
+  - @twofold/client-component-transforms@0.0.2
+  - @twofold/server-function-transforms@0.0.10
+
 ## 0.0.60
 
 ### Patch Changes
