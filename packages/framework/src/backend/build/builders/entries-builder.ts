@@ -186,7 +186,7 @@ export class EntriesBuilder extends Builder {
 
   load(data: any) {
     this.#clientComponentEntryMap = new Map(
-      Object.entries(data.clientComponentModuleMap)
+      Object.entries(data.clientComponentEntryMap)
     );
     this.#serverActionEntryMap = new Map(
       Object.entries(data.serverActionEntryMap)
