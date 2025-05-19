@@ -1,5 +1,12 @@
 # @twofold/framework
 
+## 0.0.62
+
+### Patch Changes
+
+- Updated dependencies
+  - @twofold/client-component-transforms@0.0.3
+
 ## 0.0.61
 
 ### Patch Changes

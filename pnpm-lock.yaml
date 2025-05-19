@@ -166,6 +166,9 @@ importers:
       '@babel/types':
         specifier: ^7.27.0
         version: 7.27.0
+      dedent:
+        specifier: ^1.5.3
+        version: 1.5.3
       esbuild:
         specifier: 0.25.0
         version: 0.25.0
@@ -182,9 +185,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.10.2
-      dedent:
-        specifier: ^1.5.3
-        version: 1.5.3
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
