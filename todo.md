@@ -5,9 +5,6 @@
 
 - docs for pathless layouts
 
-- chrome well-known folder
-- kitchen sink run through
-
 - release
 
 - add cache support to the build
