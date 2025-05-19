@@ -127,7 +127,7 @@ function Router() {
     return () => {
       window.removeEventListener("popstate", onPopState);
     };
-  }, [dispatch, setOptimisticPath]);
+  }, [dispatch]);
 
   useLayoutEffect(() => {
     if (routerState.history === "push") {
