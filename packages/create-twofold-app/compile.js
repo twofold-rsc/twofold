@@ -1,5 +1,5 @@
 let { build } = require("esbuild");
-let { rm } = require("fs/promises");
+let { rm, readFile, writeFile } = require("fs/promises");
 let path = require("path");
 
 async function main() {
@@ -15,6 +15,15 @@ async function main() {
     outdir: "./dist",
     packages: "external",
   });
+
+  let binEntry = path.resolve(__dirname, "dist", "index.js");
+  let shebang = "#!/usr/bin/env node\n";
+
+  let code = await readFile(binEntry, "utf8");
+
+  if (!code.startsWith(shebang)) {
+    await writeFile(binEntry, shebang + code, "utf8");
+  }
 }
 
 main();
