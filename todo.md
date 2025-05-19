@@ -5,10 +5,8 @@
 
 - docs for pathless layouts
 
-- kitchen sink run through
-
-- Add README for npm
 - chrome well-known folder
+- kitchen sink run through
 
 - release
 

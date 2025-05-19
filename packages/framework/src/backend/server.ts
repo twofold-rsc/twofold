@@ -14,6 +14,7 @@ import { waitForBuild } from "./server/middlewares/wait-for-build.js";
 import { waitForSSR } from "./server/middlewares/wait-for-ssr-worker.js";
 import { Server as NodeHttpServer } from "http";
 import { Runtime } from "./runtime.js";
+import { filterRequests } from "./server/middlewares/filter-requests.js";
 
 async function createHandler(runtime: Runtime) {
   let build = runtime.build;
@@ -29,6 +30,8 @@ async function createHandler(runtime: Runtime) {
   app.use(globalMiddleware(build));
   app.use(assets(build));
   app.use(staticFiles(build));
+
+  app.use(filterRequests());
 
   if (build.canReload) {
     app.use(devReload(build));
@@ -104,7 +107,7 @@ async function createHandler(runtime: Runtime) {
       let locationHeader = response.headers.get("location");
       let location = locationHeader?.startsWith("/__rsc/page?path=")
         ? decodeURIComponent(
-            locationHeader.replace(/^\/__rsc\/page\?path=/, ""),
+            locationHeader.replace(/^\/__rsc\/page\?path=/, "")
           )
         : locationHeader;
 
