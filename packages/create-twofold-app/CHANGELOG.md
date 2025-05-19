@@ -1,5 +1,11 @@
 # create-twofold-app
 
+## 0.0.15
+
+### Patch Changes
+
+- Fix bad bin script entry
+
 ## 0.0.14
 
 ### Patch Changes
