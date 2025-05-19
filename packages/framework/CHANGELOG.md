@@ -1,5 +1,11 @@
 # @twofold/framework
 
+## 0.0.63
+
+### Patch Changes
+
+- Bug fix for prod server
+
 ## 0.0.62
 
 ### Patch Changes
