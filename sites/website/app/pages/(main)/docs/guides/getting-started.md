@@ -15,15 +15,20 @@ Before continuing it's recommended you read [Don't use Twofold](/docs/philosophy
 
 ## Prerequisites
 
-You'll need to have [Node.js](https://nodejs.org) (>=22.12.0) and [PNPM](https://pnpm.io) (>=9.0.0) installed on your machine.
+You'll need to have [Node.js](https://nodejs.org) (>=22.12.0) installed on your machine.
 
 ## Installation
 
 Run the following command to create a new Twofold application:
 
-```text
+{% cli-command selectable=true %}
+{% cli-tool name="pnpm" %}
 pnpm create twofold-app@latest
-```
+{% /cli-tool %}
+{% cli-tool name="npm" %}
+npx create-twofold-app@latest
+{% /cli-tool %}
+{% /cli-command %}
 
 You'll be prompted to enter a name for your application.
 
@@ -41,8 +46,13 @@ cd my-app
 
 And start the development server:
 
-```text
+{% cli-command %}
+{% cli-tool name="pnpm" %}
 pnpm dev
-```
+{% /cli-tool %}
+{% cli-tool name="npm" %}
+npm run dev
+{% /cli-tool %}
+{% /cli-command %}
 
 That's it! Visit [http://localhost:3000](http://localhost:3000) to see your new application up and running!

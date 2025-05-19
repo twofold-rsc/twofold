@@ -1,5 +1,10 @@
 import { Plugin } from "esbuild";
 import { RSCBuilder } from "../builders/rsc-builder.js";
+import { readFile } from "fs/promises";
+import { getModuleId } from "../helpers/module.js";
+import { transform as clientComponentTransform } from "@twofold/client-component-transforms";
+import { pathToLanguage } from "../helpers/languages.js";
+import { shouldIgnoreUseClient } from "../helpers/excluded.js";
 
 export function clientComponentProxyPlugin({
   builder,
@@ -10,32 +15,31 @@ export function clientComponentProxyPlugin({
     name: "client-component-proxy-plugin",
 
     setup(build) {
-      build.onLoad({ filter: /\.(ts|tsx|js|jsx)$/ }, async ({ path }) => {
-        let clientComponentModule =
-          builder.entries.clientComponentModuleMap.get(path);
+      build.initialOptions.metafile = true;
 
-        if (clientComponentModule) {
-          // re-export using the proxy
-          let exportLines = clientComponentModule.exports.map((name) => {
-            if (name === "default") {
-              return `export default proxy['default'];`;
-            } else {
-              return `export const ${name} = proxy['${name}'];`;
-            }
+      build.onLoad({ filter: /\.(ts|tsx|js|jsx|mjs)$/ }, async ({ path }) => {
+        if (shouldIgnoreUseClient(path)) {
+          return null;
+        }
+
+        let contents = await readFile(path, "utf-8");
+        let hasUseClient = contents.includes("use client");
+
+        if (hasUseClient) {
+          let moduleId = getModuleId(path);
+          let language = pathToLanguage(path);
+
+          let transformed = await clientComponentTransform({
+            input: {
+              code: contents,
+              language,
+            },
+            moduleId,
+            rscClientPath: "react-server-dom-webpack/server.edge",
           });
 
-          // RSC "safe" version of the client component
-          let newContents = `
-            import { createClientModuleProxy } from "react-server-dom-webpack/server.edge";
-            let proxy = createClientModuleProxy("${
-              clientComponentModule.moduleId
-            }");
-
-            ${exportLines.join("\n")}
-          `;
-
           return {
-            contents: newContents,
+            contents: transformed.code,
             loader: "js",
           };
         }

@@ -5,20 +5,24 @@
 
 - docs for pathless layouts
 
-- allow npm
-- README
-- chrome well-known folder
+- release
 
-- all URL(request.url) to PageProps
+- add cache support to the build
+- rework build/startup
+- let externals plugin use the cache
+
+- add URL(request.url) to PageProps
+
+- Run through windows
 
 - ink
 - create twofold app initial output
 - show version
 - show twofold version
-- add npm
 
 - cli generate secret key
 - cli docs
+- docker/deploy should use cli-command
 
 - pages & layouts can "use client";
 

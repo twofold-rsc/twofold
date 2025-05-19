@@ -48,7 +48,7 @@ function Router() {
         addHistory: boolean;
         scroll: boolean;
         mask?: string;
-      },
+      }
     ) => {
       let url = new URL(toPath, window.location.href);
 
@@ -71,7 +71,7 @@ function Router() {
         });
       });
     },
-    [dispatch, setOptimisticPath],
+    [dispatch, setOptimisticPath]
   );
 
   let navigate = useCallback(
@@ -82,7 +82,7 @@ function Router() {
         mask: options.mask,
       });
     },
-    [navigateToPath],
+    [navigateToPath]
   );
 
   let replace = useCallback(
@@ -93,7 +93,7 @@ function Router() {
         mask: options.mask,
       });
     },
-    [navigateToPath],
+    [navigateToPath]
   );
 
   let refresh = useCallback(() => {
@@ -115,13 +115,11 @@ function Router() {
         : `${location.pathname}${location.search}${location.hash}`;
       let mask = event.state?.mask ? event.state.mask : undefined;
 
-      startTransition(() => {
-        setOptimisticPath(path);
-        dispatch({
-          type: "POP",
-          path,
-          mask,
-        });
+      // don't transition here because we want this to instantly paint
+      dispatch({
+        type: "POP",
+        path,
+        mask,
       });
     }
 
@@ -129,7 +127,7 @@ function Router() {
     return () => {
       window.removeEventListener("popstate", onPopState);
     };
-  }, [dispatch, setOptimisticPath]);
+  }, [dispatch]);
 
   useLayoutEffect(() => {
     if (routerState.history === "push") {
@@ -143,7 +141,7 @@ function Router() {
             mask: routerState.mask,
           },
           "",
-          display,
+          display
         );
       }
       if (routerState.scroll === "top") {
@@ -157,7 +155,7 @@ function Router() {
           mask: routerState.mask,
         },
         "",
-        display,
+        display
       );
       if (routerState.scroll === "top") {
         document.documentElement.scrollTop = 0;

@@ -47,6 +47,8 @@ In the "Deployment settings" panel, you need to specify the build and run comman
 - Build command: `pnpm run build`
 - Run command: `pnpm run serve`
 
+If you are using npm, replace the `pnpm` commands with `npm`.
+
 #### Network
 
 {% image src="/images/guides/deploy/digitalocean-app-platform/network.png" alt="Configure your app's network settings" border=true /%}

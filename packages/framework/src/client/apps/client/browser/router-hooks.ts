@@ -233,9 +233,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
-            path: previous.path,
             action: "refresh",
-            history: "none",
             cache: newCache,
           };
         },

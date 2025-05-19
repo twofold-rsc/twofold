@@ -15,13 +15,13 @@ function randomMessage() {
   return messages[Math.floor(Math.random() * messages.length)];
 }
 
-function toast() {
+async function toast() {
   "use server";
 
   flash(randomMessage());
 }
 
-function multipleToasts() {
+async function multipleToasts() {
   "use server";
 
   flash(randomMessage());
@@ -29,14 +29,14 @@ function multipleToasts() {
   flash(randomMessage());
 }
 
-function redirectAndToast() {
+async function redirectAndToast() {
   "use server";
 
   flash(randomMessage());
   redirect("/server-actions/flash-messages/end");
 }
 
-function objectFlashAction() {
+async function objectFlashAction() {
   "use server";
 
   flash({ type: "object", text: "Hello" });

@@ -53,7 +53,8 @@ export function externalsPlugin({
           let resolvePath = require.resolve(path);
           let isPackage = resolvePath.includes("node_modules");
           if (isPackage) {
-            let shouldBundle = await dependsOnReact(path);
+            let packageName = getPackageName(path);
+            let shouldBundle = await dependsOnReact(packageName);
             if (!shouldBundle) {
               discoveredExternals.add(path);
               return {
@@ -96,7 +97,18 @@ async function dependsOnReact(dep: string) {
   let nameMatches = packageJson.name === dep;
   let hasReact =
     packageJson.dependencies?.react || packageJson.peerDependencies?.react;
-  return !!(nameMatches && hasReact);
+  let answer = !!(nameMatches && hasReact);
+  return answer;
+}
+
+function getPackageName(specifier: string) {
+  if (specifier.startsWith("@")) {
+    let parts = specifier.split("/");
+    return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : specifier;
+  } else {
+    let parts = specifier.split("/");
+    return parts[0];
+  }
 }
 
 async function getDependencyPackageJson(dep: string) {
@@ -110,7 +122,8 @@ async function getDependencyPackageJson(dep: string) {
 
       if (exists) {
         let contents = await readFile(packageJsonPath, "utf-8");
-        return JSON.parse(contents);
+        let packageJson = JSON.parse(contents);
+        return packageJson;
       }
 
       // recurse up

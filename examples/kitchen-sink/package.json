@@ -36,7 +36,7 @@
     "@types/react-dom": "catalog:",
     "eslint": "^9.23.0",
     "eslint-plugin-twofold": "workspace:*",
-    "nodemon": "^3.1.9",
+    "nodemon": "^3.1.10",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "typescript": "catalog:"

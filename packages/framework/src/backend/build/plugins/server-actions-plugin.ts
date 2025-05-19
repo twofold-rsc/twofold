@@ -3,14 +3,14 @@ import { RSCBuilder } from "../builders/rsc-builder.js";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
 import { cwdUrl } from "../../files.js";
-import { extname } from "path";
 import * as path from "path";
 import {
   transform as serverFunctionTransform,
   envKey,
 } from "@twofold/server-function-transforms";
-import { z } from "zod";
 import { getModuleId } from "../helpers/module.js";
+import { pathToLanguage } from "../helpers/languages.js";
+import { shouldIgnoreUseServer } from "../helpers/excluded.js";
 
 type ServerAction = {
   id: string;
@@ -18,13 +18,6 @@ type ServerAction = {
   moduleId: string;
   export: string;
 };
-
-let languageSchema = z.union([
-  z.literal("ts"),
-  z.literal("tsx"),
-  z.literal("js"),
-  z.literal("jsx"),
-]);
 
 export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
   let plugin: Plugin = {
@@ -35,7 +28,7 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
 
       function getPathActions(path: string) {
         return Array.from(serverActions).filter(
-          (action) => action.path === path,
+          (action) => action.path === path
         );
       }
 
@@ -43,14 +36,17 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
         serverActions.clear();
       });
 
-      build.onLoad({ filter: /\.(ts|tsx|js|jsx)$/ }, async ({ path }) => {
+      build.onLoad({ filter: /\.(ts|tsx|js|jsx|mjs)$/ }, async ({ path }) => {
+        if (shouldIgnoreUseServer(path)) {
+          return null;
+        }
+
         let contents = await readFile(path, "utf-8");
         let hasUseServer = contents.includes("use server");
 
         if (hasUseServer) {
           let moduleId = getModuleId(path);
-          let extension = extname(path).slice(1);
-          let language = languageSchema.parse(extension);
+          let language = pathToLanguage(path);
 
           let transformed = await serverFunctionTransform({
             input: {
