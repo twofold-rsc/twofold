@@ -1,6 +1,5 @@
 import { APIProps } from "@twofold/framework/types";
-import { getTitle } from "../../../markdoc/utils";
-import { getPostSlugs, loadContent, loadMetadata } from "./data-layer/posts";
+import { getPosts } from "./data-layer/posts";
 
 export async function GET({ request }: APIProps) {
   let baseUrl = new URL(request.url);
@@ -38,31 +37,14 @@ async function generateRSS({ baseUrl }: { baseUrl: URL }) {
   return rssFeed.trim();
 }
 
-let itemsCache:
+let localCache:
   | { title: string; slug: string; date: Date | null; description: string }[]
   | null = null;
 
 async function getItems() {
-  if (!itemsCache) {
-    let posts = await getPostSlugs();
-
-    let itemsPromise = posts.map(async (slug) => {
-      let content = await loadContent(slug);
-      let frontmatter = await loadMetadata(slug);
-      let title = getTitle(content);
-
-      return {
-        title: title ?? "No title",
-        slug,
-        date: frontmatter.lastUpdated
-          ? new Date(frontmatter.lastUpdated)
-          : null,
-        description: frontmatter.description ?? "",
-      };
-    });
-
-    itemsCache = await Promise.all(itemsPromise);
+  if (!localCache) {
+    localCache = await getPosts();
   }
 
-  return itemsCache;
+  return localCache;
 }

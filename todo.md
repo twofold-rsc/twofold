@@ -1,13 +1,15 @@
 # TODO
 
+- new blog post
+- run routes in parallel
+- add cache support to the build, explore rolldown
+- error handling
+
 - blog index seo
 - newsletter signup (after 3 posts)
 
 - docs for pathless layouts
 
-- release
-
-- add cache support to the build
 - rework build/startup
 - let externals plugin use the cache
 
@@ -20,19 +22,15 @@
 - show version
 - show twofold version
 
-- cli generate secret key
+- cli generate secret key (openssl rand -base64 32)
 - cli docs
 - docker/deploy should use cli-command
 
 - pages & layouts can "use client";
 
-- scroll position when going back
-- get rid of assets (instead importing a css file should give the url)
-
 - api routes should use route matchers
 
 - components
-- SubmitButton?
 - NavigationLink
 
 - error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
@@ -50,7 +48,7 @@
 - live reload should reconnect when disconnected
 
 - rename api handlers
-- only allow function exports from server modules. you dont want to import a non function call server on the client
+- only allow async function exports from server modules. you dont want to import a non function call server on the client
 
 - website for server-function-transforms
 

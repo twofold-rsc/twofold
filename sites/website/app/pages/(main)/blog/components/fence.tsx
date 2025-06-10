@@ -1,5 +1,9 @@
 import { codeToHtml } from "shiki";
-import { transformerNotationDiff } from "@shikijs/transformers";
+import {
+  transformerNotationDiff,
+  transformerNotationFocus,
+  transformerNotationHighlight,
+} from "@shikijs/transformers";
 import clsx from "clsx";
 
 export async function Fence({
@@ -18,7 +22,11 @@ export async function Fence({
     theme: "github-dark", // #24292e
     // theme: "github-dark-default", // #0d1117
     // theme: "night-owl", // #011627
-    transformers: [transformerNotationDiff()],
+    transformers: [
+      transformerNotationDiff(),
+      transformerNotationHighlight(),
+      transformerNotationFocus(),
+    ],
   });
 
   return (
