@@ -9,7 +9,9 @@ A neat pattern with React Server Components is to create a promise that starts o
 
 Here's what it looks like:
 
-```jsx {% file="server-component.js" %}
+{% demo1 %}
+
+```jsx {% demo=true %}
 import { Suspense } from "react";
 import { ClientComponent } from "./client-component";
 
@@ -26,12 +28,8 @@ export default function Page() {
     </Suspense>
   );
 }
-```
 
-{% demo1 %}
-
-```jsx {% demo=true file="client-component.js" %}
-"use client";
+// ![client-component-boundary]
 
 import { use } from "react";
 

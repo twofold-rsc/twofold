@@ -1,9 +1,9 @@
 ---
 lastUpdated: "2025-05-19T08:00:00Z"
-description: "A look at two real-world UIs that rely on streaming with Suspense"
+description: "A look real-world UIs that rely on streaming with Suspense"
 ---
 
-# Streaming with Suspense
+# Composable streaming with Suspense
 
 One line intro, read writing blog post.
 
@@ -39,7 +39,7 @@ async function SlowCheckmark() {
 
 {% /demo1 %}
 
-If you haven't used suspense before the idea is that you can wrap a component in a `<Suspense>` tag and while that component is loading React will show a fallback UI. In our case, a span with an hour glass icon.
+If you haven't used suspense before the idea is that you can wrap a component in a `<Suspense>` tag and while that component is loading React will show a fallback UI. In our case, a span with an ⏳ icon.
 
 That by itself is pretty neat, but there's a few often unnoticed features in the code above:
 
@@ -55,13 +55,7 @@ In this post, we'll look at two such examples.
 
 A blog post can take advantage of streaming by first showing the post, and then lazily loading in the comments. Visitors can start reading the post while the comments are still loading.
 
-{% demo2 %}
-
-```jsx {% demo=true %}
-
-```
-
-{% /demo2 %}
+{% demo2 /%}
 
 Streaming in content that is below the fold is a great way to improve the perceived performance of an app. Dynamic content that is not initially visible on the page is a excellent candidate for streaming with suspense.
 
@@ -131,7 +125,65 @@ Like the blog comments example, we can use `<Suspense>` to lazily load the menu.
 
 We'll use Headless UI's `<Listbox>` component to render the dropdown menu of available models. If we wrap `<Listbox>` in a `<Suspense>` boundary, the list of models will be lazily loaded based on the user's plan.
 
-{% demo5 /%}
+{% demo5 %}
+
+```jsx {% demo=true %}
+import { Suspense } from "react";
+import { ModelsSelector } from "./client-component";
+
+function ChatBox() {
+  return (
+    <form>
+      <textarea defaultValue="Chat with your favorite AI model..." />
+
+      <Suspense fallback={<span>Loading models...</span>}>
+        <CurrentUserModels />
+      </Suspense>
+    </form>
+  );
+}
+
+async function CurrentUserModels() {
+  const currentUser = await getCurrentUser();
+  const models = await getModelsForUser(currentUser);
+
+  return <ModelSelector models={models} />;
+}
+
+// ![client-component-boundary]
+
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/react";
+
+export function ModelsSelector({ models }) {
+  const [selectedModel, setSelectedModel] = useState(models[0]);
+
+  return (
+    <Listbox value={selectedModel} onChange={setSelectedModel}>
+      <ListboxButton>{selectedModel.name}</ListboxButton>
+      <ListboxOptions>
+        {models.map((model) => (
+          <ListboxOption
+            key={model.id}
+            value={model}
+            disabled={model.isDisabled}
+          >
+            {model.name}
+          </ListboxOption>
+        ))}
+      </ListboxOptions>
+    </Listbox>
+  );
+}
+```
+
+{% /demo5 %}
+
+Now the chat box renders immediately, and the dropdown shows a loading state while the models are being fetched. Once the options are ready, the dropdown is shown.
 
 While this works, the UX is not ideal. The dropdown menu flashes from a loading state to the actual options once they are ready, which can be jarring for the user.
 
@@ -139,7 +191,73 @@ While this works, the UX is not ideal. The dropdown menu flashes from a loading 
 
 To improve this, we can move the `<Suspense>` boundary to only surround the `<ListboxOptions>`, and not the entire `<Listbox>` component.
 
-{% demo6 /%}
+{% demo6 %}
+
+```jsx {% demo=true %}
+import { Suspense } from "react";
+import { ModelsSelector } from "./client-component";
+
+function ChatBox() {
+  return (
+    <form>
+      <textarea defaultValue="Chat with your favorite AI model..." />
+
+      <ModelSelector>
+        <Suspense fallback={<span>Loading models...</span>}>
+          <CurrentUsersOptions />
+        </Suspense>
+      </ModelSelector>
+    </form>
+  );
+}
+
+async function CurrentUsersOptions() {
+  const currentUser = await getCurrentUser();
+  const models = await getModelsForUser(currentUser);
+
+  return <ModelsSelectorOptions models={models} />;
+}
+
+// ![client-component-boundary]
+
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/react";
+
+const defaultModel = {
+  id: "gpt-mini",
+  name: "GPT Mini",
+  isDisabled: false,
+};
+
+export function ModelsSelector({ children }) {
+  const [selectedModel, setSelectedModel] = useState(defaultModel);
+
+  return (
+    <Listbox value={selectedModel} onChange={setSelectedModel}>
+      <ListboxButton>{selectedModel.name}</ListboxButton>
+      <ListboxOptions>{children}</ListboxOptions>
+    </Listbox>
+  );
+}
+
+export function ModelSelectorOptions({ models }) {
+  return (
+    <>
+      {models.map((model) => (
+        <ListboxOption key={model.id} value={model} disabled={model.isDisabled}>
+          {model.name}
+        </ListboxOption>
+      ))}
+    </>
+  );
+}
+```
+
+{% /demo6 %}
 
 Now the chat box renders immediately and the dropdown menu is interactive while the options are still loading.
 

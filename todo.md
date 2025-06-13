@@ -1,6 +1,14 @@
 # TODO
 
-- new blog post
+- blog post
+- comments demo
+- toggle suspense boundary demo
+- mobile styles (ai chat box placeholder, ai arrows)
+- write intro
+- write outro
+- rewrite post
+- about me?
+
 - run routes in parallel
 - add cache support to the build, explore rolldown
 - error handling

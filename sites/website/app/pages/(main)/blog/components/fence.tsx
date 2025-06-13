@@ -5,6 +5,7 @@ import {
   transformerNotationHighlight,
 } from "@shikijs/transformers";
 import clsx from "clsx";
+import { transformerClientComponentBoundary } from "@lib/transformer-client-component-boundary";
 
 export async function Fence({
   children,
@@ -26,6 +27,9 @@ export async function Fence({
       transformerNotationDiff(),
       transformerNotationHighlight(),
       transformerNotationFocus(),
+      transformerClientComponentBoundary({
+        class: "-mx-4 text-slate-50/20",
+      }),
     ],
   });
 

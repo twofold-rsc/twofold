@@ -7,7 +7,7 @@ import { z } from "zod";
 import yaml from "js-yaml";
 import slugify from "@sindresorhus/slugify";
 import * as PromisePost from "../posts/you-can-serialize-a-promise-in-react/components";
-import * as StreamingPost from "../posts/streaming-with-suspense/components";
+import * as StreamingPost from "../posts/composable-streaming-with-suspense/components";
 import { getTitle } from "../../../../markdoc/utils";
 
 export const getPostSlugs = cache(async () => {
@@ -84,7 +84,7 @@ export const loadComponents = cache(async (slug: string) => {
 
   let map: Record<string, Record<string, ComponentType<any>>> = {
     "you-can-serialize-a-promise-in-react": PromisePost.components,
-    "streaming-with-suspense": StreamingPost.components,
+    "composable-streaming-with-suspense": StreamingPost.components,
   };
 
   let components = map[slug] ?? {};
@@ -102,7 +102,7 @@ export const loadTags = cache(async (slug: string) => {
 
   let map: Record<string, Record<string, Schema>> = {
     "you-can-serialize-a-promise-in-react": PromisePost.tags,
-    "streaming-with-suspense": StreamingPost.tags,
+    "composable-streaming-with-suspense": StreamingPost.tags,
   };
 
   let tags = map[slug] ?? {};

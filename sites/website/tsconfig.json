@@ -7,7 +7,10 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "target": "ESNext",
-    "types": ["react", "react-dom", "node", "@twofold/framework"]
+    "types": ["react", "react-dom", "node", "@twofold/framework"],
+    "paths": {
+      "@lib/*": ["./lib/*"]
+    }
   },
-  "include": ["./app/"]
+  "include": ["./app/", "./lib/"]
 }
