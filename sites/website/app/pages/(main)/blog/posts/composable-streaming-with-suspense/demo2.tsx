@@ -3,17 +3,39 @@
 import clsx from "clsx";
 import { Browser } from "../../components/browser";
 import * as Switch from "@radix-ui/react-switch";
+import { JSX, useActionState } from "react";
+import { getDemo2 } from "./demo2-action";
 
 export function Demo2() {
+  const [jsx, action] = useActionState(
+    (prev: JSX.Element | null, action: "run" | "reset") => {
+      if (action === "run") {
+        return getDemo2();
+      } else if (action === "reset") {
+        return null;
+      } else {
+        return prev;
+      }
+    },
+    null,
+  );
+
   return (
     <div className="not-prose">
       <div className="-mx-8">
         <Browser
           url="https://twofoldframework.com/blog"
-          onRefresh={() => console.log("Refresh clicked")}
+          onBack={jsx ? () => action("reset") : void 0}
+          onRefresh={jsx ? () => action("reset") : void 0}
         >
-          <div className="flex h-full grow flex-col items-center justify-center px-4 py-3.5">
-            <EmptyState />
+          <div className="flex h-full grow flex-col px-4 py-3.5">
+            {jsx ? (
+              <>{jsx}</>
+            ) : (
+              <div className="flex h-full w-full grow flex-col items-center justify-center">
+                <EmptyState loadAction={() => action("run")} />
+              </div>
+            )}
           </div>
         </Browser>
       </div>
@@ -22,7 +44,7 @@ export function Demo2() {
   );
 }
 
-function EmptyState() {
+function EmptyState({ loadAction }: { loadAction: () => void }) {
   return (
     <form className="space-y-5">
       <h3 className="text-lg leading-none font-medium tracking-tight text-gray-900">
@@ -53,8 +75,8 @@ function EmptyState() {
       <div>
         <button
           type="submit"
-          formAction={() => {}}
-          className="inline-flex items-center justify-center rounded bg-black px-3 py-1.5 text-sm font-medium text-white shadow-lg"
+          formAction={loadAction}
+          className="inline-flex items-center justify-center rounded bg-black px-3 py-1.5 text-sm font-medium text-white"
         >
           Load the blog
         </button>

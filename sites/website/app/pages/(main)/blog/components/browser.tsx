@@ -1,32 +1,49 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import clsx from "clsx";
 import { MouseEventHandler, ReactNode } from "react";
 
 export function Browser({
   children,
   url,
   onRefresh,
+  onBack,
+  onForward,
 }: {
   children: ReactNode;
   url: string;
   onRefresh?: MouseEventHandler<HTMLButtonElement>;
+  onBack?: MouseEventHandler<HTMLButtonElement>;
+  onForward?: MouseEventHandler<HTMLButtonElement>;
 }) {
   return (
     <div className="flex h-full flex-col rounded-lg">
       <div className="relative flex w-full items-center justify-center rounded-t-lg bg-gray-100 px-4 py-2">
         <div className="absolute inset-y-0 left-4 flex items-center justify-center">
           <div className="mr-4 flex items-center space-x-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-red-400"></span>
-            <span className="h-2.5 w-2.5 rounded-full bg-yellow-400"></span>
-            <span className="h-2.5 w-2.5 rounded-full bg-green-400"></span>
+            <span className="size-2.5 rounded-full bg-red-400"></span>
+            <span className="size-2.5 rounded-full bg-yellow-400"></span>
+            <span className="size-2.5 rounded-full bg-green-400"></span>
           </div>
           <div className="hidden items-center justify-center text-gray-100 md:flex">
             <div className="flex items-center space-x-1">
-              <div className="p-1">
-                <ChevronLeftIcon className="h-5 w-5 text-gray-500" />
-              </div>
-              <div className="p-1">
-                <ChevronRightIcon className="h-5 w-5 text-gray-500" />
-              </div>
+              <button
+                className={clsx(
+                  "p-1 text-gray-500",
+                  onBack && "hover:text-gray-800",
+                )}
+                onClick={onBack}
+              >
+                <ChevronLeftIcon className="size-5" />
+              </button>
+              <button
+                className={clsx(
+                  "p-1 text-gray-500",
+                  onForward && "hover:text-gray-800",
+                )}
+                onClick={onForward}
+              >
+                <ChevronRightIcon className="size-5" />
+              </button>
             </div>
           </div>
         </div>
@@ -34,7 +51,10 @@ export function Browser({
           <span className="w-full text-center text-gray-500">{url}</span>
           <button
             onClick={onRefresh}
-            className="absolute inset-y-0 right-3 flex items-center p-1 text-gray-500 hover:text-gray-800"
+            className={clsx(
+              "absolute inset-y-0 right-3 flex items-center p-1 text-gray-500",
+              onRefresh && "hover:text-gray-800",
+            )}
           >
             <svg
               viewBox="0 0 15 18"
