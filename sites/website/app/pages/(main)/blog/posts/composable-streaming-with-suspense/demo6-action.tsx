@@ -35,7 +35,7 @@ export function getDemo6() {
         <div className="absolute -top-[32px] left-[110px] group-has-[[data-open]]:hidden">
           <div className="relative">
             <Arrow className="w-22 -rotate-[10deg] text-red-500" />
-            <div className="gochi-hand-regular absolute -bottom-[12px] left-[100px] text-xl font-semibold whitespace-nowrap text-red-500">
+            <div className="font-handwriting absolute -bottom-[12px] left-[100px] text-xl font-semibold whitespace-nowrap text-red-500">
               <p>
                 Models are{" "}
                 <span className="hidden group-has-[[data-models-loading]]:inline">

@@ -15,40 +15,34 @@ import { Arrow } from "./arrows";
 
 export function Demo4() {
   return (
-    <>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap"
-        rel="stylesheet"
-      />
-      <div className="not-prose group -mx-8 my-8">
-        <div className="rounded-lg bg-slate-50 p-3 shadow-md ring-1 ring-slate-950/5">
-          <div>
-            <textarea
-              placeholder="Chat with your favorite AI model..."
-              rows={2}
-              className="block w-full resize-none text-slate-900 focus:outline-none"
-            />
-          </div>
-          <div className="flex items-end justify-between">
-            <ModelSelect models={models} />
-            <button className="inline-flex size-6 items-center justify-center rounded-full bg-blue-500">
-              <ArrowRightIcon className="size-3.5 stroke-[2.5] text-white" />
-            </button>
-          </div>
+    <div className="not-prose group -mx-8 my-8">
+      <div className="rounded-lg bg-slate-50 p-3 shadow-md ring-1 ring-slate-950/5">
+        <div>
+          <textarea
+            placeholder="Chat with your favorite AI model..."
+            rows={2}
+            className="block w-full resize-none text-slate-900 focus:outline-none"
+          />
         </div>
+        <div className="flex items-end justify-between">
+          <ModelSelect models={models} />
+          <button className="inline-flex size-6 items-center justify-center rounded-full bg-blue-500">
+            <ArrowRightIcon className="size-3.5 stroke-[2.5] text-white" />
+          </button>
+        </div>
+      </div>
 
-        <div className="relative pb-8">
-          <div className="absolute -top-[36px] left-[110px] group-has-[[data-open]]:hidden">
-            <div className="relative">
-              <Arrow className="w-22 -rotate-[15deg] text-red-500" />
-              <span className="gochi-hand-regular absolute bottom-[19px] left-[100px] text-xl font-semibold whitespace-nowrap text-red-500">
-                Try selecting a model
-              </span>
-            </div>
+      <div className="relative pb-8">
+        <div className="absolute -top-[36px] left-[110px] group-has-[[data-open]]:hidden">
+          <div className="relative">
+            <Arrow className="w-22 -rotate-[15deg] text-red-500" />
+            <span className="font-handwriting absolute bottom-[19px] left-[100px] text-xl font-semibold whitespace-nowrap text-red-500">
+              Try selecting a model
+            </span>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

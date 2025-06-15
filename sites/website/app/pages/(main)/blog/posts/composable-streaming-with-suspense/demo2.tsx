@@ -3,21 +3,93 @@
 import clsx from "clsx";
 import { Browser } from "../../components/browser";
 import * as Switch from "@radix-ui/react-switch";
-import { JSX, useActionState } from "react";
+import {
+  JSX,
+  ReactNode,
+  startTransition,
+  useActionState,
+  useEffect,
+  useOptimistic,
+  useRef,
+} from "react";
 import { getDemo2 } from "./demo2-action";
+import { DownArrow } from "./arrows";
+import { motion, useScroll, useTransform } from "framer-motion";
+import Spinner from "../../../../../components/spinner";
+import { useFormStatus } from "react-dom";
+
+type Action =
+  | {
+      type: "run";
+      formData: FormData;
+    }
+  | {
+      type: "reset";
+    }
+  | {
+      type: "back";
+    }
+  | {
+      type: "forward";
+    };
+
+type State =
+  | {
+      jsx: null;
+      stream: boolean;
+      prevJsx: null | Promise<JSX.Element>;
+    }
+  | {
+      jsx: Promise<JSX.Element>;
+      stream: boolean;
+      prevJsx: null | Promise<JSX.Element>;
+    };
 
 export function Demo2() {
-  const [jsx, action] = useActionState(
-    (prev: JSX.Element | null, action: "run" | "reset") => {
-      if (action === "run") {
-        return getDemo2();
-      } else if (action === "reset") {
-        return null;
+  const browserContentRef = useRef(null);
+  const { scrollY } = useScroll({
+    container: browserContentRef,
+    axis: "y",
+  });
+
+  const arrowOpacityMV = useTransform(scrollY, [0, 150], [1, 0], {
+    clamp: true,
+  });
+
+  const [state, action] = useActionState(
+    (prev: State, action: Action): State => {
+      if (action.type === "run") {
+        return {
+          ...prev,
+          jsx: getDemo2(action.formData),
+          stream: action.formData.get("stream-comments") === "on",
+        };
+      } else if (action.type === "reset") {
+        return {
+          jsx: null,
+          stream: true,
+          prevJsx: null,
+        };
+      } else if (action.type === "back") {
+        return {
+          ...prev,
+          jsx: null,
+          prevJsx: prev.jsx,
+        };
+      } else if (action.type === "forward" && prev.prevJsx) {
+        return {
+          ...prev,
+          jsx: prev.prevJsx,
+        };
       } else {
         return prev;
       }
     },
-    null,
+    {
+      jsx: null,
+      stream: true,
+      prevJsx: null,
+    },
   );
 
   return (
@@ -25,15 +97,56 @@ export function Demo2() {
       <div className="-mx-8">
         <Browser
           url="https://twofoldframework.com/blog"
-          onBack={jsx ? () => action("reset") : void 0}
-          onRefresh={jsx ? () => action("reset") : void 0}
+          onBack={state.jsx ? () => action({ type: "back" }) : void 0}
+          onForward={
+            state.prevJsx && !state.jsx
+              ? () => action({ type: "forward" })
+              : void 0
+          }
+          onRefresh={state.jsx ? () => action({ type: "reset" }) : void 0}
         >
-          <div className="flex h-full grow flex-col px-4 py-3.5">
-            {jsx ? (
-              <>{jsx}</>
+          <div
+            className="relative flex h-full max-h-[400px] grow flex-col overflow-y-scroll rounded-b-lg"
+            ref={browserContentRef}
+          >
+            {state.jsx ? (
+              <>
+                {state.jsx}
+                {state.stream && (
+                  <motion.div
+                    animate={{
+                      y: [0, 4, -4, 4, -2.5, 2.5, 0],
+                    }}
+                    style={{
+                      opacity: arrowOpacityMV,
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    className="absolute right-6 bottom-36 text-red-500"
+                  >
+                    <div className="relative">
+                      <div className="font-handwriting text-center text-xl leading-tight">
+                        <p>Scroll down to</p>
+                        <p>see comments</p>
+                      </div>
+                      <div className="absolute -bottom-[78px] -left-[12px] -rotate-[80deg]">
+                        <DownArrow className="h-8 text-red-500" />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </>
             ) : (
-              <div className="flex h-full w-full grow flex-col items-center justify-center">
-                <EmptyState loadAction={() => action("run")} />
+              <div className="flex h-full w-full grow flex-col items-center justify-center p-4">
+                <EmptyState
+                  stream={state.stream}
+                  loadAction={(formData) => {
+                    action({ type: "run", formData: formData });
+                  }}
+                />
               </div>
             )}
           </div>
@@ -44,15 +157,22 @@ export function Demo2() {
   );
 }
 
-function EmptyState({ loadAction }: { loadAction: () => void }) {
+function EmptyState({
+  loadAction,
+  stream,
+}: {
+  stream: boolean;
+  loadAction: (formData: FormData) => void;
+}) {
   return (
-    <form className="space-y-5">
+    <form className="space-y-5" action={loadAction}>
       <h3 className="text-lg leading-none font-medium tracking-tight text-gray-900">
         Blog post demo
       </h3>
       <div className="flex items-center space-x-2">
         <Switch.Root
-          defaultChecked
+          defaultChecked={stream ? true : undefined}
+          name="stream-comments"
           id="demo-2-stream-comments"
           className={clsx(
             "h-full w-7 rounded-full p-0.5",
@@ -73,14 +193,42 @@ function EmptyState({ loadAction }: { loadAction: () => void }) {
         </label>
       </div>
       <div>
-        <button
-          type="submit"
-          formAction={loadAction}
-          className="inline-flex items-center justify-center rounded bg-black px-3 py-1.5 text-sm font-medium text-white"
-        >
-          Load the blog
-        </button>
+        <SubmitButton>Load the blog</SubmitButton>
       </div>
     </form>
   );
+}
+
+function SubmitButton({ children }: { children: ReactNode }) {
+  const isPending = useDelayedPending(100);
+
+  return (
+    <button
+      type="submit"
+      className="inline-flex items-center justify-center rounded bg-black px-3 py-1.5 text-sm font-medium text-white"
+    >
+      <Spinner loading={isPending}>{children}</Spinner>
+    </button>
+  );
+}
+
+function useDelayedPending(delay: number) {
+  let { pending } = useFormStatus();
+  let [delayedPending, setDelayedPending] = useOptimistic(false);
+
+  useEffect(() => {
+    if (!pending) return;
+
+    let timeoutId = setTimeout(() => {
+      startTransition(() => {
+        setDelayedPending(pending);
+      });
+    }, delay);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [pending, delay]);
+
+  return delayedPending;
 }

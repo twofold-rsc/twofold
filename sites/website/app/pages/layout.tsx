@@ -27,6 +27,10 @@ export default function Layout({
           href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
           rel="stylesheet"
         />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className="flex min-h-full flex-col">
         <EnterDocs className="flex grow flex-col">{children}</EnterDocs>

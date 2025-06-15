@@ -9,6 +9,14 @@
   --font-serif: "Merriweather", ui-serif, Georgia, Cambria, "Times New Roman";
 }
 
+@layer utilities {
+  .font-handwriting {
+    font-family: "Gochi Hand", cursive;
+    font-weight: 400;
+    font-style: normal;
+  }
+}
+
 .inter-font {
   font-family: "Inter", sans-serif;
   font-optical-sizing: auto;

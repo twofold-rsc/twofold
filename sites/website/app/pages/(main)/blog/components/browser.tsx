@@ -71,8 +71,8 @@ export function Browser({
         </div>
       </div>
 
-      <div className="relative flex h-full min-h-[400px] w-full grow flex-col overflow-hidden rounded-b-lg border-t-0 bg-white">
-        <div className="pointer-events-none absolute inset-0 z-10 -mt-[2px] rounded-b-lg ring-2 ring-gray-950/5 ring-inset"></div>
+      <div className="relative flex h-full min-h-[400px] w-full grow flex-col overflow-hidden rounded-b-lg bg-white">
+        <div className="pointer-events-none absolute inset-0 z-10 -mt-[2px] rounded-b-lg ring-2 ring-gray-100 ring-inset" />
         {children}
       </div>
     </div>
