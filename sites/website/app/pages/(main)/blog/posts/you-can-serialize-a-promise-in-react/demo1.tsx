@@ -20,7 +20,7 @@ export function Demo1({ children }: { children: ReactNode }) {
   return (
     <div className="not-prose relative">
       <div>{children}</div>
-      <div className="relative flex min-h-[158px] items-center justify-center rounded-b-md border-x-2 border-b-2 border-gray-200">
+      <div className="relative -mx-3 flex min-h-[158px] items-center justify-center rounded-b-md border-x-2 border-b-2 border-gray-200 sm:mx-0">
         {jsx ? (
           <div>
             <div className="flex items-center justify-center px-8">{jsx}</div>

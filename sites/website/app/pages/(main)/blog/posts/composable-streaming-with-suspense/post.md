@@ -1,6 +1,6 @@
 ---
 lastUpdated: "2025-06-16T08:00:00Z"
-description: "A look real-world UIs that rely on streaming with Suspense"
+description: "A look real-world UIs that rely on streaming with Suspense."
 ---
 
 # Composable streaming with Suspense

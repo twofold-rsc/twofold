@@ -1,6 +1,5 @@
 # TODO
 
-- add demo container to promise blog
 - update not production ready
 
 - bug: website not running eslint correct (effect deps didnt work)
