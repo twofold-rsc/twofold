@@ -21,7 +21,7 @@ export function Demo4() {
           <textarea
             placeholder="Chat with your favorite AI model..."
             rows={2}
-            className="block w-full resize-none text-sm text-slate-900 focus:outline-none sm:text-base"
+            className="block w-full resize-none text-base text-slate-900 focus:outline-none sm:text-base"
           />
         </div>
         <div className="flex items-end justify-between">

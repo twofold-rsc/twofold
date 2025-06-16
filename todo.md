@@ -1,10 +1,5 @@
 # TODO
 
-- write outro
-- test safari
-- test iphone
-- proof read
-
 - add demo container to promise blog
 - update not production ready
 
