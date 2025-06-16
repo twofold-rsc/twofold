@@ -17,7 +17,7 @@ export function getDemo6() {
         <textarea
           placeholder="Chat with your favorite AI model..."
           rows={2}
-          className="block w-full resize-none text-slate-900 focus:outline-none"
+          className="block w-full resize-none text-sm text-slate-900 focus:outline-none sm:text-base"
         />
         <div className="flex items-end justify-between">
           <Demo6ModelSelect>
@@ -32,10 +32,10 @@ export function getDemo6() {
       </div>
 
       <div className="relative pb-8">
-        <div className="absolute -top-[32px] left-[110px] group-has-[[data-open]]:hidden">
+        <div className="absolute -top-[24px] left-[24px] group-has-[[data-open]]:hidden sm:-top-[32px] sm:left-[110px]">
           <div className="relative">
-            <Arrow className="w-22 -rotate-[10deg] text-red-500" />
-            <div className="font-handwriting absolute -bottom-[12px] left-[100px] text-xl font-semibold whitespace-nowrap text-red-500">
+            <Arrow className="w-16 -rotate-[8deg] text-red-500 sm:w-22 sm:-rotate-[10deg]" />
+            <div className="font-handwriting absolute -bottom-[50px] left-[72px] text-xl font-semibold whitespace-nowrap text-red-500 sm:-bottom-[12px] sm:left-[100px]">
               <p>
                 Models are{" "}
                 <span className="hidden group-has-[[data-models-loading]]:inline">
@@ -45,7 +45,9 @@ export function getDemo6() {
                   loaded!
                 </span>
               </p>
-              <p>Open the dropdown and see!</p>
+              <p className="hidden sm:block">Open the dropdown and see!</p>
+              <p className="block sm:hidden">Open the dropdown</p>
+              <p className="block sm:hidden">and see!</p>
             </div>
           </div>
         </div>

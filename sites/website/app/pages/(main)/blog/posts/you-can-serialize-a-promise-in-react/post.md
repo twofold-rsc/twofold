@@ -295,4 +295,4 @@ And this ability is one of the key features of React Server Components. It allow
 
 Moving from server to client is as easy as creating a new component in React. It's composition on a whole new level.
 
-Thanks for reading! I love talking about React and RSC. If you have any questions or comments please reach out to me on [Twitter](https://x.com/ryantotweets) or [Bluesky](https://bsky.app/profile/ryantoron.to).
+Thanks for reading! I love talking about React and RSCs. If you have any questions or comments please reach out to me on [Twitter](https://x.com/ryantotweets) or [Bluesky](https://bsky.app/profile/ryantoron.to).

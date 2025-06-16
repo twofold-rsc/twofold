@@ -8,14 +8,16 @@ export async function getDemo2(formData: FormData) {
   let shouldStream = !!data["stream-comments"];
 
   return (
-    <div className="mt-9 px-34">
+    <div className="mt-9 px-8 sm:px-34">
       <h2 className="text-xl font-bold tracking-tight">My Blog</h2>
       <p className="mt-4 text-[15px]">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris
         fermentum, nisi eget aliquet tincidunt, sapien erat iaculis nisl, nec
         maximus ligula ante non magna. Sed vitae nisi a urna aliquet imperdiet.
-        Nullam efficitur a enim sed porttitor. Ut sit amet mi at purus interdum
-        accumsan.
+        <span className="hidden sm:inline">
+          Nullam efficitur a enim sed porttitor. Ut sit amet mi at purus
+          interdum.
+        </span>
       </p>
       <p className="mt-3 text-[15px]">
         Mauris pharetra euismod euismod. Maecenas lacus nibh, venenatis a
@@ -29,10 +31,10 @@ export async function getDemo2(formData: FormData) {
         <div className="mt-6 pb-8">
           {shouldStream ? (
             <Suspense fallback={<Loading />}>
-              <Comments delay={4000} />
+              <Comments delay={3500} />
             </Suspense>
           ) : (
-            <Comments delay={1_000} />
+            <Comments delay={2_500} />
           )}
         </div>
       </div>

@@ -1,10 +1,14 @@
 # TODO
 
-- toggle suspense boundary demo
-- mobile styles (comments, ai chat box placeholder, ai arrows)
-- write intro
 - write outro
-- rewrite post
+- test safari
+- test iphone
+- proof read
+
+- add demo container to promise blog
+- update not production ready
+
+- bug: website not running eslint correct (effect deps didnt work)
 
 - run routes in parallel
 - add cache support to the build, explore rolldown

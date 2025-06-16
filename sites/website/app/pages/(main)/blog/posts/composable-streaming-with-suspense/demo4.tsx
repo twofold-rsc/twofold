@@ -15,13 +15,13 @@ import { Arrow } from "./arrows";
 
 export function Demo4() {
   return (
-    <div className="not-prose group -mx-8 my-8">
+    <div className="not-prose group -mx-3 my-8 md:-mx-8">
       <div className="rounded-lg bg-slate-50 p-3 shadow-md ring-1 ring-slate-950/5">
         <div>
           <textarea
             placeholder="Chat with your favorite AI model..."
             rows={2}
-            className="block w-full resize-none text-slate-900 focus:outline-none"
+            className="block w-full resize-none text-sm text-slate-900 focus:outline-none sm:text-base"
           />
         </div>
         <div className="flex items-end justify-between">
@@ -33,7 +33,7 @@ export function Demo4() {
       </div>
 
       <div className="relative pb-8">
-        <div className="absolute -top-[36px] left-[110px] group-has-[[data-open]]:hidden">
+        <div className="absolute -top-[30px] left-[24px] group-has-[[data-open]]:hidden sm:-top-[36px] sm:left-[110px]">
           <div className="relative">
             <Arrow className="w-22 -rotate-[15deg] text-red-500" />
             <span className="font-handwriting absolute bottom-[19px] left-[100px] text-xl font-semibold whitespace-nowrap text-red-500">
@@ -61,7 +61,7 @@ function ModelSelect({ models }: { models: Model[] }) {
           to: "bottom start",
           gap: "12px",
         }}
-        className="-mx-1.5 mt-3 w-[320px] rounded-md bg-white px-5 py-1.5 shadow-lg ring-1 ring-slate-950/5 select-none data-[open]:outline-none"
+        className="-mx-1.5 w-[320px] rounded-md bg-white px-5 py-1.5 shadow-lg ring-1 ring-slate-950/5 select-none data-[open]:outline-none"
       >
         {models.map((model) => (
           <ListboxOption

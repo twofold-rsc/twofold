@@ -26,7 +26,7 @@ export function Demo5ModelSelect({ models }: { models: Model[] }) {
           to: "bottom start",
           gap: "12px",
         }}
-        className="-mx-1.5 w-[320px] rounded-md bg-white px-5 py-1.5 shadow-lg ring-1 ring-slate-950/5 select-none data-[open]:outline-none"
+        className="-mx-1.5 w-[300px] rounded-md bg-white px-5 py-1.5 shadow-lg ring-1 ring-slate-950/5 select-none data-[open]:outline-none sm:w-[320px]"
       >
         {models.map((model) => (
           <ListboxOption

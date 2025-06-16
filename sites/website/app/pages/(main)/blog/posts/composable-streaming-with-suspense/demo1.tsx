@@ -4,6 +4,7 @@ import { JSX, ReactNode, useActionState } from "react";
 import { getDemo1 } from "./demo1-action";
 import { motion } from "framer-motion";
 import clsx from "clsx";
+import { DemoContent } from "../../components/demo";
 
 export function Demo1({ children }: { children: ReactNode }) {
   const [jsx, action] = useActionState(
@@ -22,7 +23,7 @@ export function Demo1({ children }: { children: ReactNode }) {
   return (
     <div className="not-prose relative">
       <div>{children}</div>
-      <div className="relative flex items-center justify-center rounded-b-md border-x-2 border-b-2 border-gray-200 p-8">
+      <DemoContent>
         <form>
           <motion.div
             initial="show"
@@ -85,7 +86,7 @@ export function Demo1({ children }: { children: ReactNode }) {
             </div>
           )}
         </form>
-      </div>
+      </DemoContent>
     </div>
   );
 }

@@ -27,7 +27,7 @@ export function Demo6ModelSelect({ children }: { children: ReactNode }) {
           gap: "12px",
         }}
         unmount={false}
-        className="-mx-1.5 w-[320px] rounded-md bg-white px-5 py-1.5 shadow-lg ring-1 ring-slate-950/5 select-none data-[open]:outline-none"
+        className="-mx-1.5 w-[300px] rounded-md bg-white px-5 py-1.5 shadow-lg ring-1 ring-slate-950/5 select-none data-[open]:outline-none sm:w-[320px]"
       >
         {children}
       </ListboxOptions>

@@ -94,7 +94,7 @@ export function Demo2() {
 
   return (
     <div className="not-prose">
-      <div className="-mx-8">
+      <div className="-mx-3 md:-mx-8">
         <Browser
           url="https://twofoldframework.com/blog"
           onBack={state.jsx ? () => action({ type: "back" }) : void 0}
@@ -125,14 +125,17 @@ export function Demo2() {
                       repeat: Infinity,
                       ease: "easeInOut",
                     }}
-                    className="absolute right-6 bottom-36 text-red-500"
+                    className={clsx(
+                      "absolute right-6 bottom-36 text-red-500",
+                      "rounded bg-white/75 p-2.5 ring ring-black/10 backdrop-blur-[4px] sm:p-0 sm:shadow-none sm:ring-0",
+                    )}
                   >
                     <div className="relative">
                       <div className="font-handwriting text-center text-xl leading-tight">
                         <p>Scroll down to</p>
                         <p>see comments</p>
                       </div>
-                      <div className="absolute -bottom-[78px] -left-[12px] -rotate-[80deg]">
+                      <div className="absolute -bottom-[90px] -left-[12px] -rotate-[80deg] sm:-bottom-[78px]">
                         <DownArrow className="h-8 text-red-500" />
                       </div>
                     </div>
@@ -140,7 +143,7 @@ export function Demo2() {
                 )}
               </>
             ) : (
-              <div className="flex h-full w-full grow flex-col items-center justify-center p-4">
+              <div className="flex h-full w-full grow flex-col items-center justify-center px-5 py-4">
                 <EmptyState
                   stream={state.stream}
                   loadAction={(formData) => {

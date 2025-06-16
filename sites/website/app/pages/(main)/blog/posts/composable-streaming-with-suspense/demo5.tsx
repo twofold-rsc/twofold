@@ -2,6 +2,7 @@
 
 import { JSX, ReactNode, useActionState } from "react";
 import { getDemo5 } from "./demo5-action";
+import { DemoContent } from "../../components/demo";
 
 export function Demo5({ children }: { children: ReactNode }) {
   const [jsx, action] = useActionState(
@@ -20,9 +21,9 @@ export function Demo5({ children }: { children: ReactNode }) {
   return (
     <div className="not-prose relative">
       <div>{children}</div>
-      <div className="relative flex min-h-[212px] items-center justify-center rounded-b-md border-x-2 border-b-2 border-gray-200">
+      <DemoContent className="min-h-[212px]">
         {jsx ? (
-          <div className="w-full px-8">
+          <div className="w-full sm:px-8">
             <div className="flex flex-grow items-center justify-center">
               {jsx}
             </div>
@@ -42,11 +43,11 @@ export function Demo5({ children }: { children: ReactNode }) {
         ) : (
           <form action={() => action("run")}>
             <button className="inline-flex items-center justify-center rounded bg-black px-3 py-1.5 text-sm font-medium text-white">
-              Load chat box
+              Lazily load models
             </button>
           </form>
         )}
-      </div>
+      </DemoContent>
     </div>
   );
 }

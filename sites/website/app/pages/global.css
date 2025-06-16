@@ -17,6 +17,8 @@
   }
 }
 
+/* Fonts */
+
 .inter-font {
   font-family: "Inter", sans-serif;
   font-optical-sizing: auto;
@@ -35,4 +37,100 @@
   font-family: "Gochi Hand", cursive;
   font-weight: 400;
   font-style: normal;
+}
+
+/* Code diffs */
+
+code .diff {
+  transition: background-color 0.5s;
+  margin: 0 -15px;
+  padding: 0 15px;
+  width: calc(100% + 30px);
+  display: inline-block;
+  position: relative;
+}
+
+code .diff.add:before {
+  content: "+";
+  opacity: 0.8;
+  color: oklch(72.3% 0.219 149.579);
+}
+
+code .diff.remove:before {
+  content: "-";
+  color: oklch(0.66 0.11 20.35);
+}
+
+code .diff:before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+}
+
+code .diff.add {
+  background-color: oklch(0.7 0.15 162.47 / 0.2);
+}
+
+code .diff.remove {
+  background-color: oklch(0.65 0.22 16.44 / 0.16);
+  opacity: 0.8;
+}
+
+/* Code highlight */
+
+pre.has-highlighted code {
+  --highlight-color: oklch(62.3% 0.214 259.815); /* blue-500 */
+
+  .line.highlighted:before {
+    content: "";
+    background-color: color-mix(
+      in oklch,
+      var(--highlight-color),
+      transparent 20%
+    );
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4px;
+  }
+
+  .line.highlighted {
+    transition: background-color 0.5s;
+    margin: 0 -16px;
+    padding: 0 16px;
+    width: calc(100% + 32px);
+    display: inline-block;
+    position: relative;
+    background-color: color-mix(
+      in oklch,
+      var(--highlight-color),
+      transparent 90%
+    );
+  }
+}
+
+/* Code focus */
+
+pre.has-focused code {
+  .line {
+    filter: blur(3px);
+    transition: filter 0.2s;
+  }
+
+  .line.focused {
+    filter: none;
+  }
 }
