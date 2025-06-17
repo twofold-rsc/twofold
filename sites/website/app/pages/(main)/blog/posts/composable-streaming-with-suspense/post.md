@@ -1,6 +1,6 @@
 ---
 lastUpdated: "2025-06-16T08:00:00Z"
-description: "A look real-world UIs that rely on streaming with Suspense."
+description: "A look at two real-world UIs that rely on streaming with Suspense."
 ---
 
 # Composable streaming with Suspense
@@ -285,6 +285,6 @@ The worst case scenario for this UI is that the user opens the dropdown before t
 
 I love how `<Suspense>` makes it easy to pick which parts of the UI should stream and which parts should render immediately. The fact that it composes with any component, even those that existed before streaming was added to React, makes this pattern incredibly powerful.
 
-At the end of the day, you can adopt streaming with Suspense without having to redo your data-fetching strategy, rewrite your components, or be forced to pick new 3rd party component libraries.
+At the end of the day, you can adopt streaming with Suspense without having to redo your data-fetching strategy, rewrite your components, or be forced to pick any new 3rd-party component libraries.
 
 Thanks for reading! I love talking about React and RSCs. If you have any questions or comments please reach out to me on [Twitter](https://x.com/ryantotweets) or [Bluesky](https://bsky.app/profile/ryantoron.to).
