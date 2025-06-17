@@ -8,7 +8,6 @@ import { loadComponents, loadContent, loadMetadata } from "./data-layer/posts";
 import { getTitle } from "../../../markdoc/utils";
 // import { Callout } from "./components/callout";
 // import { Image } from "./components/image";
-// import "./docs.css";
 
 export default async function PostPage({ params, request }: PageProps<"slug">) {
   let slug = params.slug;

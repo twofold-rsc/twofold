@@ -1,7 +1,5 @@
 # TODO
 
-- update not production ready
-
 - bug: website not running eslint correct (effect deps didnt work)
 
 - run routes in parallel
