@@ -231,7 +231,7 @@ function useDelayedPending(delay: number) {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [pending, delay]);
+  }, [delay, pending, setDelayedPending]);
 
   return delayedPending;
 }

@@ -516,6 +516,12 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 19.0.3(@types/react@19.0.9)
+      eslint:
+        specifier: ^9.23.0
+        version: 9.23.0(jiti@2.4.2)
+      eslint-plugin-twofold:
+        specifier: workspace:*
+        version: link:../../packages/eslint-plugin-twofold
       nodemon:
         specifier: ^3.1.9
         version: 3.1.10

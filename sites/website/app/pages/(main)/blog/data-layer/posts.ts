@@ -82,7 +82,7 @@ export const loadComponents = cache(async (slug: string) => {
     notFound();
   }
 
-  let map: Record<string, Record<string, ComponentType<any>>> = {
+  let map: Record<string, Record<string, ComponentType<never>>> = {
     "you-can-serialize-a-promise-in-react": PromisePost.components,
     "composable-streaming-with-suspense": StreamingPost.components,
   };
