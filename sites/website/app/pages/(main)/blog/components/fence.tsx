@@ -1,6 +1,11 @@
 import { codeToHtml } from "shiki";
-import { transformerNotationDiff } from "@shikijs/transformers";
+import {
+  transformerNotationDiff,
+  transformerNotationFocus,
+  transformerNotationHighlight,
+} from "@shikijs/transformers";
 import clsx from "clsx";
+import { transformerClientComponentBoundary } from "@lib/transformer-client-component-boundary";
 
 export async function Fence({
   children,
@@ -18,11 +23,18 @@ export async function Fence({
     theme: "github-dark", // #24292e
     // theme: "github-dark-default", // #0d1117
     // theme: "night-owl", // #011627
-    transformers: [transformerNotationDiff()],
+    transformers: [
+      transformerNotationDiff(),
+      transformerNotationHighlight(),
+      transformerNotationFocus(),
+      transformerClientComponentBoundary({
+        class: "-mx-4 text-slate-50/20",
+      }),
+    ],
   });
 
   return (
-    <div className={clsx("not-prose", demo ? "mt-6" : "my-6")}>
+    <div className={clsx("not-prose -mx-3 sm:mx-0", demo ? "mt-6" : "my-6")}>
       {file && (
         <div className="flex items-center justify-start">
           <div className="inline-flex items-center justify-center rounded-t-md bg-[#24292e] px-4 pt-2 pb-1 text-xs font-medium text-gray-300">

@@ -1,19 +1,13 @@
 import Markdoc, { RenderableTreeNodes } from "@markdoc/markdoc";
 import Link from "@twofold/framework/link";
 import { PageProps } from "@twofold/framework/types";
-import React from "react";
+import React, { ComponentType } from "react";
 import { Fence } from "./components/fence";
-import { Demo1 } from "./posts/you-can-serialize-a-promise-in-react/demo1";
-import { Demo2 } from "./posts/you-can-serialize-a-promise-in-react/demo2";
-import { Demo3 } from "./posts/you-can-serialize-a-promise-in-react/demo3";
-import { Demo4 } from "./posts/you-can-serialize-a-promise-in-react/demo4";
-import { Demo5 } from "./posts/you-can-serialize-a-promise-in-react/demo5";
 import { Footnote } from "./components/footnote";
-import { loadContent, loadMetadata } from "./data-layer/posts";
+import { loadComponents, loadContent, loadMetadata } from "./data-layer/posts";
 import { getTitle } from "../../../markdoc/utils";
 // import { Callout } from "./components/callout";
 // import { Image } from "./components/image";
-// import "./docs.css";
 
 export default async function PostPage({ params, request }: PageProps<"slug">) {
   let slug = params.slug;
@@ -22,6 +16,7 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
   let title = getTitle(content);
   // let headings = getHeadings(content);
   let meta = await loadMetadata(slug);
+  let components = await loadComponents(slug);
 
   let url = new URL(request.url);
   let ogImageUrl = new URL(`/images/blog/${slug}/og-image.png`, url.origin);
@@ -58,7 +53,7 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
             </Link>
           </div>
           <div className="prose prose-h1:mb-4 prose-li:font-serif prose-p:font-serif first-of-type:prose-p:mt-0 mt-8">
-            <MarkdocContent content={content} />
+            <MarkdocContent content={content} components={components} />
             {meta.lastUpdated && (
               <div className="mt-12 font-serif text-sm text-gray-500">
                 Last updated:{" "}
@@ -96,19 +91,27 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
   );
 }
 
-async function MarkdocContent({ content }: { content: RenderableTreeNodes }) {
+async function MarkdocContent({
+  content,
+  components,
+}: {
+  content: RenderableTreeNodes;
+  components: Record<string, ComponentType>;
+}) {
   // make components per post
-  let components = {
-    Demo1,
-    Demo2,
-    Demo3,
-    Demo4,
-    Demo5,
+  let allComponents = {
+    ...components,
     Fence,
     Footnote,
     // Callout,
     // Image,
   };
 
-  return <>{Markdoc.renderers.react(content, React, { components })}</>;
+  return (
+    <>
+      {Markdoc.renderers.react(content, React, {
+        components: allComponents,
+      })}
+    </>
+  );
 }

@@ -9,7 +9,9 @@ A neat pattern with React Server Components is to create a promise that starts o
 
 Here's what it looks like:
 
-```jsx {% file="server-component.js" %}
+{% demo1 %}
+
+```jsx {% demo=true %}
 import { Suspense } from "react";
 import { ClientComponent } from "./client-component";
 
@@ -26,12 +28,8 @@ export default function Page() {
     </Suspense>
   );
 }
-```
 
-{% demo1 %}
-
-```jsx {% demo=true file="client-component.js" %}
-"use client";
+// ![client-component-boundary]
 
 import { use } from "react";
 
@@ -297,4 +295,4 @@ And this ability is one of the key features of React Server Components. It allow
 
 Moving from server to client is as easy as creating a new component in React. It's composition on a whole new level.
 
-Thanks for reading! I love talking about React and RSC. If you have any questions or comments please reach out to me on [Twitter](https://x.com/ryantotweets) or [Bluesky](https://bsky.app/profile/ryantoron.to).
+Thanks for reading! I love talking about React and RSCs. If you have any questions or comments please reach out to me on [Twitter](https://x.com/ryantotweets) or [Bluesky](https://bsky.app/profile/ryantoron.to).

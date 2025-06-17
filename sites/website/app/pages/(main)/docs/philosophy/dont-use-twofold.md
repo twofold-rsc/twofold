@@ -20,6 +20,12 @@ There is also a significant learning curve when it comes to understanding how to
 
 If you want to focus on other areas of application development instead of learning these new concepts then Twofold is not a good fit.
 
+## Not production ready
+
+In its current state I would refer to Twofold as a "proof of concept" framework.
+
+It is still in the early stages of development and is not yet stable enough to be used in a production environment.
+
 ## Breaking changes
 
 This project is new and it's likely going to have many breaking changes in the future. If you build an application with Twofold today, you may need to rewrite parts of it to keep up with the latest features.

@@ -11,7 +11,6 @@ import { CreateTwofoldApp } from "./components/create-twofold-app";
 import { DeploymentGrid } from "./components/deployment-grid";
 import { Callout } from "./components/callout";
 import { Image } from "./components/image";
-import "./docs.css";
 import { getHeadings, getTitle } from "../../../markdoc/utils";
 import { CLICommand } from "./components/cli/command";
 

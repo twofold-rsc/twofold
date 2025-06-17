@@ -1,13 +1,14 @@
 "use client";
 
-import { useActionState, JSX, ReactNode } from "react";
-import { getDemo1 } from "./demo1-action";
+import { JSX, ReactNode, useActionState } from "react";
+import { getDemo5 } from "./demo5-action";
+import { DemoContent } from "../../components/demo";
 
-export function Demo1({ children }: { children: ReactNode }) {
+export function Demo5({ children }: { children: ReactNode }) {
   const [jsx, action] = useActionState(
     (prev: JSX.Element | null, action: "run" | "reset") => {
       if (action === "run") {
-        return getDemo1();
+        return getDemo5();
       } else if (action === "reset") {
         return null;
       } else {
@@ -20,10 +21,12 @@ export function Demo1({ children }: { children: ReactNode }) {
   return (
     <div className="not-prose relative">
       <div>{children}</div>
-      <div className="relative -mx-3 flex min-h-[158px] items-center justify-center rounded-b-md border-x-2 border-b-2 border-gray-200 sm:mx-0">
+      <DemoContent className="min-h-[212px]">
         {jsx ? (
-          <div>
-            <div className="flex items-center justify-center px-8">{jsx}</div>
+          <div className="w-full sm:px-8">
+            <div className="flex flex-grow items-center justify-center">
+              {jsx}
+            </div>
 
             <form
               className="absolute top-1.5 right-3"
@@ -40,11 +43,11 @@ export function Demo1({ children }: { children: ReactNode }) {
         ) : (
           <form action={() => action("run")}>
             <button className="inline-flex items-center justify-center rounded bg-black px-3 py-1.5 text-sm font-medium text-white">
-              Try it out
+              Lazily load models
             </button>
           </form>
         )}
-      </div>
+      </DemoContent>
     </div>
   );
 }

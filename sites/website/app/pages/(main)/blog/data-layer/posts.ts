@@ -2,10 +2,13 @@ import Markdoc, { Config, Schema, Tag } from "@markdoc/markdoc";
 import { notFound } from "@twofold/framework/not-found";
 import { readdir, readFile } from "fs/promises";
 import path from "path";
-import { cache } from "react";
+import { cache, ComponentType } from "react";
 import { z } from "zod";
 import yaml from "js-yaml";
 import slugify from "@sindresorhus/slugify";
+import * as PromisePost from "../posts/you-can-serialize-a-promise-in-react/components";
+import * as StreamingPost from "../posts/composable-streaming-with-suspense/components";
+import { getTitle } from "../../../../markdoc/utils";
 
 export const getPostSlugs = cache(async () => {
   let directoryPath = path.join(
@@ -26,6 +29,25 @@ export const getPostSlugs = cache(async () => {
         .relative(directoryPath, path.join(file.parentPath, file.name))
         .replace(/\/post\.md$/, ""),
     );
+});
+
+export const getPosts = cache(async function getPosts() {
+  let slugs = await getPostSlugs();
+
+  let postsPromise = slugs.map(async (slug) => {
+    let content = await loadContent(slug);
+    let frontmatter = await loadMetadata(slug);
+    let title = getTitle(content);
+
+    return {
+      title: title ?? "No title",
+      slug,
+      date: frontmatter.lastUpdated ? new Date(frontmatter.lastUpdated) : null,
+      description: frontmatter.description ?? "",
+    };
+  });
+
+  return Promise.all(postsPromise);
 });
 
 export const loadAst = cache(async (slug: string) => {
@@ -52,6 +74,42 @@ let frontmatterSchema = z.object({
   description: z.string(),
 });
 
+export const loadComponents = cache(async (slug: string) => {
+  let allPosts = await getPostSlugs();
+
+  if (!allPosts.includes(slug)) {
+    console.error(`Post components not found: ${slug}`);
+    notFound();
+  }
+
+  let map: Record<string, Record<string, ComponentType<any>>> = {
+    "you-can-serialize-a-promise-in-react": PromisePost.components,
+    "composable-streaming-with-suspense": StreamingPost.components,
+  };
+
+  let components = map[slug] ?? {};
+
+  return components;
+});
+
+export const loadTags = cache(async (slug: string) => {
+  let allPosts = await getPostSlugs();
+
+  if (!allPosts.includes(slug)) {
+    console.error(`Post components not found: ${slug}`);
+    notFound();
+  }
+
+  let map: Record<string, Record<string, Schema>> = {
+    "you-can-serialize-a-promise-in-react": PromisePost.tags,
+    "composable-streaming-with-suspense": StreamingPost.tags,
+  };
+
+  let tags = map[slug] ?? {};
+
+  return tags;
+});
+
 export const loadMetadata = cache(async (slug: string) => {
   let ast = await loadAst(slug);
   let rawFrontmatter = ast.attributes.frontmatter;
@@ -67,30 +125,11 @@ export const loadMetadata = cache(async (slug: string) => {
 
 export const loadContent = cache(async (slug: string) => {
   let ast = await loadAst(slug);
+  let tags = await loadTags(slug);
 
   let config: Config = {
     tags: {
-      // make tags a per post config
-      demo1: {
-        render: "Demo1",
-        attributes: {},
-      },
-      demo2: {
-        render: "Demo2",
-        attributes: {},
-      },
-      demo3: {
-        render: "Demo3",
-        attributes: {},
-      },
-      demo4: {
-        render: "Demo4",
-        attributes: {},
-      },
-      demo5: {
-        render: "Demo5",
-        attributes: {},
-      },
+      ...tags,
       footnote: {
         render: "Footnote",
         attributes: {
