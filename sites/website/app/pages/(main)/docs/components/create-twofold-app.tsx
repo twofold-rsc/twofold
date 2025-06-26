@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, use } from "react";
-import { Context } from "./cli/provider";
+import { Context } from "../../../../components/cli/provider";
 
 export function CreateTwofoldApp() {
   let { command } = use(Context);

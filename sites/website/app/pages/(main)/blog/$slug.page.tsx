@@ -6,6 +6,8 @@ import { Fence } from "./components/fence";
 import { Footnote } from "./components/footnote";
 import { loadComponents, loadContent, loadMetadata } from "./data-layer/posts";
 import { getTitle } from "../../../markdoc/utils";
+import { CLICommand } from "../../../components/cli/command";
+import { StandoutComment } from "./components/standout-comment";
 // import { Callout } from "./components/callout";
 // import { Image } from "./components/image";
 
@@ -98,11 +100,12 @@ async function MarkdocContent({
   content: RenderableTreeNodes;
   components: Record<string, ComponentType>;
 }) {
-  // make components per post
   let allComponents = {
     ...components,
     Fence,
     Footnote,
+    CLICommand,
+    StandoutComment,
     // Callout,
     // Image,
   };

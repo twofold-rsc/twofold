@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { EnterDocsAnimation } from "../enter-docs";
 import { NavLink } from "../../components/nav-link";
+import { CLIRoot } from "../../components/cli/root";
 
 export default function DocsLayout({ children }: { children: ReactNode }) {
   return (
@@ -37,7 +38,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
         </a>
       </header>
 
-      {children}
+      <CLIRoot>{children}</CLIRoot>
     </EnterDocsAnimation>
   );
 }

@@ -1,6 +1,17 @@
 # TODO
 
-- bug: website not running eslint correct (effect deps didnt work)
+blog post todo:
+
+- rename step to frequency
+- preset styles in demo
+- make options configurable with defaults
+- tool with sliders and inputs for generating styles
+
+- put package in monorepo
+- publish to npm
+
+- add gzip/brotli support to the build
+- run posts through page speed
 
 - run routes in parallel
 - add cache support to the build, explore rolldown

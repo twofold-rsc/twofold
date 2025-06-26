@@ -112,7 +112,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
         </ul>
       </div>
 
-      <CLIRoot>{children}</CLIRoot>
+      {children}
     </div>
   );
 }

@@ -5,6 +5,8 @@ type Options = {
   class?: string;
 };
 
+const TOKEN = "// ![client-boundary]";
+
 export function transformerClientComponentBoundary(
   options: Options = {},
 ): ShikiTransformer {
@@ -18,7 +20,7 @@ export function transformerClientComponentBoundary(
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
         out.push(line);
-        if (line.trim() === "// ![client-component-boundary]") {
+        if (line.trim() === TOKEN) {
           out.push('"use client";');
         }
       }
@@ -33,7 +35,7 @@ export function transformerClientComponentBoundary(
         node.children[0].type === "element" &&
         node.children[0].children.length === 1 &&
         node.children[0].children[0].type === "text" &&
-        node.children[0].children[0].value === "// ![client-component-boundary]"
+        node.children[0].children[0].value === TOKEN
       ) {
         node.type = "element";
         node.tagName = "div";
@@ -46,23 +48,20 @@ export function transformerClientComponentBoundary(
             type: "element",
             tagName: "svg",
             properties: {
-              viewBox: "0 0 100 5",
+              viewBox: generateViewBox(),
               preserveAspectRatio: "none",
               style: "width: 100%; height: 100%;",
               fill: "none",
               stroke: "currentColor",
-              "stroke-width": "0.4",
+              "stroke-width": generateStrokeWidth(),
+              "stroke-linecap": "round",
             },
             children: [
               {
                 type: "element",
                 tagName: "path",
                 properties: {
-                  d: generateZigZagPath({
-                    count: 50,
-                    height: 1.25,
-                    baseline: 2.5,
-                  }),
+                  d: generateZigZagPath(),
                 },
                 children: [],
               },
@@ -74,32 +73,41 @@ export function transformerClientComponentBoundary(
   };
 }
 
-function generateZigZagPath({
-  count,
-  height = 2.5,
-  baseline = 2.5,
-}: {
-  count: number;
-  height?: number;
-  baseline?: number;
-}): string {
-  let width = 100;
-  let step = width / count;
-  let cpX = step / 2;
-  let cpY = baseline - height;
+let segments = 40;
+let amplitude = 5;
+let step = 8;
+let peakSmoothness = 0.75;
 
-  let path: string[] = [];
+let strokeRatio = 0.15;
+let padding = 4;
 
-  path.push(`M0,${baseline}`);
-  path.push(`L0,${baseline + 0.125}`); // vertical left edge
+function generateStrokeWidth() {
+  let diagonal = Math.sqrt(step ** 2 + amplitude ** 2);
+  return diagonal * strokeRatio;
+}
 
-  path.push(`Q${cpX},${cpY} ${step},${baseline}`);
+function generateZigZagPath() {
+  let path = `M0,0`;
 
-  for (let i = 2; i <= count; i++) {
-    path.push(`T${step * i},${baseline}`);
+  for (let i = 0; i < segments; i++) {
+    let x0 = i * step;
+    let y0 = i % 2 === 0 ? 0 : -amplitude;
+    let x1 = (i + 1) * step;
+    let y1 = i % 2 === 0 ? -amplitude : 0;
+
+    if (peakSmoothness === 0) {
+      path += ` L${x1},${y1}`;
+    } else {
+      let cpOffset = (x1 - x0) * 0.5 * peakSmoothness;
+      path += ` C${x0 + cpOffset},${y0} ${x1 - cpOffset},${y1} ${x1},${y1}`;
+    }
   }
 
-  path.push(`L${width},${baseline + 0.125}`); // vertical right edge
+  return path;
+}
 
-  return path.join(" ");
+function generateViewBox() {
+  let width = segments * step;
+  let height = amplitude + padding * 2;
+  return `0 ${-amplitude - padding} ${width} ${height}`;
 }

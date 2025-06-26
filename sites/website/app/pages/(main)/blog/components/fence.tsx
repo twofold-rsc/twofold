@@ -12,11 +12,13 @@ export async function Fence({
   language,
   file,
   demo,
+  isClientBoundaryEnabled = true,
 }: {
   children: string;
   language: string;
   file?: string;
   demo?: boolean;
+  isClientBoundaryEnabled?: boolean;
 }) {
   let result = await codeToHtml(children, {
     lang: language,
@@ -27,10 +29,12 @@ export async function Fence({
       transformerNotationDiff(),
       transformerNotationHighlight(),
       transformerNotationFocus(),
-      transformerClientComponentBoundary({
-        class: "-mx-4 text-slate-50/20",
-      }),
-    ],
+      isClientBoundaryEnabled
+        ? transformerClientComponentBoundary({
+            class: "-mx-4 text-slate-50/20",
+          })
+        : undefined,
+    ].filter((t) => t !== undefined),
   });
 
   return (
