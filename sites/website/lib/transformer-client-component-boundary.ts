@@ -150,27 +150,20 @@ function generateZigZagPath(options: Required<Options>) {
   let amplitude = calculateAmplitude(options);
 
   let bottomY = options.height;
-  let centerY = bottomY - amplitude / 2;
 
-  // Start from the center point
-  let path = `M0,${centerY}`;
+  // Start from the beginning of the first segment at the bottom
+  let firstSegmentStartX = -0.5 * frequency;
+  let firstSegmentStartY = bottomY; // Start at bottom
+  let path = `M${firstSegmentStartX},${firstSegmentStartY}`;
 
   for (let i = 0; i < options.segments; i++) {
     let x0, y0, x1, y1;
 
-    if (i === 0) {
-      // First segment: start from center, use half frequency, go up
-      x0 = 0;
-      y0 = centerY;
-      x1 = frequency / 2;
-      y1 = bottomY - amplitude;
-    } else {
-      // Regular segments
-      x0 = (i - 0.5) * frequency;
-      y0 = i % 2 === 1 ? bottomY - amplitude : bottomY;
-      x1 = (i + 0.5) * frequency;
-      y1 = i % 2 === 1 ? bottomY : bottomY - amplitude;
-    }
+    // Regular segments
+    x0 = (i - 0.5) * frequency;
+    y0 = i % 2 === 1 ? bottomY - amplitude : bottomY;
+    x1 = (i + 0.5) * frequency;
+    y1 = i % 2 === 1 ? bottomY : bottomY - amplitude;
 
     if (options.peakSmoothness === 0) {
       // Main diagonal segment using quadratic Bezier (no cap in path anymore)
@@ -183,21 +176,6 @@ function generateZigZagPath(options: Required<Options>) {
     }
   }
 
-  // Add final half segment to end at center
-  let finalX0 = (options.segments - 0.5) * frequency;
-  let finalY0 = options.segments % 2 === 1 ? bottomY - amplitude : bottomY;
-  let finalX1 = finalX0 + frequency / 2;
-  let finalY1 = centerY;
-
-  if (options.peakSmoothness === 0) {
-    let midX = (finalX0 + finalX1) / 2;
-    let midY = (finalY0 + finalY1) / 2;
-    path += ` Q${midX},${midY} ${finalX1},${finalY1}`;
-  } else {
-    let cpOffset = (finalX1 - finalX0) * 0.5 * options.peakSmoothness;
-    path += ` C${finalX0 + cpOffset},${finalY0} ${finalX1 - cpOffset},${finalY1} ${finalX1},${finalY1}`;
-  }
-
   return path;
 }
 
@@ -205,7 +183,7 @@ function generateViewBox(options: Required<Options>) {
   let frequency = calculateFrequency(options);
   let amplitude = calculateAmplitude(options);
 
-  // Width should be exactly what the path covers: segments * frequency
+  // Width should cover from the start of first segment to end of last segment
   let width = options.segments * frequency;
 
   // Calculate the adjusted stroke width (same as in generateStrokeWidth)
@@ -224,8 +202,8 @@ function generateViewBox(options: Required<Options>) {
   let height = options.height + 2 * verticalPadding;
   let y = -verticalPadding;
 
-  // Width should include padding for line caps and diagonal stroke extension
-  let x = 0;
+  // ViewBox should start from where the path starts
+  let x = -0.5 * frequency;
   let viewBoxWidth = width;
 
   return `${x} ${y} ${viewBoxWidth} ${height}`;
