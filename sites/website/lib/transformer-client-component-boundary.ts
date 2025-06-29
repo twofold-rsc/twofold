@@ -1,6 +1,6 @@
 import { ShikiTransformer } from "shiki";
 
-type Options = {
+export type Options = {
   color?: string;
   class?: string;
   segments?: number;
@@ -12,12 +12,13 @@ type Options = {
 
 const TOKEN = "// ![client-boundary]";
 
-const defaults: Required<Options> = {
-  color: "currentColor", // use a tailwind color here
+export const defaults: Required<Options> = {
+  // color: "currentColor", // use a tailwind color here
+  color: "rgba(248, 250, 252, 0.2)", // text-slate-50/20
   class: "",
-  segments: 40,
-  height: 16,
-  strokeWidth: 1,
+  segments: 50,
+  height: 12,
+  strokeWidth: 0.4,
   peakSmoothness: 0.75,
   padding: 4,
 };
@@ -25,12 +26,13 @@ const defaults: Required<Options> = {
 export function transformerClientComponentBoundary(
   options: Options = {},
 ): ShikiTransformer {
-  let color = options.color;
-
   let mergedOptions: Required<Options> = {
     ...defaults,
     ...options,
   };
+
+  let color = mergedOptions.color;
+  let padding = mergedOptions.padding;
 
   return {
     preprocess(code) {
@@ -61,7 +63,10 @@ export function transformerClientComponentBoundary(
         node.tagName = "div";
         node.properties = {
           class: ["client-component-boundary", options.class ?? ""],
-          style: `${color ? `color: ${color};` : ""}`,
+          style: `
+            ${color ? `color: ${color};` : ""}
+            ${padding ? `padding: ${padding}px 0;` : ""}
+          `,
         };
         node.children = [
           {
@@ -70,7 +75,7 @@ export function transformerClientComponentBoundary(
             properties: {
               viewBox: generateViewBox(mergedOptions),
               preserveAspectRatio: "none",
-              style: "width: 100%; height: 100%;",
+              style: `width: 100%; height: ${mergedOptions.height}px;`,
               fill: "none",
             },
             children: [
@@ -80,10 +85,9 @@ export function transformerClientComponentBoundary(
                 properties: {
                   d: generateZigZagPath(mergedOptions),
                   stroke: "currentColor",
-                  "stroke-width": generateStrokeWidth(mergedOptions),
                   "stroke-linecap": "square",
-                  // "stroke-linecap":
-                  //   mergedOptions.peakSmoothness === 0 ? "square" : "round",
+                  "stroke-width": generateStrokeWidth(mergedOptions),
+                  "vector-effect": "non-scaling-stroke",
                 },
                 children: [],
               },
@@ -95,10 +99,27 @@ export function transformerClientComponentBoundary(
   };
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
 function calculateAmplitude(options: Required<Options>) {
   // Calculate amplitude from height, accounting for padding
   // The amplitude is half the usable height (since zigzag goes from 0 to -amplitude)
-  return (options.height - options.padding * 2) / 2;
+
+  // let height = clamp(options.height, options.padding * 2, options.height);
+
+  // console.log("options.height", options.height);
+  // console.log("options.padding", options.padding);
+  // console.log("height", height);
+
+  // let amplitude = (height - options.padding * 2) / 2;
+
+  // console.log("amplitude", amplitude);
+
+  // return amplitude;
+
+  return options.height;
 }
 
 function calculateFrequency(options: Required<Options>) {
@@ -110,27 +131,71 @@ function calculateFrequency(options: Required<Options>) {
 }
 
 function generateStrokeWidth(options: Required<Options>) {
-  return options.strokeWidth;
+  // Calculate the angle of the zigzag lines
+  let frequency = calculateFrequency(options);
+  let amplitude = calculateAmplitude(options);
+
+  // Calculate the angle of the diagonal lines
+  let lineAngle = Math.atan2(amplitude, frequency);
+
+  // Adjust stroke width to maintain visual consistency
+  // The stroke appears thinner on diagonal lines, so we compensate
+  let adjustmentFactor = 1 / Math.cos(lineAngle);
+
+  return options.strokeWidth * adjustmentFactor;
 }
 
 function generateZigZagPath(options: Required<Options>) {
   let frequency = calculateFrequency(options);
   let amplitude = calculateAmplitude(options);
 
-  let path = `M0,0`;
+  let bottomY = options.height;
+  let centerY = bottomY - amplitude / 2;
+
+  // Start from the center point
+  let path = `M0,${centerY}`;
 
   for (let i = 0; i < options.segments; i++) {
-    let x0 = i * frequency;
-    let y0 = i % 2 === 0 ? 0 : -amplitude;
-    let x1 = (i + 1) * frequency;
-    let y1 = i % 2 === 0 ? -amplitude : 0;
+    let x0, y0, x1, y1;
+
+    if (i === 0) {
+      // First segment: start from center, use half frequency, go up
+      x0 = 0;
+      y0 = centerY;
+      x1 = frequency / 2;
+      y1 = bottomY - amplitude;
+    } else {
+      // Regular segments
+      x0 = (i - 0.5) * frequency;
+      y0 = i % 2 === 1 ? bottomY - amplitude : bottomY;
+      x1 = (i + 0.5) * frequency;
+      y1 = i % 2 === 1 ? bottomY : bottomY - amplitude;
+    }
 
     if (options.peakSmoothness === 0) {
-      path += ` L${x1},${y1}`;
+      // Main diagonal segment using quadratic Bezier (no cap in path anymore)
+      let midX = (x0 + x1) / 2;
+      let midY = (y0 + y1) / 2;
+      path += ` Q${midX},${midY} ${x1},${y1}`;
     } else {
       let cpOffset = (x1 - x0) * 0.5 * options.peakSmoothness;
       path += ` C${x0 + cpOffset},${y0} ${x1 - cpOffset},${y1} ${x1},${y1}`;
     }
+  }
+
+  // Add final half segment to end at center
+  let finalX0 = (options.segments - 0.5) * frequency;
+  let finalY0 = options.segments % 2 === 1 ? bottomY - amplitude : bottomY;
+  let finalX1 = finalX0 + frequency / 2;
+  let finalY1 = centerY;
+
+  if (options.peakSmoothness === 0) {
+    let midX = (finalX0 + finalX1) / 2;
+    let midY = (finalY0 + finalY1) / 2;
+    path += ` Q${midX},${midY} ${finalX1},${finalY1}`;
+  } else {
+    let cpOffset = (finalX1 - finalX0) * 0.5 * options.peakSmoothness;
+    path += ` C${finalX0 + cpOffset},${finalY0} ${finalX1 - cpOffset},${finalY1} ${finalX1},${finalY1}`;
   }
 
   return path;
@@ -143,23 +208,25 @@ function generateViewBox(options: Required<Options>) {
   // Width should be exactly what the path covers: segments * frequency
   let width = options.segments * frequency;
 
-  // For zigzag lines, the stroke extends perpendicular to the line direction
-  // At the peaks/valleys, we need to account for the stroke extending in the
-  // direction perpendicular to the diagonal line
+  // Calculate the adjusted stroke width (same as in generateStrokeWidth)
   let lineAngle = Math.atan2(amplitude, frequency);
-  let strokeExtension = options.strokeWidth / 2 / Math.sin(lineAngle);
+  let adjustmentFactor = 1 / Math.cos(lineAngle);
+  let adjustedStrokeWidth = options.strokeWidth * adjustmentFactor;
 
-  // Use a simpler approach: just use a generous multiplier of the stroke width
-  // This accounts for the diagonal nature and line caps
-  let padding = options.strokeWidth * 1.5;
+  // Add generous vertical padding to account for stroke width
+  // Use the adjusted stroke width plus a safety margin to ensure no cropping
+  let verticalPadding = Math.max(
+    adjustedStrokeWidth, // At least the full adjusted stroke width
+    options.strokeWidth * 2, // Or twice the base stroke width as a minimum
+  );
 
-  // Height should fit the zigzag line plus stroke padding
-  let y = -amplitude - padding;
-  let height = amplitude + 2 * padding;
+  // Height should fit the zigzag line plus stroke padding on both sides
+  let height = options.height + 2 * verticalPadding;
+  let y = -verticalPadding;
 
   // Width should include padding for line caps and diagonal stroke extension
-  let x = -padding;
-  let viewBoxWidth = width + 2 * padding;
+  let x = 0;
+  let viewBoxWidth = width;
 
   return `${x} ${y} ${viewBoxWidth} ${height}`;
 }

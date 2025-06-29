@@ -5,38 +5,26 @@ description: "A Shiki transformer for displaying Server and Client components."
 
 # Shiki and RSC code examples
 
+{% playground-provider %}
+
 Here's a Shiki transformer that helps you write RSC blog posts, docs, and code examples.
 
 It's called `@twofold/shiki-transformer-client-boundary` and it automatically formats code examples to display both Server and Client components in a single code block.
 
 Here's an example:
 
-```jsx
-import { ClientComponent } from "./client-component";
+{% opening-example /%}
 
-export function ServerComponent() {
-  return (
-    <div>
-      <h1>Server Component</h1>
-      <ClientComponent />
-    </div>
-  );
-}
+The boundary is fully themeable and can be customized to fit your design needs. Try out a few different styles:
+
+{% presets /%}
+
+```jsx
+function ServerComponent() {}
 
 // ![client-boundary]
 
-import { useState } from "react";
-
-export function ClientComponent() {
-  const [count, setCount] = useState(0);
-
-  return (
-    <div>
-      <div>Client Component count: {count}</div>
-      <button onClick={() => setCount((c) => c + 1)}>Increment</button>
-    </div>
-  );
-}
+function ClientComponent() {}
 ```
 
 I first came across this design pattern in Dan Abramov's blog, [overreacted.io](https://overreacted.io/). He'll occasionally use this to display both Server and Client components in his posts {% footnote id=1 %}Check out Dan's excellent [Impossible components](https://overreacted.io/impossible-components/) post for an example.{% /footnote %}.
@@ -139,10 +127,12 @@ transformerClientBoundary({
 
 Try adjusting the parameters above to see how they affect the appearance of the boundary.
 
-{% theme-examples /%}
+{% playground /%}
 
 ## Notes
 
 The transformer automatically replaces the `// [!client-boundary]` comment with a UI to show the break between server and client modules. It also inserts a the `"use client"` directive at the top of the client module.
 
 The reason it inserts `"use client"` is because directives must be placed at the top of a module or function in JavaScript. If you manually put `"use client"` in the middle of a file a code formatter will reformat it to a string surrounded by parentheses, since this is an invalid position for a directive. The transformer ensures that the directive is always at the top of the client module and prevents any formatting issues.
+
+{% /playground-provider %}

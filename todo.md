@@ -2,8 +2,8 @@
 
 blog post todo:
 
-- rename step to frequency
-- preset styles in demo
+- opening demo
+- add dashes
 - make options configurable with defaults
 - tool with sliders and inputs for generating styles
 

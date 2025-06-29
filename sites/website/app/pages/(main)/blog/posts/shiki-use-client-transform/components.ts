@@ -1,12 +1,27 @@
-import { ThemeExamples } from "./theme-examples";
+import { Playground, Provider, OpeningExample, Presets } from "./playground";
 
 export const components = {
-  ThemeExamples,
+  PlaygroundProvider: Provider,
+  OpeningExample: OpeningExample,
+  Presets: Presets,
+  Playground: Playground,
 };
 
 export const tags = {
-  "theme-examples": {
-    render: "ThemeExamples",
+  "playground-provider": {
+    render: "PlaygroundProvider",
+    attributes: {},
+  },
+  "opening-example": {
+    render: "OpeningExample",
+    attributes: {},
+  },
+  presets: {
+    render: "Presets",
+    attributes: {},
+  },
+  playground: {
+    render: "Playground",
     attributes: {},
   },
 };
