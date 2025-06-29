@@ -87,6 +87,9 @@ export function transformerClientComponentBoundary(
                 },
                 children: [],
               },
+              ...(mergedOptions.peakSmoothness === 0
+                ? [generateStartLineCap(mergedOptions)]
+                : []),
             ],
           },
         ];
@@ -162,4 +165,62 @@ function generateViewBox(options: Required<Options>) {
   let viewBoxWidth = width + 2 * padding;
 
   return `${x} ${y} ${viewBoxWidth} ${height}`;
+}
+
+function generateStartLineCap(options: Required<Options>) {
+  let frequency = calculateFrequency(options);
+  let amplitude = calculateAmplitude(options);
+  let strokeWidth = options.strokeWidth;
+
+  // The line starts at (0,0) and goes to (frequency, -amplitude)
+  // Calculate the direction vector and normalize it
+  let dx = frequency;
+  let dy = -amplitude;
+  let length = Math.sqrt(dx * dx + dy * dy);
+  let unitX = dx / length;
+  let unitY = dy / length;
+
+  // Calculate perpendicular vector for the width of the cap
+  let perpX = -unitY;
+  let perpY = unitX;
+
+  // Cap dimensions - create a right triangle with fixed hypotenuse length
+  // C (hypotenuse) always equals strokeWidth
+  // A and B adjust based on line angle to maintain the right triangle
+  let hypotenuseLength = strokeWidth;
+
+  // Calculate A and B lengths based on line angle
+  // A = strokeWidth * sin(angle), B = strokeWidth * cos(angle)
+  let sideA = hypotenuseLength * Math.abs(unitX); // vertical side length
+  let sideB = hypotenuseLength * Math.abs(unitY); // horizontal side length
+
+  // Create a right triangle with perfectly straight sides
+  // Adjust positioning to account for stroke width AND line direction
+  let halfStroke = strokeWidth / 2;
+
+  // Calculate stroke offset in the perpendicular direction
+  let strokeOffsetX = perpX * halfStroke;
+  let strokeOffsetY = perpY * halfStroke;
+
+  // Point 1: Bottom-left corner (the right angle vertex)
+  let point1X = -sideB + strokeOffsetX;
+  let point1Y = strokeOffsetY;
+
+  // Point 2: Top-left corner (end of side A)
+  let point2X = -sideB + strokeOffsetX;
+  let point2Y = -sideA + strokeOffsetY;
+
+  // Point 3: Bottom-right corner (end of side B, start of hypotenuse C)
+  let point3X = 0 + strokeOffsetX;
+  let point3Y = 0 + strokeOffsetY;
+
+  return {
+    type: "element" as const,
+    tagName: "polygon",
+    properties: {
+      points: `${point1X},${point1Y} ${point2X},${point2Y} ${point3X},${point3Y}`,
+      fill: "red",
+    },
+    children: [],
+  };
 }
