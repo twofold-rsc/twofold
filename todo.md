@@ -10,6 +10,10 @@ blog post todo:
 - put package in monorepo
 - publish to npm
 
+- og image
+- page speed on blog post (i think were missing meta description)
+- setup search console
+
 - add gzip/brotli support to the build
 - run posts through page speed
 

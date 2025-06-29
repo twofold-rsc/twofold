@@ -5,7 +5,7 @@ description: "A Shiki transformer for displaying Server and Client components."
 
 # Shiki and RSC code examples
 
-Today I'm happy to share a new Shiki transformer that helps you write RSC blog posts, docs, and code examples.
+Here's a Shiki transformer that helps you write RSC blog posts, docs, and code examples.
 
 It's called `@twofold/shiki-transformer-client-boundary` and it automatically formats code examples to display both Server and Client components in a single code block.
 
@@ -114,7 +114,7 @@ transformerClientBoundary({
 
   // The horizontal spacing between each corner point. Controls
   // the wave's overall width and frequency.
-  step: 8,
+  frequency: 8,
 
   // A value between 0 and 1 that controls the smoothness of the peaks.
   //   0 = sharp corners
@@ -139,12 +139,10 @@ transformerClientBoundary({
 
 Try adjusting the parameters above to see how they affect the appearance of the boundary.
 
-```jsx
-// Demo
-```
+{% theme-examples /%}
 
 ## Notes
 
 The transformer automatically replaces the `// [!client-boundary]` comment with a UI to show the break between server and client modules. It also inserts a the `"use client"` directive at the top of the client module.
 
-The reason it inserts `"use client"` is because directives must be placed at the top of a module or function in JavaScript. If you manually put `"use client"` in the middle of a file a code formatter will likely reformat it to a string surrounded by parentheses, since this is an invalid position for a directive. The transformer ensures that the directive is always at the top of the client module and prevents any formatting issues.
+The reason it inserts `"use client"` is because directives must be placed at the top of a module or function in JavaScript. If you manually put `"use client"` in the middle of a file a code formatter will reformat it to a string surrounded by parentheses, since this is an invalid position for a directive. The transformer ensures that the directive is always at the top of the client module and prevents any formatting issues.

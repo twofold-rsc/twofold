@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { DocLink } from "./components/doc-link";
-import { CLIRoot } from "./components/cli/root";
 
 export default function DocsLayout({ children }: { children: ReactNode }) {
   return (
