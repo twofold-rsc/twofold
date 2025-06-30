@@ -6,8 +6,9 @@ export type Options = {
   segments?: number;
   height?: number;
   strokeWidth?: number;
+  strokeDasharray?: string;
   peakSmoothness?: number;
-  padding?: number;
+  verticalPadding?: number;
 };
 
 const TOKEN = "// ![client-boundary]";
@@ -19,8 +20,9 @@ export const defaults: Required<Options> = {
   segments: 50,
   height: 12,
   strokeWidth: 0.4,
+  strokeDasharray: "none",
   peakSmoothness: 0.75,
-  padding: 4,
+  verticalPadding: 4,
 };
 
 export function transformerClientComponentBoundary(
@@ -32,9 +34,10 @@ export function transformerClientComponentBoundary(
   };
 
   let color = mergedOptions.color;
-  let padding = mergedOptions.padding;
+  let padding = mergedOptions.verticalPadding;
 
   return {
+    name: "@twofold/shiki-transformer-client-boundary",
     preprocess(code) {
       let lines = code.split("\n");
       let out: string[] = [];
@@ -85,8 +88,10 @@ export function transformerClientComponentBoundary(
                 properties: {
                   d: generateZigZagPath(mergedOptions),
                   stroke: "currentColor",
+                  fill: "none",
                   "stroke-linecap": "square",
                   "stroke-width": generateStrokeWidth(mergedOptions),
+                  "stroke-dasharray": mergedOptions.strokeDasharray,
                   "vector-effect": "non-scaling-stroke",
                 },
                 children: [],
@@ -181,26 +186,26 @@ function generateZigZagPath(options: Required<Options>) {
 
 function generateViewBox(options: Required<Options>) {
   let frequency = calculateFrequency(options);
-  let amplitude = calculateAmplitude(options);
+  let strokeWidth = generateStrokeWidth(options);
 
   // Width should cover from the start of first segment to end of last segment
   let width = options.segments * frequency;
 
-  // Calculate the adjusted stroke width (same as in generateStrokeWidth)
-  let lineAngle = Math.atan2(amplitude, frequency);
-  let adjustmentFactor = 1 / Math.cos(lineAngle);
-  let adjustedStrokeWidth = options.strokeWidth * adjustmentFactor;
-
   // Add generous vertical padding to account for stroke width
   // Use the adjusted stroke width plus a safety margin to ensure no cropping
   let verticalPadding = Math.max(
-    adjustedStrokeWidth, // At least the full adjusted stroke width
+    strokeWidth * 2, // At least the full adjusted stroke width
     options.strokeWidth * 2, // Or twice the base stroke width as a minimum
   );
 
   // Height should fit the zigzag line plus stroke padding on both sides
   let height = options.height + 2 * verticalPadding;
   let y = -verticalPadding;
+
+  // console.log("adjustedStrokeWidth", strokeWidth);
+  // console.log("*2 strokeWidth", options.strokeWidth * 2);
+  // console.log("verticalPadding", verticalPadding);
+  // console.log("height", height);
 
   // ViewBox should start from where the path starts
   let x = -0.5 * frequency;

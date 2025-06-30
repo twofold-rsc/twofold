@@ -1,8 +1,15 @@
-import { Playground, Provider, OpeningExample, Presets } from "./playground";
+import {
+  Playground,
+  Provider,
+  OpeningExample,
+  Presets,
+  BasicExample,
+} from "./playground";
 
 export const components = {
   PlaygroundProvider: Provider,
   OpeningExample: OpeningExample,
+  BasicExample: BasicExample,
   Presets: Presets,
   Playground: Playground,
 };
@@ -14,6 +21,10 @@ export const tags = {
   },
   "opening-example": {
     render: "OpeningExample",
+    attributes: {},
+  },
+  "basic-example": {
+    render: "BasicExample",
     attributes: {},
   },
   presets: {

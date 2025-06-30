@@ -15,19 +15,15 @@ Here's an example:
 
 {% opening-example /%}
 
-The boundary is fully themeable and can be customized to fit your design needs. Try out a few different styles:
+I first came across this design pattern in Dan Abramov's blog, [overreacted.io](https://overreacted.io/). He'll occasionally use this to display both Server and Client components in his posts {% footnote id=1 %}Check out Dan's excellent [Impossible components](https://overreacted.io/impossible-components/) post for an example.{% /footnote %}.
+
+The boundary is fully themeable and can be customized to fit your design. Here are a few examples you can try out:
 
 {% presets /%}
 
-```jsx
-function ServerComponent() {}
+{% basic-example /%}
 
-// ![client-boundary]
-
-function ClientComponent() {}
-```
-
-I first came across this design pattern in Dan Abramov's blog, [overreacted.io](https://overreacted.io/). He'll occasionally use this to display both Server and Client components in his posts {% footnote id=1 %}Check out Dan's excellent [Impossible components](https://overreacted.io/impossible-components/) post for an example.{% /footnote %}.
+See the styling section below for all the available styling options.
 
 ## Usage
 

@@ -2,11 +2,14 @@
 
 blog post todo:
 
-- opening demo
-- add dashes
-- make options configurable with defaults
-- tool with sliders and inputs for generating styles
+- fix input bug (use hex values for demo, print as rgba)
+- max height at 24
+- sine wave height is off in preset (did something change here?)
+- style slider section
+- style sliders in safari
+- test ios, maybe use 2nd context
 
+- clean up code
 - put package in monorepo
 - publish to npm
 
@@ -16,6 +19,8 @@ blog post todo:
 
 - add gzip/brotli support to the build
 - run posts through page speed
+
+- safari looks for /apple-touch-icon-precomposed.png, /apple-touch-icon.png
 
 - run routes in parallel
 - add cache support to the build, explore rolldown
