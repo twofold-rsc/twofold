@@ -24,6 +24,7 @@
     "@sindresorhus/slugify": "^2.2.1",
     "@tailwindcss/typography": "^0.5.16",
     "@twofold/framework": "workspace:*",
+    "@uiw/react-color": "^2.6.0",
     "clsx": "^2.1.1",
     "dedent": "^1.5.3",
     "framer-motion": "^12.4.3",

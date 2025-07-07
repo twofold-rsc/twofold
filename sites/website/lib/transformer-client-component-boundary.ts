@@ -11,15 +11,14 @@ export type Options = {
   verticalPadding?: number;
 };
 
-const TOKEN = "// ![client-boundary]";
+const TOKEN = "// [!client-boundary]";
 
 export const defaults: Required<Options> = {
-  // color: "currentColor", // use a tailwind color here
-  color: "rgba(248, 250, 252, 0.2)", // text-slate-50/20
+  color: "hsla(210, 5%, 33%, 1)",
   class: "",
   segments: 50,
-  height: 12,
-  strokeWidth: 0.4,
+  height: 14,
+  strokeWidth: 2.5,
   strokeDasharray: "none",
   peakSmoothness: 0.75,
   verticalPadding: 4,
@@ -41,12 +40,24 @@ export function transformerClientComponentBoundary(
     preprocess(code) {
       let lines = code.split("\n");
       let out: string[] = [];
+      let removeIgnores = false;
 
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
-        out.push(line);
+        let ignoreLine =
+          removeIgnores &&
+          (line.trim() === "// prettier-ignore" || line.trim() === "");
+
+        if (!ignoreLine) {
+          out.push(line);
+        }
+
+        if (removeIgnores && line.trim() !== "") {
+          removeIgnores = false;
+        }
+
         if (line.trim() === TOKEN) {
-          out.push('"use client";');
+          removeIgnores = true;
         }
       }
 
@@ -136,18 +147,7 @@ function calculateFrequency(options: Required<Options>) {
 }
 
 function generateStrokeWidth(options: Required<Options>) {
-  // Calculate the angle of the zigzag lines
-  let frequency = calculateFrequency(options);
-  let amplitude = calculateAmplitude(options);
-
-  // Calculate the angle of the diagonal lines
-  let lineAngle = Math.atan2(amplitude, frequency);
-
-  // Adjust stroke width to maintain visual consistency
-  // The stroke appears thinner on diagonal lines, so we compensate
-  let adjustmentFactor = 1 / Math.cos(lineAngle);
-
-  return options.strokeWidth * adjustmentFactor;
+  return options.strokeWidth;
 }
 
 function generateZigZagPath(options: Required<Options>) {

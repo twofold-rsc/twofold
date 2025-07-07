@@ -18,6 +18,7 @@ import {
   Options,
   defaults,
 } from "@lib/transformer-client-component-boundary";
+import { ColorPicker } from "./color-picker";
 
 const ThemeContext = createContext<{
   options: Options;
@@ -31,9 +32,9 @@ const ThemeContext = createContext<{
   selectedPreset: "default",
 });
 
-let defaultOptions = {
+let defaultOptions: Options = {
   ...defaults,
-  padding: 8,
+  verticalPadding: 7,
   class: "-mx-4",
 };
 
@@ -42,7 +43,9 @@ export function Provider({ children }: { children: ReactNode }) {
   let [options, setOptions] = useState<Options>(defaultOptions);
 
   function updateOptions(newOptions: Partial<Options>) {
-    setOptions((current) => ({ ...current, ...newOptions }));
+    startTransition(() => {
+      setOptions((current) => ({ ...current, ...newOptions }));
+    });
   }
 
   function setPreset(preset: string) {
@@ -54,8 +57,8 @@ export function Provider({ children }: { children: ReactNode }) {
           peakSmoothness: 0,
           segments: 40,
           height: 20,
-          strokeWidth: 2,
-          color: "white",
+          strokeWidth: 8,
+          color: "hsla(0, 0%, 100%, 1)",
           class: "-mx-4",
         });
         break;
@@ -68,7 +71,7 @@ export function Provider({ children }: { children: ReactNode }) {
           verticalPadding: 13,
           strokeWidth: 2,
           strokeDasharray: "12,10.1",
-          color: "rgb(158 203 255 / 90%)",
+          color: "hsla(212, 100%, 81%, 0.8)",
           class: "-mx-4",
         });
         break;
@@ -107,7 +110,9 @@ export function OpeningExample() {
       );
     }
 
-    // ![client-boundary]
+    // [!client-boundary]
+
+    "use client";
 
     import { useState } from "react";
 
@@ -129,7 +134,7 @@ export function BasicExample() {
   let code = dedent`
     function ServerComponent() {}
 
-    // ![client-boundary]
+    // [!client-boundary]
 
     function ClientComponent() {}
   `;
@@ -171,105 +176,146 @@ export function Playground() {
 
   return (
     <div className="not-prose my-6">
-      <div className="grid grid-cols-3">
-        <label>Color</label>
-        <input
-          type="color"
-          value={options.color}
-          onChange={(e) =>
-            updateOptions({
-              color: e.target.value,
-            })
-          }
-        />
-        <div>
-          <div>{options.color}</div>
+      <div className="space-y-5 sm:space-y-3">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+          <div className="sm:w-1/2">
+            <label className="block font-medium">Color</label>
+            <p className="text-sm text-gray-500">
+              The color of the line. You can use any valid CSS color value.
+            </p>
+          </div>
+          <div className="sm:w-1/2">
+            <div className="flex w-full items-center space-x-2 sm:mt-1">
+              <ColorPicker
+                value={options.color ?? defaults.color}
+                onChange={(color) => {
+                  updateOptions({
+                    color,
+                  });
+                }}
+              />
+              <div className="font-mono text-xs">{options.color}</div>
+            </div>
+          </div>
         </div>
 
         <label>Segments</label>
-        <input
-          type="range"
-          min="2"
-          max="80"
-          step="2"
-          value={options.segments}
-          onChange={(e) =>
-            updateOptions({
-              segments: Number(e.target.value),
-            })
-          }
-        />
+        <div className="flex w-full items-center justify-center">
+          <input
+            type="range"
+            min="2"
+            max="80"
+            step="2"
+            value={options.segments}
+            onChange={(e) =>
+              updateOptions({
+                segments: Number(e.target.value),
+              })
+            }
+            className="range-slider"
+            style={{
+              background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.segments) - 2) / (80 - 2)) * 100}%, #e5e7eb ${((Number(options.segments) - 2) / (80 - 2)) * 100}%, #e5e7eb 100%)`,
+            }}
+          />
+        </div>
         <div>
           <div>{options.segments}</div>
         </div>
 
         <label>Height</label>
-        <input
-          type="range"
-          min="2"
-          max="40"
-          step="1"
-          value={options.height}
-          onChange={(e) =>
-            updateOptions({
-              height: Number(e.target.value),
-            })
-          }
-        />
+        <div className="flex w-full items-center justify-center">
+          <input
+            type="range"
+            min="2"
+            max="36"
+            step="1"
+            value={options.height}
+            onChange={(e) =>
+              updateOptions({
+                height: Number(e.target.value),
+              })
+            }
+            className="range-slider"
+            style={{
+              background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.height) - 2) / (36 - 2)) * 100}%, #e5e7eb ${((Number(options.height) - 2) / (36 - 2)) * 100}%, #e5e7eb 100%)`,
+            }}
+          />
+        </div>
         <div>
           <div>{options.height}</div>
         </div>
 
         <label>Stroke width</label>
-        <input
-          type="range"
-          min="0.1"
-          max="3"
-          step="0.1"
-          value={options.strokeWidth}
-          onChange={(e) =>
-            updateOptions({
-              strokeWidth: Number(e.target.value),
-            })
-          }
-        />
+        <div className="flex w-full items-center justify-center">
+          <input
+            type="range"
+            min="1"
+            max="8.0"
+            step="0.5"
+            value={options.strokeWidth}
+            onChange={(e) =>
+              updateOptions({
+                strokeWidth: Number(e.target.value),
+              })
+            }
+            className="range-slider"
+            style={{
+              background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.strokeWidth) - 1) / (8 - 1)) * 100}%, #e5e7eb ${((Number(options.strokeWidth) - 1) / (8 - 1)) * 100}%, #e5e7eb 100%)`,
+            }}
+          />
+        </div>
         <div>
           <div>{options.strokeWidth}</div>
         </div>
 
         <label>Peak smoothness</label>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          value={options.peakSmoothness}
-          onChange={(e) =>
-            updateOptions({
-              peakSmoothness: Number(e.target.value),
-            })
-          }
-        />
+        <div className="flex w-full items-center justify-center">
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={options.peakSmoothness}
+            onChange={(e) =>
+              updateOptions({
+                peakSmoothness: Number(e.target.value),
+              })
+            }
+            className="range-slider"
+            style={{
+              background: `linear-gradient(to right, #2563eb 0%, #2563eb ${Number(options.peakSmoothness) * 100}%, #e5e7eb ${Number(options.peakSmoothness) * 100}%, #e5e7eb 100%)`,
+            }}
+          />
+        </div>
         <div>
           <div>{options.peakSmoothness}</div>
         </div>
 
         <label>Vertical padding</label>
-        <input
-          type="range"
-          min="0"
-          max="16"
-          step="1"
-          value={options.verticalPadding}
-          onChange={(e) =>
-            updateOptions({
-              verticalPadding: Number(e.target.value),
-            })
-          }
-        />
+        <div className="flex w-full items-center justify-center">
+          <input
+            type="range"
+            min="0"
+            max="16"
+            step="1"
+            value={options.verticalPadding}
+            onChange={(e) =>
+              updateOptions({
+                verticalPadding: Number(e.target.value),
+              })
+            }
+            className="range-slider"
+            style={{
+              background: `linear-gradient(to right, #2563eb 0%, #2563eb ${(Number(options.verticalPadding) / 16) * 100}%, #e5e7eb ${(Number(options.verticalPadding) / 16) * 100}%, #e5e7eb 100%)`,
+            }}
+          />
+        </div>
         <div>
           <div>{options.verticalPadding}</div>
         </div>
+      </div>
+      <div className="mt-6">
+        <Presets />
       </div>
       <BasicExample />
     </div>

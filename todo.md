@@ -2,16 +2,20 @@
 
 blog post todo:
 
-- fix input bug (use hex values for demo, print as rgba)
-- max height at 24
-- sine wave height is off in preset (did something change here?)
-- style slider section
-- style sliders in safari
-- test ios, maybe use 2nd context
+- note about pretty ignore
+- up max stroke width range
+- style playground text / values
+- add config to playground
+- test ios / use 2nd context
 
+- make sure other blog posts still work
 - clean up code
+- make sure other blog posts still work
 - put package in monorepo
+- make sure other blog posts still work
 - publish to npm
+- test cases / vitest
+- build test app
 
 - og image
 - page speed on blog post (i think were missing meta description)

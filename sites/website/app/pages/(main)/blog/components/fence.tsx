@@ -1,4 +1,4 @@
-import { codeToHtml } from "shiki";
+import { codeToHtml, ShikiTransformer } from "shiki";
 import {
   transformerNotationDiff,
   transformerNotationFocus,
@@ -29,6 +29,7 @@ export async function Fence({
       transformerNotationDiff(),
       transformerNotationHighlight(),
       transformerNotationFocus(),
+      transformerRemoveLine(),
       isClientBoundaryEnabled
         ? transformerClientComponentBoundary({
             class: "-mx-4 text-slate-50/20",
@@ -57,9 +58,38 @@ export async function Fence({
       >
         <div className="relative inline-block w-max min-w-full p-4">
           <div dangerouslySetInnerHTML={{ __html: result }} className="" />
-          {/* <div className="pointer-events-none absolute inset-0 rounded-md ring ring-white/20 ring-inset" /> */}
         </div>
       </div>
     </div>
   );
+}
+
+function transformerRemoveLine(): ShikiTransformer {
+  return {
+    name: "shiki-transformer-remove-line",
+
+    preprocess(code) {
+      let lines = code.split("\n");
+      let out: string[] = [];
+      let ignoreNextLine = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+
+        let isRemoveToken = line.trim() === "// [!remove]";
+        ignoreNextLine = ignoreNextLine || isRemoveToken;
+        let ignoreThisLine = isRemoveToken || ignoreNextLine;
+
+        if (!ignoreThisLine) {
+          out.push(line);
+        }
+
+        if (ignoreNextLine && !isRemoveToken) {
+          ignoreNextLine = false;
+        }
+      }
+
+      return out.join("\n");
+    },
+  };
 }

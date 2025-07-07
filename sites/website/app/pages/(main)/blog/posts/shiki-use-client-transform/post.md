@@ -23,7 +23,7 @@ The boundary is fully themeable and can be customized to fit your design. Here a
 
 {% basic-example /%}
 
-See the styling section below for all the available styling options.
+In the next section we'll go over how to install, use, and customize the boundary.
 
 ## Usage
 
@@ -49,6 +49,8 @@ const reactCodeExample = `
 
   // [!client-boundary]
 
+  "use client";
+
   function ClientComponent() {}
 `;
 
@@ -68,6 +70,10 @@ function ServerComponent() {}
 // [!code highlight]
 // [!client-boundary]
 
+// [!remove]
+// prettier-ignore
+"use client";
+
 function ClientComponent() {}
 ```
 
@@ -76,7 +82,10 @@ Will output:
 ```jsx
 function ServerComponent() {}
 
-// ![client-boundary]
+// [!client-boundary]
+
+// prettier-ignore
+"use client";
 
 function ClientComponent() {}
 ```
@@ -85,50 +94,12 @@ function ClientComponent() {}
 
 The styling of the boundary can be customized to fit your design needs. The transformer provides a default style, but you can modify it to match your blog or documentation's theme.
 
-Here are all the available options and their default values:
-
-```js
-transformerClientBoundary({
-  // The number of zig-zag segments to generate.
-  segments: 40,
-
-  // The vertical height of each wave segment. Larger values
-  // create taller peaks and deeper valleys.
-  amplitude: 5,
-
-  // The horizontal spacing between each corner point. Controls
-  // the wave's overall width and frequency.
-  frequency: 8,
-
-  // A value between 0 and 1 that controls the smoothness of the peaks.
-  //   0 = sharp corners
-  //   1 = smooth, sine-like curves
-  peakSmoothness: 0.75,
-
-  // Determines the line thickness as a fraction of step.
-  strokeRatio: 0.15,
-
-  // Extra vertical space added above and below the boundary.
-  padding: 4,
-
-  // Any additional CSS classes to apply to the boundary element.
-  // Useful for adding custom styling, theming, or utility classes.
-  class: "",
-
-  // The color of the boundary line. Use `currentColor` if you are
-  // styling with utility classes.
-  color: "#d4d4d4",
-});
-```
-
 Try adjusting the parameters above to see how they affect the appearance of the boundary.
 
 {% playground /%}
 
 ## Notes
 
-The transformer automatically replaces the `// [!client-boundary]` comment with a UI to show the break between server and client modules. It also inserts a the `"use client"` directive at the top of the client module.
-
-The reason it inserts `"use client"` is because directives must be placed at the top of a module or function in JavaScript. If you manually put `"use client"` in the middle of a file a code formatter will reformat it to a string surrounded by parentheses, since this is an invalid position for a directive. The transformer ensures that the directive is always at the top of the client module and prevents any formatting issues.
+Some code formatters, like Prettier, may automatically reformat the `"use client"` directive to `("use client")` if it's not at the top of the file. You can add `// prettier-ignore` before the directive to prevent this behavior.
 
 {% /playground-provider %}
