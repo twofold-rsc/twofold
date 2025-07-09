@@ -5,6 +5,7 @@ export type Options = {
   class?: string;
   segments?: number;
   height?: number;
+  minSegmentWidth?: number;
   strokeWidth?: number;
   strokeDasharray?: string;
   peakSmoothness?: number;
@@ -18,9 +19,10 @@ export const defaults: Required<Options> = {
   class: "",
   segments: 50,
   height: 14,
+  minSegmentWidth: 12,
   strokeWidth: 2.5,
   strokeDasharray: "none",
-  peakSmoothness: 0.75,
+  peakSmoothness: 0.7,
   verticalPadding: 4,
 };
 
@@ -76,36 +78,61 @@ export function transformerClientComponentBoundary(
         node.type = "element";
         node.tagName = "div";
         node.properties = {
-          class: ["client-component-boundary", options.class ?? ""],
-          style: `
-            ${color ? `color: ${color};` : ""}
-            ${padding ? `padding: ${padding}px 0;` : ""}
-          `,
+          class: ["client-component-boundary", mergedOptions.class]
+            .join(" ")
+            .trim(),
+          style: [
+            "position: relative;",
+            `height: ${mergedOptions.height + padding * 2}px;`,
+            "overflow-x: hidden;",
+          ].join(" "),
         };
         node.children = [
           {
             type: "element",
-            tagName: "svg",
+            tagName: "div",
             properties: {
-              viewBox: generateViewBox(mergedOptions),
-              preserveAspectRatio: "none",
-              style: `width: 100%; height: ${mergedOptions.height}px;`,
-              fill: "none",
+              style: [
+                color ? `color: ${color};` : "",
+                padding ? `padding: ${padding}px 0;` : "",
+                "position: absolute;",
+                "width: 100%;",
+                "top: 0;",
+                "left: 0;",
+                "right: 0;",
+                "border: 0;",
+              ].join(" "),
             },
             children: [
               {
                 type: "element",
-                tagName: "path",
+                tagName: "svg",
                 properties: {
-                  d: generateZigZagPath(mergedOptions),
-                  stroke: "currentColor",
+                  viewBox: generateViewBox(mergedOptions),
+                  preserveAspectRatio: "none",
+                  style: [
+                    "width: 100%;",
+                    `min-width: ${mergedOptions.minSegmentWidth * mergedOptions.segments}px;`,
+                    `height: ${mergedOptions.height}px;`,
+                  ].join(" "),
                   fill: "none",
-                  "stroke-linecap": "square",
-                  "stroke-width": generateStrokeWidth(mergedOptions),
-                  "stroke-dasharray": mergedOptions.strokeDasharray,
-                  "vector-effect": "non-scaling-stroke",
                 },
-                children: [],
+                children: [
+                  {
+                    type: "element",
+                    tagName: "path",
+                    properties: {
+                      d: generateZigZagPath(mergedOptions),
+                      stroke: "currentColor",
+                      fill: "none",
+                      "stroke-linecap": "square",
+                      "stroke-width": generateStrokeWidth(mergedOptions),
+                      "stroke-dasharray": mergedOptions.strokeDasharray,
+                      "vector-effect": "non-scaling-stroke",
+                    },
+                    children: [],
+                  },
+                ],
               },
             ],
           },
@@ -142,8 +169,11 @@ function calculateFrequency(options: Required<Options>) {
   // Calculate frequency based on a target total width that creates good visual balance
   // We want the total width to have a reasonable aspect ratio with the height
   // Use a target aspect ratio to determine total width, then divide by segments
+
   let targetWidth = options.height * 8; // 8:1 aspect ratio for good visual balance
   return targetWidth / options.segments;
+
+  // return options.segments;
 }
 
 function generateStrokeWidth(options: Required<Options>) {

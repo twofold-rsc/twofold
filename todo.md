@@ -2,7 +2,8 @@
 
 blog post todo:
 
-- note about pretty ignore
+- default to line tear
+- add minSegmentWidth to playground
 - up max stroke width range
 - style playground text / values
 - add config to playground

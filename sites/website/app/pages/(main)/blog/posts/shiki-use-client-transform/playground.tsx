@@ -32,15 +32,37 @@ const ThemeContext = createContext<{
   selectedPreset: "default",
 });
 
-let defaultOptions: Options = {
-  ...defaults,
-  verticalPadding: 7,
-  class: "-mx-4",
+const configs: Record<string, Options> = {
+  lineTear: {
+    ...defaults,
+    peakSmoothness: 0,
+    segments: 40,
+    height: 20,
+    strokeWidth: 8,
+    color: "hsla(0, 0%, 100%, 1)",
+    class: "-mx-4",
+  },
+  dashed: {
+    ...defaults,
+    peakSmoothness: 0,
+    segments: 2,
+    height: 2,
+    verticalPadding: 13,
+    strokeWidth: 2,
+    strokeDasharray: "12,10.1",
+    color: "hsla(212, 100%, 81%, 0.8)",
+    class: "-mx-4",
+  },
+  sineWave: {
+    ...defaults,
+    verticalPadding: 7,
+    class: "-mx-4",
+  },
 };
 
 export function Provider({ children }: { children: ReactNode }) {
-  let [selectedPreset, setSelectedPreset] = useState("default");
-  let [options, setOptions] = useState<Options>(defaultOptions);
+  let [selectedPreset, setSelectedPreset] = useState("lineTear");
+  let [options, setOptions] = useState<Options>(configs.lineTear);
 
   function updateOptions(newOptions: Partial<Options>) {
     startTransition(() => {
@@ -52,31 +74,13 @@ export function Provider({ children }: { children: ReactNode }) {
     setSelectedPreset(preset);
     switch (preset) {
       case "line-tear":
-        updateOptions({
-          ...defaults,
-          peakSmoothness: 0,
-          segments: 40,
-          height: 20,
-          strokeWidth: 8,
-          color: "hsla(0, 0%, 100%, 1)",
-          class: "-mx-4",
-        });
+        updateOptions(configs.lineTear);
         break;
       case "dashed":
-        updateOptions({
-          ...defaults,
-          peakSmoothness: 0,
-          segments: 2,
-          height: 2,
-          verticalPadding: 13,
-          strokeWidth: 2,
-          strokeDasharray: "12,10.1",
-          color: "hsla(212, 100%, 81%, 0.8)",
-          class: "-mx-4",
-        });
+        updateOptions(configs.dashed);
         break;
       case "sine-wave":
-        updateOptions(defaultOptions);
+        updateOptions(configs.sineWave);
         break;
       default:
         throw new Error(`Unknown preset: ${preset}`);
