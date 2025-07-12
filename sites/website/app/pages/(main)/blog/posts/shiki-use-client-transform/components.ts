@@ -4,6 +4,7 @@ import {
   OpeningExample,
   Presets,
   BasicExample,
+  PlaygroundConfig,
 } from "./playground";
 
 export const components = {
@@ -12,6 +13,7 @@ export const components = {
   BasicExample: BasicExample,
   Presets: Presets,
   Playground: Playground,
+  PlaygroundConfig: PlaygroundConfig,
 };
 
 export const tags = {
@@ -33,6 +35,10 @@ export const tags = {
   },
   playground: {
     render: "Playground",
+    attributes: {},
+  },
+  "playground-config": {
+    render: "PlaygroundConfig",
     attributes: {},
   },
 };

@@ -126,7 +126,7 @@ export function transformerClientComponentBoundary(
                       stroke: "currentColor",
                       fill: "none",
                       "stroke-linecap": "square",
-                      "stroke-width": generateStrokeWidth(mergedOptions),
+                      "stroke-width": mergedOptions.strokeWidth,
                       "stroke-dasharray": mergedOptions.strokeDasharray,
                       "vector-effect": "non-scaling-stroke",
                     },
@@ -142,66 +142,32 @@ export function transformerClientComponentBoundary(
   };
 }
 
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value));
-}
-
 function calculateAmplitude(options: Required<Options>) {
-  // Calculate amplitude from height, accounting for padding
-  // The amplitude is half the usable height (since zigzag goes from 0 to -amplitude)
-
-  // let height = clamp(options.height, options.padding * 2, options.height);
-
-  // console.log("options.height", options.height);
-  // console.log("options.padding", options.padding);
-  // console.log("height", height);
-
-  // let amplitude = (height - options.padding * 2) / 2;
-
-  // console.log("amplitude", amplitude);
-
-  // return amplitude;
-
   return options.height;
 }
 
 function calculateFrequency(options: Required<Options>) {
-  // Calculate frequency based on a target total width that creates good visual balance
-  // We want the total width to have a reasonable aspect ratio with the height
-  // Use a target aspect ratio to determine total width, then divide by segments
-
-  let targetWidth = options.height * 8; // 8:1 aspect ratio for good visual balance
+  let targetWidth = Math.max(options.minSegmentWidth, 1) * options.segments;
   return targetWidth / options.segments;
-
-  // return options.segments;
-}
-
-function generateStrokeWidth(options: Required<Options>) {
-  return options.strokeWidth;
 }
 
 function generateZigZagPath(options: Required<Options>) {
   let frequency = calculateFrequency(options);
   let amplitude = calculateAmplitude(options);
-
   let bottomY = options.height;
 
-  // Start from the beginning of the first segment at the bottom
   let firstSegmentStartX = -0.5 * frequency;
   let firstSegmentStartY = bottomY; // Start at bottom
   let path = `M${firstSegmentStartX},${firstSegmentStartY}`;
 
   for (let i = 0; i < options.segments; i++) {
-    let x0, y0, x1, y1;
-
-    // Regular segments
-    x0 = (i - 0.5) * frequency;
-    y0 = i % 2 === 1 ? bottomY - amplitude : bottomY;
-    x1 = (i + 0.5) * frequency;
-    y1 = i % 2 === 1 ? bottomY : bottomY - amplitude;
+    let x0 = (i - 0.5) * frequency;
+    let y0 = i % 2 === 1 ? bottomY - amplitude : bottomY;
+    let x1 = (i + 0.5) * frequency;
+    let y1 = i % 2 === 1 ? bottomY : bottomY - amplitude;
 
     if (options.peakSmoothness === 0) {
-      // Main diagonal segment using quadratic Bezier (no cap in path anymore)
+      // main diagonal segment using quadratic Bezier (no cap in path anymore)
       let midX = (x0 + x1) / 2;
       let midY = (y0 + y1) / 2;
       path += ` Q${midX},${midY} ${x1},${y1}`;
@@ -216,30 +182,13 @@ function generateZigZagPath(options: Required<Options>) {
 
 function generateViewBox(options: Required<Options>) {
   let frequency = calculateFrequency(options);
-  let strokeWidth = generateStrokeWidth(options);
-
-  // Width should cover from the start of first segment to end of last segment
   let width = options.segments * frequency;
+  let verticalPadding = options.strokeWidth * 2;
 
-  // Add generous vertical padding to account for stroke width
-  // Use the adjusted stroke width plus a safety margin to ensure no cropping
-  let verticalPadding = Math.max(
-    strokeWidth * 2, // At least the full adjusted stroke width
-    options.strokeWidth * 2, // Or twice the base stroke width as a minimum
-  );
-
-  // Height should fit the zigzag line plus stroke padding on both sides
-  let height = options.height + 2 * verticalPadding;
-  let y = -verticalPadding;
-
-  // console.log("adjustedStrokeWidth", strokeWidth);
-  // console.log("*2 strokeWidth", options.strokeWidth * 2);
-  // console.log("verticalPadding", verticalPadding);
-  // console.log("height", height);
-
-  // ViewBox should start from where the path starts
   let x = -0.5 * frequency;
+  let y = -verticalPadding;
   let viewBoxWidth = width;
+  let viewBoxHeight = options.height + 2 * verticalPadding;
 
-  return `${x} ${y} ${viewBoxWidth} ${height}`;
+  return `${x} ${y} ${viewBoxWidth} ${viewBoxHeight}`;
 }

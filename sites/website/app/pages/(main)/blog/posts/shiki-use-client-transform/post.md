@@ -7,27 +7,27 @@ description: "A Shiki transformer for displaying Server and Client components."
 
 {% playground-provider %}
 
-Here's a Shiki transformer that helps you write RSC blog posts, docs, and code examples.
+Have you ever wanted to show a Server and Client Component in the same code block while writing a blog post or working on your docs?
 
-It's called `@twofold/shiki-transformer-client-boundary` and it automatically formats code examples to display both Server and Client components in a single code block.
-
-Here's an example:
+Here's a Shiki transformer that lets you do exactly that! Check out this example:
 
 {% opening-example /%}
 
-I first came across this design pattern in Dan Abramov's blog, [overreacted.io](https://overreacted.io/). He'll occasionally use this to display both Server and Client components in his posts {% footnote id=1 %}Check out Dan's excellent [Impossible components](https://overreacted.io/impossible-components/) post for an example.{% /footnote %}.
+This code block is powered by [Shiki](https://shiki.style/) and uses `@twofold/shiki-transformer-client-boundary`, which formats code examples to display a boundary between Server and Client Components.
 
-The boundary is fully themeable and can be customized to fit your design. Here are a few examples you can try out:
+I first came across this design pattern in Dan Abramov's blog, [overreacted.io](https://overreacted.io/). He'll occasionally use a similar design in his posts {% footnote id=1 %}Check out Dan's excellent [Impossible components](https://overreacted.io/impossible-components/) post for an example.{% /footnote %}.
+
+A feature of this boundary is that it's fully themeable and can be customized to fit any design. Here are a few examples:
 
 {% presets /%}
 
 {% basic-example /%}
 
-In the next section we'll go over how to install, use, and customize the boundary.
+In this post we'll cover how to install, use, and style the boundary for your blog or docs site.
 
 {% /playground-provider %}
 
-## Usage
+## Getting started
 
 Install the package using:
 
@@ -62,7 +62,7 @@ const code = await codeToHtml(reactCodeExample, {
 });
 ```
 
-The comment {% standout-comment %}// [!client-boundary]{% /standout-comment %} in your code examples indicates where the Server Component ends and Client Component starts. The transformer will automatically format the code to display both components correctly.
+The comment {% standout-comment %}// [!client-boundary]{% /standout-comment %} in your code examples indicates where the Server Component ends and Client Component starts. The transformer will format the code to display both components correctly.
 
 For example, the following code snippet:
 
@@ -96,12 +96,22 @@ function ClientComponent() {}
 
 The styling of the boundary can be customized to fit your design needs. The transformer provides a default style, but you can modify it to match your blog or documentation's theme.
 
-Try adjusting the parameters above to see how they affect the appearance of the boundary.
+Try adjusting the parameters below to see how they affect the appearance of the boundary.
 
 {% playground-provider %}
+
 {% playground /%}
+
+Here's the code needed to generate your styled boundary using Shiki:
+
+{% playground-config /%}
+
 {% /playground-provider %}
+
+Thanks for reading! If you use this plugin or have any questions about it feel free to reach out to me on [Twitter](https://x.com/ryantotweets) or [Bluesky](https://bsky.app/profile/ryantoron.to).
 
 ## Notes
 
-Some code formatters, like Prettier, may automatically reformat the `"use client"` directive to `("use client")` if it's not at the top of the file. You can add `// prettier-ignore` before the directive to prevent this behavior.
+- Some code formatters, like Prettier, may automatically reformat the `"use client"` directive to `("use client")` if it's not at the top of the file. You can add `// prettier-ignore` before the directive to prevent this behavior.
+
+- Server and Client Components were explicitly designed to live in separate modules. I find this plugin works well for small examples, but for large examples it's probably best to keep your Server components and Client components in separate code blocks.

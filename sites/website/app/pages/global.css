@@ -153,14 +153,14 @@ input[type="range"].range-slider::-webkit-slider-thumb {
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  background: #0a84ff; /* blue thumb */
+  background: #006be6;
   border: none;
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
   transition: background 0.2s ease;
 }
 
 input[type="range"].range-slider:hover::-webkit-slider-thumb {
-  background: #006be6;
+  background: #0051ba;
 }
 
 input[type="range"].range-slider:active::-webkit-slider-thumb {
@@ -177,14 +177,14 @@ input[type="range"].range-slider::-moz-range-thumb {
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  background: #0a84ff;
+  background: #006be6;
   border: none;
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
   transition: background 0.2s ease;
 }
 
 input[type="range"].range-slider:hover::-moz-range-thumb {
-  background: #006be6;
+  background: #0051ba;
 }
 
 input[type="range"].range-slider:active::-moz-range-thumb {

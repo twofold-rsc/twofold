@@ -32,6 +32,13 @@ export async function Fence({
       transformerRemoveLine(),
       isClientBoundaryEnabled
         ? transformerClientComponentBoundary({
+            color: "currentColor",
+            segments: 50,
+            height: 12,
+            minSegmentWidth: 8,
+            strokeWidth: 2.5,
+            peakSmoothness: 0.7,
+            verticalPadding: 8,
             class: "-mx-4 text-slate-50/20",
           })
         : undefined,

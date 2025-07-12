@@ -2,17 +2,11 @@
 
 blog post todo:
 
-- knob color should match bar
-- better descriptions for vars
-- get rid of dashed
-- absolute preview
-- up max stroke width range
-- add config to playground
-- test ios / use 2nd context
+- readjust all slider params in playground
+- firefox
+- safari
+- test ios
 
-- make sure other blog posts still work
-- clean up code
-- make sure other blog posts still work
 - put package in monorepo
 - make sure other blog posts still work
 - publish to npm

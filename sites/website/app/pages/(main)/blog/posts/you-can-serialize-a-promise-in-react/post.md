@@ -29,7 +29,10 @@ export default function Page() {
   );
 }
 
-// ![client-component-boundary]
+// [!client-boundary]
+
+// prettier-ignore
+"use client";
 
 import { use } from "react";
 

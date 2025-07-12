@@ -37,17 +37,6 @@ const configs: Record<string, Options> = {
     ...defaults,
     class: "-mx-4",
   },
-  dashed: {
-    ...defaults,
-    peakSmoothness: 0,
-    segments: 2,
-    height: 2,
-    verticalPadding: 13,
-    strokeWidth: 2,
-    strokeDasharray: "12,10.1",
-    color: "hsla(212, 100%, 81%, 0.8)",
-    class: "-mx-4",
-  },
   sineWave: {
     ...defaults,
     color: "hsla(210, 5%, 33%, 1)",
@@ -76,9 +65,6 @@ export function Provider({ children }: { children: ReactNode }) {
     switch (preset) {
       case "line-tear":
         updateOptions(configs.lineTear);
-        break;
-      case "dashed":
-        updateOptions(configs.dashed);
         break;
       case "sine-wave":
         updateOptions(configs.sineWave);
@@ -141,29 +127,28 @@ export function BasicExample() {
 
     // [!client-boundary]
 
+    "use client";
+
     function ClientComponent() {}
   `;
 
-  return <CodeBlock code={code} />;
+  return (
+    <div className="not-prose my-6">
+      <CodeBlock code={code} />
+    </div>
+  );
 }
 
 export function Presets() {
   const { setPreset } = use(ThemeContext);
 
   return (
-    <div className="not-prose flex items-center gap-2.5 sm:gap-3">
+    <div className="not-prose my-6 flex items-center gap-2.5 sm:gap-3">
       <button
         className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500 sm:px-3 sm:text-sm"
         onClick={() => setPreset("line-tear")}
       >
         Line tear
-      </button>
-
-      <button
-        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500 sm:px-3 sm:text-sm"
-        onClick={() => setPreset("dashed")}
-      >
-        Dashed
       </button>
 
       <button
@@ -182,7 +167,7 @@ export function Playground() {
   let code = dedent`
     import { ClientComponent } from "./client-component";
 
-    export function ServerComponent() {
+    function ServerComponent() {
       return (
         <div>
           <h1>Server Component</h1>
@@ -213,14 +198,14 @@ export function Playground() {
   `;
 
   return (
-    <div className="not-prose my-16 xl:-mx-48 xl:flex xl:space-x-14">
-      <div className="space-y-5 xl:w-1/2">
+    <div className="not-prose my-8 xl:-mx-48 xl:mt-16 xl:mb-24 xl:flex xl:space-x-14">
+      <div className="space-y-5 xl:mt-2 xl:w-1/2 xl:space-y-6.5">
         <div>
           <label className="block font-medium">Preset styles</label>
           <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
             <div className="sm:w-1/2">
               <p className="text-sm text-gray-500">
-                Quickly style the client component boundary with a preset style.
+                Style the example with a preset style.
               </p>
             </div>
             <div className="sm:w-1/2">
@@ -229,21 +214,14 @@ export function Playground() {
                   className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500"
                   onClick={() => setPreset("line-tear")}
                 >
-                  Tear
-                </button>
-
-                <button
-                  className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500"
-                  onClick={() => setPreset("dashed")}
-                >
-                  Dashed
+                  Line tear
                 </button>
 
                 <button
                   className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500"
                   onClick={() => setPreset("sine-wave")}
                 >
-                  Wave
+                  Sine wave
                 </button>
               </div>
             </div>
@@ -279,7 +257,7 @@ export function Playground() {
           <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
             <div className="sm:w-1/2">
               <p className="text-sm text-gray-500">
-                The number of segments in the line.
+                The number of segments to draw.
               </p>
             </div>
             <div className="sm:w-1/2">
@@ -314,7 +292,7 @@ export function Playground() {
           <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
             <div className="sm:w-1/2">
               <p className="text-sm text-gray-500">
-                The minimum width of each segment in the line.
+                Keeps each segment from becoming too narrow.
               </p>
             </div>
             <div className="sm:w-1/2">
@@ -384,7 +362,7 @@ export function Playground() {
           <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
             <div className="sm:w-1/2">
               <p className="text-sm text-gray-500">
-                The width of the line stroke in pixels.
+                Controls the thickness of the line.
               </p>
             </div>
             <div className="sm:w-1/2">
@@ -418,7 +396,7 @@ export function Playground() {
           <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
             <div className="sm:w-1/2">
               <p className="text-sm text-gray-500">
-                The smoothness of the peak in the waveform.
+                Controls the sharpness of the tips in the waveform.
               </p>
             </div>
             <div className="sm:w-1/2">
@@ -452,7 +430,7 @@ export function Playground() {
           <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
             <div className="sm:w-1/2">
               <p className="text-sm text-gray-500">
-                Breathing room around the line.
+                Adds breathing room around the line.
               </p>
             </div>
             <div className="sm:w-1/2">
@@ -481,11 +459,37 @@ export function Playground() {
           </div>
         </div>
       </div>
-      <div className="mt-8 xl:mt-0 xl:w-1/2">
-        <CodeBlock code={code} />
+      <div className="relative mt-8 xl:mt-0 xl:w-1/2">
+        <div className="xl:absolute xl:inset-0">
+          <CodeBlock code={code} />
+        </div>
       </div>
     </div>
   );
+}
+
+export function PlaygroundConfig() {
+  let { options } = use(ThemeContext);
+
+  let x = Object.entries(options)
+    .filter(([key]) => key !== "class" && key !== "strokeDasharray")
+    .map(([key, value]) => `      ${key}: ${JSON.stringify(value)}`)
+    .join(",\n");
+
+  let code = `const code = await codeToHtml("...", {
+  lang: "jsx",
+  transformers: [
+    transformerClientBoundary({
+${x},
+
+      // Any additional CSS classes you'd like to apply to the boundary.
+      // This is useful for styling the boundary in your own way.
+      class: "",
+    })
+  ],
+});`;
+
+  return <CodeBlock code={code} />;
 }
 
 let highlighterPromise = createHighlighterCore({
