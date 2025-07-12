@@ -2,10 +2,11 @@
 
 blog post todo:
 
-- default to line tear
-- add minSegmentWidth to playground
+- knob color should match bar
+- better descriptions for vars
+- get rid of dashed
+- absolute preview
 - up max stroke width range
-- style playground text / values
 - add config to playground
 - test ios / use 2nd context
 

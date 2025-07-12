@@ -15,15 +15,15 @@ export type Options = {
 const TOKEN = "// [!client-boundary]";
 
 export const defaults: Required<Options> = {
-  color: "hsla(210, 5%, 33%, 1)",
-  class: "",
-  segments: 50,
-  height: 14,
+  color: "hsla(0, 0%, 100%, 1)",
+  segments: 40,
+  height: 20,
   minSegmentWidth: 12,
-  strokeWidth: 2.5,
+  strokeWidth: 9,
   strokeDasharray: "none",
-  peakSmoothness: 0.7,
+  peakSmoothness: 0,
   verticalPadding: 4,
+  class: "",
 };
 
 export function transformerClientComponentBoundary(

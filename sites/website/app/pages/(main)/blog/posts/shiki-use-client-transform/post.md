@@ -25,6 +25,8 @@ The boundary is fully themeable and can be customized to fit your design. Here a
 
 In the next section we'll go over how to install, use, and customize the boundary.
 
+{% /playground-provider %}
+
 ## Usage
 
 Install the package using:
@@ -96,10 +98,10 @@ The styling of the boundary can be customized to fit your design needs. The tran
 
 Try adjusting the parameters above to see how they affect the appearance of the boundary.
 
+{% playground-provider %}
 {% playground /%}
+{% /playground-provider %}
 
 ## Notes
 
 Some code formatters, like Prettier, may automatically reformat the `"use client"` directive to `("use client")` if it's not at the top of the file. You can add `// prettier-ignore` before the directive to prevent this behavior.
-
-{% /playground-provider %}

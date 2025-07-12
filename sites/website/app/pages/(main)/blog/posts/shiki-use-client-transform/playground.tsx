@@ -35,11 +35,6 @@ const ThemeContext = createContext<{
 const configs: Record<string, Options> = {
   lineTear: {
     ...defaults,
-    peakSmoothness: 0,
-    segments: 40,
-    height: 20,
-    strokeWidth: 8,
-    color: "hsla(0, 0%, 100%, 1)",
     class: "-mx-4",
   },
   dashed: {
@@ -55,6 +50,12 @@ const configs: Record<string, Options> = {
   },
   sineWave: {
     ...defaults,
+    color: "hsla(210, 5%, 33%, 1)",
+    height: 14,
+    segments: 50,
+    minSegmentWidth: 8,
+    strokeWidth: 2.5,
+    peakSmoothness: 0.7,
     verticalPadding: 7,
     class: "-mx-4",
   },
@@ -147,26 +148,26 @@ export function BasicExample() {
 }
 
 export function Presets() {
-  const { setPreset, selectedPreset } = use(ThemeContext);
+  const { setPreset } = use(ThemeContext);
 
   return (
-    <div className="not-prose flex items-center gap-4">
+    <div className="not-prose flex items-center gap-2.5 sm:gap-3">
       <button
-        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
+        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500 sm:px-3 sm:text-sm"
         onClick={() => setPreset("line-tear")}
       >
         Line tear
       </button>
 
       <button
-        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
+        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500 sm:px-3 sm:text-sm"
         onClick={() => setPreset("dashed")}
       >
-        Dashed line
+        Dashed
       </button>
 
       <button
-        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
+        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500 sm:px-3 sm:text-sm"
         onClick={() => setPreset("sine-wave")}
       >
         Sine wave
@@ -176,152 +177,313 @@ export function Presets() {
 }
 
 export function Playground() {
-  let { options, updateOptions } = use(ThemeContext);
+  let { setPreset, options, updateOptions } = use(ThemeContext);
+
+  let code = dedent`
+    import { ClientComponent } from "./client-component";
+
+    export function ServerComponent() {
+      return (
+        <div>
+          <h1>Server Component</h1>
+          <ClientComponent />
+        </div>
+      );
+    }
+
+    // [!client-boundary]
+
+    "use client";
+
+    import { useState } from "react";
+
+    export function ClientComponent() {
+      const [count, setCount] = useState(0);
+
+      return (
+        <div>
+          <p>Client Component count: {count}</p>
+
+          <button onClick={() => setCount((c) => c + 1)}>
+            Increment
+          </button>
+        </div>
+      );
+    }
+  `;
 
   return (
-    <div className="not-prose my-6">
-      <div className="space-y-5 sm:space-y-3">
-        <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-          <div className="sm:w-1/2">
-            <label className="block font-medium">Color</label>
-            <p className="text-sm text-gray-500">
-              The color of the line. You can use any valid CSS color value.
-            </p>
-          </div>
-          <div className="sm:w-1/2">
-            <div className="flex w-full items-center space-x-2 sm:mt-1">
-              <ColorPicker
-                value={options.color ?? defaults.color}
-                onChange={(color) => {
-                  updateOptions({
-                    color,
-                  });
-                }}
-              />
-              <div className="font-mono text-xs">{options.color}</div>
+    <div className="not-prose my-16 xl:-mx-48 xl:flex xl:space-x-14">
+      <div className="space-y-5 xl:w-1/2">
+        <div>
+          <label className="block font-medium">Preset styles</label>
+          <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
+            <div className="sm:w-1/2">
+              <p className="text-sm text-gray-500">
+                Quickly style the client component boundary with a preset style.
+              </p>
+            </div>
+            <div className="sm:w-1/2">
+              <div className="flex items-center justify-end gap-2.5">
+                <button
+                  className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500"
+                  onClick={() => setPreset("line-tear")}
+                >
+                  Tear
+                </button>
+
+                <button
+                  className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500"
+                  onClick={() => setPreset("dashed")}
+                >
+                  Dashed
+                </button>
+
+                <button
+                  className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500"
+                  onClick={() => setPreset("sine-wave")}
+                >
+                  Wave
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <label>Segments</label>
-        <div className="flex w-full items-center justify-center">
-          <input
-            type="range"
-            min="2"
-            max="80"
-            step="2"
-            value={options.segments}
-            onChange={(e) =>
-              updateOptions({
-                segments: Number(e.target.value),
-              })
-            }
-            className="range-slider"
-            style={{
-              background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.segments) - 2) / (80 - 2)) * 100}%, #e5e7eb ${((Number(options.segments) - 2) / (80 - 2)) * 100}%, #e5e7eb 100%)`,
-            }}
-          />
-        </div>
         <div>
-          <div>{options.segments}</div>
+          <label className="block font-medium">Color</label>
+          <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
+            <div className="sm:w-1/2">
+              <p className="text-sm text-gray-500">
+                The color of the line. You can use any valid CSS color value.
+              </p>
+            </div>
+            <div className="w-1/2">
+              <div className="flex w-full items-center space-x-2 sm:justify-end">
+                <div className="font-mono text-xs">{options.color}</div>
+                <ColorPicker
+                  value={options.color ?? defaults.color}
+                  onChange={(color) => {
+                    updateOptions({
+                      color,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <label>Height</label>
-        <div className="flex w-full items-center justify-center">
-          <input
-            type="range"
-            min="2"
-            max="36"
-            step="1"
-            value={options.height}
-            onChange={(e) =>
-              updateOptions({
-                height: Number(e.target.value),
-              })
-            }
-            className="range-slider"
-            style={{
-              background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.height) - 2) / (36 - 2)) * 100}%, #e5e7eb ${((Number(options.height) - 2) / (36 - 2)) * 100}%, #e5e7eb 100%)`,
-            }}
-          />
-        </div>
         <div>
-          <div>{options.height}</div>
+          <label className="block font-medium">Segments</label>
+          <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
+            <div className="sm:w-1/2">
+              <p className="text-sm text-gray-500">
+                The number of segments in the line.
+              </p>
+            </div>
+            <div className="sm:w-1/2">
+              <div className="flex w-full items-center space-x-2">
+                <input
+                  type="range"
+                  min="2"
+                  max="80"
+                  step="2"
+                  value={options.segments}
+                  onChange={(e) =>
+                    updateOptions({
+                      segments: Number(e.target.value),
+                    })
+                  }
+                  className="range-slider"
+                  style={{
+                    background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.segments) - 2) / (80 - 2)) * 100}%, #e5e7eb ${((Number(options.segments) - 2) / (80 - 2)) * 100}%, #e5e7eb 100%)`,
+                  }}
+                />
+
+                <div className="min-w-[30px] text-right font-mono text-sm">
+                  {options.segments}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <label>Stroke width</label>
-        <div className="flex w-full items-center justify-center">
-          <input
-            type="range"
-            min="1"
-            max="8.0"
-            step="0.5"
-            value={options.strokeWidth}
-            onChange={(e) =>
-              updateOptions({
-                strokeWidth: Number(e.target.value),
-              })
-            }
-            className="range-slider"
-            style={{
-              background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.strokeWidth) - 1) / (8 - 1)) * 100}%, #e5e7eb ${((Number(options.strokeWidth) - 1) / (8 - 1)) * 100}%, #e5e7eb 100%)`,
-            }}
-          />
-        </div>
         <div>
-          <div>{options.strokeWidth}</div>
+          <label className="block font-medium">Minimum segment width</label>
+          <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
+            <div className="sm:w-1/2">
+              <p className="text-sm text-gray-500">
+                The minimum width of each segment in the line.
+              </p>
+            </div>
+            <div className="sm:w-1/2">
+              <div className="flex w-full items-center space-x-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="16"
+                  step="1"
+                  value={options.minSegmentWidth}
+                  onChange={(e) =>
+                    updateOptions({
+                      minSegmentWidth: Number(e.target.value),
+                    })
+                  }
+                  className="range-slider"
+                  style={{
+                    background: `linear-gradient(to right, #2563eb 0%, #2563eb ${(Number(options.minSegmentWidth) / 16) * 100}%, #e5e7eb ${(Number(options.minSegmentWidth) / 16) * 100}%, #e5e7eb 100%)`,
+                  }}
+                />
+
+                <div className="min-w-[30px] text-right font-mono text-sm">
+                  {options.minSegmentWidth}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <label>Peak smoothness</label>
-        <div className="flex w-full items-center justify-center">
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={options.peakSmoothness}
-            onChange={(e) =>
-              updateOptions({
-                peakSmoothness: Number(e.target.value),
-              })
-            }
-            className="range-slider"
-            style={{
-              background: `linear-gradient(to right, #2563eb 0%, #2563eb ${Number(options.peakSmoothness) * 100}%, #e5e7eb ${Number(options.peakSmoothness) * 100}%, #e5e7eb 100%)`,
-            }}
-          />
-        </div>
         <div>
-          <div>{options.peakSmoothness}</div>
+          <label className="block font-medium">Height</label>
+          <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
+            <div className="sm:w-1/2">
+              <p className="text-sm text-gray-500">
+                The height of the line in pixels.
+              </p>
+            </div>
+            <div className="sm:w-1/2">
+              <div className="flex w-full items-center space-x-2">
+                <input
+                  type="range"
+                  min="2"
+                  max="36"
+                  step="1"
+                  value={options.height}
+                  onChange={(e) =>
+                    updateOptions({
+                      height: Number(e.target.value),
+                    })
+                  }
+                  className="range-slider"
+                  style={{
+                    background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.height) - 2) / (36 - 2)) * 100}%, #e5e7eb ${((Number(options.height) - 2) / (36 - 2)) * 100}%, #e5e7eb 100%)`,
+                  }}
+                />
+
+                <div className="min-w-[30px] text-right font-mono text-sm">
+                  {options.height}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <label>Vertical padding</label>
-        <div className="flex w-full items-center justify-center">
-          <input
-            type="range"
-            min="0"
-            max="16"
-            step="1"
-            value={options.verticalPadding}
-            onChange={(e) =>
-              updateOptions({
-                verticalPadding: Number(e.target.value),
-              })
-            }
-            className="range-slider"
-            style={{
-              background: `linear-gradient(to right, #2563eb 0%, #2563eb ${(Number(options.verticalPadding) / 16) * 100}%, #e5e7eb ${(Number(options.verticalPadding) / 16) * 100}%, #e5e7eb 100%)`,
-            }}
-          />
-        </div>
         <div>
-          <div>{options.verticalPadding}</div>
+          <label className="block font-medium">Stroke width</label>
+          <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
+            <div className="sm:w-1/2">
+              <p className="text-sm text-gray-500">
+                The width of the line stroke in pixels.
+              </p>
+            </div>
+            <div className="sm:w-1/2">
+              <div className="flex w-full items-center space-x-2">
+                <input
+                  type="range"
+                  min="1"
+                  max="8.0"
+                  step="0.5"
+                  value={options.strokeWidth}
+                  onChange={(e) =>
+                    updateOptions({
+                      strokeWidth: Number(e.target.value),
+                    })
+                  }
+                  className="range-slider"
+                  style={{
+                    background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.strokeWidth) - 1) / (8 - 1.0)) * 100}%, #e5e7eb ${((Number(options.strokeWidth) - 1) / (8 - 1.0)) * 100}%, #e5e7eb 100%)`,
+                  }}
+                />
+                <div className="min-w-[30px] text-right font-mono text-sm">
+                  {options.strokeWidth?.toFixed(1)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block font-medium">Peak smoothness</label>
+          <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
+            <div className="sm:w-1/2">
+              <p className="text-sm text-gray-500">
+                The smoothness of the peak in the waveform.
+              </p>
+            </div>
+            <div className="sm:w-1/2">
+              <div className="flex w-full items-center space-x-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={options.peakSmoothness}
+                  onChange={(e) =>
+                    updateOptions({
+                      peakSmoothness: Number(e.target.value),
+                    })
+                  }
+                  className="range-slider"
+                  style={{
+                    background: `linear-gradient(to right, #2563eb 0%, #2563eb ${Number(options.peakSmoothness) * 100}%, #e5e7eb ${Number(options.peakSmoothness) * 100}%, #e5e7eb 100%)`,
+                  }}
+                />
+                <div className="min-w-[30px] text-right font-mono text-sm">
+                  {options.peakSmoothness?.toFixed(1)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block font-medium">Vertical padding</label>
+          <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-32 xl:space-x-10">
+            <div className="sm:w-1/2">
+              <p className="text-sm text-gray-500">
+                Breathing room around the line.
+              </p>
+            </div>
+            <div className="sm:w-1/2">
+              <div className="flex w-full items-center space-x-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="16"
+                  step="1"
+                  value={options.verticalPadding}
+                  onChange={(e) =>
+                    updateOptions({
+                      verticalPadding: Number(e.target.value),
+                    })
+                  }
+                  className="range-slider"
+                  style={{
+                    background: `linear-gradient(to right, #2563eb 0%, #2563eb ${(Number(options.verticalPadding) / 16) * 100}%, #e5e7eb ${(Number(options.verticalPadding) / 16) * 100}%, #e5e7eb 100%)`,
+                  }}
+                />
+                <div className="min-w-[30px] text-right font-mono text-sm">
+                  {options.verticalPadding}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="mt-6">
-        <Presets />
+      <div className="mt-8 xl:mt-0 xl:w-1/2">
+        <CodeBlock code={code} />
       </div>
-      <BasicExample />
     </div>
   );
 }
@@ -345,7 +507,7 @@ function CodeBlock({ code }: { code: string }) {
   return (
     <div
       className={clsx(
-        "not-prose my-6",
+        "not-prose",
         "overflow-x-scroll bg-[#24292e] text-sm font-medium [&_pre]:text-[13px] [&_pre]:leading-[1.7] [&_pre]:subpixel-antialiased",
         "rounded-md",
       )}
