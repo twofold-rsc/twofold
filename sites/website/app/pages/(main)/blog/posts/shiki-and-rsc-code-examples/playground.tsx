@@ -14,10 +14,10 @@ import {
 import clsx from "clsx";
 import dedent from "dedent";
 import {
-  transformerClientComponentBoundary,
+  transformerClientBoundary,
   Options,
   defaults,
-} from "@lib/transformer-client-component-boundary";
+} from "@twofold/shiki-transformer-client-boundary";
 import { ColorPicker } from "./color-picker";
 
 const ThemeContext = createContext<{
@@ -26,7 +26,9 @@ const ThemeContext = createContext<{
   setPreset: (preset: string) => void;
   selectedPreset?: string;
 }>({
-  options: {},
+  options: {
+    class: "-mx-4",
+  },
   updateOptions: () => {},
   setPreset: () => {},
   selectedPreset: "default",
@@ -41,8 +43,8 @@ const configs: Record<string, Options> = {
     ...defaults,
     color: "hsla(210, 5%, 33%, 1)",
     height: 14,
-    segments: 50,
-    minSegmentWidth: 8,
+    segments: 40,
+    minSegmentWidth: 10,
     strokeWidth: 2.5,
     peakSmoothness: 0.7,
     verticalPadding: 7,
@@ -198,7 +200,7 @@ export function Playground() {
   `;
 
   return (
-    <div className="not-prose my-8 xl:-mx-48 xl:mt-16 xl:mb-24 xl:flex xl:space-x-14">
+    <div className="not-prose mt-8 mb-6 xl:-mx-48 xl:mt-16 xl:mb-22 xl:flex xl:space-x-14">
       <div className="space-y-5 xl:mt-2 xl:w-1/2 xl:space-y-6.5">
         <div>
           <label className="block font-medium">Preset styles</label>
@@ -209,7 +211,7 @@ export function Playground() {
               </p>
             </div>
             <div className="sm:w-1/2">
-              <div className="flex items-center justify-end gap-2.5">
+              <div className="flex items-center gap-2.5 sm:justify-end">
                 <button
                   className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500"
                   onClick={() => setPreset("line-tear")}
@@ -236,17 +238,21 @@ export function Playground() {
                 The color of the line. You can use any valid CSS color value.
               </p>
             </div>
-            <div className="w-1/2">
+            <div className="sm:w-1/2">
               <div className="flex w-full items-center space-x-2 sm:justify-end">
-                <div className="font-mono text-xs">{options.color}</div>
-                <ColorPicker
-                  value={options.color ?? defaults.color}
-                  onChange={(color) => {
-                    updateOptions({
-                      color,
-                    });
-                  }}
-                />
+                <div className="order-2 ml-2 font-mono text-xs sm:order-1 sm:ml-0">
+                  {options.color}
+                </div>
+                <div className="order-1 sm:order-2">
+                  <ColorPicker
+                    value={options.color ?? defaults.color}
+                    onChange={(color) => {
+                      updateOptions({
+                        color,
+                      });
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -265,7 +271,7 @@ export function Playground() {
                 <input
                   type="range"
                   min="2"
-                  max="80"
+                  max="42"
                   step="2"
                   value={options.segments}
                   onChange={(e) =>
@@ -275,7 +281,7 @@ export function Playground() {
                   }
                   className="range-slider"
                   style={{
-                    background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.segments) - 2) / (80 - 2)) * 100}%, #e5e7eb ${((Number(options.segments) - 2) / (80 - 2)) * 100}%, #e5e7eb 100%)`,
+                    background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.segments) - 2) / (42 - 2)) * 100}%, #e5e7eb ${((Number(options.segments) - 2) / (42 - 2)) * 100}%, #e5e7eb 100%)`,
                   }}
                 />
 
@@ -370,7 +376,7 @@ export function Playground() {
                 <input
                   type="range"
                   min="1"
-                  max="8.0"
+                  max="12"
                   step="0.5"
                   value={options.strokeWidth}
                   onChange={(e) =>
@@ -380,7 +386,7 @@ export function Playground() {
                   }
                   className="range-slider"
                   style={{
-                    background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.strokeWidth) - 1) / (8 - 1.0)) * 100}%, #e5e7eb ${((Number(options.strokeWidth) - 1) / (8 - 1.0)) * 100}%, #e5e7eb 100%)`,
+                    background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((Number(options.strokeWidth) - 1) / (12 - 1.0)) * 100}%, #e5e7eb ${((Number(options.strokeWidth) - 1) / (12 - 1.0)) * 100}%, #e5e7eb 100%)`,
                   }}
                 />
                 <div className="min-w-[30px] text-right font-mono text-sm">
@@ -505,13 +511,13 @@ function CodeBlock({ code }: { code: string }) {
   let result = highlighter.codeToHtml(code, {
     lang: "jsx",
     theme: "github-dark",
-    transformers: [transformerClientComponentBoundary(options)],
+    transformers: [transformerClientBoundary(options)],
   });
 
   return (
     <div
       className={clsx(
-        "not-prose",
+        "not-prose -mx-3 sm:mx-0",
         "overflow-x-scroll bg-[#24292e] text-sm font-medium [&_pre]:text-[13px] [&_pre]:leading-[1.7] [&_pre]:subpixel-antialiased",
         "rounded-md",
       )}

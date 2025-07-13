@@ -26,7 +26,7 @@ export const defaults: Required<Options> = {
   class: "",
 };
 
-export function transformerClientComponentBoundary(
+export function transformerClientBoundary(
   options: Options = {},
 ): ShikiTransformer {
   let mergedOptions: Required<Options> = {

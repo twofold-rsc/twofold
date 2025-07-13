@@ -2,20 +2,17 @@
 
 blog post todo:
 
-- readjust all slider params in playground
-- firefox
-- safari
-- test ios
-
-- put package in monorepo
-- make sure other blog posts still work
 - publish to npm
-- test cases / vitest
 - build test app
 
 - og image
 - page speed on blog post (i think were missing meta description)
 - setup search console
+
+- mobile styling for default not found page
+- docs and blog should use same gutter spacing (i like docs version)
+- docs code examples should mobile overflow
+- hmr w/ client component + css (not loading at same time, client hmr/loads before css)
 
 - add gzip/brotli support to the build
 - run posts through page speed

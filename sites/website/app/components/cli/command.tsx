@@ -11,15 +11,19 @@ export function CLICommand({
   tools,
   selectable,
   shadow = true,
+  mobileOverflow = false,
 }: {
   tools: { command: string; name: string }[];
   selectable?: boolean;
   shadow?: boolean;
+  mobileOverflow?: boolean;
 }) {
   let { command, setCommand } = use(Context);
 
   return (
-    <div className="not-prose my-6">
+    <div
+      className={clsx("not-prose my-6", mobileOverflow ? "-mx-3 sm:mx-0" : "")}
+    >
       <Tabs.Root value={command} onValueChange={setCommand} className="w-full">
         {selectable && (
           <Tabs.List className="pb-[2px]">

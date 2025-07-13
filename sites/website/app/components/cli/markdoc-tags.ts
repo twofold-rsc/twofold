@@ -15,6 +15,11 @@ export const CLIMarkdocTags: Record<string, Schema> = {
         default: true,
         required: false,
       },
+      mobileOverflow: {
+        type: Boolean,
+        default: false,
+        required: false,
+      },
     },
     transform(node, config) {
       const attributes = node.transformAttributes(config);

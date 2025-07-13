@@ -438,6 +438,31 @@ importers:
         specifier: ^3.0.9
         version: 3.0.9(@types/node@22.10.2)(jiti@2.4.2)(lightningcss@1.29.1)(terser@5.39.0)(yaml@2.6.0)
 
+  packages/shiki-transformer-client-boundary:
+    dependencies:
+      esbuild:
+        specifier: 0.25.0
+        version: 0.25.0
+      shiki:
+        specifier: '*'
+        version: 3.7.0
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.10.2
+      dedent:
+        specifier: ^1.5.3
+        version: 1.5.3
+      prettier:
+        specifier: ^3.5.3
+        version: 3.5.3
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.2
+      vitest:
+        specifier: ^3.0.9
+        version: 3.0.9(@types/node@22.10.2)(jiti@2.4.2)(lightningcss@1.29.1)(terser@5.39.0)(yaml@2.6.0)
+
   sites/website:
     dependencies:
       '@headlessui/react':
@@ -467,6 +492,9 @@ importers:
       '@twofold/framework':
         specifier: workspace:*
         version: link:../../packages/framework
+      '@twofold/shiki-transformer-client-boundary':
+        specifier: workspace:*
+        version: link:../../packages/shiki-transformer-client-boundary
       '@uiw/react-color':
         specifier: ^2.6.0
         version: 2.6.0(@babel/runtime@7.23.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)

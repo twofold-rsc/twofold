@@ -5,7 +5,7 @@ import {
   transformerNotationHighlight,
 } from "@shikijs/transformers";
 import clsx from "clsx";
-import { transformerClientComponentBoundary } from "@lib/transformer-client-component-boundary";
+import { transformerClientBoundary } from "@twofold/shiki-transformer-client-boundary";
 
 export async function Fence({
   children,
@@ -31,7 +31,7 @@ export async function Fence({
       transformerNotationFocus(),
       transformerRemoveLine(),
       isClientBoundaryEnabled
-        ? transformerClientComponentBoundary({
+        ? transformerClientBoundary({
             color: "currentColor",
             segments: 50,
             height: 12,

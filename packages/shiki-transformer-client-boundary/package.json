@@ -1,0 +1,33 @@
+{
+  "name": "@twofold/shiki-transformer-client-boundary",
+  "version": "0.0.1",
+  "description": "A Shiki transformer for rendering a boundary between Server and Client Components in code examples",
+  "type": "module",
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "compile": "node compile.js && tsc --emitDeclarationOnly --declaration --outDir ./dist",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "Ryan Toronto",
+  "license": "ISC",
+  "peerDependencies": {
+    "shiki": "*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "dedent": "^1.5.3",
+    "prettier": "^3.5.3",
+    "typescript": "catalog:",
+    "vitest": "^3.0.9"
+  },
+  "dependencies": {
+    "esbuild": "0.25.0"
+  }
+}
