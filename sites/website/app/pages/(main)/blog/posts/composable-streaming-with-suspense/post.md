@@ -154,7 +154,10 @@ async function CurrentUsersListbox() {
   return <ModelsListbox models={models} />;
 }
 
-// ![client-component-boundary]
+// [!client-boundary]
+
+// prettier-ignore
+"use client";
 
 import {
   Listbox,
@@ -224,7 +227,10 @@ async function CurrentUsersOptions() {
   return <ModelsOptions models={models} />;
 }
 
-// ![client-component-boundary]
+// [!client-boundary]
+
+// prettier-ignore
+"use client";
 
 import {
   Listbox,

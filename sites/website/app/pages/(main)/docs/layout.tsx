@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { DocLink } from "./components/doc-link";
-import { CLIRoot } from "./components/cli/root";
 
 export default function DocsLayout({ children }: { children: ReactNode }) {
   return (
@@ -112,7 +111,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
         </ul>
       </div>
 
-      <CLIRoot>{children}</CLIRoot>
+      {children}
     </div>
   );
 }

@@ -1,11 +1,11 @@
-import { codeToHtml } from "shiki";
+import { codeToHtml, ShikiTransformer } from "shiki";
 import {
   transformerNotationDiff,
   transformerNotationFocus,
   transformerNotationHighlight,
 } from "@shikijs/transformers";
 import clsx from "clsx";
-import { transformerClientComponentBoundary } from "@lib/transformer-client-component-boundary";
+import { transformerClientBoundary } from "@/lib/shiki-transformer-client-boundary";
 
 export async function Fence({
   children,
@@ -27,7 +27,14 @@ export async function Fence({
       transformerNotationDiff(),
       transformerNotationHighlight(),
       transformerNotationFocus(),
-      transformerClientComponentBoundary({
+      transformerClientBoundary({
+        color: "currentColor",
+        segments: 50,
+        height: 12,
+        minSegmentWidth: 8,
+        strokeWidth: 2.5,
+        peakSmoothness: 0.7,
+        verticalPadding: 8,
         class: "-mx-4 text-slate-50/20",
       }),
     ],
@@ -53,7 +60,6 @@ export async function Fence({
       >
         <div className="relative inline-block w-max min-w-full p-4">
           <div dangerouslySetInnerHTML={{ __html: result }} className="" />
-          {/* <div className="pointer-events-none absolute inset-0 rounded-md ring ring-white/20 ring-inset" /> */}
         </div>
       </div>
     </div>

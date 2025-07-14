@@ -9,6 +9,7 @@ import slugify from "@sindresorhus/slugify";
 import * as PromisePost from "../posts/you-can-serialize-a-promise-in-react/components";
 import * as StreamingPost from "../posts/composable-streaming-with-suspense/components";
 import { getTitle } from "../../../../markdoc/utils";
+import { CLIMarkdocTags } from "../../../../components/cli/markdoc-tags";
 
 export const getPostSlugs = cache(async () => {
   let directoryPath = path.join(
@@ -82,7 +83,8 @@ export const loadComponents = cache(async (slug: string) => {
     notFound();
   }
 
-  let map: Record<string, Record<string, ComponentType<never>>> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let map: Record<string, Record<string, ComponentType<any>>> = {
     "you-can-serialize-a-promise-in-react": PromisePost.components,
     "composable-streaming-with-suspense": StreamingPost.components,
   };
@@ -130,6 +132,12 @@ export const loadContent = cache(async (slug: string) => {
   let config: Config = {
     tags: {
       ...tags,
+      ...CLIMarkdocTags,
+      "standout-comment": {
+        render: "StandoutComment",
+        inline: true,
+        children: [],
+      },
       footnote: {
         render: "Footnote",
         attributes: {

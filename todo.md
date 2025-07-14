@@ -1,6 +1,15 @@
 # TODO
 
-- bug: website not running eslint correct (effect deps didnt work)
+- mobile styling for default not found page
+- docs and blog should use same gutter spacing (i like docs version)
+- docs code examples should mobile overflow
+- hmr w/ client component + css (not loading at same time, client hmr/loads before css)
+
+- add gzip/brotli support to the build
+- run posts through page speed
+- minify css
+
+- safari looks for /apple-touch-icon-precomposed.png, /apple-touch-icon.png
 
 - run routes in parallel
 - add cache support to the build, explore rolldown
