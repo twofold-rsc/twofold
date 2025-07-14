@@ -1,11 +1,5 @@
 # TODO
 
-blog post todo:
-
-- trim token (publish to npm)
-- add styling with tailwind note
-- proof read blog post
-
 - mobile styling for default not found page
 - docs and blog should use same gutter spacing (i like docs version)
 - docs code examples should mobile overflow

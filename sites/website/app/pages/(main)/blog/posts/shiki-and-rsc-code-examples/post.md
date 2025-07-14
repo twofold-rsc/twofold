@@ -13,17 +13,17 @@ Here's a [Shiki](https://shiki.style/) transformer that lets you do exactly that
 
 {% opening-example /%}
 
-This code block uses `@twofold/shiki-transformer-client-boundary` to draw a boundary between the Server and Client Components.
+This code block uses `@twofold/shiki-transformer-client-boundary` to draw a boundary between Server and Client Components.
 
-I first came across this design pattern in Dan Abramov's blog, [overreacted.io](https://overreacted.io/). He'll occasionally use a similar design in his posts {% footnote id=1 %}Check out Dan's excellent [Impossible components](https://overreacted.io/impossible-components/) post for an example.{% /footnote %}.
-
-A feature of this boundary is that it's fully themeable and can be customized to fit any design. Here are a few examples:
+The boundary is themeable and customizable to fit any design. Here are a few examples:
 
 {% presets /%}
 
 {% basic-example /%}
 
-In this post we'll cover how to install, use, and style the boundary for your blog or docs site.
+I first came across this design pattern in Dan Abramov's blog, [overreacted.io](https://overreacted.io/). He'll occasionally use a similar design in his posts {% footnote id=1 %}Check out Dan's excellent [Impossible components](https://overreacted.io/impossible-components/) post for an example.{% /footnote %}.
+
+The rest of this post will cover how to install, use, and style the boundary for your blog or docs site.
 
 {% /playground-provider %}
 
@@ -104,5 +104,14 @@ Thanks for reading! If you use this plugin or have any questions about it feel f
 ## Notes
 
 - Some code formatters, like Prettier, may automatically reformat the `"use client"` directive to `("use client")` if it's not at the top of the file. You can add `// prettier-ignore` before the directive to prevent this behavior.
+
+- If you're using Tailwind you can use `currentColor` and a class name to color the boundary.
+
+  ```js
+  transformerClientBoundary({
+    color: "currentColor",
+    class: "text-slate-300",
+  });
+  ```
 
 - Server and Client Components were explicitly designed to live in separate modules, so combining them in the same code block sort of violates that principle. I find this plugin works well for small examples, but for large examples it's probably best to keep your Server components and Client components in separate code blocks.
