@@ -5,14 +5,13 @@ import {
   transformerNotationHighlight,
 } from "@shikijs/transformers";
 import clsx from "clsx";
-import { transformerClientBoundary } from "@twofold/shiki-transformer-client-boundary";
+import { transformerClientBoundary } from "@/lib/shiki-transformer-client-boundary";
 
 export async function Fence({
   children,
   language,
   file,
   demo,
-  isClientBoundaryEnabled = true,
 }: {
   children: string;
   language: string;
@@ -29,20 +28,17 @@ export async function Fence({
       transformerNotationDiff(),
       transformerNotationHighlight(),
       transformerNotationFocus(),
-      transformerRemoveLine(),
-      isClientBoundaryEnabled
-        ? transformerClientBoundary({
-            color: "currentColor",
-            segments: 50,
-            height: 12,
-            minSegmentWidth: 8,
-            strokeWidth: 2.5,
-            peakSmoothness: 0.7,
-            verticalPadding: 8,
-            class: "-mx-4 text-slate-50/20",
-          })
-        : undefined,
-    ].filter((t) => t !== undefined),
+      transformerClientBoundary({
+        color: "currentColor",
+        segments: 50,
+        height: 12,
+        minSegmentWidth: 8,
+        strokeWidth: 2.5,
+        peakSmoothness: 0.7,
+        verticalPadding: 8,
+        class: "-mx-4 text-slate-50/20",
+      }),
+    ],
   });
 
   return (
@@ -69,34 +65,4 @@ export async function Fence({
       </div>
     </div>
   );
-}
-
-function transformerRemoveLine(): ShikiTransformer {
-  return {
-    name: "shiki-transformer-remove-line",
-
-    preprocess(code) {
-      let lines = code.split("\n");
-      let out: string[] = [];
-      let ignoreNextLine = false;
-
-      for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
-
-        let isRemoveToken = line.trim() === "// [!remove]";
-        ignoreNextLine = ignoreNextLine || isRemoveToken;
-        let ignoreThisLine = isRemoveToken || ignoreNextLine;
-
-        if (!ignoreThisLine) {
-          out.push(line);
-        }
-
-        if (ignoreNextLine && !isRemoveToken) {
-          ignoreNextLine = false;
-        }
-      }
-
-      return out.join("\n");
-    },
-  };
 }

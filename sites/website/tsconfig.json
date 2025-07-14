@@ -9,7 +9,7 @@
     "target": "ESNext",
     "types": ["react", "react-dom", "node", "@twofold/framework"],
     "paths": {
-      "@lib/*": ["./lib/*"]
+      "@/lib/*": ["./lib/*"]
     }
   },
   "include": ["./app/", "./lib/"]
