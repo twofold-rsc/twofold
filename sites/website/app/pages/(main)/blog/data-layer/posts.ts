@@ -91,9 +91,7 @@ export const loadComponents = cache(async (slug: string) => {
 
   let components = map[slug] ?? {};
 
-  return {
-    ...components,
-  };
+  return components;
 });
 
 export const loadTags = cache(async (slug: string) => {
@@ -213,10 +211,6 @@ let fence: Schema = {
     },
     demo: {
       type: Boolean,
-    },
-    isClientBoundaryEnabled: {
-      type: Boolean,
-      default: true,
     },
   },
 };
