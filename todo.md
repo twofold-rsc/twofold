@@ -1,9 +1,5 @@
 # TODO
 
-- close pr
-- create new branch
-- remove things we dont want to merge
-
 - mobile styling for default not found page
 - docs and blog should use same gutter spacing (i like docs version)
 - docs code examples should mobile overflow
