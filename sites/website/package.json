@@ -24,7 +24,6 @@
     "@sindresorhus/slugify": "^2.2.1",
     "@tailwindcss/typography": "^0.5.16",
     "@twofold/framework": "workspace:*",
-    "@twofold/shiki-transformer-client-boundary": "workspace:*",
     "@uiw/react-color": "^2.6.0",
     "clsx": "^2.1.1",
     "dedent": "^1.5.3",
