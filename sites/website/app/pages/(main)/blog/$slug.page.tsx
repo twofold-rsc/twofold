@@ -26,6 +26,8 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
   return (
     <>
       <title>{title}</title>
+      <meta name="description" content={meta.description} />
+
       <meta property="og:title" content={title} />
       <meta property="og:description" content={meta.description} />
       <meta property="og:image" content={ogImageUrl.href} />

@@ -1,6 +1,6 @@
 {
   "name": "@twofold/shiki-transformer-client-boundary",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Shiki transformer for rendering a boundary between Server and Client Components in code examples",
   "type": "module",
   "main": "./dist/index.js",

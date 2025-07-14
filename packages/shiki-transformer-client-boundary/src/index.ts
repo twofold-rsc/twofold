@@ -73,7 +73,7 @@ export function transformerClientBoundary(
         node.children[0].type === "element" &&
         node.children[0].children.length === 1 &&
         node.children[0].children[0].type === "text" &&
-        node.children[0].children[0].value === TOKEN
+        node.children[0].children[0].value.trim() === TOKEN
       ) {
         node.type = "element";
         node.tagName = "div";

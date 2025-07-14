@@ -2,12 +2,9 @@
 
 blog post todo:
 
-- publish to npm
-- build test app
-
-- og image
-- page speed on blog post (i think were missing meta description)
-- setup search console
+- trim token (publish to npm)
+- add styling with tailwind note
+- proof read blog post
 
 - mobile styling for default not found page
 - docs and blog should use same gutter spacing (i like docs version)
@@ -16,6 +13,7 @@ blog post todo:
 
 - add gzip/brotli support to the build
 - run posts through page speed
+- minify css
 
 - safari looks for /apple-touch-icon-precomposed.png, /apple-touch-icon.png
 
