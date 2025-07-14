@@ -17,7 +17,6 @@ export async function Fence({
   language: string;
   file?: string;
   demo?: boolean;
-  isClientBoundaryEnabled?: boolean;
 }) {
   let result = await codeToHtml(children, {
     lang: language,
