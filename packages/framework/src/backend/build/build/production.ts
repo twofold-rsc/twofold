@@ -69,10 +69,10 @@ export class ProductionBuild extends Build {
         // appTime.log();
       }
 
-      let secondPassError =
+      let secondPhaseError =
         this.getBuilder("rsc").error || this.getBuilder("client").error;
 
-      if (!secondPassError) {
+      if (!secondPhaseError) {
         let assetsBuild = this.getBuilder("assets").build();
         let appTime = time("assets build");
         appTime.start();
