@@ -5,6 +5,7 @@ import { EntriesBuilder } from "../builders/entries-builder.js";
 import { time } from "../helpers/time.js";
 import { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import { Build } from "./build.js";
+import { AssetsBuilder } from "../builders/assets-builder.js";
 
 export class ProductionBuild extends Build {
   readonly name = "production";
@@ -28,12 +29,16 @@ export class ProductionBuild extends Build {
       build: this,
     });
     let staticFilesBuilder = new StaticFilesBuilder();
+    let assetsBuilder = new AssetsBuilder({
+      build: this,
+    });
 
     this.addBuilder(entriesBuilder);
     this.addBuilder(rscBuilder);
     this.addBuilder(clientAppBuilder);
     this.addBuilder(serverFilesBuilder);
     this.addBuilder(staticFilesBuilder);
+    this.addBuilder(assetsBuilder);
   }
 
   async build() {
@@ -60,6 +65,18 @@ export class ProductionBuild extends Build {
         let appTime = time("app build");
         appTime.start();
         await Promise.all([clientBuild, rscBuild]);
+        appTime.end();
+        // appTime.log();
+      }
+
+      let secondPassError =
+        this.getBuilder("rsc").error || this.getBuilder("client").error;
+
+      if (!secondPassError) {
+        let assetsBuild = this.getBuilder("assets").build();
+        let appTime = time("assets build");
+        appTime.start();
+        await assetsBuild;
         appTime.end();
         // appTime.log();
       }

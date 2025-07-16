@@ -88,7 +88,7 @@ export async function render({
           serverModuleMap: null,
           moduleLoading: null,
           // moduleLoading: {
-          //   prefix: "/_assets/client-app/",
+          //   prefix: "/__tf/assets/",
           // },
         },
       });
@@ -123,11 +123,11 @@ export async function render({
           // is cancelled on the react-server side
         } else {
           console.error(
-            `An unknown error occurred while SSR rendering: ${url.pathname}`,
+            `An unknown error occurred while SSR rendering: ${url.pathname}`
           );
         }
       },
-    },
+    }
   );
 
   return htmlStream;
