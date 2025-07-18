@@ -1,23 +1,29 @@
 # TODO
 
+- add gzip/brotli support to the build
+- reload css file
+- reload rsc
+- reload client component
+- hmr shared
+
 - mobile styling for default not found page
+
 - docs and blog should use same gutter spacing (i like docs version)
 - docs code examples should mobile overflow
 - run posts through page speed
 
-- add gzip/brotli support to the build
-- cdn builder
-- images
-- reload css file
-- reload rsc
-- reload client component
-- vary header
-
 - safari looks for /apple-touch-icon-precomposed.png, /apple-touch-icon.png
 
+- deploy website (from main) and test
+
+- release
+- fly example w/ assets
+
 - run routes in parallel
-- add cache support to the build, explore rolldown
 - error handling
+- add URL(request.url) to PageProps
+
+- add cache support to the build, explore rolldown
 
 - blog index seo
 - newsletter signup (after 3 posts)
@@ -26,8 +32,6 @@
 
 - rework build/startup
 - let externals plugin use the cache
-
-- add URL(request.url) to PageProps
 
 - Run through windows
 

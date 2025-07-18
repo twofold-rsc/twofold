@@ -78,7 +78,7 @@ export default function DevReload() {
 }
 
 function reloadChunkFile(chunkFile: string) {
-  return import(`/__tf/assets/${chunkFile}?v=${Date.now()}`);
+  return import(`/__tf/assets/chunks/${chunkFile}?v=${Date.now()}`);
 }
 
 function reloadClientComponent(chunkId: string) {
