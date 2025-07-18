@@ -144,7 +144,7 @@ export class ClientAppBuilder extends Builder {
           }),
           imagesPlugin({
             builder,
-            prefixPath: "/_assets/images",
+            prefixPath: "/__tf/assets/images",
           }),
           {
             name: "react-babel-transforms",
@@ -319,14 +319,6 @@ export class ClientAppBuilder extends Builder {
     return getCompiledEntrypoint(this.initializeBrowserPath, this.metafile);
   }
 
-  get bootstrapHash() {
-    let file = path.basename(this.bootstrapPath);
-    let nameWithoutExtension = file.split(".")[0] ?? file;
-    let parts = nameWithoutExtension.split("-");
-    let hash = parts.at(-1) ?? "";
-    return hash;
-  }
-
   get SSRAppPath() {
     return getCompiledEntrypoint(this.srcSSRAppPath, this.metafile);
   }
@@ -347,15 +339,19 @@ export class ClientAppBuilder extends Builder {
     let clientComponentModuleMap = new Map<
       string,
       {
-        path?: string;
+        path: string;
       }
     >();
 
-    for (let clientComponent of clientComponents) {
-      let { moduleId, path } = clientComponent;
-      clientComponentModuleMap.set(moduleId, {
-        path: outputMap.get(path)?.outputPath,
-      });
+    for (let clientComponentInput of clientComponents) {
+      let { moduleId, path } = clientComponentInput;
+      let clientComponentOutput = outputMap.get(path);
+
+      if (clientComponentOutput) {
+        clientComponentModuleMap.set(moduleId, {
+          path: clientComponentOutput.outputPath,
+        });
+      }
     }
 
     return Object.fromEntries(clientComponentModuleMap.entries());

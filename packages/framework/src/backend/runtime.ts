@@ -12,6 +12,7 @@ import {
   redirectErrorInfo,
 } from "./runtime/helpers/errors.js";
 import { randomUUID } from "node:crypto";
+import path from "node:path";
 import { deserializeError } from "serialize-error";
 import { ProductionBuild } from "./build/build/production.js";
 import { DevelopmentBuild } from "./build/build/development.js";
@@ -108,7 +109,7 @@ export class Runtime {
 
   async renderRSCStream(
     data: any,
-    options: { temporaryReferences?: unknown } = {},
+    options: { temporaryReferences?: unknown } = {}
   ) {
     let clientComponentMap = this.build.getBuilder("client").clientComponentMap;
     let streamError: unknown;
@@ -174,7 +175,7 @@ export class Runtime {
   async renderHtmlStreamFromRSCStream(
     rscStream: ReadableStream<Uint8Array>,
     method: "stream" | "page" | "static",
-    data: Record<string, any> = {},
+    data: Record<string, any> = {}
   ) {
     let { port1, port2 } = new MessageChannel();
 
@@ -204,7 +205,7 @@ export class Runtime {
         writeStream,
       },
       // @ts-expect-error: Type 'ReadableStream<Uint8Array>' is not assignable to type 'TransferListItem'.
-      [port2, rscStream, writeStream],
+      [port2, rscStream, writeStream]
     );
 
     let message = await getMessage;
@@ -265,9 +266,9 @@ export class Runtime {
 
   private async createSSRWorker() {
     if (!this.build.error) {
-      let bootstrapUrl = `/_assets/client-app/bootstrap/${
-        this.build.getBuilder("client").bootstrapHash
-      }.js`;
+      let bootstrapPath = this.build.getBuilder("client").bootstrapPath;
+      let bootstrapFile = path.basename(bootstrapPath);
+      let bootstrapUrl = `/__tf/assets/entries/${bootstrapFile}`;
       let workerUrl = new URL("./ssr/worker.js", import.meta.url);
 
       this.#ssrWorker = new Worker(workerUrl, {

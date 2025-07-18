@@ -10,6 +10,7 @@ import { ClientChunksSnapshot } from "../snapshots/client-chunks-snapshot.js";
 import { RSCSnapshot } from "../snapshots/rsc-snapshot.js";
 import { CSSSnapshot } from "../snapshots/css-snapshot.js";
 import { Build } from "./build.js";
+import { AssetsBuilder } from "../builders/assets-builder.js";
 
 export class DevelopmentBuild extends Build {
   readonly name = "development";
@@ -39,6 +40,9 @@ export class DevelopmentBuild extends Build {
       build: this,
     });
     let staticFilesBuilder = new StaticFilesBuilder();
+    let assetsBuilder = new AssetsBuilder({
+      build: this,
+    });
 
     this.addBuilder(entriesBuilder);
     this.addBuilder(errorPageBuilder);
@@ -46,6 +50,7 @@ export class DevelopmentBuild extends Build {
     this.addBuilder(clientAppBuilder);
     this.addBuilder(serverFilesBuilder);
     this.addBuilder(staticFilesBuilder);
+    this.addBuilder(assetsBuilder);
   }
 
   async build() {
@@ -76,7 +81,7 @@ export class DevelopmentBuild extends Build {
       frameworkTime.end();
       // frameworkTime.log();
 
-      let firstPassError =
+      let firstPhaseError =
         this.getBuilder("entries").error ||
         this.getBuilder("dev-error-page").error ||
         this.getBuilder("server-files").error ||
@@ -84,7 +89,7 @@ export class DevelopmentBuild extends Build {
 
       // we don't want to continue here if any of the build steps
       // above happened to error
-      if (!firstPassError) {
+      if (!firstPhaseError) {
         let rscBuild = this.getBuilder("rsc").build();
         let clientBuild = this.getBuilder("client").build();
 
@@ -93,6 +98,19 @@ export class DevelopmentBuild extends Build {
         await Promise.all([clientBuild, rscBuild]);
         appTime.end();
         // appTime.log();
+      }
+
+      let secondPhaseError =
+        this.getBuilder("rsc").error || this.getBuilder("client").error;
+
+      if (!firstPhaseError && !secondPhaseError) {
+        let assetsBuild = this.getBuilder("assets").build();
+
+        let assetsTime = time("assets build");
+        assetsTime.start();
+        await assetsBuild;
+        assetsTime.end();
+        // assetsTime.log();
       }
     });
   }

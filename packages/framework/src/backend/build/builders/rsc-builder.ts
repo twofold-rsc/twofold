@@ -122,10 +122,11 @@ export class RSCBuilder extends Builder {
           serverActionsPlugin({ builder }),
           esbuildPluginTailwind({
             base: fileURLToPath(appAppDir),
+            minify: this.#build.name === "production",
           }),
           imagesPlugin({
             builder,
-            prefixPath: "/_assets/images",
+            prefixPath: "/__tf/assets/images",
           }),
           {
             name: "stores",
@@ -433,7 +434,7 @@ export class RSCBuilder extends Builder {
     let layoutCss = this.layouts.map((layout) => layout.css);
     let pageCss = this.pages.map((page) => page.css);
 
-    let css = [...layoutCss, ...pageCss].filter(Boolean);
+    let css = [...layoutCss, ...pageCss].filter((file) => file !== undefined);
 
     return css;
   }

@@ -249,9 +249,9 @@ export default function Nav() {
                         href="/build/tailwind"
                       />
                       <ExampleLink
-                        title="Static assets"
-                        description="A page that imports static assets."
-                        href="/build/assets"
+                        title="Image assets"
+                        description="A page that imports image assets."
+                        href="/build/images"
                       />
                       <ExampleLink
                         title="Dev reload"

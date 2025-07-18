@@ -12,6 +12,7 @@ import { createJiti } from "jiti";
 import { time } from "../helpers/time.js";
 import EventEmitter from "events";
 import { z } from "zod";
+import { AssetsBuilder } from "../builders/assets-builder.js";
 
 let jiti = createJiti(import.meta.url, {
   debug: false,
@@ -91,7 +92,7 @@ export abstract class Build {
           [builder.name]: builder,
         };
       },
-      {},
+      {}
     );
   }
 
@@ -101,6 +102,7 @@ export abstract class Build {
   getBuilder(name: "client"): ClientAppBuilder;
   getBuilder(name: "static-files"): StaticFilesBuilder;
   getBuilder(name: "server-files"): ServerFilesBuilder;
+  getBuilder(name: "assets"): AssetsBuilder;
   getBuilder(name: string): never;
   getBuilder(name: string) {
     if (!this.builders[name]) {
@@ -207,7 +209,7 @@ export abstract class Build {
         };
         return outputs;
       },
-      {},
+      {}
     );
 
     let config = await this.getAppConfig();
@@ -232,7 +234,7 @@ export abstract class Build {
     let parsedConfig = configSchema.safeParse(data.config);
     if (parsedConfig.error) {
       throw new Error(
-        "Invalid configuration. This is most likely a bug in Twofold.",
+        "Invalid configuration. This is most likely a bug in Twofold."
       );
     }
     this.#appConfig = parsedConfig.data;

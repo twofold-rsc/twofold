@@ -42,7 +42,7 @@ export default function DevReload() {
           // thinks they are rendered, and will not automatically re-insert
           // them.
           let addingCSS = reload.cssFiles.added.map((cssFile: string) =>
-            addCSSFile(cssFile),
+            addCSSFile(cssFile)
           );
 
           await Promise.all(addingCSS);
@@ -78,14 +78,14 @@ export default function DevReload() {
 }
 
 function reloadChunkFile(chunkFile: string) {
-  return import(`/_assets/client-app/chunks/${chunkFile}?v=${Date.now()}`);
+  return import(`/__tf/assets/chunks/${chunkFile}?v=${Date.now()}`);
 }
 
 function reloadClientComponent(chunkId: string) {
   return window.__twofold__chunk_reload__(chunkId);
 }
 
-let cssBase = "/_assets/styles/";
+let cssBase = "/__tf/assets/styles/";
 
 function removeCSSFile(file: string) {
   let hrefToRemove = `${cssBase}${file}`;
