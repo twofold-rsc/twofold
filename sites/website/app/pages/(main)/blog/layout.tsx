@@ -3,17 +3,11 @@ import { ReactNode } from "react";
 export default function BlogLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossOrigin="anonymous"
-      />
-      <link
+      {/* <link
         href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap"
         rel="stylesheet"
         precedence="default"
-      />
+      /> */}
       <link
         rel="alternate"
         type="application/rss+xml"

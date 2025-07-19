@@ -1,7 +1,9 @@
 # TODO
 
-- gzip middleware
 - combine fonts into one root request and test
+- rsc font builder
+- preload actual font file
+- motion.dev/react package
 
 - mobile styling for default not found page
 
@@ -14,6 +16,9 @@
 - layout keys (showing in google search console)
 
 - deploy website (from main) and test
+
+- update tailwind to 4.1.11 in all packages
+- update esbuild plugin
 
 - no unchecked array access for tsconfig
 - better includes/excludes for tsconfig

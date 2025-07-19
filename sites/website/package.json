@@ -9,7 +9,8 @@
     "dev-framework": "nodemon --delay 100ms --exec \"pnpm twofold dev\" --watch ../../packages/framework/dist -e js",
     "lint": "eslint .",
     "build": "twofold build",
-    "serve": "twofold serve"
+    "serve": "twofold serve",
+    "container:build": "tsx scripts/build.ts"
   },
   "keywords": [],
   "author": "Ryan Toronto",
