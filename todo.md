@@ -1,10 +1,7 @@
 # TODO
 
-- add gzip/brotli support to the build
-- reload css file
-- reload rsc
-- reload client component
-- hmr shared
+- gzip middleware
+- combine fonts into one root request and test
 
 - mobile styling for default not found page
 
@@ -12,9 +9,14 @@
 - docs code examples should mobile overflow
 - run posts through page speed
 
+- canonical meta tag for posts
 - safari looks for /apple-touch-icon-precomposed.png, /apple-touch-icon.png
+- layout keys (showing in google search console)
 
 - deploy website (from main) and test
+
+- no unchecked array access for tsconfig
+- better includes/excludes for tsconfig
 
 - release
 - fly example w/ assets

@@ -26,6 +26,7 @@
     "@twofold/framework": "workspace:*",
     "clsx": "^2.1.1",
     "dedent": "^1.5.3",
+    "dotenv": "^16.4.7",
     "framer-motion": "^12.4.3",
     "js-yaml": "^4.1.0",
     "react": "catalog:",
@@ -47,6 +48,7 @@
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
+    "tsx": "^4.20.3",
     "typescript": "catalog:"
   }
 }

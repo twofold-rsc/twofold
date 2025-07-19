@@ -15,6 +15,7 @@ import { waitForSSR } from "./server/middlewares/wait-for-ssr-worker.js";
 import { Server as NodeHttpServer } from "http";
 import { Runtime } from "./runtime.js";
 import { filterRequests } from "./server/middlewares/filter-requests.js";
+import { gzip } from "./server/middlewares/gzip.js";
 
 async function createHandler(runtime: Runtime) {
   let build = runtime.build;
@@ -29,6 +30,7 @@ async function createHandler(runtime: Runtime) {
 
   app.use(globalMiddleware(build));
   app.use(assets(build));
+  app.use(gzip(build));
   app.use(staticFiles(build));
 
   app.use(filterRequests());
