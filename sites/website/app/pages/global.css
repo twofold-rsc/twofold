@@ -1,3 +1,4 @@
+@import url("./fonts.css");
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -18,26 +19,6 @@
 }
 
 /* Fonts */
-
-.inter-font {
-  font-family: "Inter", sans-serif;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-variation-settings: "slnt" 0;
-}
-
-.merriweather-font {
-  font-family: "Merriweather", serif;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-}
-
-.gochi-hand-regular {
-  font-family: "Gochi Hand", cursive;
-  font-weight: 400;
-  font-style: normal;
-}
 
 /* Code diffs */
 

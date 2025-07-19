@@ -21,6 +21,7 @@ import { Layout } from "../rsc/layout.js";
 import { API } from "../rsc/api.js";
 import { esbuildPluginTailwind } from "@ryanto/esbuild-plugin-tailwind";
 import { Image, imagesPlugin } from "../plugins/images-plugin.js";
+import { Font, fontsPlugin } from "../plugins/fonts-plugin.js";
 
 export type CompiledAction = {
   id: string;
@@ -38,6 +39,7 @@ export class RSCBuilder extends Builder {
   #build: Build;
   #serverActionMap = new Map<string, CompiledAction>();
   #imagesMap = new Map<string, Image>();
+  #fontsMap = new Map<string, Font>();
 
   constructor({
     entriesBuilder,
@@ -57,6 +59,10 @@ export class RSCBuilder extends Builder {
 
   get imagesMap() {
     return this.#imagesMap;
+  }
+
+  get fontsMap() {
+    return this.#fontsMap;
   }
 
   get entries() {
@@ -80,6 +86,7 @@ export class RSCBuilder extends Builder {
 
     this.#serverActionMap = new Map();
     this.#imagesMap = new Map();
+    this.#fontsMap = new Map();
     this.#metafile = undefined;
     this.clearError();
 
@@ -128,6 +135,10 @@ export class RSCBuilder extends Builder {
             builder,
             prefixPath: "/__tf/assets/images",
           }),
+          fontsPlugin({
+            builder,
+            prefixPath: "/__tf/assets/fonts",
+          }),
           {
             name: "stores",
             setup(build) {
@@ -164,6 +175,7 @@ export class RSCBuilder extends Builder {
       metafile: this.#metafile,
       serverActionMap: Object.fromEntries(this.#serverActionMap.entries()),
       imagesMap: Object.fromEntries(this.#imagesMap.entries()),
+      fontsMap: Object.fromEntries(this.#fontsMap.entries()),
     };
   }
 
@@ -171,6 +183,7 @@ export class RSCBuilder extends Builder {
     this.#metafile = data.metafile;
     this.#serverActionMap = new Map(Object.entries(data.serverActionMap));
     this.#imagesMap = new Map(Object.entries(data.imagesMap));
+    this.#fontsMap = new Map(Object.entries(data.fontsMap));
   }
 
   get files() {

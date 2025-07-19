@@ -35,7 +35,7 @@ export class AssetsBuilder extends Builder {
   }
 
   async setup() {
-    let dirs = ["styles", "images", "chunks", "entries"];
+    let dirs = ["styles", "images", "fonts", "chunks", "entries"];
     if (this.#build.name === "production") {
       await mkdir(this.#assetDir, { recursive: true });
       await Promise.all(
@@ -58,6 +58,7 @@ export class AssetsBuilder extends Builder {
       ...build.getBuilder("rsc").imagesMap.values(),
       ...build.getBuilder("client").imagesMap.values(),
     ];
+    let fonts = [...build.getBuilder("rsc").fontsMap.values()];
 
     async function createAsset(id: string, fromUrl: URL) {
       if (build.name === "production") {
@@ -140,11 +141,24 @@ export class AssetsBuilder extends Builder {
       };
     });
 
+    let fontPromises = fonts.map(async (font) => {
+      let fromUrl = pathToFileURL(font.path);
+      let id = `fonts/${font.id}`;
+      let assetUrl = await createAsset(id, fromUrl);
+
+      return {
+        id,
+        type: font.type,
+        assetPath: assetUrl.pathname,
+      };
+    });
+
     let assets = await Promise.all([
       ...rscCssPromises,
       ...clientEntryPromises,
       ...clientChunkPromises,
       ...imagePromises,
+      ...fontPromises,
     ]);
 
     let assetMap = assets.reduce((map, asset) => {

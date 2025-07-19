@@ -22,7 +22,7 @@ export function imagesPlugin({
   return {
     name: "images",
     async setup(build) {
-      const { h32Raw } = await xxhash();
+      let { h32Raw } = await xxhash();
 
       build.onLoad(
         { filter: /\.(png|jpg|jpeg|gif|webp|svg)$/ },
