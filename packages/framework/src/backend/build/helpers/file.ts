@@ -19,8 +19,8 @@ export async function fileExists(path: PathLike) {
   }
 }
 
+let { h64Raw } = await xxhash();
 export async function hashFile(path: string) {
-  let { h64Raw } = await xxhash();
   let buffer = await readFile(path);
   let hash = h64Raw(buffer);
   return hash.toString(16);

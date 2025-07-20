@@ -1,6 +1,5 @@
 # TODO
 
-- safari looks for /apple-touch-icon-precomposed.png, /apple-touch-icon.png
 - layout keys (showing in google search console)
 
 - deploy website (from main) and test

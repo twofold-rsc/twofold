@@ -1,8 +1,8 @@
 export function applyPathParams(
   templatePath: string,
-  params: Record<string, string | undefined>,
+  params: Record<string, string | undefined>
 ) {
-  return templatePath.replace(/\$([^/]+)/g, (match, varName) => {
+  return templatePath.replace(/\$\$?([^/]+)/g, (match, varName) => {
     return params[varName] ? params[varName] : match;
   });
 }
@@ -54,7 +54,7 @@ export function pathMatches(templatePath: string, realPath: string) {
 function comparePaths(
   templatePath: string,
   realPath: string,
-  match: "partial" | "full",
+  match: "partial" | "full"
 ) {
   if (!pathIsValid(templatePath)) {
     return false;
