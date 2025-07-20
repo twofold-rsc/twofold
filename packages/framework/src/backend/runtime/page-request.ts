@@ -10,8 +10,6 @@ import { ComponentType, createElement, ReactElement } from "react";
 import { applyPathParams } from "./helpers/routing.js";
 import xxhash from "xxhash-wasm";
 
-let { h64Raw } = await xxhash();
-
 export class PageRequest {
   #page: Page;
   #request: Request;
@@ -150,8 +148,7 @@ export class PageRequest {
 
       // we hash the key because if they "look" like urls or paths
       // certain bots will try to crawl them
-      let segmentKeyBytes = new TextEncoder().encode(segmentKey);
-      let key = h64Raw(segmentKeyBytes).toString(16);
+      let key = hash(segmentKey);
 
       return segment.components.map((component, index) => {
         return {
@@ -279,4 +276,12 @@ export function componentsToTree<T extends object>(
   } else {
     return createElement<T>(component, props, componentsToTree(list.slice(1)));
   }
+}
+
+let { h64Raw } = await xxhash();
+function hash(str: string) {
+  let encoder = new TextEncoder();
+  let data = encoder.encode(str);
+  let hash = h64Raw(data);
+  return hash.toString(16);
 }

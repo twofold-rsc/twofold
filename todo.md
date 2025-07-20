@@ -1,7 +1,5 @@
 # TODO
 
-- layout keys (showing in google search console)
-
 - deploy website (from main) and test
 
 - update tailwind to 4.1.11 in all packages
