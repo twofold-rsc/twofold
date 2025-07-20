@@ -1,7 +1,5 @@
 # TODO
 
-- add fonts to kitchen sink
-- should be able to import and preload it
 - preload actual font file
 
 - motion.dev/react package

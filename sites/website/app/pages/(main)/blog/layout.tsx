@@ -1,13 +1,16 @@
 import { ReactNode } from "react";
+import MerriweatherFont from "@/public/fonts/merriweather-latin-regular.woff2";
 
 export default function BlogLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      {/* <link
-        href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap"
-        rel="stylesheet"
-        precedence="default"
-      /> */}
+      <link
+        rel="preload"
+        href={MerriweatherFont}
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
       <link
         rel="alternate"
         type="application/rss+xml"
