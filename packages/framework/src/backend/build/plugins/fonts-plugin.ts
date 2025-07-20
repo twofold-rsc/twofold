@@ -1,13 +1,10 @@
 import { Plugin } from "esbuild";
-import { readFile } from "fs/promises";
 import path from "path";
-import xxhash from "xxhash-wasm";
 import * as mime from "mime-types";
-import { ClientAppBuilder } from "../builders/client-app-builder.js";
 import { RSCBuilder } from "../builders/rsc-builder.js";
 import { cwdUrl } from "../../files.js";
 import { fileURLToPath } from "url";
-import { hashFile } from "../helpers/file.js";
+import { fileExists, hashFile } from "../helpers/file.js";
 
 export type Font = {
   id: string;
@@ -22,42 +19,78 @@ export function fontsPlugin({
   builder: RSCBuilder;
   prefixPath: string;
 }): Plugin {
+  async function addFont(fontFile: string) {
+    let font = builder.fontsMap.get(fontFile);
+
+    if (!font) {
+      let ext = path.extname(fontFile);
+      let name = path.basename(fontFile, ext);
+      let hash = await hashFile(fontFile);
+      let id = `${name}-${hash}${ext}`;
+      let type = mime.contentType(ext) || "";
+
+      font = {
+        id,
+        type,
+        path: fontFile,
+      };
+
+      builder.fontsMap.set(fontFile, font);
+    }
+
+    return font;
+  }
+
   return {
     name: "fonts",
     async setup(build) {
-      let { h32Raw } = await xxhash();
-      let publicUrl = new URL("./public", cwdUrl);
-      let publicPath = fileURLToPath(publicUrl);
+      let publicFolderUrl = new URL("./public/", cwdUrl);
+      let publicFolderPath = fileURLToPath(publicFolderUrl);
 
-      build.onResolve(
-        { filter: /^\/fonts\/.*\.(woff|woff2|ttf|otf|eot)$/ },
-        async (args) => {
-          if (args.importer.endsWith(".css")) {
-            // this is public font "url" referenced in a css file. we're
-            // going to turn it into an asset
-            let fontFile = path.join(publicPath, args.path);
+      build.onResolve({ filter: /\.(woff2)$/ }, async (args) => {
+        if (args.importer.endsWith(".css")) {
+          // if a css file is asking for a font we add it to the map
+          // and return an external
+          if (args.path.startsWith("/")) {
+            let potentialPublicFontUrl = new URL(
+              `.${args.path}`,
+              publicFolderUrl
+            );
 
-            let ext = path.extname(fontFile);
-            let name = path.basename(fontFile, ext);
-            let hash = await hashFile(fontFile);
+            let existsInPublic = await fileExists(potentialPublicFontUrl);
+            let fontFile = existsInPublic
+              ? fileURLToPath(potentialPublicFontUrl)
+              : args.path;
 
-            let id = `${name}-${hash}${ext}`;
-            let type = mime.contentType(ext) || "";
-            let publicUrl = `${prefixPath}/${id}`;
-
-            builder.fontsMap.set(id, {
-              id,
-              type,
-              path: fontFile,
-            });
-
+            let font = await addFont(fontFile);
             return {
               external: true,
-              path: publicUrl,
+              path: `${prefixPath}/${font.id}`,
             };
+          } else if (args.path.startsWith("./")) {
+            let fontFile = path.join(path.dirname(args.importer), args.path);
+            let font = await addFont(fontFile);
+            return {
+              external: true,
+              path: `${prefixPath}/${font.id}`,
+            };
+          } else {
+            throw new Error(
+              `Unexpected font import path: ${args.path} in ${args.importer}`
+            );
           }
         }
-      );
+      });
+
+      build.onLoad({ filter: /\.(woff2)$/ }, async (args) => {
+        let font = await addFont(args.path);
+        let publicUrl = `${prefixPath}/${font.id}`;
+
+        return {
+          contents: `export default ${JSON.stringify(publicUrl)};`,
+          loader: "js",
+        };
+      });
     },
   };
 }

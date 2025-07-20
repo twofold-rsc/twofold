@@ -1,15 +1,15 @@
 # TODO
 
-- combine fonts into one root request and test
-- rsc font builder
+- add fonts to kitchen sink
+- should be able to import and preload it
 - preload actual font file
+
 - motion.dev/react package
 
 - mobile styling for default not found page
 
 - docs and blog should use same gutter spacing (i like docs version)
 - docs code examples should mobile overflow
-- run posts through page speed
 
 - canonical meta tag for posts
 - safari looks for /apple-touch-icon-precomposed.png, /apple-touch-icon.png
@@ -20,10 +20,16 @@
 - update tailwind to 4.1.11 in all packages
 - update esbuild plugin
 
+- deploy website and test
+
 - no unchecked array access for tsconfig
 - better includes/excludes for tsconfig
 
+- update base
+
 - release
+
+- document public/fonts
 - fly example w/ assets
 
 - run routes in parallel

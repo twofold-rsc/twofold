@@ -85,6 +85,7 @@ export class EntriesBuilder extends Builder {
         ".gif": "empty",
         ".webp": "empty",
         ".svg": "empty",
+        ".woff2": "empty",
       },
       external: [...externalPackages, ...userDefinedExternalPackages],
       plugins: [
