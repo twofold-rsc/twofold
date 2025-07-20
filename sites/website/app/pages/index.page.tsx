@@ -13,10 +13,7 @@ export default async function Page({ request }: PageProps) {
   return (
     <>
       <title>Twofold</title>
-      <meta
-        property="description"
-        content="A React Server Component framework"
-      />
+      <meta name="description" content="A React Server Component framework" />
 
       <meta property="og:title" content="Twofold" />
       <meta
