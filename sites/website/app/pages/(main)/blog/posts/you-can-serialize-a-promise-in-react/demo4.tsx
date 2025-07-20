@@ -48,7 +48,7 @@ export function Demo4({ children }: { children: ReactNode }) {
       <div>{children}</div>
       <div
         className={clsx(
-          "relative -mx-3 flex min-h-[158px] rounded-b-md border-x-2 border-b-2 border-gray-200 sm:mx-0",
+          "relative -mx-2 flex min-h-[158px] rounded-b-md border-x-2 border-b-2 border-gray-200 sm:mx-0",
           id ? "" : "items-center justify-center",
         )}
       >

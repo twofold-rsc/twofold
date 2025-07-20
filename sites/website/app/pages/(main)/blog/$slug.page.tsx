@@ -39,6 +39,11 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
       <meta name="twitter:description" content={meta.description} />
       <meta name="twitter:image" content={ogImageUrl.href} />
 
+      <link
+        rel="canonical"
+        href={`https://twofoldframework.com/blog/${slug}`}
+      />
+
       <div className="min-w-0">
         <div>
           <div className="flex items-center space-x-2 font-medium">

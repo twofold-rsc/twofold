@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@twofold/framework/link";
-import { useAnimate } from "framer-motion";
+import { useAnimate } from "motion/react";
 import { useRouter } from "@twofold/framework/use-router";
 import {
   AnchorHTMLAttributes,

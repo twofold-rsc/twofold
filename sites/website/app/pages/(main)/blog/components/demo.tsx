@@ -11,7 +11,7 @@ export function DemoContent({
   return (
     <div
       className={clsx(
-        "relative -mx-3 flex items-center justify-center rounded-b-md border-x-2 border-b-2 border-gray-200 p-8 sm:mx-0",
+        "relative -mx-2 flex items-center justify-center rounded-b-md border-x-2 border-b-2 border-gray-200 p-8 sm:mx-0",
         className,
       )}
     >

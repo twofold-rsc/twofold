@@ -2,7 +2,7 @@
 
 import { JSX, ReactNode, useActionState } from "react";
 import { getDemo1 } from "./demo1-action";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import clsx from "clsx";
 import { DemoContent } from "../../components/demo";
 

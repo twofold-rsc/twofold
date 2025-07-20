@@ -1,15 +1,5 @@
 # TODO
 
-- preload actual font file
-
-- motion.dev/react package
-
-- mobile styling for default not found page
-
-- docs and blog should use same gutter spacing (i like docs version)
-- docs code examples should mobile overflow
-
-- canonical meta tag for posts
 - safari looks for /apple-touch-icon-precomposed.png, /apple-touch-icon.png
 - layout keys (showing in google search console)
 

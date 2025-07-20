@@ -4,6 +4,10 @@ import MerriweatherFont from "@/public/fonts/merriweather-latin-regular.woff2";
 export default function BlogLayout({ children }: { children: ReactNode }) {
   return (
     <>
+      {/* 
+        Bug where this doesn't work when routing is CSR. Chrome sees
+        the preload after the font is loaded and says the preload is unused.
+      */}
       <link
         rel="preload"
         href={MerriweatherFont}
@@ -18,7 +22,7 @@ export default function BlogLayout({ children }: { children: ReactNode }) {
         href="/blog/rss"
       />
 
-      <div className="mx-auto mt-8 max-w-prose px-6 pb-24 md:px-0">
+      <div className="mx-auto mt-8 max-w-prose px-4 pb-24 md:px-0">
         {children}
       </div>
     </>

@@ -14,7 +14,7 @@ import {
 } from "react";
 import { getDemo2 } from "./demo2-action";
 import { DownArrow } from "./arrows";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "motion/react";
 import Spinner from "../../../../../components/spinner";
 import { useFormStatus } from "react-dom";
 
@@ -94,7 +94,7 @@ export function Demo2() {
 
   return (
     <div className="not-prose">
-      <div className="-mx-3 md:-mx-8">
+      <div className="-mx-2 md:-mx-8">
         <Browser
           url="https://twofoldframework.com/blog"
           onBack={state.jsx ? () => action({ type: "back" }) : void 0}
