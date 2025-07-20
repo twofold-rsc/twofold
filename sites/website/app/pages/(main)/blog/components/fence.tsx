@@ -41,7 +41,7 @@ export async function Fence({
   });
 
   return (
-    <div className={clsx("not-prose -mx-3 sm:mx-0", demo ? "mt-6" : "my-6")}>
+    <div className={clsx("not-prose -mx-2 sm:mx-0", demo ? "mt-6" : "my-6")}>
       {file && (
         <div className="flex items-center justify-start">
           <div className="inline-flex items-center justify-center rounded-t-md bg-[#24292e] px-4 pt-2 pb-1 text-xs font-medium text-gray-300">

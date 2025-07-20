@@ -1,5 +1,6 @@
 import { PathLike, createReadStream } from "fs";
-import { stat } from "fs/promises";
+import { readFile, stat } from "fs/promises";
+import xxhash from "xxhash-wasm";
 
 export async function readFirstNBytes(path: PathLike, n: number) {
   const chunks = [];
@@ -16,4 +17,11 @@ export async function fileExists(path: PathLike) {
   } catch (_e) {
     return false;
   }
+}
+
+let { h64Raw } = await xxhash();
+export async function hashFile(path: string) {
+  let buffer = await readFile(path);
+  let hash = h64Raw(buffer);
+  return hash.toString(16);
 }

@@ -15,7 +15,7 @@ import { Arrow } from "./arrows";
 
 export function Demo4() {
   return (
-    <div className="not-prose group -mx-3 my-8 md:-mx-8">
+    <div className="not-prose group -mx-2 my-8 md:-mx-8">
       <div className="rounded-lg bg-slate-50 p-3 shadow-md ring-1 ring-slate-950/5">
         <div>
           <textarea

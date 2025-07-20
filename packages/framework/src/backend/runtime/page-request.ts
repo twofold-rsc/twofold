@@ -8,6 +8,7 @@ import {
 } from "./helpers/errors.js";
 import { ComponentType, createElement, ReactElement } from "react";
 import { applyPathParams } from "./helpers/routing.js";
+import xxhash from "xxhash-wasm";
 
 export class PageRequest {
   #page: Page;
@@ -140,14 +141,24 @@ export class PageRequest {
     let props = this.props;
 
     let componentsAndProps = segments.flatMap((segment) => {
-      let key = `${segment.path}:${applyPathParams(segment.path, params)}`;
-      return segment.components.map((component) => ({
-        component,
-        props: {
-          ...props,
-          key,
-        },
-      }));
+      let segmentKey = `${segment.path}:${applyPathParams(
+        segment.path,
+        params
+      )}`;
+
+      // we hash the key because if they "look" like urls or paths
+      // certain bots will try to crawl them
+      let key = hash(segmentKey);
+
+      return segment.components.map((component, index) => {
+        return {
+          component,
+          props: {
+            ...props,
+            ...(index === 0 ? { key } : {}),
+          },
+        };
+      });
     });
 
     return componentsToTree(componentsAndProps);
@@ -265,4 +276,12 @@ export function componentsToTree<T extends object>(
   } else {
     return createElement<T>(component, props, componentsToTree(list.slice(1)));
   }
+}
+
+let { h64Raw } = await xxhash();
+function hash(str: string) {
+  let encoder = new TextEncoder();
+  let data = encoder.encode(str);
+  let hash = h64Raw(data);
+  return hash.toString(16);
 }

@@ -129,7 +129,7 @@ export function Demo3({ children }: { children: ReactNode }) {
       <div>{children}</div>
       <div
         className={clsx(
-          "relative -mx-3 flex min-h-[250px] rounded-b-md border-x-2 border-b-2 border-gray-200 sm:mx-0 sm:min-h-[228px]",
+          "relative -mx-2 flex min-h-[250px] rounded-b-md border-x-2 border-b-2 border-gray-200 sm:mx-0 sm:min-h-[228px]",
           state?.log ? "" : "items-center justify-center",
         )}
       >

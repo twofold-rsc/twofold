@@ -254,6 +254,11 @@ export default function Nav() {
                         href="/build/images"
                       />
                       <ExampleLink
+                        title="Font assets"
+                        description="A page that imports font assets."
+                        href="/build/fonts"
+                      />
+                      <ExampleLink
                         title="Dev reload"
                         description="Reload pages in development as they are edited."
                         href="/build/dev-reload"

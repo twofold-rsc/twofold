@@ -8,6 +8,7 @@ export default function NotFoundPage({ request }: { request: Request }) {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "400px",
+        padding: "0 24px",
       }}
     >
       <div>

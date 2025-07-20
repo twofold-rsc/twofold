@@ -1,24 +1,20 @@
 # TODO
 
-- gzip middleware
-- combine fonts into one root request and test
-
-- mobile styling for default not found page
-
-- docs and blog should use same gutter spacing (i like docs version)
-- docs code examples should mobile overflow
-- run posts through page speed
-
-- canonical meta tag for posts
-- safari looks for /apple-touch-icon-precomposed.png, /apple-touch-icon.png
-- layout keys (showing in google search console)
-
 - deploy website (from main) and test
+
+- update tailwind to 4.1.11 in all packages
+- update esbuild plugin
+
+- deploy website and test
 
 - no unchecked array access for tsconfig
 - better includes/excludes for tsconfig
 
+- update base
+
 - release
+
+- document public/fonts
 - fly example w/ assets
 
 - run routes in parallel
