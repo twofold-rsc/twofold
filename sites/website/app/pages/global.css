@@ -1,5 +1,6 @@
 @import url("./fonts.css");
 @import "tailwindcss";
+
 @plugin "@tailwindcss/typography";
 
 @theme {

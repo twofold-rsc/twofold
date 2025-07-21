@@ -1,7 +1,5 @@
 # TODO
 
-- deploy website (from main) and test
-
 - update tailwind to 4.1.11 in all packages
 - update esbuild plugin
 

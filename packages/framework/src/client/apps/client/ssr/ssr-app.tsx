@@ -1,6 +1,5 @@
 import "../ext/react-refresh";
 import { use, createElement } from "react";
-// @ts-expect-error: Could not find a declaration file for module 'react-dom/server.edge'.
 import { renderToReadableStream } from "react-dom/server.edge";
 // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client.edge'.
 import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
@@ -111,6 +110,7 @@ export async function render({
     }),
     {
       bootstrapModules: [bootstrapUrl],
+      // @ts-expect-error formState is not in @types/react-dom
       formState,
       onError(err: unknown) {
         if (err instanceof Error && isSafeError(err)) {
