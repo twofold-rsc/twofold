@@ -17,28 +17,28 @@
   "license": "ISC",
   "dependencies": {
     "@heroicons/react": "^2.2.0",
-    "@radix-ui/react-navigation-menu": "^1.2.5",
-    "@radix-ui/react-toast": "^1.2.6",
+    "@radix-ui/react-navigation-menu": "^1.2.13",
+    "@radix-ui/react-toast": "^1.2.14",
     "@twofold/framework": "workspace:*",
     "clsx": "^2.1.1",
-    "motion": "^12.7.3",
-    "open-graph-scraper": "^6.9.0",
+    "motion": "^12.23.6",
+    "open-graph-scraper": "^6.10.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-server-dom-webpack": "catalog:",
-    "sharp": "^0.33.5",
-    "tailwindcss": "^4.0.17",
-    "zod": "^3.24.2"
+    "sharp": "^0.34.3",
+    "tailwindcss": "^4.1.11",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "eslint": "^9.23.0",
+    "eslint": "^9.31.0",
     "eslint-plugin-twofold": "workspace:*",
     "nodemon": "^3.1.10",
-    "prettier": "^3.5.3",
-    "prettier-plugin-tailwindcss": "^0.6.11",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
     "typescript": "catalog:"
   }
 }

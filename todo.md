@@ -1,16 +1,13 @@
 # TODO
 
-- deploy website (from main) and test
-
-- update tailwind to 4.1.11 in all packages
-- update esbuild plugin
-
+- merge
 - deploy website and test
 
 - no unchecked array access for tsconfig
 - better includes/excludes for tsconfig
-
 - update base
+
+- update base template
 
 - release
 
