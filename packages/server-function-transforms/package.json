@@ -19,18 +19,21 @@
   "license": "ISC",
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
-    "@types/babel__generator": "^7.6.8",
+    "@types/babel__generator": "^7.27.0",
     "@types/node": "catalog:",
-    "dedent": "^1.5.3",
-    "prettier": "^3.5.3",
+    "dedent": "^1.6.0",
+    "prettier": "^3.6.2",
+    "react-server-dom-webpack": "catalog:",
     "typescript": "catalog:",
-    "vitest": "^3.0.9"
+    "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@babel/core": "^7.26.10",
-    "@babel/generator": "^7.27.0",
-    "@babel/types": "^7.27.0",
-    "esbuild": "0.25.0",
+    "@babel/core": "^7.28.0",
+    "@babel/generator": "^7.28.0",
+    "@babel/types": "^7.28.1",
+    "esbuild": "catalog:"
+  },
+  "peerDependencies": {
     "react-server-dom-webpack": ">=19.0.0"
   }
 }

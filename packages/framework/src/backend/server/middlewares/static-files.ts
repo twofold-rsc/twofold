@@ -14,9 +14,10 @@ export function staticFiles(build: Build) {
       setHeaders(ctx, headers, file) {
         headers.set(
           "Content-Disposition",
-          `inline; filename=${path.basename(file.path)}`,
+          `inline; filename=${path.basename(file.path)}`
         );
+        headers.set("Content-Length", file.size.toString());
       },
-    },
+    }
   );
 }

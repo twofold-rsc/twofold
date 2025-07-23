@@ -59,7 +59,7 @@
     "globals": "^16.3.0",
     "nodemon": "^3.1.10",
     "typescript": "catalog:",
-    "typescript-eslint": "^8.37.0"
+    "typescript-eslint": "^8.38.0"
   },
   "peerDependencies": {
     "react": "catalog:",
@@ -91,7 +91,7 @@
     "client-only": "^0.0.1",
     "commander": "^14.0.0",
     "dotenv": "^17.2.0",
-    "esbuild": "0.25.8",
+    "esbuild": "catalog:",
     "etag": "^1.8.1",
     "jiti": "^2.4.2",
     "mime-types": "^3.0.1",

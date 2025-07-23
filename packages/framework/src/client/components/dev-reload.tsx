@@ -8,6 +8,7 @@ declare global {
     $RefreshRuntime$: {
       performReactRefresh(): Promise<void>;
     };
+    __twofold__chunk_reload__: (chunk: string) => Promise<any>;
   }
 }
 

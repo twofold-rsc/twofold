@@ -1,18 +1,20 @@
 # TODO
 
-- merge
-- deploy website and test
-
-- no unchecked array access for tsconfig
 - better includes/excludes for tsconfig
-- update base
+- test kitchen
+- test website
 
+- update base tsconfig
 - update base template
 
 - release
+- see if new app and tsc --noEmit works
+- see if new app can do bound form actions
 
 - document public/fonts
 - fly example w/ assets
+
+- React.cache post
 
 - run routes in parallel
 - error handling

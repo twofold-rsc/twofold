@@ -8,16 +8,17 @@ export async function login(formData: FormData) {
   await new Promise((resolve) => setTimeout(resolve, 750));
 
   let loginSchema = z.object({
-    email: z.string().email().min(1, { message: "Email is required" }),
+    email: z.email().min(1, { message: "Email is required" }),
     password: z
       .string()
       .min(6, { message: "Password must be at least 6 characters" }),
   });
 
   let result = loginSchema.safeParse(Object.fromEntries(formData));
-
   if (!result.success) {
-    let errors = result.error.errors.map((error) => error.message);
+    let errors = result.error.issues.map(
+      (error) => `${error.path.join(".")}: ${error.message}`,
+    );
     return {
       errors,
     };
