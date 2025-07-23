@@ -9,5 +9,6 @@
     "target": "ESNext",
     "types": ["react", "react-dom", "node", "@twofold/framework"]
   },
-  "include": ["./app/"]
+  "include": ["."],
+  "exclude": ["node_modules"]
 }

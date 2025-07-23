@@ -13,5 +13,6 @@
       "@/public/*": ["./public/*"]
     }
   },
-  "include": ["./app/", "./lib/", "./scripts/", "./public/"]
+  "include": ["."],
+  "exclude": ["node_modules"]
 }
