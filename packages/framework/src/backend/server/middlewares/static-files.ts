@@ -12,7 +12,6 @@ export function staticFiles(build: Build) {
     read,
     {
       setHeaders(ctx, headers, file) {
-        console.log(Object.fromEntries(headers.entries()));
         headers.set(
           "Content-Disposition",
           `inline; filename=${path.basename(file.path)}`
