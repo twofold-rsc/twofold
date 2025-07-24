@@ -1,16 +1,10 @@
 # TODO
 
-- release
-- see if new app and tsc --noEmit works
-- see if new app can do bound form actions
-
-- document public/fonts
-- fly example w/ assets
-
 - React.cache post
 
 - run routes in parallel
 - error handling
+- @ alias
 - add URL(request.url) to PageProps
 
 - add cache support to the build, explore rolldown
