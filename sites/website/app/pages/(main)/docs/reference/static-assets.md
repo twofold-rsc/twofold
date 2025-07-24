@@ -58,3 +58,46 @@ export default function IndexPage({ request }: PageProps) {
   );
 }
 ```
+
+## Fonts
+
+Fonts can be used by any CSS file or component in your app. Importing a font will give a URL that's usable by `@font-face` declarations as well as preload link tags.
+
+To reference a font in CSS, use the `url()` function with the path to the font file.
+
+```css
+@font-face {
+  font-family: "MyFont";
+  src: url("/fonts/my-font.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: "MyFont", sans-serif;
+}
+```
+
+In this example, the `my-font.woff2` file should be located in the `/public/fonts` directory.
+
+### Preloading fonts
+
+To preload a font, you can use a `<link rel="preload">` tag in any component.
+
+```tsx
+import MyFont from "../../public/fonts/my-font.woff2";
+
+export default function Page() {
+  return (
+    <>
+      <link
+        rel="preload"
+        href={MyFont}
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+    </>
+  );
+}
+```
