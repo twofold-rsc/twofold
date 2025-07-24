@@ -1,5 +1,11 @@
 # eslint-plugin-twofold
 
+## 0.0.64
+
+### Patch Changes
+
+- Internal improvements, higher page speed scores
+
 ## 0.0.63
 
 ## 0.0.62

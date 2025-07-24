@@ -1,12 +1,5 @@
 # TODO
 
-- better includes/excludes for tsconfig
-- test kitchen
-- test website
-
-- update base tsconfig
-- update base template
-
 - release
 - see if new app and tsc --noEmit works
 - see if new app can do bound form actions

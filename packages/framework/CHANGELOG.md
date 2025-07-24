@@ -1,5 +1,14 @@
 # @twofold/framework
 
+## 0.0.64
+
+### Patch Changes
+
+- Internal improvements, higher page speed scores
+- Updated dependencies
+  - @twofold/client-component-transforms@0.0.4
+  - @twofold/server-function-transforms@0.0.11
+
 ## 0.0.63
 
 ### Patch Changes

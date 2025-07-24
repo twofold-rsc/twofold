@@ -1,5 +1,11 @@
 # @twofold/server-function-transforms
 
+## 0.0.11
+
+### Patch Changes
+
+- Internal improvements, higher page speed scores
+
 ## 0.0.10
 
 ### Patch Changes

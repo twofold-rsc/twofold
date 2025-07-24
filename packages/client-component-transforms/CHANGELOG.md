@@ -1,5 +1,11 @@
 # @twofold/client-component-transforms
 
+## 0.0.4
+
+### Patch Changes
+
+- Internal improvements, higher page speed scores
+
 ## 0.0.3
 
 ### Patch Changes
