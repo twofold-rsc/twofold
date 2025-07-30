@@ -9,6 +9,7 @@ import {
 import { ComponentType, createElement, ReactElement } from "react";
 import { applyPathParams } from "./helpers/routing.js";
 import xxhash from "xxhash-wasm";
+import util from "node:util";
 
 export class PageRequest {
   #page: Page;
@@ -61,9 +62,10 @@ export class PageRequest {
       store.assets = this.assets;
     }
 
-    let reactTree = await this.reactTree();
+    let segments = await this.segments();
+
     let data = {
-      tree: reactTree,
+      segments,
     };
 
     let { stream, error, redirect, notFound } =
@@ -133,6 +135,46 @@ export class PageRequest {
     let execPattern = this.#page.pattern.exec(url);
     let params = execPattern?.pathname.groups ?? {};
     return params;
+  }
+
+  async segments() {
+    let segments = await this.#page.segments();
+    // log("Segments:", segments);
+
+    let params = this.dynamicParams;
+    let props = this.props;
+
+    let renderableSegments = segments.map((segment) => {
+      let segmentKey = `${segment.path}:${applyPathParams(
+        segment.path,
+        params
+      )}`;
+
+      // we hash the key because if they "look" like urls or paths
+      // certain bots will try to crawl them
+      let key = hash(segmentKey);
+
+      let componentsWithProps = segment.components.map((component, index) => {
+        return {
+          component,
+          props: {
+            ...props,
+            ...(index === 0 ? { key } : {}),
+          },
+        };
+      });
+
+      return {
+        type: segment.type,
+        path: segment.path,
+        key: key,
+        tree: componentsToTree(componentsWithProps),
+      };
+    });
+
+    // log("renderableSegments:", renderableSegments);
+
+    return renderableSegments;
   }
 
   async reactTree() {
@@ -284,4 +326,10 @@ function hash(str: string) {
   let data = encoder.encode(str);
   let hash = h64Raw(data);
   return hash.toString(16);
+}
+
+function log(...a: unknown[]) {
+  console.log(
+    ...a.map((item) => util.inspect(item, { depth: null, colors: true }))
+  );
 }

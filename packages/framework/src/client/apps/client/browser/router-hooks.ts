@@ -15,6 +15,14 @@ type State = {
   history: "none" | "push" | "replace";
   scroll: "top" | "preserve";
   cache: Map<string, Tree>;
+  cache2: Map<string, Segment[]>;
+};
+
+type Segment = {
+  key: string;
+  path: string;
+  type: "layout" | "page";
+  tree: Tree;
 };
 
 let fetchCache = new Map<string, Promise<RSCPayload>>();
@@ -24,7 +32,7 @@ export function useRouterReducer() {
   let [thenableState, dispatch] = useReducer(reducer, initialState);
   let finalizedState = use(thenableState);
 
-  let { cache, mask, path } = finalizedState;
+  let { cache, cache2, mask, path } = finalizedState;
 
   if (!cache.has(path)) {
     // we got asked to render a path and we don't have a tree for it.
@@ -47,6 +55,7 @@ export function useRouterReducer() {
     history: finalizedState.history,
     scroll: finalizedState.scroll,
     tree: cache.get(path),
+    segments: cache2.get(path),
   };
 
   return [returnedState, dispatch] as const;
@@ -290,6 +299,7 @@ function createRouterState({
 type RSCPayload = {
   path: string;
   tree: Tree;
+  segments: Segment[];
 };
 
 type FetchOptions = {
@@ -317,10 +327,12 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
       let fetchedPath = responsePath ?? decodeURIComponent(encodedPath);
       let rscOptions = { callServer };
       let tree;
+      let segments;
 
       if (contentType === "text/x-component") {
         let payload = await createFromReadableStream(response.body, rscOptions);
         tree = payload.tree;
+        segments = payload.segments;
       } else if (contentType === "text/x-serialized-error") {
         let json = await response.json();
         let error = deserializeError(json);
@@ -366,6 +378,7 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
       return {
         path: fetchedPath,
         tree,
+        segments,
       };
     });
 
@@ -383,6 +396,7 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
 async function getInitialRouterState() {
   let initialPath = `${location.pathname}${location.search}${location.hash}`;
   let cache = new Map<string, Tree>();
+  let cache2 = new Map<string, Segment[]>();
   let path = initialPath;
 
   if (window.initialRSC?.stream) {
@@ -390,11 +404,13 @@ async function getInitialRouterState() {
       callServer,
     });
     cache.set(initialPath, payload.tree);
+    cache2.set(initialPath, payload.segments);
   } else {
     let rscPayload = await fetchRSCPayload(initialPath, {
       initiator: "initial-render",
     });
     cache.set(rscPayload.path, rscPayload.tree);
+    cache2.set(rscPayload.path, rscPayload.segments);
     path = rscPayload.path;
   }
 
@@ -405,6 +421,7 @@ async function getInitialRouterState() {
     history: "none",
     scroll: "preserve",
     cache,
+    cache2,
   };
 
   return state;

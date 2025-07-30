@@ -3,6 +3,14 @@
 - React.cache post
 
 - run routes in parallel
+- ssr
+- actions
+- not found
+- redirects
+- errors
+- remove static ssr (i think icon uses this)
+- take a look at inline stream
+
 - error handling
 - @ alias
 - add URL(request.url) to PageProps

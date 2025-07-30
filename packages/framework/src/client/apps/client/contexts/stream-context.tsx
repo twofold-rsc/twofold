@@ -10,5 +10,5 @@ export function StreamContext({
   reader: ReadableStreamDefaultReader<Uint8Array>;
   children: ReactNode;
 }) {
-  return <Context.Provider value={reader}>{children}</Context.Provider>;
+  return <Context value={reader}>{children}</Context>;
 }

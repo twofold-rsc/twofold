@@ -22,6 +22,7 @@ import { API } from "../rsc/api.js";
 import { esbuildPluginTailwind } from "@ryanto/esbuild-plugin-tailwind";
 import { Image, imagesPlugin } from "../plugins/images-plugin.js";
 import { Font, fontsPlugin } from "../plugins/fonts-plugin.js";
+import { SegmentStub } from "../rsc/segment-stub.js";
 
 export type CompiledAction = {
   id: string;
@@ -110,6 +111,7 @@ export class RSCBuilder extends Builder {
           notFoundEntry,
           this.innerRootWrapperSrcPath,
           this.outerRootWrapperSrcPath,
+          this.segmentStubSrcPath,
         ],
         outdir: "./.twofold/rsc/",
         outbase: "app",
@@ -236,6 +238,15 @@ export class RSCBuilder extends Builder {
     );
   }
 
+  get segmentStubSrcPath() {
+    return path.join(
+      fileURLToPath(frameworkSrcDir),
+      "client",
+      "components",
+      "segment-stub.tsx"
+    );
+  }
+
   get notFoundPage() {
     let metafile = this.#metafile;
 
@@ -349,6 +360,7 @@ export class RSCBuilder extends Builder {
             ? output.cssBundle.slice(cssPrefix.length)
             : undefined,
           fileUrl: new URL(key, baseUrl),
+          segmentStub: this.segmentStub,
         });
       });
   }
@@ -441,6 +453,23 @@ export class RSCBuilder extends Builder {
     });
 
     return wrapper;
+  }
+
+  get segmentStub() {
+    let metafile = this.#metafile;
+    if (!metafile) {
+      throw new Error("Could not find segment stub component");
+    }
+
+    let outputFilePath = getCompiledEntrypoint(
+      this.segmentStubSrcPath,
+      metafile
+    );
+    let outputFileUrl = pathToFileURL(outputFilePath);
+
+    return new SegmentStub({
+      fileUrl: outputFileUrl,
+    });
   }
 
   get css() {

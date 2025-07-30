@@ -81,7 +81,7 @@ export class Page {
 
   get assets() {
     return [...this.layouts.map((layout) => layout.css), this.#css].filter(
-      Boolean,
+      Boolean
     );
   }
 
@@ -89,6 +89,7 @@ export class Page {
     let loadLayouts = this.layouts.map(async (layout) => {
       let components = await layout.components();
       return {
+        type: "layout",
         path: layout.path,
         components,
       };
@@ -98,6 +99,7 @@ export class Page {
 
     let components = await this.components();
     let page = {
+      type: "page",
       path: this.#path,
       components,
     };

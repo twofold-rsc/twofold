@@ -46,6 +46,7 @@ parentPort.on("message", async (request: RenderRequest) => {
       // htmlStream = await streamSSR(request);
       throw new Error("Not implemented");
     } else if (request.method === "static") {
+      // remove
       htmlStream = await staticSSR(request);
     } else {
       throw new Error("Invalid ssr render request");

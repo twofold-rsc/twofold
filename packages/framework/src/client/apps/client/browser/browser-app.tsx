@@ -10,6 +10,7 @@ import { RoutingContext } from "../contexts/routing-context";
 import { useRouterReducer } from "./router-hooks";
 import { ErrorBoundary } from "../components/error-boundary";
 import { CrashBoundary } from "../components/crash-boundary";
+import { SegmentContext } from "../contexts/segment-context";
 
 declare global {
   interface Window {
@@ -243,6 +244,8 @@ function Router() {
       ? url.searchParams
       : optimisticURL.searchParams;
 
+  let [rootSegment, ...segments] = routerState.segments ?? [];
+
   return (
     <ErrorBoundary>
       <RoutingContext
@@ -257,7 +260,11 @@ function Router() {
         refresh={refresh}
         notFound={notFound}
       >
-        {routerState.tree}
+        {rootSegment && (
+          <SegmentContext segments={segments}>
+            {rootSegment.tree}
+          </SegmentContext>
+        )}
       </RoutingContext>
     </ErrorBoundary>
   );
