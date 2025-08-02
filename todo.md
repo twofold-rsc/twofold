@@ -3,9 +3,9 @@
 - React.cache post
 
 - run routes in parallel
+- kitchen sink example for nested parallel routes
 - test ssr redirects
 - segment 1 should render not found boundary
-- kitchen sink example for nested parallel routes
 - errors
 
 - take a look at inline stream
