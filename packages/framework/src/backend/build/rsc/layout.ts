@@ -3,7 +3,6 @@ import {
   pathPartialMatches,
 } from "../../runtime/helpers/routing.js";
 import { Page } from "./page.js";
-import { SegmentStub } from "./segment-stub.js";
 import { Wrapper } from "./wrapper.js";
 
 export class Layout {
@@ -14,24 +13,20 @@ export class Layout {
   #children: Layout[] = [];
   #parent?: Layout;
   #pages: Page[] = [];
-  #segmentStub: SegmentStub;
   #wrappers: Wrapper[] = [];
 
   constructor({
     path,
     css,
     fileUrl,
-    segmentStub,
   }: {
     path: string;
     css?: string;
     fileUrl: URL;
-    segmentStub: SegmentStub;
   }) {
     this.#path = path;
     this.#fileUrl = fileUrl;
     this.#css = css;
-    this.#segmentStub = segmentStub;
   }
 
   get path() {
@@ -176,23 +171,9 @@ export class Layout {
     return wrapperComponents;
   }
 
-  async loadSegmentStub() {
-    let segmentStub = this.#segmentStub;
-    if (!segmentStub) {
-      throw new Error(`No segment stub found for layout ${this.path}`);
-    }
-
-    let mod = await segmentStub.loadModule();
-    if (!mod.SegmentStub) {
-      throw new Error(`No segment stub found for layout ${this.path}`);
-    }
-
-    return mod.SegmentStub;
-  }
-
   async components() {
     // flat list of all the modules the render tree needs
-    // -> [Outer, Layout, Inner, SegmentStub]
+    // -> [Outer, Layout, Inner]
 
     let module = await this.loadModule();
     if (!module.default) {
@@ -201,9 +182,8 @@ export class Layout {
 
     let innerWrappers = await this.loadWrappers("inner");
     let outerWrappers = await this.loadWrappers("outer");
-    let segmentStub = await this.loadSegmentStub();
 
-    return [...outerWrappers, module.default, ...innerWrappers, segmentStub];
+    return [...outerWrappers, module.default, ...innerWrappers];
   }
 
   async runMiddleware(props: {

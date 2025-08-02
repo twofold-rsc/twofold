@@ -5,15 +5,15 @@ import { renderToReadableStream } from "react-dom/server.edge";
 import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
 import { RoutingContext } from "../contexts/routing-context";
 import { StreamContext } from "../contexts/stream-context";
-import { Segment, SegmentContext } from "../contexts/segment-context";
+import { RouteStackEntry, RouteStack } from "../contexts/route-stack-context";
 
 export function SSRApp({
   url,
-  getSegments,
+  getRouteStack,
   rscStreamReader,
 }: {
   url: URL;
-  getSegments: () => Promise<Segment[]>;
+  getRouteStack: () => Promise<RouteStackEntry[]>;
   rscStreamReader: ReadableStreamDefaultReader<Uint8Array>;
 }) {
   let navigate = (path: string) => {
@@ -32,8 +32,8 @@ export function SSRApp({
     throw new Error("Cannot call notFound during SSR");
   };
 
-  let segmentsPromise = getSegments();
-  let [rootSegment, ...segments] = use(segmentsPromise);
+  let routeStackPromise = getRouteStack();
+  let routeStack = use(routeStackPromise);
 
   return (
     <RoutingContext
@@ -49,11 +49,7 @@ export function SSRApp({
       notFound={notFound}
     >
       <StreamContext reader={rscStreamReader}>
-        {rootSegment && (
-          <SegmentContext segments={segments}>
-            {rootSegment.tree}
-          </SegmentContext>
-        )}
+        <RouteStack stack={routeStack} />
       </StreamContext>
     </RoutingContext>
   );
@@ -83,9 +79,9 @@ export async function render({
     },
   });
 
-  let segments: Segment[];
-  async function getSegments() {
-    if (!segments) {
+  let routeStack: RouteStackEntry[];
+  async function getRouteStack() {
+    if (!routeStack) {
       let payload = await createFromReadableStream(rscStream3, {
         serverConsumerManifest: {
           // client references
@@ -100,10 +96,10 @@ export async function render({
         },
       });
 
-      segments = payload.segments;
+      routeStack = payload.stack;
     }
 
-    return segments;
+    return routeStack;
   }
 
   let rscStreamReader = rscStream4.getReader();
@@ -114,7 +110,7 @@ export async function render({
     createElement(SSRApp, {
       url,
       rscStreamReader,
-      getSegments,
+      getRouteStack,
     }),
     {
       bootstrapModules: [bootstrapUrl],

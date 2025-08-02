@@ -10,7 +10,7 @@ import { RoutingContext } from "../contexts/routing-context";
 import { useRouterReducer } from "./router-hooks";
 import { ErrorBoundary } from "../components/error-boundary";
 import { CrashBoundary } from "../components/crash-boundary";
-import { SegmentContext } from "../contexts/segment-context";
+import { RouteStack, RouteStackEntry } from "../contexts/route-stack-context";
 
 declare global {
   interface Window {
@@ -21,7 +21,7 @@ declare global {
   }
 
   interface WindowTwofold {
-    updateTree?: (path: string, tree: any) => void;
+    updateStack?: (path: string, stack: RouteStackEntry[]) => void;
     navigate?: (path: string) => void;
     currentPath?: string;
   }
@@ -201,13 +201,13 @@ function Router() {
 
     window.__twofold = {
       ...window.__twofold,
-      updateTree(path: string, tree: any) {
+      updateStack(path: string, stack: RouteStackEntry[]) {
         startTransition(() => {
           setOptimisticPath(path);
           dispatch({
             type: "UPDATE",
             path,
-            tree,
+            stack,
             updateId: genUpdateId(),
           });
         });
@@ -229,7 +229,7 @@ function Router() {
 
     return () => {
       if (window.__twofold) {
-        delete window.__twofold.updateTree;
+        delete window.__twofold.updateStack;
         delete window.__twofold.navigate;
       }
     };
@@ -244,7 +244,7 @@ function Router() {
       ? url.searchParams
       : optimisticURL.searchParams;
 
-  let [rootSegment, ...segments] = routerState.segments ?? [];
+  let stack = routerState.stack ?? [];
 
   return (
     <ErrorBoundary>
@@ -260,11 +260,7 @@ function Router() {
         refresh={refresh}
         notFound={notFound}
       >
-        {rootSegment && (
-          <SegmentContext segments={segments}>
-            {rootSegment.tree}
-          </SegmentContext>
-        )}
+        <RouteStack stack={stack} />
       </RoutingContext>
     </ErrorBoundary>
   );

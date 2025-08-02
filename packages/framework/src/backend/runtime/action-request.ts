@@ -100,11 +100,12 @@ export class ActionRequest {
     let store = getStore();
     store.assets = pageRequest.assets;
 
-    let reactTree = await pageRequest.reactTree();
+    // let reactTree = await pageRequest.reactTree();
+    let stack = await pageRequest.routeStack();
     let formState = await this.#action.getFormState(result);
 
     let data = {
-      tree: reactTree,
+      stack,
       action: result,
       formState,
     };
@@ -370,7 +371,7 @@ class SPAAction implements Action {
 
     if (typeof fn !== "function") {
       throw new Error(
-        `Expected server action ${compiledAction.export} to be a function`,
+        `Expected server action ${compiledAction.export} to be a function`
       );
     }
 

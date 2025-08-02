@@ -62,14 +62,12 @@ export class PageRequest {
       store.assets = this.assets;
     }
 
-    let segments = await this.segments();
-
-    let data = {
-      segments,
-    };
+    let renderStack = await this.routeStack();
 
     let { stream, error, redirect, notFound } =
-      await this.#runtime.renderRSCStream(data);
+      await this.#runtime.renderRSCStream({
+        stack: renderStack,
+      });
 
     if (notFound) {
       stream.cancel();
@@ -137,14 +135,15 @@ export class PageRequest {
     return params;
   }
 
-  async segments() {
+  async routeStack() {
     let segments = await this.#page.segments();
-    // log("Segments:", segments);
 
     let params = this.dynamicParams;
     let props = this.props;
+    let routeStackPlaceholderComponent =
+      await this.#runtime.routeStackPlaceholder();
 
-    let renderableSegments = segments.map((segment) => {
+    let stack = segments.map((segment) => {
       let segmentKey = `${segment.path}:${applyPathParams(
         segment.path,
         params
@@ -154,7 +153,12 @@ export class PageRequest {
       // certain bots will try to crawl them
       let key = hash(segmentKey);
 
-      let componentsWithProps = segment.components.map((component, index) => {
+      let components =
+        segment.type === "layout"
+          ? [...segment.components, routeStackPlaceholderComponent]
+          : segment.components;
+
+      let componentsWithProps = components.map((component, index) => {
         return {
           component,
           props: {
@@ -165,45 +169,12 @@ export class PageRequest {
       });
 
       return {
-        type: segment.type,
-        path: segment.path,
-        key: key,
+        type: "tree",
         tree: componentsToTree(componentsWithProps),
       };
     });
 
-    // log("renderableSegments:", renderableSegments);
-
-    return renderableSegments;
-  }
-
-  async reactTree() {
-    let segments = await this.#page.segments();
-    let params = this.dynamicParams;
-    let props = this.props;
-
-    let componentsAndProps = segments.flatMap((segment) => {
-      let segmentKey = `${segment.path}:${applyPathParams(
-        segment.path,
-        params
-      )}`;
-
-      // we hash the key because if they "look" like urls or paths
-      // certain bots will try to crawl them
-      let key = hash(segmentKey);
-
-      return segment.components.map((component, index) => {
-        return {
-          component,
-          props: {
-            ...props,
-            ...(index === 0 ? { key } : {}),
-          },
-        };
-      });
-    });
-
-    return componentsToTree(componentsAndProps);
+    return stack;
   }
 
   private get props() {

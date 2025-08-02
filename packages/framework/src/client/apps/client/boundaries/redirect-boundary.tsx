@@ -1,7 +1,7 @@
 "use client";
 
-import { Component, ReactNode, startTransition, useEffect } from "react";
-import { useRouter } from "../hooks/use-router";
+import { Component, ReactNode, startTransition, use, useEffect } from "react";
+import { Context } from "../contexts/routing-context";
 
 type Props = {
   children?: ReactNode;
@@ -60,7 +60,7 @@ function getUrlFromError(error: Error & { digest: string }) {
 }
 
 function TriggerRedirect({ url, reset }: { url: string; reset: () => void }) {
-  let { replace } = useRouter();
+  let { replace } = use(Context);
 
   useEffect(() => {
     startTransition(() => {
@@ -68,8 +68,7 @@ function TriggerRedirect({ url, reset }: { url: string; reset: () => void }) {
         replace(url);
         reset();
       } else {
-        console.log("Redirecting to external URL:", url);
-        // window.location.replace(url);
+        window.location.replace(url);
       }
     });
   }, [replace, url, reset]);

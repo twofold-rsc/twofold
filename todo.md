@@ -3,21 +3,25 @@
 - React.cache post
 
 - run routes in parallel
-- ssr
-- actions
-- not found
-- redirects
+- test ssr redirects
+- segment 1 should render not found boundary
+- kitchen sink example for nested parallel routes
 - errors
-- remove static ssr (i think icon uses this)
+
 - take a look at inline stream
 
+- remove inner root wrapper
+
+- remove static ssr (i think icon uses this)
+
 - error handling
+- simplify return types (get rid of serialized error and offsite redirect)
+
 - @ alias
 - add URL(request.url) to PageProps
 
 - add cache support to the build, explore rolldown
 
-- blog index seo
 - newsletter signup (after 3 posts)
 
 - docs for pathless layouts
