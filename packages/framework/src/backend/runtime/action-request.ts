@@ -16,6 +16,7 @@ import {
 import { CompiledAction } from "../build/builders/rsc-builder.js";
 import { pathToFileURL } from "url";
 import { getStore } from "../stores/rsc-store.js";
+import { serializeError } from "serialize-error";
 
 type ServerManifest = Record<
   string,
@@ -70,8 +71,15 @@ export class ActionRequest {
   }
 
   async rscResponse() {
-    let result = await this.getResult();
-    let requestToRender = this.requestToRender;
+    let result: unknown;
+
+    try {
+      result = await this.getResult();
+    } catch (error) {
+      let errorObject =
+        error instanceof Error ? error : new Error("Internal Server Error");
+      return this.errorResponse(errorObject);
+    }
 
     if (isNotFoundError(result)) {
       return this.notFoundRscResponse();
@@ -82,6 +90,7 @@ export class ActionRequest {
       return this.redirectResponse(url);
     }
 
+    let requestToRender = this.requestToRender;
     let pageRequest = this.#runtime.pageRequest(requestToRender);
 
     try {
@@ -263,6 +272,19 @@ export class ActionRequest {
         },
       });
     }
+  }
+
+  private errorResponse(error: Error) {
+    // temporary function to serialize error
+    // todo: use rsc serialization for this sort of thing
+
+    let json = JSON.stringify(serializeError(error));
+    return new Response(json, {
+      status: 500,
+      headers: {
+        "content-type": "text/x-serialized-error",
+      },
+    });
   }
 }
 

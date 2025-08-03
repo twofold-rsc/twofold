@@ -3,10 +3,8 @@
 - React.cache post
 
 - run routes in parallel
-- kitchen sink example for nested parallel routes
-- test ssr redirects
 - segment 1 should render not found boundary
-- errors
+- run through
 
 - take a look at inline stream
 
@@ -16,6 +14,7 @@
 
 - error handling
 - simplify return types (get rid of serialized error and offsite redirect)
+- a good test for this is that mpa mode works with actions that throw errors
 
 - @ alias
 - add URL(request.url) to PageProps
