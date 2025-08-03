@@ -315,24 +315,16 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
       let contentType = response.headers.get("content-type");
       let fetchedPath = responsePath ?? decodeURIComponent(encodedPath);
       let rscOptions = { callServer };
-      let tree;
       let stack: RouteStackEntry[] = [];
 
       if (contentType === "text/x-component") {
         let payload = await createFromReadableStream(response.body, rscOptions);
-        tree = payload.tree;
         stack = payload.stack;
       } else if (contentType === "text/x-serialized-error") {
         // i don't think this is used anymore. router now serializes errors
         // as rsc stream
         let json = await response.json();
         let error = deserializeError(json);
-        let stream = new ReadableStream({
-          start(controller) {
-            controller.error(error);
-          },
-        });
-        tree = createFromReadableStream(stream, rscOptions);
         stack = [
           {
             type: "error",
@@ -340,52 +332,38 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
           },
         ];
       } else if (contentType === "application/json") {
+        // todo should get rid of this type of response
         let json = await response.json();
-        if (json.type === "twofold-offsite-redirect") {
-          let error = new RedirectError(307, json.url);
-          let stream = new ReadableStream({
-            start(controller) {
-              controller.error(error);
-            },
-          });
-          tree = createFromReadableStream(stream, rscOptions);
-          stack = [
-            {
-              type: "error",
-              error,
-            },
-          ];
-        } else {
-          let stream = new ReadableStream({
-            start(controller) {
-              let error = new Error("Unexpected response");
-              controller.error(error);
-            },
-          });
-          tree = createFromReadableStream(stream, rscOptions);
-        }
+        let error =
+          json.type === "twofold-offsite-redirect"
+            ? new RedirectError(307, json.url)
+            : new Error("Unexpected response");
+        stack = [
+          {
+            type: "error",
+            error,
+          },
+        ];
       } else if (!response.ok) {
-        let stream = new ReadableStream({
-          start(controller) {
-            let error = new Error(response.statusText);
-            controller.error(error);
+        let error = new Error(response.statusText);
+        stack = [
+          {
+            type: "error",
+            error,
           },
-        });
-
-        tree = createFromReadableStream(stream, rscOptions);
+        ];
       } else {
-        let stream = new ReadableStream({
-          start(controller) {
-            let error = new Error("Unexpected response");
-            controller.error(error);
+        let error = new Error("Unexpected response");
+        stack = [
+          {
+            type: "error",
+            error,
           },
-        });
-        tree = createFromReadableStream(stream, rscOptions);
+        ];
       }
 
       return {
         path: fetchedPath,
-        tree,
         stack,
       };
     });
