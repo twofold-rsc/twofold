@@ -27,7 +27,7 @@ export function useRouterReducer() {
   let { cache, mask, path } = finalizedState;
 
   if (!cache.has(path)) {
-    // we got asked to render a path and we don't have a tree for it.
+    // we got asked to render a path and we don't have a stack for it.
     dispatch({
       type: "RENDER",
       path,
@@ -182,11 +182,11 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           if (action.path !== rsc.path) {
             // we're trying to populate action.path, but the rsc fetch is
-            // is giving us a tree for a different path. this is likely
+            // is giving us a stack for a different path. this is likely
             // because of a redirect.
             //
             // we need to fulfill the populate request, so we're also
-            // going to store the tree in the path we were asked to
+            // going to store the stack in the path we were asked to
             // populate.
             //
             // longer term: this should really put in some sort of stub that
