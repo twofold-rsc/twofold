@@ -3,7 +3,6 @@
 - React.cache post
 
 - run routes in parallel
-- segment 1 should render not found boundary
 - run through
 
 - take a look at inline stream
@@ -13,6 +12,7 @@
 - remove static ssr (i think icon uses this)
 
 - error handling
+- error boundaries
 - simplify return types (get rid of serialized error and offsite redirect)
 - a good test for this is that mpa mode works with actions that throw errors
 
