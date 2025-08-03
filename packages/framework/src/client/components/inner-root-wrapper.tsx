@@ -6,5 +6,6 @@ export default function InnerRootWrapper({
 }: {
   children: ReactNode;
 }) {
-  return <NotFoundBoundary>{children}</NotFoundBoundary>;
+  // return <NotFoundBoundary>{children}</NotFoundBoundary>;
+  return children;
 }

@@ -17,22 +17,31 @@ export type RouteStackEntry = TreeEntry | ErrorEntry;
 
 type ContextShape = {
   stack: RouteStackEntry[];
+  depth: number;
 };
 
 export const Context = createContext<ContextShape>({
   stack: [],
+  depth: 0,
 });
 
 export function RouteStack({
   stack,
   children,
+  depth = 0,
 }: {
   stack: RouteStackEntry[];
   children?: ReactNode;
+  depth?: number;
 }) {
   return (
-    <RedirectBoundary>
-      <Context value={{ stack }}>{children ? children : <Reader />}</Context>
-    </RedirectBoundary>
+    <Context
+      value={{
+        stack,
+        depth,
+      }}
+    >
+      {children ? children : <Reader />}
+    </Context>
   );
 }
