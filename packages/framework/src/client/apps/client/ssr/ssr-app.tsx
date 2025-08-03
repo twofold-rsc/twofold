@@ -5,14 +5,15 @@ import { renderToReadableStream } from "react-dom/server.edge";
 import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
 import { RoutingContext } from "../contexts/routing-context";
 import { StreamContext } from "../contexts/stream-context";
+import { RouteStackEntry, RouteStack } from "../contexts/route-stack-context";
 
 export function SSRApp({
   url,
-  getTree,
+  getRouteStack,
   rscStreamReader,
 }: {
   url: URL;
-  getTree: () => any;
+  getRouteStack: () => Promise<RouteStackEntry[]>;
   rscStreamReader: ReadableStreamDefaultReader<Uint8Array>;
 }) {
   let navigate = (path: string) => {
@@ -31,7 +32,8 @@ export function SSRApp({
     throw new Error("Cannot call notFound during SSR");
   };
 
-  let tree = getTree();
+  let routeStackPromise = getRouteStack();
+  let routeStack = use(routeStackPromise);
 
   return (
     <RoutingContext
@@ -46,7 +48,9 @@ export function SSRApp({
       refresh={refresh}
       notFound={notFound}
     >
-      <StreamContext reader={rscStreamReader}>{use(tree)}</StreamContext>
+      <StreamContext reader={rscStreamReader}>
+        <RouteStack stack={routeStack} />
+      </StreamContext>
     </RoutingContext>
   );
 }
@@ -75,9 +79,9 @@ export async function render({
     },
   });
 
-  let tree: Promise<any>;
-  async function getTree() {
-    if (!tree) {
+  let routeStack: RouteStackEntry[];
+  async function getRouteStack() {
+    if (!routeStack) {
       let payload = await createFromReadableStream(rscStream3, {
         serverConsumerManifest: {
           // client references
@@ -92,10 +96,10 @@ export async function render({
         },
       });
 
-      tree = payload.tree;
+      routeStack = payload.stack;
     }
 
-    return tree;
+    return routeStack;
   }
 
   let rscStreamReader = rscStream4.getReader();
@@ -106,7 +110,7 @@ export async function render({
     createElement(SSRApp, {
       url,
       rscStreamReader,
-      getTree,
+      getRouteStack,
     }),
     {
       bootstrapModules: [bootstrapUrl],

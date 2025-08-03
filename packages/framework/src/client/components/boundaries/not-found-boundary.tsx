@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Component,
   ReactNode,
@@ -7,7 +5,7 @@ import {
   useContext,
   useEffect,
 } from "react";
-import { Context } from "../apps/client/contexts/routing-context";
+import { Context } from "../../apps/client/contexts/routing-context";
 
 type Props = {
   children?: ReactNode;

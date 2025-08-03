@@ -5,8 +5,8 @@ import {
   // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client'.
 } from "react-server-dom-webpack/client";
 import { callServer } from "../actions/call-server";
-
-type Tree = any;
+import { RedirectError } from "../../../errors/redirect-error";
+import { RouteStackEntry } from "../contexts/route-stack-context";
 
 type State = {
   path: string;
@@ -14,7 +14,7 @@ type State = {
   action: "seed" | "render" | "refresh" | "navigate" | "popstate";
   history: "none" | "push" | "replace";
   scroll: "top" | "preserve";
-  cache: Map<string, Tree>;
+  cache: Map<string, RouteStackEntry[]>;
 };
 
 let fetchCache = new Map<string, Promise<RSCPayload>>();
@@ -27,7 +27,7 @@ export function useRouterReducer() {
   let { cache, mask, path } = finalizedState;
 
   if (!cache.has(path)) {
-    // we got asked to render a path and we don't have a tree for it.
+    // we got asked to render a path and we don't have a stack for it.
     dispatch({
       type: "RENDER",
       path,
@@ -46,7 +46,7 @@ export function useRouterReducer() {
     action: finalizedState.action,
     history: finalizedState.history,
     scroll: finalizedState.scroll,
-    tree: cache.get(path),
+    stack: cache.get(path),
   };
 
   return [returnedState, dispatch] as const;
@@ -85,7 +85,7 @@ type RenderAction = {
 type UpdateAction = {
   type: "UPDATE";
   path: string;
-  tree: Tree;
+  stack: RouteStackEntry[];
   updateId: string;
 };
 
@@ -119,7 +119,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
             });
 
             path = rsc.path;
-            newCache.set(rsc.path, rsc.tree);
+            newCache.set(rsc.path, rsc.stack);
           }
 
           return {
@@ -145,7 +145,6 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
             mask: action.mask,
             action: "popstate",
             history: "none",
-            cache: previous.cache,
           };
         },
       });
@@ -159,7 +158,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           });
 
           let newCache = new Map(previous.cache);
-          newCache.set(rsc.path, rsc.tree);
+          newCache.set(rsc.path, rsc.stack);
 
           return {
             ...previous,
@@ -179,20 +178,20 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           });
 
           let newCache = new Map(previous.cache);
-          newCache.set(rsc.path, rsc.tree);
+          newCache.set(rsc.path, rsc.stack);
 
           if (action.path !== rsc.path) {
             // we're trying to populate action.path, but the rsc fetch is
-            // is giving us a tree for a different path. this is likely
+            // is giving us a stack for a different path. this is likely
             // because of a redirect.
             //
             // we need to fulfill the populate request, so we're also
-            // going to store the tree in the path we were asked to
+            // going to store the stack in the path we were asked to
             // populate.
             //
             // longer term: this should really put in some sort of stub that
             // says action.path should redirect to rsc.path.
-            newCache.set(action.path, rsc.tree);
+            newCache.set(action.path, rsc.stack);
           }
 
           return {
@@ -211,7 +210,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           });
 
           let newCache = new Map(previous.cache);
-          newCache.set(rsc.path, rsc.tree);
+          newCache.set(rsc.path, rsc.stack);
 
           return {
             ...previous,
@@ -229,7 +228,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
         async reduce() {
           let previous = await state;
           let newCache = new Map(previous.cache);
-          newCache.set(action.path, action.tree);
+          newCache.set(action.path, action.stack);
 
           return {
             ...previous,
@@ -248,7 +247,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           let rsc = await fetchRSCPayload(action.path, {
             resource: "not-found",
           });
-          newCache.set(rsc.path, rsc.tree);
+          newCache.set(rsc.path, rsc.stack);
 
           return {
             ...previous,
@@ -289,7 +288,7 @@ function createRouterState({
 
 type RSCPayload = {
   path: string;
-  tree: Tree;
+  stack: RouteStackEntry[];
 };
 
 type FetchOptions = {
@@ -316,56 +315,56 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
       let contentType = response.headers.get("content-type");
       let fetchedPath = responsePath ?? decodeURIComponent(encodedPath);
       let rscOptions = { callServer };
-      let tree;
+      let stack: RouteStackEntry[] = [];
 
       if (contentType === "text/x-component") {
         let payload = await createFromReadableStream(response.body, rscOptions);
-        tree = payload.tree;
+        stack = payload.stack;
       } else if (contentType === "text/x-serialized-error") {
+        // i don't think this is used anymore. router now serializes errors
+        // as rsc stream
         let json = await response.json();
         let error = deserializeError(json);
-        let stream = new ReadableStream({
-          start(controller) {
-            controller.error(error);
+        stack = [
+          {
+            type: "error",
+            error,
           },
-        });
-        tree = createFromReadableStream(stream, rscOptions);
+        ];
       } else if (contentType === "application/json") {
+        // todo should get rid of this type of response
         let json = await response.json();
-        if (json.type === "twofold-offsite-redirect") {
-          window.location.href = json.url;
-          tree = { then: () => {} };
-        } else {
-          let stream = new ReadableStream({
-            start(controller) {
-              let error = new Error("Unexpected response");
-              controller.error(error);
-            },
-          });
-          tree = createFromReadableStream(stream, rscOptions);
-        }
+        let error =
+          json.type === "twofold-offsite-redirect"
+            ? new RedirectError(307, json.url)
+            : new Error("Unexpected response");
+        stack = [
+          {
+            type: "error",
+            error,
+          },
+        ];
       } else if (!response.ok) {
-        let stream = new ReadableStream({
-          start(controller) {
-            let error = new Error(response.statusText);
-            controller.error(error);
+        let error = new Error(response.statusText);
+        stack = [
+          {
+            type: "error",
+            error,
           },
-        });
-
-        tree = createFromReadableStream(stream, rscOptions);
+        ];
       } else {
-        let stream = new ReadableStream({
-          start(controller) {
-            let error = new Error("Unexpected response");
-            controller.error(error);
+        let error = new Error("Unexpected response");
+        stack = [
+          {
+            type: "error",
+            error,
           },
-        });
-        tree = createFromReadableStream(stream, rscOptions);
+        ];
       }
 
       return {
         path: fetchedPath,
-        tree,
+        stack,
       };
     });
 
@@ -382,19 +381,19 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
 
 async function getInitialRouterState() {
   let initialPath = `${location.pathname}${location.search}${location.hash}`;
-  let cache = new Map<string, Tree>();
+  let cache = new Map<string, RouteStackEntry[]>();
   let path = initialPath;
 
   if (window.initialRSC?.stream) {
     let payload = await createFromReadableStream(window.initialRSC.stream, {
       callServer,
     });
-    cache.set(initialPath, payload.tree);
+    cache.set(initialPath, payload.stack);
   } else {
     let rscPayload = await fetchRSCPayload(initialPath, {
       initiator: "initial-render",
     });
-    cache.set(rscPayload.path, rscPayload.tree);
+    cache.set(rscPayload.path, rscPayload.stack);
     path = rscPayload.path;
   }
 

@@ -7,7 +7,10 @@ export default function ActionMissingUseServer() {
   return (
     <form action={save} className="space-y-2">
       <div>
-        <button type="submit" className="bg-black px-2.5 py-1 text-white">
+        <button
+          type="submit"
+          className="rounded bg-black px-3 py-1.5 text-sm text-white"
+        >
           Fire action
         </button>
       </div>

@@ -67,6 +67,22 @@ export class Runtime {
     }
   }
 
+  // routing
+
+  async routeStackPlaceholder() {
+    let placeholderPath =
+      this.build.getBuilder("rsc").routeStackPlaceholderPath;
+
+    let mod = await import(placeholderPath);
+    if (!mod.default) {
+      throw new Error(
+        `Route stack placeholder module at ${placeholderPath} has no default export.`
+      );
+    }
+
+    return mod.default;
+  }
+
   // pages
 
   pageRequest(request: Request) {

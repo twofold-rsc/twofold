@@ -4,6 +4,10 @@ import { Build } from "../../build/build/build.js";
 import { readFile } from "fs/promises";
 import { appCompiledDir } from "../../files.js";
 import { parseHeaderValue } from "@hattip/headers";
+import {
+  renderToReadableStream,
+  // @ts-expect-error: TypeScript cannot find type declarations for this module
+} from "react-server-dom-webpack/server.edge";
 
 export function errors(build: Build): RouteHandler {
   return async (ctx) => {
@@ -24,11 +28,22 @@ export function errors(build: Build): RouteHandler {
           : 500;
 
       if (isRSCFetch) {
-        let json = JSON.stringify(serializeError(error));
-        return new Response(json, {
+        // maybe let the runtime own this?
+        let stream = renderToReadableStream(
+          {
+            stack: [
+              {
+                type: "error",
+                error: error,
+              },
+            ],
+          },
+          {}
+        );
+        return new Response(stream, {
           status,
           headers: {
-            "content-type": "text/x-serialized-error",
+            "content-type": "text/x-component",
           },
         });
       } else if (isHTMLFetch) {

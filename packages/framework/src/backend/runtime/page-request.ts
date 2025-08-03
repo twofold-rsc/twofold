@@ -61,13 +61,12 @@ export class PageRequest {
       store.assets = this.assets;
     }
 
-    let reactTree = await this.reactTree();
-    let data = {
-      tree: reactTree,
-    };
+    let renderStack = await this.routeStack();
 
     let { stream, error, redirect, notFound } =
-      await this.#runtime.renderRSCStream(data);
+      await this.#runtime.renderRSCStream({
+        stack: renderStack,
+      });
 
     if (notFound) {
       stream.cancel();
@@ -135,12 +134,15 @@ export class PageRequest {
     return params;
   }
 
-  async reactTree() {
+  async routeStack() {
     let segments = await this.#page.segments();
+
     let params = this.dynamicParams;
     let props = this.props;
+    let routeStackPlaceholderComponent =
+      await this.#runtime.routeStackPlaceholder();
 
-    let componentsAndProps = segments.flatMap((segment) => {
+    let stack = segments.map((segment) => {
       let segmentKey = `${segment.path}:${applyPathParams(
         segment.path,
         params
@@ -150,7 +152,12 @@ export class PageRequest {
       // certain bots will try to crawl them
       let key = hash(segmentKey);
 
-      return segment.components.map((component, index) => {
+      let components =
+        segment.type === "layout"
+          ? [...segment.components, routeStackPlaceholderComponent]
+          : segment.components;
+
+      let componentsWithProps = components.map((component, index) => {
         return {
           component,
           props: {
@@ -159,9 +166,14 @@ export class PageRequest {
           },
         };
       });
+
+      return {
+        type: "tree",
+        tree: componentsToTree(componentsWithProps),
+      };
     });
 
-    return componentsToTree(componentsAndProps);
+    return stack;
   }
 
   private get props() {

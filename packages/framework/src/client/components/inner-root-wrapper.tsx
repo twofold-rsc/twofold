@@ -1,15 +1,10 @@
 import { ReactNode } from "react";
-import { NotFoundBoundary } from "./not-found-boundary";
-import { RedirectBoundary } from "./redirect-boundary";
 
+// todo dead file, remove
 export default function InnerRootWrapper({
   children,
 }: {
   children: ReactNode;
 }) {
-  return (
-    <NotFoundBoundary>
-      <RedirectBoundary>{children}</RedirectBoundary>
-    </NotFoundBoundary>
-  );
+  return children;
 }

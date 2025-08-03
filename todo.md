@@ -1,15 +1,25 @@
 # TODO
 
 - React.cache post
+- Router post
+- MPA post
 
-- run routes in parallel
+- take a look at inline stream
+
+- remove inner root wrapper
+
+- remove static ssr (i think icon uses this)
+
 - error handling
+- error boundaries
+- simplify return types (get rid of serialized error and offsite redirect)
+- a good test for this is that mpa mode works with actions that throw errors
+
 - @ alias
 - add URL(request.url) to PageProps
 
 - add cache support to the build, explore rolldown
 
-- blog index seo
 - newsletter signup (after 3 posts)
 
 - docs for pathless layouts

@@ -60,11 +60,11 @@ export class Layout {
   findPageForPath(realPath: string): Page | undefined {
     let [staticAndDynamicPages, catchAllPages] = partition(
       this.#pages,
-      (page) => !page.isCatchAll,
+      (page) => !page.isCatchAll
     );
     let [dynamicPages, staticPages] = partition(
       staticAndDynamicPages,
-      (page) => page.isDynamic,
+      (page) => page.isDynamic
     );
 
     let sortBy = (a: Page, b: Page) =>
@@ -106,7 +106,7 @@ export class Layout {
   private addLayout(layout: Layout) {
     // can it go under a child of mine?
     let child = this.#children.find((possibleParent) =>
-      canGoUnder(layout, possibleParent),
+      canGoUnder(layout, possibleParent)
     );
 
     if (child) {
@@ -114,7 +114,7 @@ export class Layout {
     } else if (canGoUnder(layout, this)) {
       // re-balance my children
       let [move, keep] = partition(this.#children, (child) =>
-        canGoUnder(child, layout),
+        canGoUnder(child, layout)
       );
       this.#children = keep;
 
@@ -138,7 +138,7 @@ export class Layout {
   private addPage(page: Page) {
     let isMatch = page.path.startsWith(this.path);
     let matchingChild = this.#children.find((child) =>
-      page.path.startsWith(child.path),
+      page.path.startsWith(child.path)
     );
 
     if (matchingChild) {
@@ -173,7 +173,7 @@ export class Layout {
 
   async components() {
     // flat list of all the modules the render tree needs
-    // -> [Outer, Layout, Inner, etc]
+    // -> [Outer, Layout, Inner]
 
     let module = await this.loadModule();
     if (!module.default) {
@@ -212,7 +212,7 @@ export class Layout {
  */
 function canGoUnder(child: Layout, parent: Layout) {
   let alreadyHave = parent.children.some(
-    (current) => current.path === child.path,
+    (current) => current.path === child.path
   );
   let matchingPath =
     child.path.startsWith(parent.path) && child.path !== parent.path;
@@ -230,6 +230,6 @@ function partition<T>(arr: T[], condition: (item: T) => boolean) {
       }
       return acc;
     },
-    [[], []],
+    [[], []]
   );
 }

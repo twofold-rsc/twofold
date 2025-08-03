@@ -110,6 +110,7 @@ export class RSCBuilder extends Builder {
           notFoundEntry,
           this.innerRootWrapperSrcPath,
           this.outerRootWrapperSrcPath,
+          this.routeStackPlaceholderSrcPath,
         ],
         outdir: "./.twofold/rsc/",
         outbase: "app",
@@ -233,6 +234,16 @@ export class RSCBuilder extends Builder {
       "client",
       "components",
       "outer-root-wrapper.tsx"
+    );
+  }
+
+  get routeStackPlaceholderSrcPath() {
+    return path.join(
+      fileURLToPath(frameworkSrcDir),
+      "client",
+      "components",
+      "route-stack",
+      "placeholder.tsx"
     );
   }
 
@@ -441,6 +452,26 @@ export class RSCBuilder extends Builder {
     });
 
     return wrapper;
+  }
+
+  get routeStackPlaceholderPath() {
+    let metafile = this.#metafile;
+    if (!metafile) {
+      throw new Error("Could not find route stack placeholder component");
+    }
+
+    let outputFilePath = getCompiledEntrypoint(
+      this.routeStackPlaceholderSrcPath,
+      metafile
+    );
+
+    if (!outputFilePath) {
+      throw new Error(
+        `Could not find route stack placeholder component at ${this.routeStackPlaceholderSrcPath}`
+      );
+    }
+
+    return outputFilePath;
   }
 
   get css() {

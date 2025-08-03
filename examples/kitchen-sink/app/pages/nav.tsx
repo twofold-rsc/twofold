@@ -315,6 +315,11 @@ export default function Nav() {
                         href="/routing/nested-layouts"
                       />
                       <ExampleLink
+                        title="Parallel rendering"
+                        description="Nested layouts that render in parallel."
+                        href="/routing/parallel-rendering"
+                      />
+                      <ExampleLink
                         title="Dynamic URLs"
                         description="Use dynamic params to load different data based off the URL."
                         href="/routing/dynamic"

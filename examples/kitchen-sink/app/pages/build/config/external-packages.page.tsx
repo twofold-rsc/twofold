@@ -1,7 +1,7 @@
 import ogs from "open-graph-scraper";
 
 export default async function Page() {
-  let { result } = await ogs({ url: "https://buildui.com" });
+  let { result } = await ogs({ url: "https://twofoldframework.com" });
 
   return (
     <div>

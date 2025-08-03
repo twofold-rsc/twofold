@@ -48,7 +48,7 @@ export function callServer(id: string, args: any) {
       let response = await p;
       let contentType = response.headers.get("content-type");
 
-      let rscTree;
+      let stack;
       let result;
 
       if (contentType === "text/x-component") {
@@ -56,7 +56,7 @@ export function callServer(id: string, args: any) {
           callServer,
           temporaryReferences,
         });
-        rscTree = streams.tree;
+        stack = streams.stack;
         result = streams.action;
       } else if (contentType === "text/x-serialized-error") {
         let json = await response.json();
@@ -88,14 +88,14 @@ export function callServer(id: string, args: any) {
         });
       }
 
-      if (rscTree) {
+      if (stack) {
         let url = new URL(response.url);
         let receivedPath = url.searchParams.get("path");
         let pathToUpdate =
           response.redirected && receivedPath ? receivedPath : path;
 
-        if (window.__twofold?.updateTree) {
-          window.__twofold.updateTree(pathToUpdate, rscTree);
+        if (window.__twofold?.updateStack) {
+          window.__twofold.updateStack(pathToUpdate, stack);
         }
 
         if (response.redirected && window.__twofold?.navigate) {
