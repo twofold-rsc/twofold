@@ -1,8 +1,8 @@
 # TODO
 
 - React.cache post
-
-- run routes in parallel
+- Router post
+- MPA post
 
 - take a look at inline stream
 
