@@ -1,5 +1,4 @@
 import { createContext, ReactNode } from "react";
-import { RedirectBoundary } from "../boundaries/redirect-boundary";
 import { Reader } from "../../../components/route-stack/reader";
 
 type TreeEntry = {

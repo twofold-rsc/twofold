@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { NotFoundBoundary } from "./not-found-boundary";
 
 export default function InnerRootWrapper({
   children,

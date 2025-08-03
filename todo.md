@@ -4,6 +4,7 @@
 
 - run routes in parallel
 - clean up cache and cache2
+- render a path we dont have
 
 - take a look at inline stream
 
