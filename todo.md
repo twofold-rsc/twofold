@@ -3,7 +3,7 @@
 - React.cache post
 
 - run routes in parallel
-- clean up boundaries
+- clean up cache and cache2
 
 - take a look at inline stream
 
