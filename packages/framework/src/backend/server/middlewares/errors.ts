@@ -28,13 +28,7 @@ export function errors(build: Build): RouteHandler {
           : 500;
 
       if (isRSCFetch) {
-        // let json = JSON.stringify(serializeError(error));
-        // return new Response(json, {
-        //   status,
-        //   headers: {
-        //     "content-type": "text/x-serialized-error",
-        //   },
-        // });
+        // maybe let the runtime own this?
         let stream = renderToReadableStream(
           {
             stack: [

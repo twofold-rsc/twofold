@@ -9,7 +9,6 @@ import {
 import { ComponentType, createElement, ReactElement } from "react";
 import { applyPathParams } from "./helpers/routing.js";
 import xxhash from "xxhash-wasm";
-import util from "node:util";
 
 export class PageRequest {
   #page: Page;
@@ -297,10 +296,4 @@ function hash(str: string) {
   let data = encoder.encode(str);
   let hash = h64Raw(data);
   return hash.toString(16);
-}
-
-function log(...a: unknown[]) {
-  console.log(
-    ...a.map((item) => util.inspect(item, { depth: null, colors: true }))
-  );
 }

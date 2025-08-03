@@ -109,7 +109,6 @@ export class ActionRequest {
     let store = getStore();
     store.assets = pageRequest.assets;
 
-    // let reactTree = await pageRequest.reactTree();
     let stack = await pageRequest.routeStack();
     let formState = await this.#action.getFormState(result);
 
