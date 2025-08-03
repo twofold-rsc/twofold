@@ -48,7 +48,6 @@ export function callServer(id: string, args: any) {
       let response = await p;
       let contentType = response.headers.get("content-type");
 
-      // let rscTree;
       let stack;
       let result;
 
@@ -57,7 +56,6 @@ export function callServer(id: string, args: any) {
           callServer,
           temporaryReferences,
         });
-        // rscTree = streams.tree;
         stack = streams.stack;
         result = streams.action;
       } else if (contentType === "text/x-serialized-error") {
@@ -89,21 +87,6 @@ export function callServer(id: string, args: any) {
           callServer,
         });
       }
-
-      // if (rscTree) {
-      //   let url = new URL(response.url);
-      //   let receivedPath = url.searchParams.get("path");
-      //   let pathToUpdate =
-      //     response.redirected && receivedPath ? receivedPath : path;
-
-      //   if (window.__twofold?.updateTree) {
-      //     window.__twofold.updateTree(pathToUpdate, rscTree);
-      //   }
-
-      //   if (response.redirected && window.__twofold?.navigate) {
-      //     window.__twofold.navigate(pathToUpdate);
-      //   }
-      // }
 
       if (stack) {
         let url = new URL(response.url);
