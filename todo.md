@@ -4,6 +4,9 @@
 - Router post
 - MPA post
 
+- deploy website
+- release
+
 - take a look at inline stream
 
 - remove inner root wrapper
