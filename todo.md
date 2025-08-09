@@ -1,11 +1,12 @@
 # TODO
 
+- build/test kitchen sink in prod
+
 - React.cache post
 - Router post
 - MPA post
 
 - deploy website
-- release
 
 - take a look at inline stream
 
