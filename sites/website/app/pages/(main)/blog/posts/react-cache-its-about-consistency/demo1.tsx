@@ -17,7 +17,7 @@ function Result() {
         <p className="font-mono text-sm font-medium text-gray-500">
           Page title
         </p>
-        <p className="text-lg font-medium text-gray-900">React</p>
+        <p className="text-lg text-gray-900">React</p>
       </div>
       <div className="mt-3 space-y-1">
         <p className="font-mono text-sm font-medium text-gray-500">

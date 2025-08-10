@@ -10,7 +10,7 @@ export function Demo3() {
     <div className="not-prose relative">
       <div className="relative -mx-2 flex flex-col items-center justify-center space-y-8 rounded-md border-2 border-gray-200 py-8 sm:mx-0">
         <div>
-          {result ? <p>{result}</p> : <p>Here are some impure functions</p>}
+          {result ? <p>{result}</p> : <p>Try out these impure functions</p>}
         </div>
 
         <form action={() => action("reset")}>

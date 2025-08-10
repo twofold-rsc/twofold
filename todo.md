@@ -1,12 +1,11 @@
 # TODO
 
 - build/test kitchen sink in prod
+- md files should trigger rsc reload
 
 - React.cache post
 - Router post
 - MPA post
-
-- deploy website
 
 - take a look at inline stream
 
@@ -33,7 +32,6 @@
 
 - Run through windows
 
-- ink
 - create twofold app initial output
 - show version
 - show twofold version

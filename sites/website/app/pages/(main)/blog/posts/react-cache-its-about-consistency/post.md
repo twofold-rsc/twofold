@@ -3,14 +3,13 @@ lastUpdated: "2025-08-10T08:00:00Z"
 description: "Learn how React's cache function keeps your components predictable and consistent."
 ---
 
-- proof
 - tweet video
 
 # React Cache: It's about consistency
 
 If you've spent any time with data-fetching and React Server Components, you've probably reached for React's [`cache`](https://react.dev/reference/react/cache) function a handful of times.
 
-In this post, I want to present a case for appreciating `cache` as more than just a memoization and optimization technique for network data-fetching, but instead as an API that guarantees consistency across an entire RSC render.
+In this post, I want to make the case for appreciating `cache` as more than just a memoization and optimization technique for network data-fetching, but instead as an API that guarantees consistency across an entire RSC render.
 
 But first, let's look at one of the most common ways `cache` is used today.
 
@@ -18,7 +17,7 @@ But first, let's look at one of the most common ways `cache` is used today.
 
 React's `cache` is often used to deduplicate requests made by multiple components that need access to the same external data.
 
-Here's an example of two components that both need access to the source HTML of [react.dev's](https://react.dev) homepage:
+Here's an example of two components that both need the source HTML of [react.dev's](https://react.dev) homepage:
 
 {% demo1 %}
 
@@ -65,23 +64,22 @@ const getPage = cache(async (url) => {
 
 {% /demo1 %}
 
-In the above example, our page displays the title and description of react.dev's homepage.
-
 This is where `cache` really shines. Both `<ReactsPageTitle>` and `<ReactsPageDescription>` need the same data, but rather than hoist the data-fetch up to the parent component and pass it down as a prop, we use `cache` to ensure that only one fetch is made and shared between the two components. This lets each component have local data-fetching without worrying about duplicated requests.
 
 ## More than an optimization
 
 Now here's something interesting about the example above: Our two components would behave exactly the same way if the call to `cache` was removed. You could argue that it wouldn't be optimal to do so, but setting that aside the end result rendered by both components would be the same wether `cache` was used or not.
 
-This might lead you to believe that `cache` is a memoization and optimization technique, only to be reached for when dealing with those multi-millisecond external data-fetches used by multiple components. However, I think there's more to it than that and I'm going to try to convince you of that in this post.
+This might lead you to believe that `cache` is a memoization and optimization technique, only to be reached for when dealing with slow external data-fetches used by multiple components. However, I think there's more to it than that and I'm going to try to convince you of that in this post.
 
 ## Consistency with external fetches
 
-First, let's remove the `cache()` call that wraps `getPage(url)`. We're going to write an app without `cache`, show a non-obvious bug that arises, and then fix it only using `cache`.
+First, let's use a data-fetching function that doesn't use `cache`. We're going to write an app without `cache`, show a non-obvious bug that arises, and then fix it only using `cache`.
 
 ```jsx
-const getPage = cache(async (url) => { // [!code --]
-const getPage = async (url) => { // [!code ++]
+// This function does not use cache
+
+function getPage(url) {
   const res = await fetch(url);
   const html = await res.text();
   return html;
@@ -114,18 +112,20 @@ Oh, and we just introduced a potential bug here. Do you see it?
 
 ## Inconsistent data
 
-Since `<ReactsPageDescription>` is now wrapped in `<SlowComponent>`, it'll render some time after `<ReactsPageTitle>`, which means there will be time between each component's data-fetch. If the HTML of react.dev changes in that time then we're going to end up with inconsistent data.
+Since `<ReactsPageDescription>` is now wrapped in `<SlowComponent>`, it renders later than `<ReactsPageTitle>`. This creates a gap between each component's data fetch and if the HTML on react.dev changes during that gap, we end up with inconsistent data.
 
-It might seem unlikely that the HTML on react.dev would change while our app is rendering, but it's not impossible, and we probably don't want to display a title and description that do not belong together when that happens.
+It might seem unlikely that the HTML on react.dev would change while our app is rendering, but it's not impossible. We don't want to display a title and description that don't belong together when that happens.
 
 {% demo2 /%}
 
-You can think of this like UI tearing, where the two components are rendered with different versions of the same data. Any user looking at the above UI is going to be confused.
+You can think of this like UI tearing, where two components are rendered with contradictory versions of the same data. Any user looking at the above UI is going to be confused.
 
-This is why we want to wrap `getPage` in `cache()`. By doing so, we ensure that both `<ReactsPageTitle>` and `<ReactsPageDescription>` will always use the same version of react.dev's HTML, even if they happen to render at different times.
+This is why we wrap `getPage` in `cache()`. Doing so ensures that both `<ReactsPageTitle>` and `<ReactsPageDescription>` always use the same version of react.dev's HTML, even if they render at different times.
 
 ```jsx
 // Here's how we fix the tearing bug:
+
+import { cache } from "react";
 
 // [!code highlight]
 const getPage = cache(async (url) => {
@@ -135,13 +135,13 @@ const getPage = cache(async (url) => {
 });
 ```
 
-Now any component that calls `getPage("https://react.dev")` will always get the same result. Even if a new version of react.dev is deployed while our app is in the middle of rendering.
+Now any component that calls `getPage("https://react.dev")` will get the same result. Even if a new version of react.dev is deployed while our app is mid-render.
 
 It's worth pointing out here that React's cache is _extremely_ short lived. It only lasts for the duration of the current RSC render. Refreshing the page will cause a new fetch and new cache to be created. The cache exists to provide consistency across the current render, not to cache data for future renders.
 
-Also some RSC frameworks, like [Next.js](https://nextjs.org/), automatically wrap fetch requests in `cache()` for you. It's less likely you'll run into these consistency issues when fetches are made through `cache` by default.
+Some RSC frameworks, like [Next.js](https://nextjs.org/), automatically wrap fetch requests in `cache()` for you. It's less likely you'll run into consistency issues when fetches are made through `cache` by default.
 
-However, for non-fetch requests like SQL queries, it's important to know how to use `cache` for consistency. We'll explore those in the next section.
+However, for non-fetch requests like SQL queries, it's important to know how to use `cache` for consistency.
 
 ## Consistency with SQL queries
 
@@ -170,7 +170,7 @@ async function TotalSalesAmount() {
 
 In the above code, each component queries the sales table and displays some data related to sales.
 
-However, if we introduce a `<SlowComponent>` we run into the same problem as before.
+However, if we introduce `<SlowComponent>` into this tree we run into the same problem as before.
 
 ```jsx
 export default function Page() {
@@ -192,9 +192,9 @@ export default function Page() {
 
 Now our two sales components are rendering at different times, which means that if a new sale is made while our app is rendering, we're going to end up with inconsistent data.
 
-This one is a little trickier to solve, since both components are querying the sales table independently. Caching one query doesn't help us with the other.
+This one is a bit trickier to solve, since both components are querying the sales table independently. Caching one query doesn't help us with the other.
 
-We need to find a piece of data that will hold consistency across both components for the lifecycle of the RSC render.
+We need to find a piece of data that will hold consistency across both components for the entirety of the RSC render.
 
 How about the date?
 
@@ -227,29 +227,31 @@ async function TotalSalesAmount() {
 }
 ```
 
-The current date is given to whichever component first calls `now()`, and any component that later calls `now()` will be given the same date as the first. This lets both components query the sales table using the same point in time, even if they render at different times.
+The current date is given to whichever component first calls `now()`, and any component that later calls `now()` is given the same date as the first. This lets both components query the sales table using the same point in time, even if they render at different times.
 
-What's interesting about this example is we're not using `cache` to deduplicate and speed up a slow data-fetch. `new Date()` is fast, and we're certainly not worried about the performance of calling it multiple times. Instead, we're using `cache` because we want `new Date()` to be consistent across the RSC render so that any component writing an SQL query can use the same point in time.
+What's interesting about this example is we're not using `cache` to deduplicate and speed up a slow data fetch. `new Date()` is fast, and we're certainly not worried about the performance of calling it multiple times. Instead, we're using `cache` because we want `new Date()` to be consistent across the RSC render so that any component accessing the database can query the same point in time.
 
-Personally, I've found dashboard pages, which often contain many SQL queries and multiple `<Suspense>` boundaries, to be the perfect breeding ground for these types of consistency issues. In fact, this blog post is inspired by a bug I created while working on a dashboard page that had inconsistent data.
+Personally, I've found dashboard pages, which often contain many SQL queries and multiple `<Suspense>` boundaries, to be the perfect breeding ground for these types of consistency issues. Using `cache` fixes these issues by ensuring that all components see the same data.
 
 ## Impure data
 
-What do fetch requests, SQL queries, and JavaScript's Date constructor all have in common? They all access impure data.
+What do fetch requests, SQL queries, and JavaScript's Date constructor all have in common?
 
-These functions are impure because they can return different results each time they are called. The commonality across each of them is that they rely on external data that changes over time.
+They all access impure data.
+
+These functions are impure because they can return different results each time they are called. The commonality here is that they rely on external data that changes over time.
 
 There are many other examples of impure functions, such as functions that read from the file system, generate random numbers, or access information about the current request, user, or environment.
 
 {% demo3 /%}
 
-These impure functions are the enemy of consistency. Since they can return different values each time they are called, they make your React components behave in unpredictable ways.
+These impure functions are the enemy of consistency. Since they can return different values each time they are called, they open the door for your React components to render a page that's contradictory and confusing.
 
 ## Predictable trees
 
 When I think about React components that are easy to work with the word _predictability_ comes to mind. React components should have predictable output, regardless of how many times they are rendered, where in the tree they are rendered, or if they are wrapped in a slow component or Suspense boundary.
 
-With React Server Components we got the ability to fetch data in a component, so they become a less predictable across _multiple_ renders. Data can change, and when you refresh the page you expect to see the latest version of the data.
+With React Server Components we got the ability to fetch data in a component, so they become less predictable across _multiple_ renders. Data can change, and when you refresh the page you expect to see the latest version of the data.
 
 But for the _same_ render, components should have consistent and predictable output. Which means that if a component uses impure data it should use `cache` for consistency.
 
@@ -277,19 +279,19 @@ function Page() {
   );
 }
 
-function ReactsPageTitle() {
+async function ReactsPageTitle() {
   // fetch and return the page title from react.dev
   // ....
 }
 ```
 
-And I would consider it a bug if any of these components outputted something different from the others. The only way we can guarantee predictable output here is by using `cache`.
+And I would consider it a bug if any of these components outputted something different from the others. The only way to guarantee predictable output here to use `cache`.
 
 ## Impure access
 
 Imagine for a minute that React knew when you were accessing impure data, and it threw an error if you forgot to wrap it in `cache`. Any fetch request, SQL query, or new date would need to use `cache` from the moment you wrote it.
 
-That would force you to think about your data-fetching functions and put them neatly into little `cache` boxes from the moment you wrote them. You'd avoid a number of potential consistency bugs and your components would become more predictable.
+That would force you to think about your data-fetching functions and put them neatly into little impure `cache` boxes from the moment you wrote them. You'd avoid a number of consistency bugs and your components would become more predictable.
 
 While I think this might be a neat idea to explore, I can see most developers _absolutely hating_ it. For starters, there would be a lot of boilerplate involved for any data-fetching function.
 
