@@ -44,7 +44,10 @@ export const getPosts = cache(async function getPosts() {
     return {
       title: title ?? "No title",
       slug,
-      date: frontmatter.lastUpdated ? new Date(frontmatter.lastUpdated) : null,
+      publishedAt: frontmatter.publishedAt
+        ? new Date(frontmatter.publishedAt)
+        : null,
+      published: frontmatter.publishedAt ? true : false,
       description: frontmatter.description ?? "",
     };
   });
@@ -69,11 +72,6 @@ export const loadAst = cache(async (slug: string) => {
   let ast = Markdoc.parse(raw);
 
   return ast;
-});
-
-let frontmatterSchema = z.object({
-  lastUpdated: z.string(),
-  description: z.string(),
 });
 
 export const loadComponents = cache(async (slug: string) => {
@@ -113,6 +111,11 @@ export const loadTags = cache(async (slug: string) => {
   let tags = map[slug] ?? {};
 
   return tags;
+});
+
+let frontmatterSchema = z.object({
+  publishedAt: z.string().optional(),
+  description: z.string(),
 });
 
 export const loadMetadata = cache(async (slug: string) => {

@@ -63,10 +63,10 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
           </div>
           <div className="prose prose-h1:mb-4 prose-li:font-serif prose-p:font-serif first-of-type:prose-p:mt-0 mt-8">
             <MarkdocContent content={content} components={components} />
-            {meta.lastUpdated && (
+            {meta.publishedAt && (
               <div className="mt-12 font-serif text-sm text-gray-500">
                 Last updated:{" "}
-                {new Date(meta.lastUpdated).toLocaleDateString("en-US", {
+                {new Date(meta.publishedAt).toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "long",
                   day: "numeric",

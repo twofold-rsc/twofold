@@ -1,19 +1,17 @@
 ---
-lastUpdated: "2025-08-10T08:00:00Z"
+# publishedAt: "2025-08-10T08:00:00Z"
 description: "Learn how React's cache function keeps your components predictable and consistent."
 ---
 
-- tweet video
-
 # React Cache: It's about consistency
 
-If you've spent any time with data-fetching and React Server Components, you've probably reached for React's [`cache`](https://react.dev/reference/react/cache) function a handful of times.
+If you've spent any time with data fetching and React Server Components, you've probably reached for React's [`cache`](https://react.dev/reference/react/cache) function a handful of times.
 
-In this post, I want to make the case for appreciating `cache` as more than just a memoization and optimization technique for network data-fetching, but instead as an API that guarantees consistency across an entire RSC render.
+In this post, I want to make the case for appreciating `cache` as more than just a memoization and optimization technique for network data fetching, but instead as an API that guarantees consistency across an entire RSC render.
 
 But first, let's look at one of the most common ways `cache` is used today.
 
-## Deduplicating data-fetches
+## Deduplicating data fetches
 
 React's `cache` is often used to deduplicate requests made by multiple components that need access to the same external data.
 
@@ -64,13 +62,13 @@ const getPage = cache(async (url) => {
 
 {% /demo1 %}
 
-This is where `cache` really shines. Both `<ReactsPageTitle>` and `<ReactsPageDescription>` need the same data, but rather than hoist the data-fetch up to the parent component and pass it down as a prop, we use `cache` to ensure that only one fetch is made and shared between the two components. This lets each component have local data-fetching without worrying about duplicated requests.
+This is where `cache` really shines. Both `<ReactsPageTitle>` and `<ReactsPageDescription>` need the same data, but rather than hoist the fetch up to the parent component and pass it down as a prop, we use `cache` to ensure that only one fetch is made and shared between the two components. This lets each component have local data fetching without worrying about duplicated requests.
 
 ## More than an optimization
 
 Now here's something interesting about the example above: Our two components would behave exactly the same way if the call to `cache` was removed. You could argue that it wouldn't be optimal to do so, but setting that aside the end result rendered by both components would be the same wether `cache` was used or not.
 
-This might lead you to believe that `cache` is a memoization and optimization technique, only to be reached for when dealing with slow external data-fetches used by multiple components. However, I think there's more to it than that and I'm going to try to convince you of that in this post.
+This might lead you to believe that `cache` is a memoization and optimization technique, only to be reached for when dealing with slow external data fetches used by multiple components. However, I think there's more to it than that and I'm going to try to convince you of that in this post.
 
 ## Consistency with external fetches
 

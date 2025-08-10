@@ -1,5 +1,5 @@
 ---
-lastUpdated: "2025-06-16T08:00:00Z"
+publishedAt: "2025-06-16T08:00:00Z"
 description: "A look at two real-world UIs that rely on streaming with Suspense."
 ---
 

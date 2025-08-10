@@ -1,17 +1,22 @@
 # TODO
 
-- build/test kitchen sink in prod
-- md files should trigger rsc reload
+- posts can have published false
+- test impure prod functions
+- smart quotes
 
-- React.cache post
-- Router post
-- MPA post
+- build/test kitchen sink in prod
 
 - take a look at inline stream
 
 - remove inner root wrapper
 
 - remove static ssr (i think icon uses this)
+
+- md files should trigger rsc reload
+- bring blog images into each directory
+
+- Router post
+- MPA post
 
 - error handling
 - error boundaries
