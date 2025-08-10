@@ -1,8 +1,9 @@
 # TODO
 
-- posts can have published false
+- author info
 - test impure prod functions
 - smart quotes
+- twitter video
 
 - build/test kitchen sink in prod
 

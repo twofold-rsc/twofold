@@ -158,55 +158,6 @@ importers:
         specifier: 'catalog:'
         version: 5.8.3
 
-  examples/segment-router:
-    dependencies:
-      '@twofold/framework':
-        specifier: workspace:*
-        version: link:../../packages/framework
-      nodemon:
-        specifier: ^3.1.10
-        version: 3.1.10
-      react:
-        specifier: 'catalog:'
-        version: 19.1.0
-      react-dom:
-        specifier: 'catalog:'
-        version: 19.1.0(react@19.1.0)
-      react-server-dom-webpack:
-        specifier: 'catalog:'
-        version: 19.1.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(webpack@5.96.1)
-      tailwindcss:
-        specifier: ^4.1.11
-        version: 4.1.11
-      zod:
-        specifier: 4.0.5
-        version: 4.0.5
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.10.2
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.1.8
-      '@types/react-dom':
-        specifier: 'catalog:'
-        version: 19.1.6(@types/react@19.1.8)
-      eslint:
-        specifier: ^9.31.0
-        version: 9.31.0(jiti@2.4.2)
-      eslint-plugin-twofold:
-        specifier: workspace:*
-        version: link:../../packages/eslint-plugin-twofold
-      prettier:
-        specifier: ^3.6.2
-        version: 3.6.2
-      prettier-plugin-tailwindcss:
-        specifier: ^0.6.14
-        version: 0.6.14(prettier@3.6.2)
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-
   packages/client-component-transforms:
     dependencies:
       '@babel/core':
