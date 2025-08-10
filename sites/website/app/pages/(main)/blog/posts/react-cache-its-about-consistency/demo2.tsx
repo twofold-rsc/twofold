@@ -15,17 +15,15 @@ import clsx from "clsx";
 function Result() {
   return (
     <div>
-      <div className="flex items-center space-x-1.5">
+      <div className="flex items-center space-x-1.5 text-sky-500">
         <ReactIcon className="size-5" />
-        <div className="text-sm font-medium text-sky-500">
-          https://react.dev
-        </div>
+        <div className="text-sm font-medium">https://react.dev</div>
       </div>
       <div className="mt-4 space-y-1">
         <p className="font-mono text-sm font-medium text-gray-500">
           Page title
         </p>
-        <p className="text-lg font-medium text-gray-900">The old React title</p>
+        <p className="text-lg text-gray-900">The old React title</p>
       </div>
 
       <Description />

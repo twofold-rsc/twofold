@@ -1,7 +1,7 @@
 # TODO
 
 - mobile / iphone
-- author info
+- icon color
 - smart quotes
 - twitter video
 - publish post
@@ -17,6 +17,7 @@
 - md files should trigger rsc reload
 - bring blog images into each directory
 
+- author info
 - Router post
 - MPA post
 

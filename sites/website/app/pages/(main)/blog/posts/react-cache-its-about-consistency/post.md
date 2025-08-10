@@ -1,5 +1,5 @@
 ---
-# publishedAt: "2025-08-10T08:00:00Z"
+publishedAt: "2025-08-10T08:00:00Z"
 description: "Learn how React's cache function keeps your components predictable and consistent."
 ---
 
@@ -253,7 +253,7 @@ With React Server Components we got the ability to fetch data in a component, so
 
 But for the _same_ render, components should have consistent and predictable output. Which means that if a component uses impure data it should use `cache` for consistency.
 
-For example, I would expect all of these `<ReactsPageTitle>` to have the same output in this tree:
+For example, I would expect all the `<ReactsPageTitle>` components in this tree to have the same output.
 
 ```jsx
 function Page() {
