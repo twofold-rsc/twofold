@@ -30,7 +30,7 @@ export function Demo3() {
             </button>
 
             <button
-              formAction={() => action("uptime")}
+              formAction={() => action("/proc/uptime")}
               className="inline-flex min-w-[105px] items-center justify-center rounded bg-black px-3 py-1.5 text-sm font-medium text-white"
             >
               uptime

@@ -2,14 +2,16 @@
 
 import os from "node:os";
 import { execSync } from "child_process";
+import { readFile } from "node:fs/promises";
 
 export async function reducer(prev: string | null, action: string) {
   if (action === "os.freemem") {
-    return `The server has ${convertToMB(os.freemem())} MB of free memory`;
+    return `${convertToMB(os.freemem())} MB of free memory`;
   } else if (action === "new Date()") {
-    return `The server date is ${new Date().toLocaleString()}`;
-  } else if (action === "uptime") {
-    return `The server has been online for ${uptime()}`;
+    return `It's ${new Date().toLocaleString()}`;
+  } else if (action === "/proc/uptime") {
+    let result = await uptime();
+    return `Online for ${result}`;
   } else {
     return prev;
   }
@@ -19,30 +21,30 @@ function convertToMB(bytes: number) {
   return Math.floor(bytes / (1024 * 1024));
 }
 
-function uptime() {
+async function uptime() {
   try {
-    const uptimeOutput = execSync("uptime").toString();
+    const raw = await readFile("/proc/uptime", "utf8");
+    const first = raw.trim().split(/\s+/)[0];
+    const seconds = Math.floor(Number(first));
 
-    const daysMatch = uptimeOutput.match(/up\s+(\d+)\s+days?/);
-    if (daysMatch) {
-      return `${daysMatch[1]} days`;
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (days === 0 && hours === 0 && minutes === 0) {
+      return "less than a minute";
     }
 
-    const hoursMatch =
-      uptimeOutput.match(/up\s+(\d+):(\d+)/) ||
-      uptimeOutput.match(/up\s+(\d+)\s+hrs?/);
-    if (hoursMatch) {
-      const hours = hoursMatch[1];
-      return `${hours} hours`;
+    if (days === 0 && hours === 0) {
+      return `${minutes} minute${minutes !== 1 ? "s" : ""}`;
     }
 
-    const minutesMatch = uptimeOutput.match(/up\s+(\d+)\s+mins?/);
-    if (minutesMatch) {
-      return `${minutesMatch[1]} minutes`;
+    if (days === 0) {
+      return `${hours} hour${hours !== 1 ? "s" : ""} ${minutes} minute${minutes !== 1 ? "s" : ""}`;
     }
 
-    return "less than 1 minute";
+    return `${days} day${days !== 1 ? "s" : ""} ${hours} hour${hours !== 1 ? "s" : ""}`;
   } catch (error) {
-    return "10 days";
+    return "10 days 4 hours";
   }
 }

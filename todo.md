@@ -1,9 +1,10 @@
 # TODO
 
+- mobile / iphone
 - author info
-- test impure prod functions
 - smart quotes
 - twitter video
+- publish post
 
 - build/test kitchen sink in prod
 
