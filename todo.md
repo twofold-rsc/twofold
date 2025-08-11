@@ -1,11 +1,5 @@
 # TODO
 
-- mobile / iphone
-- icon color
-- smart quotes
-- twitter video
-- publish post
-
 - build/test kitchen sink in prod
 
 - take a look at inline stream
@@ -14,6 +8,7 @@
 
 - remove static ssr (i think icon uses this)
 
+- smart quotes
 - md files should trigger rsc reload
 - bring blog images into each directory
 
