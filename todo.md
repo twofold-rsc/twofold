@@ -1,17 +1,20 @@
 # TODO
 
-- React.cache post
-- Router post
-- MPA post
-
-- deploy website
-- release
+- build/test kitchen sink in prod
 
 - take a look at inline stream
 
 - remove inner root wrapper
 
 - remove static ssr (i think icon uses this)
+
+- smart quotes
+- md files should trigger rsc reload
+- bring blog images into each directory
+
+- author info
+- Router post
+- MPA post
 
 - error handling
 - error boundaries
@@ -32,7 +35,6 @@
 
 - Run through windows
 
-- ink
 - create twofold app initial output
 - show version
 - show twofold version

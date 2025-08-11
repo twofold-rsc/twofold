@@ -16,7 +16,6 @@ export function staticFiles(build: Build) {
           "Content-Disposition",
           `inline; filename=${path.basename(file.path)}`
         );
-        headers.set("Content-Length", file.size.toString());
       },
     }
   );

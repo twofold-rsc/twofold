@@ -8,6 +8,7 @@ import yaml from "js-yaml";
 import slugify from "@sindresorhus/slugify";
 import * as PromisePost from "../posts/you-can-serialize-a-promise-in-react/components";
 import * as StreamingPost from "../posts/composable-streaming-with-suspense/components";
+import * as CachePost from "../posts/react-cache-its-about-consistency/components";
 import { getTitle } from "../../../../markdoc/utils";
 import { CLIMarkdocTags } from "../../../../components/cli/markdoc-tags";
 
@@ -43,7 +44,10 @@ export const getPosts = cache(async function getPosts() {
     return {
       title: title ?? "No title",
       slug,
-      date: frontmatter.lastUpdated ? new Date(frontmatter.lastUpdated) : null,
+      publishedAt: frontmatter.publishedAt
+        ? new Date(frontmatter.publishedAt)
+        : null,
+      published: frontmatter.publishedAt ? true : false,
       description: frontmatter.description ?? "",
     };
   });
@@ -70,11 +74,6 @@ export const loadAst = cache(async (slug: string) => {
   return ast;
 });
 
-let frontmatterSchema = z.object({
-  lastUpdated: z.string(),
-  description: z.string(),
-});
-
 export const loadComponents = cache(async (slug: string) => {
   let allPosts = await getPostSlugs();
 
@@ -87,6 +86,7 @@ export const loadComponents = cache(async (slug: string) => {
   let map: Record<string, Record<string, ComponentType<any>>> = {
     "you-can-serialize-a-promise-in-react": PromisePost.components,
     "composable-streaming-with-suspense": StreamingPost.components,
+    "react-cache-its-about-consistency": CachePost.components,
   };
 
   let components = map[slug] ?? {};
@@ -105,11 +105,17 @@ export const loadTags = cache(async (slug: string) => {
   let map: Record<string, Record<string, Schema>> = {
     "you-can-serialize-a-promise-in-react": PromisePost.tags,
     "composable-streaming-with-suspense": StreamingPost.tags,
+    "react-cache-its-about-consistency": CachePost.tags,
   };
 
   let tags = map[slug] ?? {};
 
   return tags;
+});
+
+let frontmatterSchema = z.object({
+  publishedAt: z.string().optional(),
+  description: z.string(),
 });
 
 export const loadMetadata = cache(async (slug: string) => {

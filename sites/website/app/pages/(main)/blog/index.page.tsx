@@ -3,11 +3,13 @@ import { getPosts } from "./data-layer/posts";
 
 export default async function BlogPage() {
   const posts = await getPosts();
-  const sortedPosts = [...posts].sort((a, b) => {
-    const aDate = a.date ? a.date.getTime() : 0;
-    const bDate = b.date ? b.date.getTime() : 0;
-    return bDate - aDate;
-  });
+  const sortedPosts = [...posts]
+    .filter((post) => post.published)
+    .sort((a, b) => {
+      const aDate = a.publishedAt ? a.publishedAt.getTime() : 0;
+      const bDate = b.publishedAt ? b.publishedAt.getTime() : 0;
+      return bDate - aDate;
+    });
 
   return (
     <>

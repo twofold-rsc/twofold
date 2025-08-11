@@ -1,5 +1,5 @@
 ---
-lastUpdated: "2025-04-24T08:00:00Z"
+publishedAt: "2025-04-24T08:00:00Z"
 description: "Use React to create a promise on the server and later finish it on the client."
 ---
 

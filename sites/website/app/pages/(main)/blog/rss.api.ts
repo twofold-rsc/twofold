@@ -21,11 +21,12 @@ async function generateRSS({ baseUrl }: { baseUrl: URL }) {
     <description>Writings about React Server Components</description>
     <atom:link href="${new URL("/blog/rss", baseUrl).href}" rel="self" type="application/rss+xml" />
     ${items
+      .filter((item) => item.published)
       .map(
         (item) => `<item>
       <title><![CDATA[${item.title}]]></title>
       <link>${new URL(`/blog/${item.slug}`, baseUrl).href}</link>
-      <pubDate>${item.date ? item.date.toUTCString() : ""}</pubDate>
+      <pubDate>${item.publishedAt ? item.publishedAt.toUTCString() : ""}</pubDate>
       <guid>${new URL(`/blog/${item.slug}`, baseUrl).href}</guid>
       <description><![CDATA[${item.description}]]></description>
     </item>`,
@@ -37,9 +38,7 @@ async function generateRSS({ baseUrl }: { baseUrl: URL }) {
   return rssFeed.trim();
 }
 
-let localCache:
-  | { title: string; slug: string; date: Date | null; description: string }[]
-  | null = null;
+let localCache: Awaited<ReturnType<typeof getPosts>> | null = null;
 
 async function getItems() {
   if (!localCache) {
