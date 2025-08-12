@@ -35,8 +35,6 @@ async function Inline({
   let { done, value } = await reader.read();
   let string = decoder.decode(value, { stream: true });
 
-  await new Promise((resolve) => setTimeout(resolve, 0));
-
   return (
     <>
       <>
@@ -82,7 +80,7 @@ async function Inline({
             <script
               dangerouslySetInnerHTML={{
                 __html: `window.initialRSC.push(${sanitize(
-                  JSON.stringify(string),
+                  JSON.stringify(string)
                 )});`,
               }}
             />

@@ -75,7 +75,7 @@ export class RSCBuilder extends Builder {
     let builder = this;
 
     let hasMiddleware = await this.hasMiddleware();
-    let middlewareEntry = hasMiddleware ? ["./app/middleware.ts"] : [];
+    let middlewareEntry = hasMiddleware ? [srcPaths.app.globalMiddleware] : [];
 
     let notFoundEntry = await this.notFoundSrcPath();
 
@@ -108,9 +108,8 @@ export class RSCBuilder extends Builder {
           ...middlewareEntry,
           ...serverActionEntries,
           notFoundEntry,
-          this.innerRootWrapperSrcPath,
-          this.outerRootWrapperSrcPath,
-          this.routeStackPlaceholderSrcPath,
+          srcPaths.framework.outerRootWrapper,
+          srcPaths.framework.routeStackPlaceholder,
         ],
         outdir: "./.twofold/rsc/",
         outbase: "app",
@@ -198,18 +197,11 @@ export class RSCBuilder extends Builder {
   }
 
   hasMiddleware() {
-    return fileExists(new URL("./middleware.ts", appAppDir));
+    return fileExists(srcPaths.app.globalMiddleware);
   }
 
   get middlewarePath() {
-    if (!this.#metafile) {
-      throw new Error("No metafile");
-    }
-
-    let middlewareUrl = new URL("./middleware.ts", appAppDir);
-    let middlewarePath = fileURLToPath(middlewareUrl);
-
-    return getCompiledEntrypoint(middlewarePath, this.#metafile);
+    return this.compiledPathForEntry(srcPaths.app.globalMiddleware);
   }
 
   private async notFoundSrcPath() {
@@ -217,34 +209,6 @@ export class RSCBuilder extends Builder {
     return hasCustomNotFound
       ? srcPaths.app.notFound
       : srcPaths.framework.notFound;
-  }
-
-  get innerRootWrapperSrcPath() {
-    return path.join(
-      fileURLToPath(frameworkSrcDir),
-      "client",
-      "components",
-      "inner-root-wrapper.tsx"
-    );
-  }
-
-  get outerRootWrapperSrcPath() {
-    return path.join(
-      fileURLToPath(frameworkSrcDir),
-      "client",
-      "components",
-      "outer-root-wrapper.tsx"
-    );
-  }
-
-  get routeStackPlaceholderSrcPath() {
-    return path.join(
-      fileURLToPath(frameworkSrcDir),
-      "client",
-      "components",
-      "route-stack",
-      "placeholder.tsx"
-    );
   }
 
   get notFoundPage() {
@@ -411,67 +375,37 @@ export class RSCBuilder extends Builder {
       });
   }
 
-  get innerRootWrapper() {
+  private compiledPathForEntry(entryPath: string) {
     let metafile = this.#metafile;
-
     if (!metafile) {
-      throw new Error("Could not find inner root wrapper");
+      throw new Error("Could not find metafile");
     }
 
-    let outputFilePath = getCompiledEntrypoint(
-      this.innerRootWrapperSrcPath,
-      metafile
-    );
-    let outputFileUrl = pathToFileURL(outputFilePath);
+    let outputFilePath = getCompiledEntrypoint(entryPath, metafile);
 
-    let wrapper = new Wrapper({
-      path: "/",
-      fileUrl: outputFileUrl,
-      type: "inner",
-    });
+    if (!outputFilePath) {
+      throw new Error(`Could not find compiled path for entry ${entryPath}`);
+    }
 
-    return wrapper;
+    return outputFilePath;
   }
 
-  get outerRootWrapper() {
-    let metafile = this.#metafile;
-    if (!metafile) {
-      throw new Error("Could not find outer root wrapper");
-    }
-
-    let outputFilePath = getCompiledEntrypoint(
-      this.outerRootWrapperSrcPath,
-      metafile
+  private get outerRootWrapper() {
+    let outputFilePath = this.compiledPathForEntry(
+      srcPaths.framework.outerRootWrapper
     );
     let outputFileUrl = pathToFileURL(outputFilePath);
 
     let wrapper = new Wrapper({
       path: "/",
       fileUrl: outputFileUrl,
-      type: "outer",
     });
 
     return wrapper;
   }
 
   get routeStackPlaceholderPath() {
-    let metafile = this.#metafile;
-    if (!metafile) {
-      throw new Error("Could not find route stack placeholder component");
-    }
-
-    let outputFilePath = getCompiledEntrypoint(
-      this.routeStackPlaceholderSrcPath,
-      metafile
-    );
-
-    if (!outputFilePath) {
-      throw new Error(
-        `Could not find route stack placeholder component at ${this.routeStackPlaceholderSrcPath}`
-      );
-    }
-
-    return outputFilePath;
+    return this.compiledPathForEntry(srcPaths.framework.routeStackPlaceholder);
   }
 
   get css() {
@@ -486,7 +420,6 @@ export class RSCBuilder extends Builder {
   get tree() {
     let pages = this.pages;
     let layouts = this.layouts;
-    let innerRootWrapper = this.innerRootWrapper;
     let outerRootWrapper = this.outerRootWrapper;
 
     let root = layouts.find((layout) => layout.path === "/");
@@ -499,7 +432,6 @@ export class RSCBuilder extends Builder {
     otherLayouts.forEach((layout) => root?.add(layout));
     pages.forEach((page) => root?.add(page));
 
-    root.addWrapper(innerRootWrapper);
     root.addWrapper(outerRootWrapper);
 
     return root;
@@ -558,8 +490,22 @@ let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
 let srcPaths = {
   framework: {
     notFound: path.join(frameworkSrcPath, "client", "pages", "not-found.tsx"),
+    outerRootWrapper: path.join(
+      frameworkSrcPath,
+      "client",
+      "components",
+      "outer-root-wrapper.tsx"
+    ),
+    routeStackPlaceholder: path.join(
+      frameworkSrcPath,
+      "client",
+      "components",
+      "route-stack",
+      "placeholder.tsx"
+    ),
   },
   app: {
+    globalMiddleware: path.join(appAppPath, "middleware.ts"),
     notFound: path.join(appAppPath, "pages", "errors", "not-found.tsx"),
   },
 };
