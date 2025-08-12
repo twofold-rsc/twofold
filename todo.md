@@ -2,13 +2,10 @@
 
 - build/test kitchen sink in prod
 
-- take a look at inline stream
-
-- remove inner root wrapper
-
 - remove static ssr (i think icon uses this)
 
 - smart quotes
+- order of rss feed?
 - md files should trigger rsc reload
 - bring blog images into each directory
 

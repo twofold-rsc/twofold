@@ -155,10 +155,8 @@ export class Layout {
     this.#wrappers.push(wrapper);
   }
 
-  async loadWrappers(type: "inner" | "outer") {
-    let wrappers = this.#wrappers.filter((wrapper) => wrapper.type === type);
-
-    let loadWrapperModules = wrappers.map(async (wrapper) => {
+  async loadWrappers() {
+    let loadWrapperModules = this.#wrappers.map(async (wrapper) => {
       let module = await wrapper.loadModule();
       if (!module.default) {
         throw new Error(`Wrapper for ${wrapper.path} has no default export.`);
@@ -173,17 +171,16 @@ export class Layout {
 
   async components() {
     // flat list of all the modules the render tree needs
-    // -> [Outer, Layout, Inner]
+    // -> [Outer, Layout]
 
     let module = await this.loadModule();
     if (!module.default) {
       throw new Error(`Layout for ${this.path}/ has no default export.`);
     }
 
-    let innerWrappers = await this.loadWrappers("inner");
-    let outerWrappers = await this.loadWrappers("outer");
+    let wrappers = await this.loadWrappers();
 
-    return [...outerWrappers, module.default, ...innerWrappers];
+    return [...wrappers, module.default];
   }
 
   async runMiddleware(props: {

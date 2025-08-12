@@ -21,7 +21,7 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
   let components = await loadComponents(slug);
 
   let url = new URL(request.url);
-  let ogImageUrl = new URL(`/images/blog/${slug}/og-image.png`, url.origin);
+  let ogImageUrl = new URL(`/images/blog/${slug}/og-image.png?v2`, url.origin);
 
   return (
     <>
