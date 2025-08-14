@@ -98,12 +98,6 @@ export default function Layout({ children }: { children: ReactNode }) {
               Image
             </Link>
           </li>
-          <li>
-            <Link href="/http/api/icon" className="text-blue-500 underline">
-              Icon
-            </Link>
-          </li>
-          <li>RSC</li>
         </ul>
       </div>
       <div>{children}</div>

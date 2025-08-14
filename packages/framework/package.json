@@ -31,7 +31,6 @@
     "./cookies": "./src/client/http/cookies.ts",
     "./not-found": "./src/client/http/not-found.ts",
     "./redirect": "./src/client/http/redirect.ts",
-    "./render": "./src/client/misc/render.ts",
     "./encryption": "./dist/backend/encryption.js",
     "./flash": {
       "react-server": "./src/client/actions/flash.ts",
