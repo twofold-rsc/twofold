@@ -24,7 +24,7 @@ Images are importable by any component in your app. Importing an image will give
 ```tsx
 // app/pages/index.page.tsx
 
-import picture from "picture.png";
+import picture from "./picture.png";
 
 export default function IndexPage() {
   return (
@@ -44,7 +44,7 @@ Imported images use relative URLs. If you need an absolute URL, you can use the 
 ```tsx
 // app/pages/index.page.tsx
 
-import picture from "picture.png";
+import picture from "./picture.png";
 import { PageProps } from "@twofold/framework/types";
 
 export default function IndexPage({ request }: PageProps) {
@@ -85,7 +85,7 @@ In this example, the `my-font.woff2` file should be located in the `/public/font
 To preload a font, you can use a `<link rel="preload">` tag in any component.
 
 ```tsx
-import MyFont from "../../public/fonts/my-font.woff2";
+import MyFont from "@/public/fonts/my-font.woff2";
 
 export default function Page() {
   return (
