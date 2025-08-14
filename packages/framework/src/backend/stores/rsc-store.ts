@@ -32,12 +32,6 @@ export type Store = {
     add(message: JSONValue): void;
   };
   assets: string[];
-  render: {
-    // this needs to move to an API store, its not callable from rsc
-    treeToStaticHtml: (tree: ReactNode) => Promise<string>;
-    // htmlStream: (tree: ReactNode) => Promise<ReadableStream<Uint8Array>>;
-    // rscStream: (tree: ReactNode) => Promise<ReadableStream<Uint8Array>>;
-  };
 };
 
 let asyncLocalStorage = new AsyncLocalStorage<Store>();

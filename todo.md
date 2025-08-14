@@ -2,12 +2,9 @@
 
 - build/test kitchen sink in prod
 
-- remove static ssr (i think icon uses this)
-
 - smart quotes
 - order of rss feed?
 - md files should trigger rsc reload
-- bring blog images into each directory
 
 - author info
 - Router post
@@ -57,7 +54,7 @@
 - if build changes (stale browser, whatever) should live reload
 - production build should live reload in dev. live reload is really about the task, not the build environment
 
-- perf tracking: https://github.com/facebook/react/pull/31729
+- perf tracking: <https://github.com/facebook/react/pull/31729>
 
 - live reload should reconnect when disconnected
 
@@ -80,7 +77,7 @@ website
 
 framework
 
-- pg-lite + pg+gateway: https://github.com/supabase-community/pg-gateway
+- pg-lite + pg+gateway: <https://github.com/supabase-community/pg-gateway>
 
 - not found and redirect should be server only
 - put all error boundaries in same client component
@@ -116,8 +113,8 @@ kitchen sink
 - Form
 
 - it looks like you can render the app and get the action result like this:
-  1. https://github.com/facebook/react/blob/850fac4915864a487e7cb9ecae8a75dbac144174/fixtures/flight/server/region.js#L154
-  2. https://github.com/facebook/react/blob/850fac4915864a487e7cb9ecae8a75dbac144174/fixtures/flight/src/index.js#L19
+  1. <https://github.com/facebook/react/blob/850fac4915864a487e7cb9ecae8a75dbac144174/fixtures/flight/server/region.js#L154>
+  2. <https://github.com/facebook/react/blob/850fac4915864a487e7cb9ecae8a75dbac144174/fixtures/flight/src/index.js#L19>
 
 ## Client Components
 
@@ -152,11 +149,11 @@ kitchen sink
 ## HMR
 
 - find the file that changed, if all capital then trigger refresh otherwise reload window
-- Read this: https://bjornlu.com/blog/hot-module-replacement-is-easy#importmetahotaccept
+- Read this: <https://bjornlu.com/blog/hot-module-replacement-is-easy#importmetahotaccept>
 
 ## Postgres
 
-- https://github.com/Olshansk/postgres_for_everything?tab=readme-ov-file
+- <https://github.com/Olshansk/postgres_for_everything?tab=readme-ov-file>
 
 ## Errors
 
@@ -164,16 +161,16 @@ kitchen sink
 
 ## Goals
 
-- https://twitter.com/igarcido/status/1711450565396332800
+- <https://twitter.com/igarcido/status/1711450565396332800>
 - Trello
 - Draw
 - Photo gallery nested layouts
 
 ## Design
 
-- https://twitter.com/jh3yy/status/1712881626969997355
-- https://craftofui.substack.com/p/muddling-your-words?triedRedirect=true
-- https://news.ycombinator.com/item?id=42537567
+- <https://twitter.com/jh3yy/status/1712881626969997355>
+- <https://craftofui.substack.com/p/muddling-your-words?triedRedirect=true>
+- <https://news.ycombinator.com/item?id=42537567>
 
 ```tsx
 // client component map for rsc server render

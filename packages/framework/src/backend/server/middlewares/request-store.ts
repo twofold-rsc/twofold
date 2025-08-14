@@ -76,34 +76,6 @@ export function requestStore(runtime: Runtime): RouteHandler {
         },
       },
       assets: [],
-      render: {
-        async treeToStaticHtml(tree) {
-          let rsc = await runtime.renderRSCStream(tree);
-          let html = await runtime.renderHtmlStreamFromRSCStream(
-            rsc.stream,
-            "static",
-          );
-
-          // buffer everything from the static "stream" into a string, then
-          // resolve the promise when the stream ends.
-          return new Promise<string>((resolve, reject) => {
-            let content = "";
-            html.stream.pipeThrough(new TextDecoderStream()).pipeTo(
-              new WritableStream({
-                write(chunk) {
-                  content += chunk;
-                },
-                close() {
-                  resolve(content);
-                },
-                abort(reason) {
-                  reject(reason);
-                },
-              }),
-            );
-          });
-        },
-      },
     };
 
     return runStore(store, () => ctx.next());
