@@ -8,9 +8,9 @@ Files placed in the `/public` folder are served at the root of your app. For exa
 
 ```text
 ├─ app
-|  └─ pages
+│  └─ pages
 │     ├─ index.page.tsx
-|     └─ about.page.tsx
+│     └─ about.page.tsx
 └─ public
    ├─ logo.png
    ├─ robots.txt
