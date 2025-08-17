@@ -1,13 +1,12 @@
 # TODO
 
-- add URL(request.url) to PageProps
-
 - build/test kitchen sink in prod
 
 - release
 
 - smart quotes
 - order of rss feed?
+- post content in rss feed
 - md files should trigger rsc reload
 
 - author info

@@ -54,6 +54,7 @@ Every page component is given a handful of props when rendered.
 | -------------- | ------------------------------------------------------------------------------------- | --------------------------------------- |
 | `params`       | `Record<string, string \| undefined >`                                                | The dynamic params in the URL           |
 | `searchParams` | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | The query params in the URL             |
+| `url`          | [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)                         | The URL of the request                  |
 | `request`      | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)                 | The request object for the HTTP request |
 
 It is important to note that these params are immutable and should not be modified. Changing these values does not have any effect on the URL or the page's state and can lead to unexpected behavior.

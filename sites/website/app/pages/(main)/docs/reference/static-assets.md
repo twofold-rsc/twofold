@@ -39,7 +39,7 @@ All imported images are automatically hashed and given a unique URL. This makes 
 
 ### Absolute image URLs
 
-Imported images use relative URLs. If you need an absolute URL, you can use the request's `url` property like so:
+Imported images use relative URLs. Use the page's `url` if you need an absolute URL:
 
 ```tsx
 // app/pages/index.page.tsx
@@ -47,8 +47,7 @@ Imported images use relative URLs. If you need an absolute URL, you can use the 
 import picture from "./picture.png";
 import { PageProps } from "@twofold/framework/types";
 
-export default function IndexPage({ request }: PageProps) {
-  const url = new URL(request.url);
+export default function IndexPage({ url }: PageProps) {
   const absolutePictureUrl = new URL(picture, url.origin);
 
   return (
