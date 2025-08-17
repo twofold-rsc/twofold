@@ -84,8 +84,8 @@ export class PageRequest {
     let status = error
       ? 500
       : this.#conditions.includes("not-found")
-      ? 404
-      : 200;
+        ? 404
+        : 200;
 
     // give back the stream wrapped in a response
     return new Response(stream, {
@@ -145,7 +145,7 @@ export class PageRequest {
     let stack = segments.map((segment) => {
       let segmentKey = `${segment.path}:${applyPathParams(
         segment.path,
-        params
+        params,
       )}`;
 
       // we hash the key because if they "look" like urls or paths
@@ -186,6 +186,7 @@ export class PageRequest {
     return {
       params,
       searchParams,
+      url,
       request,
     };
   }
@@ -204,7 +205,7 @@ export class PageRequest {
 
   get assets() {
     let assets = this.#page.assets.map(
-      (asset) => `/__tf/assets/styles/${asset}`
+      (asset) => `/__tf/assets/styles/${asset}`,
     );
     return assets;
   }
@@ -280,7 +281,7 @@ export function componentsToTree<T extends object>(
   list: {
     component: ComponentType<T>;
     props: T;
-  }[]
+  }[],
 ): ReactElement {
   let { component, props } = list[0];
   if (list.length === 1) {

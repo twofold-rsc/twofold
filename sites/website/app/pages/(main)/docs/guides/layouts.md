@@ -69,6 +69,7 @@ In addition to the `children` prop, layouts receive the same props passed to pag
 | `children`     | `ReactNode`                                                                           | The child layouts and page component    |
 | `params`       | `Record<string, string \| undefined>`                                                 | The dynamic params in the URL           |
 | `searchParams` | [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) | The query params in the URL             |
+| `url`          | [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)                         | The URL of the request                  |
 | `request`      | [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)                 | The request object for the HTTP request |
 
 ## Types

@@ -8,9 +8,9 @@ Files placed in the `/public` folder are served at the root of your app. For exa
 
 ```text
 ├─ app
-|  └─ pages
+│  └─ pages
 │     ├─ index.page.tsx
-|     └─ about.page.tsx
+│     └─ about.page.tsx
 └─ public
    ├─ logo.png
    ├─ robots.txt
@@ -24,7 +24,7 @@ Images are importable by any component in your app. Importing an image will give
 ```tsx
 // app/pages/index.page.tsx
 
-import picture from "picture.png";
+import picture from "./picture.png";
 
 export default function IndexPage() {
   return (
@@ -39,16 +39,15 @@ All imported images are automatically hashed and given a unique URL. This makes 
 
 ### Absolute image URLs
 
-Imported images use relative URLs. If you need an absolute URL, you can use the request's `url` property like so:
+Imported images use relative URLs. Use the page's `url` if you need an absolute URL:
 
 ```tsx
 // app/pages/index.page.tsx
 
-import picture from "picture.png";
+import picture from "./picture.png";
 import { PageProps } from "@twofold/framework/types";
 
-export default function IndexPage({ request }: PageProps) {
-  const url = new URL(request.url);
+export default function IndexPage({ url }: PageProps) {
   const absolutePictureUrl = new URL(picture, url.origin);
 
   return (
@@ -85,7 +84,7 @@ In this example, the `my-font.woff2` file should be located in the `/public/font
 To preload a font, you can use a `<link rel="preload">` tag in any component.
 
 ```tsx
-import MyFont from "../../public/fonts/my-font.woff2";
+import MyFont from "@/public/fonts/my-font.woff2";
 
 export default function Page() {
   return (

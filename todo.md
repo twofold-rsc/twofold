@@ -2,8 +2,11 @@
 
 - build/test kitchen sink in prod
 
+- release
+
 - smart quotes
 - order of rss feed?
+- post content in rss feed
 - md files should trigger rsc reload
 
 - author info
@@ -14,9 +17,6 @@
 - error boundaries
 - simplify return types (get rid of serialized error and offsite redirect)
 - a good test for this is that mpa mode works with actions that throw errors
-
-- @ alias
-- add URL(request.url) to PageProps
 
 - add cache support to the build, explore rolldown
 
