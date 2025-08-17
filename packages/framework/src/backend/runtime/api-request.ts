@@ -79,6 +79,7 @@ export class APIRequest {
     return {
       params,
       searchParams,
+      url,
       request,
     };
   }

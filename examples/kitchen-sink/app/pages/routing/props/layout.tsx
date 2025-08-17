@@ -23,26 +23,38 @@ export default function Layout(props: LayoutProps) {
           <h2 className="font-medium">Params</h2>
 
           <div className="mt-1 text-gray-500">
-            <ul className="list-disc pl-5">
-              {Object.entries(props.params).map(([key, value]) => (
-                <li key={key}>
-                  {key}: {value}
-                </li>
-              ))}
-            </ul>
+            {Object.keys(props.params).length === 0 ? (
+              <>none</>
+            ) : (
+              <ul className="list-disc pl-5">
+                {Object.entries(props.params).map(([key, value]) => (
+                  <li key={key}>
+                    {key}: {value}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
         <div>
           <h2 className="font-medium">Search params</h2>
           <div className="mt-1 text-gray-500">
-            {props.searchParams.size > 0
-              ? props.searchParams.toString()
-              : "none"}
+            {props.searchParams.size === 0 ? (
+              <>none</>
+            ) : (
+              <ul className="list-disc pl-5">
+                {props.searchParams.entries().map(([key, value]) => (
+                  <li key={key}>
+                    {key}: {value}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
         <div>
           <h2 className="font-medium">URL</h2>
-          {/* <div className="mt-1 text-gray-500">{props.url}</div> */}
+          <div className="mt-1 text-gray-500">{props.url.toString()}</div>
         </div>
         <div>
           <h2 className="font-medium">Request</h2>

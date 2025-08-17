@@ -1,11 +1,11 @@
 import { PageProps } from "@twofold/framework/types";
 import { Reveal } from "./reveal";
 
-export default function RouterPage(props: PageProps<"slug">) {
+export default function SlugPropsPage(props: PageProps<"slug">) {
   return (
     <div>
       <div className="-my-px inline-block rounded-t bg-blue-500 px-2 py-1 text-xs text-white">
-        Layout props
+        Page props
       </div>
       <div className="space-y-8 border border-blue-500 p-4">
         <div>
@@ -24,14 +24,22 @@ export default function RouterPage(props: PageProps<"slug">) {
         <div>
           <h2 className="font-medium">Search params</h2>
           <div className="mt-1 text-gray-500">
-            {props.searchParams.size > 0
-              ? props.searchParams.toString()
-              : "none"}
+            {props.searchParams.size === 0 ? (
+              <>none</>
+            ) : (
+              <ul className="list-disc pl-5">
+                {props.searchParams.entries().map(([key, value]) => (
+                  <li key={key}>
+                    {key}: {value}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
         <div>
           <h2 className="font-medium">URL</h2>
-          {/* <div className="mt-1 text-gray-500">{props.url}</div> */}
+          <div className="mt-1 text-gray-500">{props.url.toString()}</div>
         </div>
         <div>
           <h2 className="font-medium">Request</h2>
