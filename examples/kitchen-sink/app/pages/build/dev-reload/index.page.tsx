@@ -1,4 +1,5 @@
 import ClientComponent from "./client-component";
+import MarkdownReader from "./markdown-reader";
 import ServerComponent from "./server-component";
 
 export default function DevReloadPage() {
@@ -12,6 +13,10 @@ export default function DevReloadPage() {
 
       <div className="mt-12">
         <ClientComponent />
+      </div>
+
+      <div className="mt-12">
+        <MarkdownReader />
       </div>
     </div>
   );

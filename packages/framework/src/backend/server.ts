@@ -17,8 +17,9 @@ import { Runtime } from "./runtime.js";
 import { filterRequests } from "./server/middlewares/filter-requests.js";
 import { gzip } from "./server/middlewares/gzip.js";
 
-async function createHandler(runtime: Runtime) {
-  let build = runtime.build;
+async function createHandler(server: Server) {
+  let runtime = server.runtime;
+  let build = server.build;
 
   let app = createRouter();
 
@@ -109,7 +110,7 @@ async function createHandler(runtime: Runtime) {
       let locationHeader = response.headers.get("location");
       let location = locationHeader?.startsWith("/__rsc/page?path=")
         ? decodeURIComponent(
-            locationHeader.replace(/^\/__rsc\/page\?path=/, "")
+            locationHeader.replace(/^\/__rsc\/page\?path=/, ""),
           )
         : locationHeader;
 
@@ -225,18 +226,18 @@ export class Server {
     this.#runtime = runtime;
   }
 
-  private get build() {
+  get build() {
     return this.#runtime.build;
   }
 
-  private get runtime() {
+  get runtime() {
     return this.#runtime;
   }
 
   async start() {
     if (!this.#server) {
       let runtime = this.runtime;
-      let handler = await createHandler(runtime);
+      let handler = await createHandler(this);
       let config = await this.build.getAppConfig();
 
       let server = createServer(handler, {

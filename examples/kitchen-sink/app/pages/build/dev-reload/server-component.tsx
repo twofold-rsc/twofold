@@ -16,7 +16,7 @@ export default async function ServerComponent() {
 }
 
 async function ServerComponentTime() {
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  // await new Promise((resolve) => setTimeout(resolve, 300));
 
   return (
     <div>

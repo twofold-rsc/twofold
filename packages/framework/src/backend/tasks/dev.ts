@@ -1,13 +1,11 @@
 import { cwdUrl } from "../files.js";
-import { stat, watch } from "fs/promises";
+import { watch } from "fs/promises";
 import dotenv from "dotenv";
 import { logger } from "./helpers/logger.js";
 import { Runtime } from "../runtime.js";
 import { Server } from "../server.js";
 import { ProductionBuild } from "../build/build/production.js";
 import { DevelopmentBuild } from "../build/build/development.js";
-import { fileURLToPath } from "url";
-import path from "path";
 import { minimatch } from "minimatch";
 import { randomBytes } from "crypto";
 
@@ -86,7 +84,10 @@ export class DevTask {
 
   private async reloadEnv() {
     await this.#runtime.stop();
-    dotenv.config({ override: true });
+    dotenv.config({
+      override: true,
+      quiet: true,
+    });
     await this.#build.build();
     await this.#runtime.start();
 
@@ -94,32 +95,39 @@ export class DevTask {
   }
 
   private async watch() {
-    let files = {
-      "app/**/*": () => this.rebuild(),
-      "lib/**/*": () => this.rebuild(),
-      "config/**/*": () => this.restart(),
-      "public/**/*": () => this.rebuild(),
-      ".env": () => this.reloadEnv(),
-      "package.json": () => this.restart(),
-      ".twofold/**/*": () => {},
-      "node_modules/**/*": () => {},
-      ".git/**/*": () => {},
-      "**/*.{js,jsx,ts,tsx}": () => this.rebuild(),
-    };
+    let matchers: [string, () => void | Promise<void>][] = [
+      ["app/**/*", () => this.rebuild()],
+      ["lib/**/*", () => this.rebuild()],
+      ["config/**/*", () => this.restart()],
+      ["public/**/*", () => this.rebuild()],
+      [".env", () => this.reloadEnv()],
+      ["package.json", () => this.restart()],
+      [".twofold/**/*", () => {}],
+      ["node_modules/**/*", () => {}],
+      [".git/**/*", () => {}],
+      ["**/*.{js,jsx,ts,tsx}", () => this.rebuild()],
+    ];
 
     (async () => {
       let watched = watch(cwdUrl, { recursive: true });
       for await (let { filename } of watched) {
         if (filename) {
-          let matchResult = Object.entries(files).find(([match]) =>
+          let matchResult = matchers.find(([match]) =>
             minimatch(filename, match),
           );
 
           if (matchResult) {
             let [match, callback] = matchResult;
+
             // if (match !== ".twofold/**/*") {
-            //   console.log({ filename, match, callback });
+            //   console.log({
+            //     filename,
+            //     match,
+            //     callback,
+            //     eventType,
+            //   });
             // }
+
             // we should buffer for a few ms before running this callback
             await callback();
           }

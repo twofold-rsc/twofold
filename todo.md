@@ -2,15 +2,17 @@
 
 - build/test kitchen sink in prod
 
-- release
-
-- smart quotes
-- order of rss feed?
-- post content in rss feed
-- md files should trigger rsc reload
+- fix emoji rendering
+  [ ] use ansi colors in dev
 
 - author info
+- smart quotes
+- order of rss feed?
+- post content in rss feed?
+
 - Router post
+- animation
+
 - MPA post
 
 - error handling
