@@ -63,9 +63,9 @@ export default function DevReload() {
     async function handleWelcome(message: WelcomeMessage) {
       if (key.current && key.current !== message.key) {
         // we got disconnected and the version has changed
+        key.current = message.key;
         refresh();
       }
-      key.current = message.key;
     }
 
     async function handleChanges(message: ChangesMessage) {
