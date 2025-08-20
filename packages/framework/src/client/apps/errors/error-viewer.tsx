@@ -32,8 +32,11 @@ function Reload() {
   useEffect(() => {
     let eventSource = new EventSource("/__dev/reload");
 
-    eventSource.onmessage = () => {
-      window.location.reload();
+    eventSource.onmessage = (e) => {
+      let data = JSON.parse(e.data);
+      if (data.type === "changes") {
+        window.location.reload();
+      }
     };
 
     return () => {

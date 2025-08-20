@@ -1,6 +1,8 @@
 import { RouteHandler } from "@hattip/router";
 import { Runtime } from "../../runtime.js";
 
+// should take a build
+// should use a bus
 export function waitForBuild(runtime: Runtime): RouteHandler {
   let build = runtime.build;
 

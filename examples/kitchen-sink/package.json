@@ -21,6 +21,7 @@
     "@radix-ui/react-toast": "^1.2.14",
     "@twofold/framework": "workspace:*",
     "clsx": "^2.1.1",
+    "marked": "^16.1.2",
     "motion": "^12.23.6",
     "open-graph-scraper": "^6.10.0",
     "react": "catalog:",

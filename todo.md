@@ -2,15 +2,14 @@
 
 - build/test kitchen sink in prod
 
-- release
-
+- author info
 - smart quotes
 - order of rss feed?
-- post content in rss feed
-- md files should trigger rsc reload
+- post content in rss feed?
 
-- author info
 - Router post
+- animation
+
 - MPA post
 
 - error handling

@@ -39,6 +39,7 @@ export class Runtime {
     return this.build.getBuilder("client").clientComponentMap;
   }
 
+  // move these to server
   get baseUrl() {
     let domain = this.hostname === "0.0.0.0" ? "localhost" : this.hostname;
     return `http://${domain}:${this.port}`;
@@ -69,6 +70,7 @@ export class Runtime {
 
   // routing
 
+  // this is really build output
   async routeStackPlaceholder() {
     let placeholderPath =
       this.build.getBuilder("rsc").routeStackPlaceholderPath;
@@ -76,7 +78,7 @@ export class Runtime {
     let mod = await import(placeholderPath);
     if (!mod.default) {
       throw new Error(
-        `Route stack placeholder module at ${placeholderPath} has no default export.`
+        `Route stack placeholder module at ${placeholderPath} has no default export.`,
       );
     }
 
@@ -125,7 +127,7 @@ export class Runtime {
 
   async renderRSCStream(
     data: any,
-    options: { temporaryReferences?: unknown } = {}
+    options: { temporaryReferences?: unknown } = {},
   ) {
     let clientComponentMap = this.build.getBuilder("client").clientComponentMap;
     let streamError: unknown;
@@ -191,7 +193,7 @@ export class Runtime {
   async renderHtmlStreamFromRSCStream(
     rscStream: ReadableStream<Uint8Array>,
     method: "stream" | "page" | "static",
-    data: Record<string, any> = {}
+    data: Record<string, any> = {},
   ) {
     let { port1, port2 } = new MessageChannel();
 
@@ -221,7 +223,7 @@ export class Runtime {
         writeStream,
       },
       // @ts-expect-error: Type 'ReadableStream<Uint8Array>' is not assignable to type 'TransferListItem'.
-      [port2, rscStream, writeStream]
+      [port2, rscStream, writeStream],
     );
 
     let message = await getMessage;

@@ -11,9 +11,7 @@ type Connection = {
 let activeConnections: Connection[] = [];
 let id = 1;
 
-type BuildWithChanges = DevelopmentBuild;
-
-export function devReload(build: BuildWithChanges): RouteHandler {
+export function devReload(build: DevelopmentBuild): RouteHandler {
   return async ({ request }) => {
     let url = new URL(request.url);
     let pathname = url.pathname;
@@ -21,7 +19,7 @@ export function devReload(build: BuildWithChanges): RouteHandler {
 
     if (method === "GET" && pathname === "/__dev/reload") {
       let connectionId = id++;
-      let handler: () => void;
+      let onBuildComplete: () => void;
 
       return serverSentEvents({
         onOpen(sink) {
@@ -32,14 +30,19 @@ export function devReload(build: BuildWithChanges): RouteHandler {
             }
           }
 
-          handler = () => {
-            // console.log(build.changes);
-            sink.sendMessage(JSON.stringify(build.changes));
+          onBuildComplete = () => {
+            let payload = {
+              type: "changes",
+              key: build.key,
+              changes: build.changes,
+            };
+            // console.log(payload);
+            sink.sendMessage(JSON.stringify(payload));
           };
 
           let close = () => {
             sink.close();
-            build.events.off("complete", handler);
+            build.events.off("complete", onBuildComplete);
           };
 
           activeConnections.push({
@@ -48,13 +51,20 @@ export function devReload(build: BuildWithChanges): RouteHandler {
             sink,
           });
 
-          build.events.on("complete", handler);
+          const welcomeMessage = {
+            type: "welcome",
+            key: build.key,
+          };
+
+          sink.sendMessage(JSON.stringify(welcomeMessage));
+
+          build.events.on("complete", onBuildComplete);
         },
         onClose() {
           activeConnections = activeConnections.filter(
             (connection) => connection.connectionId !== connectionId,
           );
-          build.events.off("complete", handler);
+          build.events.off("complete", onBuildComplete);
         },
       });
     }
