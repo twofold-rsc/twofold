@@ -1,13 +1,13 @@
 import { cwdUrl } from "../files.js";
 import { watch } from "fs/promises";
 import dotenv from "dotenv";
-import { logger } from "./helpers/logger.js";
 import { Runtime } from "../runtime.js";
 import { Server } from "../server.js";
 import { ProductionBuild } from "../build/build/production.js";
 import { DevelopmentBuild } from "../build/build/development.js";
 import { minimatch } from "minimatch";
 import { randomBytes } from "crypto";
+import kleur from "kleur";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -29,18 +29,18 @@ export class DevTask {
     await this.#server.start();
 
     console.log(
-      `🚀 Server started on ${this.#runtime.hostname}:${this.#runtime.port}`,
+      `Server started on ${this.#runtime.hostname}:${this.#runtime.port}`,
     );
 
     let build = await this.#build.build();
-    logger.build(build);
+    console.log(
+      `Built app in ${kleur.green(`${build.time.toFixed(2)}ms`)} [version: ${kleur.yellow(build.key)}]`,
+    );
 
     await this.#runtime.start();
 
-    let cyan = "\x1b[0;36m";
-    let reset = "\x1b[0m";
     console.log(
-      `🌎 Visit ${cyan}${this.#runtime.baseUrl}/ ${reset}to see your app!`,
+      `Visit ${kleur.cyan(`${this.#runtime.baseUrl}/`)} to see your app!`,
     );
 
     this.watch();
@@ -50,7 +50,9 @@ export class DevTask {
     let key = process.env.TWOFOLD_SECRET_KEY;
 
     if (!key || typeof key !== "string") {
-      console.warn("🟡 Missing TWOFOLD_SECRET_KEY. Generating a random key.");
+      console.warn(
+        `Missing ${kleur.yellow("TWOFOLD_SECRET_KEY")}. Generating a random key.`,
+      );
       process.env.TWOFOLD_SECRET_KEY = randomBytes(32).toString("hex");
     }
   }
@@ -64,11 +66,13 @@ export class DevTask {
     await this.#server.start();
 
     console.log(
-      `🚀 Server restarted on ${this.#runtime.hostname}:${this.#runtime.port}`,
+      `Server restarted on ${this.#runtime.hostname}:${this.#runtime.port}`,
     );
 
     let build = await this.#build.build();
-    logger.build(build);
+    console.log(
+      `Built app in ${kleur.green(`${build.time.toFixed(2)}ms`)} [version: ${kleur.yellow(build.key)}]`,
+    );
 
     await this.#runtime.start();
   }
@@ -77,7 +81,9 @@ export class DevTask {
     await this.#runtime.stop();
 
     let build = await this.#build.build();
-    logger.build(build);
+    console.log(
+      `Built app in ${kleur.green(`${build.time.toFixed(2)}ms`)} [version: ${kleur.yellow(build.key)}]`,
+    );
 
     await this.#runtime.start();
   }
@@ -91,7 +97,7 @@ export class DevTask {
     await this.#build.build();
     await this.#runtime.start();
 
-    console.log(`🕵️  Reloaded environment variables`);
+    console.log("Reloaded environment variables");
   }
 
   private async watch() {

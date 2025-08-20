@@ -16,6 +16,7 @@ import { Server as NodeHttpServer } from "http";
 import { Runtime } from "./runtime.js";
 import { filterRequests } from "./server/middlewares/filter-requests.js";
 import { gzip } from "./server/middlewares/gzip.js";
+import kleur from "kleur";
 
 async function createHandler(server: Server) {
   let runtime = server.runtime;
@@ -61,15 +62,19 @@ async function createHandler(server: Server) {
     let initiator = ctx.request.headers.get("x-twofold-initiator");
 
     if (response.status === 404) {
-      console.log("🔴 Not found", requestUrl.pathname);
+      log("Not found", requestUrl.pathname, "red");
     } else if (response.status === 307) {
       let location = response.headers.get("location")?.split("?")[1];
       let params = new URLSearchParams(location ?? "");
-      console.log("🔵 Redirecting to", params.get("path"));
+      log(
+        "Redirect",
+        `${requestUrl.pathname} redirected to ${params.get("path") ?? "unknown"}`,
+        "cyan",
+      );
     } else if (initiator === "refresh") {
-      console.log("🔵 Refreshing", requestUrl.pathname);
+      log("RSC Refresh", requestUrl.pathname, "green");
     } else if (initiator === "client-side-navigation") {
-      console.log("🟢 Rendering", requestUrl.pathname);
+      log("Render", requestUrl.pathname, "green");
     }
 
     return response;
@@ -97,7 +102,7 @@ async function createHandler(server: Server) {
     let actionRequest = runtime.actionRequest(request);
 
     if (!actionRequest) {
-      console.log(`🔴 Action not found`);
+      log("Not found", "Unknown action", "red");
       return runtime.notFoundPageRequest(request).rscResponse();
     }
 
@@ -105,7 +110,7 @@ async function createHandler(server: Server) {
     let name = await actionRequest.name();
 
     if (response.status === 404) {
-      console.log(`🔴 Action ${name} rendered not found`);
+      log("Not found", `Action ${name}`, "red");
     } else if (response.status === 303) {
       let locationHeader = response.headers.get("location");
       let location = locationHeader?.startsWith("/__rsc/page?path=")
@@ -114,9 +119,9 @@ async function createHandler(server: Server) {
           )
         : locationHeader;
 
-      console.log(`🔵 Action ${name} redirect to ${location}`);
+      log("Redirect", `Action ${name} redirected to ${location}`, "cyan");
     } else {
-      console.log(`🟣 Ran action ${name}`);
+      log("Action", name, "magenta");
     }
 
     return response;
@@ -146,13 +151,17 @@ async function createHandler(server: Server) {
         let response = await apiRequest.response();
 
         if (response.status === 404) {
-          console.log("🔴 Not found", requestUrl.pathname);
+          log("Not found", requestUrl.pathname, "red");
         } else if (response.status === 307 || response.status === 308) {
           let location = response.headers.get("location");
-          console.log("🔵 Redirecting to", location);
+          log(
+            "Redirect",
+            `${requestUrl.pathname} redirected to ${location}`,
+            "cyan",
+          );
         } else {
           let method = request.method.toUpperCase();
-          console.log(`🟢 API ${method}`, requestUrl.pathname);
+          log(`API ${method}`, requestUrl.pathname, "green");
         }
 
         return response;
@@ -170,12 +179,12 @@ async function createHandler(server: Server) {
       let name = await actionRequest.name();
 
       if (response.status === 404) {
-        console.log(`🔴 Action ${name} rendered not found`);
+        log("Not found", `Action ${name} rendered not found`, "red");
       } else if (response.status === 303) {
         let location = response.headers.get("location");
-        console.log(`🔵 Action ${name} redirect to ${location}`);
+        log("Redirect", `Action ${name} redirected to ${location}`, "cyan");
       } else {
-        console.log(`🟣 Ran action ${name}`);
+        log("Action", name, "magenta");
       }
 
       return response;
@@ -205,17 +214,26 @@ async function createHandler(server: Server) {
     let response = await pageRequest.ssrResponse();
 
     if (response.status === 404) {
-      console.log("🔴 Not found", url.pathname);
+      log("Not found", url.pathname, "red");
     } else if (response.status === 307 || response.status === 308) {
-      console.log("🔵 Redirecting to", response.headers.get("location"));
+      let location = response.headers.get("location");
+      log("Redirect", `${url.pathname} redirected to ${location}`, "cyan");
     } else {
-      console.log("🟢 Serving", url.pathname);
+      log("Serving", url.pathname, "green");
     }
 
     return response;
   });
 
   return app.buildHandler();
+}
+
+function log(
+  label: string,
+  info: string,
+  color: "green" | "red" | "cyan" | "magenta",
+) {
+  console.log(`${kleur[color](`[${label}]`)} ${info}`);
 }
 
 export class Server {

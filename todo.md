@@ -2,9 +2,6 @@
 
 - build/test kitchen sink in prod
 
-- fix emoji rendering
-  [ ] use ansi colors in dev
-
 - author info
 - smart quotes
 - order of rss feed?
