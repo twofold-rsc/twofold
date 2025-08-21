@@ -4,12 +4,12 @@
 
 - author info
 - smart quotes
-- order of rss feed?
-- post content in rss feed?
 
 - Router post
 - animation
 
+- order of rss feed?
+- post content in rss feed?
 - MPA post
 
 - error handling
