@@ -9,8 +9,8 @@ import { getTitle } from "../../../markdoc/utils";
 import { CLICommand } from "../../../components/cli/command";
 import { StandoutComment } from "./components/standout-comment";
 import ryanPicture from "./images/ryan.avif";
-import { XTwitter } from "@/app/icons/x-twitter";
-import { Bluesky } from "@/app/icons/bluesky";
+import { XTwitterIcon } from "@/app/icons/x-twitter";
+import { BlueskyIcon } from "@/app/icons/bluesky";
 // import { Callout } from "./components/callout";
 // import { Image } from "./components/image";
 
@@ -98,14 +98,14 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <XTwitter className="size-5" />
+                <XTwitterIcon className="size-5" />
               </a>
               <a
                 href="https://bsky.app/profile/ryantoron.to"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Bluesky className="size-5" />
+                <BlueskyIcon className="size-5" />
               </a>
             </div>
           </div>
