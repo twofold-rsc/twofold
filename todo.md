@@ -1,9 +1,7 @@
 # TODO
 
 - build/test kitchen sink in prod
-
-- author info
-- smart quotes
+- Run through windows
 
 - Router post
 - animation
@@ -25,8 +23,6 @@
 
 - rework build/startup
 - let externals plugin use the cache
-
-- Run through windows
 
 - create twofold app initial output
 - show version

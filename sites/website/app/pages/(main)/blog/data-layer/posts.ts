@@ -11,6 +11,7 @@ import * as StreamingPost from "../posts/composable-streaming-with-suspense/comp
 import * as CachePost from "../posts/react-cache-its-about-consistency/components";
 import { getTitle } from "../../../../markdoc/utils";
 import { CLIMarkdocTags } from "../../../../components/cli/markdoc-tags";
+import { smartQuotesPlugin } from "@/lib/markdoc-smart-quotes";
 
 export const getPostSlugs = cache(async () => {
   let directoryPath = path.join(
@@ -70,8 +71,8 @@ export const loadAst = cache(async (slug: string) => {
   );
   let raw = await readFile(filePath, "utf-8");
   let ast = Markdoc.parse(raw);
-
-  return ast;
+  let modifiedAst = smartQuotesPlugin(ast);
+  return modifiedAst;
 });
 
 export const loadComponents = cache(async (slug: string) => {
