@@ -1,15 +1,13 @@
 # TODO
 
 - build/test kitchen sink in prod
-
-- author info
-- smart quotes
-- order of rss feed?
-- post content in rss feed?
+- Run through windows
 
 - Router post
 - animation
 
+- order of rss feed?
+- post content in rss feed?
 - MPA post
 
 - error handling
@@ -25,8 +23,6 @@
 
 - rework build/startup
 - let externals plugin use the cache
-
-- Run through windows
 
 - create twofold app initial output
 - show version

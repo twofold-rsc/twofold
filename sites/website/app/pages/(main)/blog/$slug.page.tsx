@@ -8,6 +8,9 @@ import { loadComponents, loadContent, loadMetadata } from "./data-layer/posts";
 import { getTitle } from "../../../markdoc/utils";
 import { CLICommand } from "../../../components/cli/command";
 import { StandoutComment } from "./components/standout-comment";
+import ryanPicture from "./images/ryan.avif";
+import { XTwitterIcon } from "@/app/icons/x-twitter";
+import { BlueskyIcon } from "@/app/icons/bluesky";
 // import { Callout } from "./components/callout";
 // import { Image } from "./components/image";
 
@@ -63,16 +66,48 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
           </div>
           <div className="prose prose-h1:mb-4 prose-li:font-serif prose-p:font-serif first-of-type:prose-p:mt-0 mt-8">
             <MarkdocContent content={content} components={components} />
-            {meta.publishedAt && (
-              <div className="mt-12 font-serif text-sm text-gray-500">
-                Last updated:{" "}
-                {new Date(meta.publishedAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+          </div>
+
+          <div className="mt-12 flex items-center justify-between">
+            <div className="flex items-center space-x-2 font-serif">
+              <div className="relative">
+                <img
+                  src={ryanPicture}
+                  alt="Ryan"
+                  className="size-12 rounded-full"
+                />
+                <div className="pointer-events-none absolute inset-0 rounded-full ring ring-black/5 ring-inset" />
               </div>
-            )}
+              <div>
+                <div className="font-semibold">Ryan Toronto</div>
+                {meta.publishedAt && (
+                  <div className="text-sm text-gray-500">
+                    {" "}
+                    {new Date(meta.publishedAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <a
+                href="https://x.com/ryantotweets"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <XTwitterIcon className="size-5" />
+              </a>
+              <a
+                href="https://bsky.app/profile/ryantoron.to"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <BlueskyIcon className="size-5" />
+              </a>
+            </div>
           </div>
         </div>
       </div>

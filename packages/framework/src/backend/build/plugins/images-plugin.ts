@@ -22,7 +22,7 @@ export function imagesPlugin({
     name: "images",
     async setup(build) {
       build.onLoad(
-        { filter: /\.(png|jpg|jpeg|gif|webp|svg)$/ },
+        { filter: /\.(png|jpg|jpeg|gif|webp|avif|svg)$/ },
         async (args) => {
           let ext = path.extname(args.path);
           let name = path.basename(args.path, ext);
@@ -41,7 +41,7 @@ export function imagesPlugin({
             contents: `export default ${JSON.stringify(publicUrl)};`,
             loader: "js",
           };
-        }
+        },
       );
     },
   };

@@ -54,7 +54,7 @@ export class EntriesBuilder extends Builder {
   async setup() {
     let frameworkComponentsUrl = new URL(
       "./client/components/",
-      frameworkSrcDir
+      frameworkSrcDir,
     );
     let frameworkComponentsPath = fileURLToPath(frameworkComponentsUrl);
 
@@ -84,6 +84,7 @@ export class EntriesBuilder extends Builder {
         ".jpeg": "empty",
         ".gif": "empty",
         ".webp": "empty",
+        ".avif": "empty",
         ".svg": "empty",
         ".woff2": "empty",
       },
@@ -143,7 +144,7 @@ export class EntriesBuilder extends Builder {
                 }
 
                 return null;
-              }
+              },
             );
           },
         },
@@ -177,10 +178,10 @@ export class EntriesBuilder extends Builder {
   serialize() {
     return {
       clientComponentEntryMap: Object.fromEntries(
-        this.#clientComponentEntryMap.entries()
+        this.#clientComponentEntryMap.entries(),
       ),
       serverActionEntryMap: Object.fromEntries(
-        this.#serverActionEntryMap.entries()
+        this.#serverActionEntryMap.entries(),
       ),
       discoveredExternals: Array.from(this.#discoveredExternals),
     };
@@ -188,10 +189,10 @@ export class EntriesBuilder extends Builder {
 
   load(data: any) {
     this.#clientComponentEntryMap = new Map(
-      Object.entries(data.clientComponentEntryMap)
+      Object.entries(data.clientComponentEntryMap),
     );
     this.#serverActionEntryMap = new Map(
-      Object.entries(data.serverActionEntryMap)
+      Object.entries(data.serverActionEntryMap),
     );
     this.#discoveredExternals = new Set(data.discoveredExternals);
   }
