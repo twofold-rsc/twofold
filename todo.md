@@ -37,16 +37,13 @@
 - api routes should use route matchers
 
 - components
-- NavigationLink
+- Link with transition helpers
 
 - error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
 
 - prefix encrypted cookie with app name
 
 - taint secret key (needs experimental react)
-- editing env file should trigger some sort of change so live reload works
-- editing config file should trigger reload
-- if build changes (stale browser, whatever) should live reload
 - production build should live reload in dev. live reload is really about the task, not the build environment
 
 - perf tracking: <https://github.com/facebook/react/pull/31729>
@@ -77,8 +74,6 @@ framework
 - not found and redirect should be server only
 - put all error boundaries in same client component
 - monkey patch console.error for not found/redirect boundaries
-
-- run middleware in RSC?
 
 - reload on file changes under pages? (ex editing an md file)
 
