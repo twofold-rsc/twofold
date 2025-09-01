@@ -9,6 +9,7 @@ import slugify from "@sindresorhus/slugify";
 import * as PromisePost from "../posts/you-can-serialize-a-promise-in-react/components";
 import * as StreamingPost from "../posts/composable-streaming-with-suspense/components";
 import * as CachePost from "../posts/react-cache-its-about-consistency/components";
+import * as RouteRenderingPost from "../posts/recursive-and-parallel-route-rendering-with-rsc/components";
 import { getTitle } from "../../../../markdoc/utils";
 import { CLIMarkdocTags } from "../../../../components/cli/markdoc-tags";
 import { smartQuotesPlugin } from "@/lib/markdoc-smart-quotes";

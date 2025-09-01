@@ -6,6 +6,11 @@
 - Router post
 - animation
 
+- handle PORT env
+- handle port CLI
+- sigterm (test locally with serve)
+- prewarm imports (routing tree)
+
 - order of rss feed?
 - post content in rss feed?
 - MPA post
