@@ -26,6 +26,11 @@ export class ServeTask {
     await this.#server.start();
     await this.#runtime.start();
 
+    process.on("SIGTERM", () => {
+      console.log("Received SIGTERM, shutting down gracefully");
+      this.stop();
+    });
+
     console.log(
       `Server started on ${this.#runtime.hostname}:${this.#runtime.port}`,
     );
@@ -40,5 +45,16 @@ export class ServeTask {
         "process.env.TWOFOLD_SECRET_KEY is required. Please set it to a string.",
       );
     }
+  }
+
+  private async stop() {
+    const timeoutId = setTimeout(() => {
+      console.error("Force shutdown after timeout");
+      process.exit(1);
+    }, 9_000);
+
+    await this.#server.stop();
+    clearTimeout(timeoutId);
+    process.exit(0);
   }
 }
