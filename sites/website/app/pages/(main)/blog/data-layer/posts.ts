@@ -13,6 +13,13 @@ import * as RouteRenderingPost from "../posts/recursive-and-parallel-route-rende
 import { getTitle } from "../../../../markdoc/utils";
 import { CLIMarkdocTags } from "../../../../components/cli/markdoc-tags";
 import { smartQuotesPlugin } from "@/lib/markdoc-smart-quotes";
+import { Fence } from "../components/fence";
+import { CodeTabs, CodeTabsFence } from "../components/code-tabs";
+import { Footnote } from "../components/footnote";
+import { StandoutComment } from "../components/standout-comment";
+import { CLICommand } from "../../../../components/cli/command";
+// import { Callout } from "./components/callout";
+// import { Image } from "./components/image";
 
 export const getPostSlugs = cache(async () => {
   let directoryPath = path.join(
@@ -89,11 +96,21 @@ export const loadComponents = cache(async (slug: string) => {
     "you-can-serialize-a-promise-in-react": PromisePost.components,
     "composable-streaming-with-suspense": StreamingPost.components,
     "react-cache-its-about-consistency": CachePost.components,
+    "recursive-and-parallel-route-rendering-with-rsc":
+      RouteRenderingPost.components,
   };
 
   let components = map[slug] ?? {};
 
-  return components;
+  return {
+    ...components,
+    Fence,
+    CodeTabs,
+    CodeTabsFence,
+    Footnote,
+    CLICommand,
+    StandoutComment,
+  };
 });
 
 export const loadTags = cache(async (slug: string) => {
@@ -108,6 +125,7 @@ export const loadTags = cache(async (slug: string) => {
     "you-can-serialize-a-promise-in-react": PromisePost.tags,
     "composable-streaming-with-suspense": StreamingPost.tags,
     "react-cache-its-about-consistency": CachePost.tags,
+    "recursive-and-parallel-route-rendering-with-rsc": RouteRenderingPost.tags,
   };
 
   let tags = map[slug] ?? {};
@@ -153,6 +171,55 @@ export const loadContent = cache(async (slug: string) => {
           children: { type: Array, required: true },
         },
       },
+      "code-tabs": {
+        render: "CodeTabs",
+        attributes: {
+          children: { type: Array, required: true },
+        },
+        transform(node, config) {
+          let children = node.transformChildren(config);
+          let files = [];
+
+          for (let child of children) {
+            if (
+              typeof child === "object" &&
+              child !== null &&
+              "name" in child &&
+              child.name === "Fence" &&
+              Array.isArray(child.children) &&
+              typeof child.children[0] === "string"
+            ) {
+              let attributes =
+                child.attributes && typeof child.attributes === "object"
+                  ? child.attributes
+                  : {};
+
+              let file =
+                typeof attributes === "object" && "file" in attributes
+                  ? attributes.file
+                  : `file-${children.indexOf(child) + 1}`;
+
+              files.push(file);
+
+              child.name = "CodeTabsFence";
+              child.attributes = {
+                ...attributes,
+                file,
+                isFirst: files.length === 1,
+              };
+            }
+          }
+
+          return new Tag(
+            this.render,
+            {
+              files,
+            },
+            children,
+          );
+        },
+      },
+
       // callout: {
       //   render: "Callout",
       //   children: ["inline"],

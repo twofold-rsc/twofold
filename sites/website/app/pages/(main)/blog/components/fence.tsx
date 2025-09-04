@@ -12,11 +12,13 @@ export async function Fence({
   language,
   file,
   demo,
+  tabs,
 }: {
   children: string;
   language: string;
   file?: string;
   demo?: boolean;
+  tabs?: { isFirst: boolean };
 }) {
   let result = await codeToHtml(children, {
     lang: language,
@@ -40,8 +42,15 @@ export async function Fence({
     ],
   });
 
+  const hasTabs = !!tabs;
+
   return (
-    <div className={clsx("not-prose -mx-2 sm:mx-0", demo ? "mt-6" : "my-6")}>
+    <div
+      className={clsx(
+        "not-prose -mx-2 sm:mx-0",
+        demo ? "mt-6" : hasTabs ? "mb-6" : "my-6",
+      )}
+    >
       {file && (
         <div className="flex items-center justify-start">
           <div className="inline-flex items-center justify-center rounded-t-md bg-[#24292e] px-4 pt-2 pb-1 text-xs font-medium text-gray-300">
@@ -52,9 +61,10 @@ export async function Fence({
       <div
         className={clsx(
           "overflow-x-scroll bg-[#24292e] text-sm font-medium [&_pre]:text-[13px] [&_pre]:leading-[1.7] [&_pre]:subpixel-antialiased",
-          !file && !demo && "rounded-md",
+          !file && !demo && !hasTabs && "rounded-md",
           file && demo && "rounded-tr-md",
-          file && !demo && "rounded-tr-md rounded-b-md",
+          hasTabs && !tabs.isFirst && "rounded-tl-md",
+          (file || hasTabs) && !demo && "rounded-tr-md rounded-b-md",
           !file && demo && "rounded-t-md",
         )}
       >

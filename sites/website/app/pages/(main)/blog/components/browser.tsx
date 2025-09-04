@@ -16,15 +16,15 @@ export function Browser({
   onForward?: MouseEventHandler<HTMLButtonElement>;
 }) {
   return (
-    <div className="flex h-full flex-col rounded-lg">
-      <div className="relative flex w-full items-center justify-center rounded-t-lg bg-gray-100 px-4 py-2">
+    <div className="relative flex h-full flex-col rounded-lg">
+      <div className="relative flex w-full items-center justify-center rounded-t-lg bg-gray-50 px-4 py-2">
         <div className="absolute inset-y-0 left-4 flex items-center justify-center">
           <div className="mr-4 flex items-center space-x-1.5">
             <span className="size-2.5 rounded-full bg-red-400"></span>
             <span className="size-2.5 rounded-full bg-yellow-400"></span>
             <span className="size-2.5 rounded-full bg-green-400"></span>
           </div>
-          <div className="hidden items-center justify-center text-gray-100 md:flex">
+          <div className="hidden items-center justify-center md:flex">
             <div className="flex items-center space-x-1">
               <button
                 className={clsx(
@@ -47,7 +47,7 @@ export function Browser({
             </div>
           </div>
         </div>
-        <div className="relative mx-3 flex w-[200px] overflow-hidden rounded-md bg-gray-100 px-2.5 py-1.5 text-center text-xs font-medium whitespace-nowrap ring ring-black/10 ring-inset md:w-1/2 md:pr-12">
+        <div className="relative mx-3 flex w-[200px] overflow-hidden rounded-md bg-gray-50 px-2.5 py-1.5 text-center text-xs font-medium whitespace-nowrap ring ring-black/10 ring-inset md:w-1/2 md:pr-12">
           <span className="w-full overflow-hidden text-center text-gray-500">
             {url}
           </span>
@@ -97,9 +97,10 @@ export function Browser({
       </div>
 
       <div className="relative flex h-full min-h-[400px] w-full grow flex-col overflow-hidden rounded-b-lg bg-white">
-        <div className="pointer-events-none absolute inset-0 z-10 -mt-[2px] rounded-b-lg ring-2 ring-gray-100 ring-inset" />
         {children}
       </div>
+
+      <div className="pointer-events-none absolute inset-0 rounded-lg shadow ring-[0.5px] ring-gray-950/10" />
     </div>
   );
 }

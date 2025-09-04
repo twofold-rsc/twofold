@@ -14,6 +14,7 @@ But in order to understand RSC route rendering, we need to touch on a wide range
 - RSC trees with Layouts and Pages
 - Data-fetching and waterfalls
 - React's two-phase rendering
+- Serialization
 - Parallel rendering
 - Recursive components
 
@@ -27,9 +28,9 @@ Before we begin, we need to talk about one of the biggest problems RSC routers h
 
 To explain, here's a React app that's an admin area for a blog post editor.
 
-{% fences %}
+{% code-tabs %}
 
-```jsx {% file="test.js" /%}
+```jsx {% file="app.jsx" %}
 import RootLayout from "./root-layout";
 import PostsLayout from "./posts-layout";
 import EditPage from "./edit-page";
@@ -45,17 +46,65 @@ export function App() {
 }
 ```
 
-{% /fences %}
+```jsx {% file="root-layout.jsx" %}
+export default function RootLayout({ children }) {
+  const user = await fetchCurrentUser();
+
+  return (
+    <div>
+      <header>Welcome, {user.name}</header>
+      <main>{children}</main>
+    </div>
+  );
+}
+```
+
+```jsx {% file="posts-layout.jsx" %}
+export default function PostsLayout({ children }) {
+  const posts = await fetchPosts();
+
+  return (
+    <div>
+      <aside>
+        <ul>
+          {posts.map((post) => (
+            <li key={post.id}>{post.title}</li>
+          ))}
+        </ul>
+      </aside>
+
+      <section>{children}</section>
+    </div>
+  );
+}
+```
+
+```jsx {% file="edit-page.jsx" %}
+export default function EditPage({ postId }) {
+  const post = await fetchPost(postId);
+
+  return (
+    <form>
+      <input defaultValue={post.title} />
+      <textarea defaultValue={post.body} />
+
+      <button type="submit">Save</button>
+    </form>
+  );
+}
+```
+
+{% /code-tabs %}
 
 And here's the app rendered. You can click around and edit different posts.
 
-\[ demo 1 \]
+{% demo1 /%}
 
 This app is made up of three different components: `RootLayout`, `PostsLayout`, and `PostEditPage`.
 
 And if you look at the source code for each of these components you'll notice they all fetch their own data:
 
-- `<RootLayout>` fetches the current user and displays them in the header.
+- `<RootLayout>` fetches the current user and displays their name in the header.
 - `<PostsLayout>` fetches a list of all the posts and displays them in a sidebar.
 - `<EditPage>` fetches the post being edited and displays it in the main content area.
 
