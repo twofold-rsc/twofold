@@ -47,7 +47,7 @@ async function save(postId: string, formData: FormData) {
 
 export function Demo1() {
   return (
-    <div className="not-prose my-6">
+    <div className="not-prose my-6 sm:-mx-8">
       <Client2 app={<App />} reload={reload} navigate={navigate} save={save} />
     </div>
   );
@@ -57,11 +57,11 @@ export function Demo3() {
   async function reloadWithWaterfall(postId?: string) {
     "use server";
 
-    return reload(postId, 1500);
+    return reload(postId, 1200);
   }
 
   return (
-    <div className="not-prose my-6">
+    <div className="not-prose my-6 sm:-mx-8">
       <Client2
         app={<App />}
         reload={reloadWithWaterfall}

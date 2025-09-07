@@ -130,152 +130,88 @@ An app that waterfalls has poor render performance because the total time to ren
 
 In order to fix the waterfalls, we need a router that runs each of these components in parallel.
 
-## How RSCs render
+## Parallel rendering
 
-React uses a two-phase rendering system for server and client components. First, React renders server components leaving client components untouched. Next, that output is given to a client renderer that executes the client components.
+Most of the time when we think of rendering React Server Components we think of rendering trees of components on the server.
 
-\[ demo 4, try it out - ServerTime and ClientCounter \]
-
-Under the hood, here's how React renders this tree:
-
-\[ demo 5, two phase component flow \]
-
-You need two phases here because these two components run in two distinct environments, client and server. The client cannot know what time it is on the server, and the server cannot bind an `onClick` event handler to a button that re-renders a new count whenever it's pressed.
-
-Improve this: Let's walk through these two render phases with our example tree from above.
-
-### Phase 1: Server render
-
-The first thing we want to do is render the tree on the server, for this, we'll use the `renderToReadableStream` function from React:
+For example, here's a server rendered tree of three components all nested together:
 
 ```jsx
-// import?
-// import webpack, called it webpack map
+async function ComponentA() {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return <div>Component A</div>;
+}
+
+async function ComponentB() {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return <div>Component B</div>;
+}
+
+function ComponentC() {
+  return <div>Component C</div>;
+}
 
 const stream = renderToReableStream(
-  <>
-    <ServerTime />
-    <ClientCounter />
-  </>,
+  <ComponentA>
+    <ComponentB>
+      <CompnonentC />
+    </ComponentB>
+  </ComponentA>,
   clientModuleMap,
 );
-
-for await (const chunk of stream) {
-  console.log(chunk);
-}
 ```
 
-\[ demo 6, try it out \]
+\[ Try it \]
 
-The output of `renderToReadableStream` is a stream that emits a JSON-like payload. Take a look at the output, you'll notice two interesting bits of data: The server time and an unrendered client component:
+The output from rendering with `renderToReableStream` is a serialized format that RSC uses to represent data that was server rendered.
 
-\[ demo 7, highlighted flight data \]
+You can see that this render also waterfalls because of the awaits in `<ComponentA>` and `<ComponentB>`.
 
-This is the first phase rendered. It's a payload with only the server component executed.
-
-What's great about this output is that it's entirely serializable. Right now we're looking at text, which means we can easily send it over an HTTP response for a client to render.
-
-And that's exactly what we'll do next.
-
-### Phase 2: Client render
-
-In this phase, we'll continue rendering by executing the `<ClientCounter />` component. React ships with a counterpart to `renderToReadableStream` called `createFromReadableStream`:
-
-```js
-import { createRoot } from "react-dom/client";
-
-const res = await fetch("/endpoint-that-returns-rsc");
-
-const tree = await createFromReadableStream(res.body);
-
-root.createElement(document.getElementById("root"));
-root.render(tree);
-```
-
-Here we fetch the stream created during phase 1 and render it in the browser using `react-dom`. This render loads and executes all the client components that were left unrendered by the server.
-
-\[ demo 8, server time with client counter \]
-
-The result is a React app that was partially rendered on the server and partially rendered on the client. Pretty cool [Footnote]
-
-Next, we'll explore how RSC can render more than just components.
-
-## Rendering more than components
-
-Let's go back and revisit the server rendering example that uses `renderToReableStream`:
-
-```jsx
-// import?
-
-const stream = renderToReableStream(
-  <>
-    <ServerTime />
-    <ClientCounter />
-  </>,
-, clientModuleMap);
-
-for await (const chunk of stream) {
-  console.log(chunk);
-}
-```
-
-Here we're using it to render our two React components, but this API isn't limited to rendering only components. It can also render a wide variety of data types like objects and arrays.
+However, `renderToReadableStream` isn't limited to rendering only React components. It can render a wide variety of data types including arrays and objects.
 
 ```jsx
 const stream = renderToReableStream(
   {
-    string: "hello world",
-    list: [1, 2, 3, 4, 5],
-    object: { key: "value" },
+    hello: "world",
+    object: { a: 1, b: 2 },
+    list: [1, 2, 3],
   },
   clientModuleMap,
 );
-
-for await (const chunk of stream) {
-  console.log(chunk);
-}
 ```
 
-\[ demo 9, try it out \]
+It wasn't obvious to me at first, but this ability to render data structures is the key to parallel rendering.
 
-And if we want to recreate this data structure on the client we can do so using `createFromReadableStream`:
-
-```jsx
-const res = await fetch("/endpoint-that-returns-rsc");
-
-const data = await createFromReadableStream(res.body);
-
-console.log();
-```
-
-That's certainly interesting! React on the server isn't limited to only rendering React trees. From the example above, we can use React to render any object or data structure in a streaming fashion.
-
-Recreate the data structure
-
-Let's keep pushing this, how about a list of React components?
-
-It's not obvious, it certainly wasn't too me, but this two-phase rendering is the key to running pages and layouts in parallel.
-
-## Parallel rendering
+Instead of rendering a tree of components, we can render a list of components:
 
 ```jsx
-function ComponentA() {
+async function ComponentA() {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   return <div>Component A</div>;
 }
 
+async function ComponentB() {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return <div>Component B</div>;
+}
+
+function ComponentC() {
+  return <div>Component C</div>;
+}
+
 const stream = renderToReableStream(
-  [<ComponentA />, <ComponentB />, <CompooenntC />],
+  [<ComponentA />, <ComponentB />, <ComponentC />],
   clientModuleMap,
 );
 ```
 
-\[ demo 10, try it out \]
+\[ Try it \]
 
-Yup, that works too! Pretty cool!
+Since `<ComponentA>`, `<ComponentB>`, and `<ComponentC>` are no longer nested, they all start rendering at the same time. The awaits in the first two components no longer block `<ComponentC>` from rendering.
 
-What's even cooler is the above example shows Components A, B, and C all being rendered in parallel. That `await` in `<ComponentB />` doesn't slow down or block the rendering of `<ComponentA />` or `<ComponentC />`. All three components start rendering at the same time.
+We've sidestepped the waterfall by rendering a list of components instead of nested React tree.
 
-Now, can we use this approach to render our blog post editor components in parallel?
+Does this mean that we can fix our blog post editor by rendering a list of components instead of a React tree?
 
 ```jsx
 const stream = renderToReableStream(
@@ -284,16 +220,18 @@ const stream = renderToReableStream(
 );
 ```
 
-Not quite. The `<RootLayout />` and the `<PostsLayout />` both expect `children` in order to render correctly.
+Not quite. The `<RootLayout />` and the `<PostsLayout />` both expect `children` in order to render correctly. If we render the components in a list like this the layouts will break.
 
-We've got a way to render components in parallel, but we don't yet have a way to nest them. Luckily for us recursive components exits.
+We've got a way to render components in parallel, but we don't yet have a way to nest them. Luckily we can take advantage of React's two-phase rendering to solve this.
 
-## Recursive components
+## Two-phase rendering
 
 Let's continue rendering our components in parallel, but this time we'll give the `RootLayout` and `PostsLayout` a placeholder so they have _something_ to use for children.
 
-```jsx
-import Placeholder from "./placeholder";
+{% code-tabs %}
+
+```jsx {% file="app.jsx" %}
+import { Placeholder } from "./placeholder";
 
 const stream = renderToReableStream(
   [
@@ -309,9 +247,131 @@ const stream = renderToReableStream(
 );
 ```
 
-The `<Placeholder />` component is just a literal placeholder for now. It renders nothing.
+```jsx {% file="placeholder.jsx" %}
+"use client";
 
-If you squint at the data the server is rendering, it looks just like a stack. The top most item in the stack is the `RootLayout`, followed by the `PostsLayoutx`, and then finally the `EditPage`.
+export function Placeholder() {
+  return null;
+}
+```
+
+{% /code-tabs %}
+
+The `<Placeholder />` component is just a literal placeholder for now. It's a client component that renders nothing.
+
+If you squint at the data the server is rendering, it looks just like a stack. The top most item in the stack is the `RootLayout`, followed by the `PostsLayout`, and then finally the `EditPage`.
+
+When we call `renderToReadableStream` it runs all the server components, create a stack-like data structure, and then serialize that output in a stream. It's important to know that `renderToReadableStream` only runs server components, it leaves all client components untouched.
+
+If you could imagine the represented output of `renderToReadableStream` you might think of it as something like:
+
+```jsx
+[
+  /* <RootLayout> rendered with <Placeholder> child */
+  <html>
+    <body>
+      <header>Blog Admin</header>
+      <Placeholder />
+    </body>
+  </html>,
+
+  /* <PostsLayout> rendered with <Placeholder> child */
+  <main>
+    <ul>
+      <li>Post 1</li>
+      <li>Post 2</li>
+      <li>Post 3</li>
+    </ul>
+    <div>
+      <Placeholder />
+    </div>
+  </main>,
+
+  /* <EditPage postId={123}> rendered */
+  <form>
+    <input name="title" value="Post 123" />
+    <textarea>The content for post 123.</textarea>
+  </form>,
+];
+```
+
+This is the first phase of rendering. All server components have been executed, but client components have not yet run. {% footnote id="1" %}The example above is just a representation of the output from renderToReadableStream. In reality, the output is a [ReadableStream]() that contains a text-based wire format. This wire format isn't readable for humans, so I didn't want to show it here. However, the wire format is similar to the example above in that it contains rendered server components and unrendered references to client components.{% /footnote %}
+
+The key point here is that `renderToReadableStream` has rendered all the server components, but left the client components (like `<Placeholder>`) untouched.
+
+If you look at that the imagined output above, you'll see each layout renders a placeholder where it's children should be. What's so interesting about this is that the actual children are the very next item in the stack.
+
+In fact, you could imagine `<Placeholder />` being a component that simply pulls in and renders the next item in the stack. In otherwords, `<Placeholder />` is a literal placeholder for what's rendered next.
+
+This is how we're going to turn these parallel rendered server components back into a nested tree. We'll use recursive React components to have `<Placeholder />` pull in the real children.
+
+## Recursive components
+
+This is the first phase of rendering. It executes all RSCs and serializes the output into a stream.
+
+If we want to turn the serialized output back into a real and tangible stack data structure then we need to use the `createFromReadableStream` function, which is available to React clients.
+
+```jsx
+// on the server
+const stream = renderToReadableStream(...);
+
+// [!client-boundary]
+
+// and then later on the client
+const stack = await createFromReadableStream(stream);
+
+console.log(stack);
+```
+
+// => [
+// /* RootLayout with Placeholder child */
+// <html>
+// <body>
+// <Placeholder />
+// </body>
+// </html>,
+// <PostsLayout>
+// <Placeholder />
+// </PostsLayout>,
+// <EditPage />
+// ]
+
+You can think of `createFromReadableStream` as the opposite of `renderToReadableStream`. It takes the serialized RSC data and turns it back into a real tangible data structure.
+
+Typically your server will use `renderToReadableStream` to execute and serialize the output from RSCs. Then your client will use `createFromReadableStream` to turn those payloads into renderable React elements.
+
+```jsx
+// on the server
+
+const stream = renderToReadableStream(...);
+
+// [!client-boundary]
+
+// and then later on the client
+
+const stack = await createFromReadableStream(stream);
+
+console.log(stack);
+// => [
+//      <RootLayout>
+//        <Placeholder />
+//      </RootLayout>,
+//      <PostsLayout>
+//        <Placeholder />
+//      </PostsLayout>,
+//      <EditPage />
+//    ]
+```
+
+When you run `renderToReadableStream` React will render all server components, but leave client components unrendered. This is the first phase of rendering.
+
+When you use `createFromReadableStream` React will recreate the serialized data structure into something that. This is the second phase of rendering.
+
+on the server it produces a stream of serialized data. When you run `createFromReadableStream` on the client it consumes that stream and produces a real JavaScript data structure.
+
+You can think of `renderToReadableStream` as the first phase of rendering and `createFromReadableStream` as the second phase of rendering.
+
+## R
 
 We can recreate this stack on the client and then feed it into React component we conveniently named `<StackReader>`
 

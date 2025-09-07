@@ -17,7 +17,6 @@ import { Browser } from "../../components/browser";
 import { AnimatePresence, motion } from "motion/react";
 import { useFlash } from "@twofold/framework/flash";
 import z from "zod";
-import { XMarkIcon } from "@heroicons/react/24/outline";
 
 let Context = createContext<{
   dispatch: (action: Action) => void;
@@ -127,11 +126,6 @@ function FlashAlerts() {
   function dismiss() {
     messagesWithId.forEach((msg) => removeMessageById(msg.id));
   }
-
-  console.log(
-    "messagesWithId",
-    messagesWithId.map((m) => m.content.message),
-  );
 
   let latestMessage = messagesWithId[0];
 

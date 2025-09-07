@@ -2,6 +2,7 @@
 
 - Router post
 - reload to waterfall arrow
+- browser history
 - mouse over reload
 - animation
 
