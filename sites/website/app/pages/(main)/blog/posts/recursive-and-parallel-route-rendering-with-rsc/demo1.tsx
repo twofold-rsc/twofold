@@ -1,16 +1,73 @@
-import { ReactNode } from "react";
-import { Browser } from "../../components/browser";
+import { ReactNode, Suspense } from "react";
 import AlicePhoto from "./alice.avif";
 import cookies from "@twofold/framework/cookies";
+import { flash } from "@twofold/framework/flash";
 import z from "zod";
-import { SubmitButton } from "./demo1-client";
+import { Client2, Form, LinkButton, SubmitButton } from "./demo1-client";
+import Spinner from "@/app/components/spinner";
+import clsx from "clsx";
+
+async function reload(postId?: string, waterfall?: number) {
+  "use server";
+  return <App postId={postId} waterfall={waterfall} />;
+}
+
+async function navigate(postId: string) {
+  "use server";
+  return <App postId={postId} />;
+}
+
+async function save(postId: string, formData: FormData) {
+  "use server";
+
+  let newPost = updateSchema.parse(Object.fromEntries(formData));
+  let posts = getPosts();
+  let post = posts.find((p) => p.id === postId);
+
+  const newPosts = posts.map((p) =>
+    p.id === post?.id
+      ? {
+          id: p.id,
+          ...newPost,
+        }
+      : p,
+  );
+
+  flash({
+    // TODO: add demo id or something
+    type: "demo",
+    demo: "route-rendering-blog-post",
+    message: `Post "${newPost.title}" saved!`,
+  });
+
+  cookies.set("route-rendering-posts", JSON.stringify(newPosts));
+
+  return <App postId={postId} />;
+}
 
 export function Demo1() {
   return (
-    <div className="not-prose -mx-7 my-6">
-      <Browser url="http://localhost:3000/">
-        <App />
-      </Browser>
+    <div className="not-prose my-6">
+      <Client2 app={<App />} reload={reload} navigate={navigate} save={save} />
+    </div>
+  );
+}
+
+export function Demo3() {
+  async function reloadWithWaterfall(postId?: string) {
+    "use server";
+
+    return reload(postId, 1500);
+  }
+
+  return (
+    <div className="not-prose my-6">
+      <Client2
+        app={<App />}
+        reload={reloadWithWaterfall}
+        navigate={navigate}
+        save={save}
+      />
     </div>
   );
 }
@@ -43,23 +100,56 @@ function getPostById(postId: string) {
   return posts.find((post) => post.id === postId);
 }
 
-function App() {
+function App({ postId, waterfall }: { postId?: string; waterfall?: number }) {
+  let defaultPostId = getPosts()[0]?.id;
+  let delay = waterfall ?? 0;
+
   return (
-    <RootLayout>
-      <PostsLayout>
-        <EditPost postId="1" />
-      </PostsLayout>
-    </RootLayout>
+    <Suspense fallback={<Loading align="center" />}>
+      <RootLayout delay={delay}>
+        <Suspense fallback={<Loading align="center" />}>
+          <PostsLayout delay={delay}>
+            <Suspense fallback={<Loading align="left" />}>
+              <EditPost postId={postId ?? defaultPostId} delay={delay} />
+            </Suspense>
+          </PostsLayout>
+        </Suspense>
+      </RootLayout>
+    </Suspense>
   );
 }
 
-async function RootLayout({ children }: { children: ReactNode }) {
+function Loading({ align }: { align: "left" | "center" }) {
+  return (
+    <div
+      className={clsx(
+        "flex items-center justify-center space-x-1.5 px-2 py-2",
+        align === "left" ? "justify-start" : "justify-center",
+      )}
+    >
+      <Spinner className="size-4" />
+      <span>Loading...</span>
+    </div>
+  );
+}
+
+async function RootLayout({
+  delay,
+  children,
+}: {
+  delay: number;
+  children: ReactNode;
+}) {
+  await new Promise((resolve) => setTimeout(resolve, delay));
+
   return (
     <div>
       <div className="flex items-center justify-between bg-gray-800 px-4 py-2 text-base text-white">
         <div className="font-bold tracking-tight">Blog Admin</div>
-        <div>
+        <div className="relative">
           <img src={AlicePhoto} className="size-5 rounded-full" />
+          <div className="pointer-events-none absolute inset-0 rounded-full border border-white/20" />
+          <div className="absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border-2 border-gray-800 bg-green-400" />
         </div>
       </div>
       <div className="px-4 py-4">{children}</div>
@@ -67,7 +157,15 @@ async function RootLayout({ children }: { children: ReactNode }) {
   );
 }
 
-function PostsLayout({ children }: { children: ReactNode }) {
+async function PostsLayout({
+  children,
+  delay,
+}: {
+  children: ReactNode;
+  delay: number;
+}) {
+  await new Promise((resolve) => setTimeout(resolve, delay));
+
   let posts = getPosts();
 
   return (
@@ -77,9 +175,12 @@ function PostsLayout({ children }: { children: ReactNode }) {
         <ul className="mt-1 space-y-1">
           {posts.map((post) => (
             <li key={post.id}>
-              <button className="text-blue-600 hover:underline">
+              <LinkButton
+                postId={post.id}
+                className="cursor-pointer text-blue-600 hover:underline"
+              >
                 {post.title}
-              </button>
+              </LinkButton>
             </li>
           ))}
         </ul>
@@ -94,35 +195,19 @@ let updateSchema = z.object({
   content: z.string(),
 });
 
-function EditPost({ postId }: { postId: string }) {
+async function EditPost({ postId, delay }: { postId: string; delay: number }) {
+  await new Promise((resolve) => setTimeout(resolve, delay));
+
   let post = getPostById(postId);
 
   if (!post) {
-    return <div>Post not found</div>;
-  }
-
-  async function saveAction(formData: FormData) {
-    "use server";
-
-    let newPost = updateSchema.parse(Object.fromEntries(formData));
-    let posts = getPosts();
-
-    const newPosts = posts.map((p) =>
-      p.id === post?.id
-        ? {
-            id: p.id,
-            ...newPost,
-          }
-        : p,
-    );
-
-    cookies.set("route-rendering-posts", JSON.stringify(newPosts));
+    return <div>Post not found. Try clearing your cookies...</div>;
   }
 
   return (
     <div>
       <div className="text-xl font-bold tracking-tight">{post.title}</div>
-      <form action={saveAction} className="mt-4 space-y-4">
+      <Form postId={postId} className="mt-4 space-y-4" key={post.id}>
         <div>
           <label
             htmlFor="title"
@@ -152,16 +237,16 @@ function EditPost({ postId }: { postId: string }) {
             <textarea
               id="content"
               name="content"
+              defaultValue={post.content}
               rows={4}
               className="block w-full rounded-md bg-white px-2.5 py-1.5 text-sm/6 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
-              defaultValue={post.content}
             />
           </div>
         </div>
         <div>
           <SubmitButton>Save</SubmitButton>
         </div>
-      </form>
+      </Form>
     </div>
   );
 }

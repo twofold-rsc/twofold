@@ -42,6 +42,20 @@ export class PageRequest {
   }
 
   async rscResponse(): Promise<Response> {
+    // setup store
+    let store = getStore();
+    if (store) {
+      store.assets = this.assets;
+
+      // TODO: we'll fork the store for page requests in the future. for now
+      // we'll directly mutate it.
+      store.context = {
+        type: "page",
+        request: this.#request,
+        assets: this.assets,
+      };
+    }
+
     // middleware
     try {
       await this.runMiddleware();
@@ -54,11 +68,6 @@ export class PageRequest {
       } else {
         throw error;
       }
-    }
-
-    let store = getStore();
-    if (store) {
-      store.assets = this.assets;
     }
 
     let renderStack = await this.routeStack();

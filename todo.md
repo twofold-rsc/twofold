@@ -1,10 +1,12 @@
 # TODO
 
+- Router post
+- reload to waterfall arrow
+- mouse over reload
+- animation
+
 - build/test kitchen sink in prod
 - Run through windows
-
-- Router post
-- animation
 
 - handle PORT env
 - handle port CLI
@@ -25,6 +27,9 @@
 - newsletter signup (after 3 posts)
 
 - docs for pathless layouts
+
+- clear all for flash messages (should match schema)
+- flash messages need order that survives reload (create multiple order is good, but after reload order is random)
 
 - rework build/startup
 - let externals plugin use the cache

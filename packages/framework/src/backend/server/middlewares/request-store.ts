@@ -75,6 +75,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
           });
         },
       },
+      context: null,
       assets: [],
     };
 

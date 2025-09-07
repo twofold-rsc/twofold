@@ -100,7 +100,8 @@ export function Browser({
         {children}
       </div>
 
-      <div className="pointer-events-none absolute inset-0 rounded-lg shadow ring-[0.5px] ring-gray-950/10" />
+      {/* this would look good with a shadow */}
+      <div className="pointer-events-none absolute inset-0 rounded-lg ring-[0.5px] ring-gray-950/20" />
     </div>
   );
 }

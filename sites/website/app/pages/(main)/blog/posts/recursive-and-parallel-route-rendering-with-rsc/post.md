@@ -122,13 +122,13 @@ The term waterfall comes from the way these components appear on a rendering tim
 
 To show you how this affects the user experience of your app I've changed each data-fetch to take 1 second to load. Try refreshing the app, see how the components load one after the other.
 
-\[ demo 3, arrow this app waterfalls \]
+{% demo3 /%}
+
+Ouch. That's tough to watch.
 
 An app that waterfalls has poor render performance because the total time to render is the sum of _all_ the rendering times of all components. In our case, this app is not usable for 3 seconds.
 
 In order to fix the waterfalls, we need a router that runs each of these components in parallel.
-
-That's certainly doable, but before we can do that we first need to take a detour to understand React's two-phase rendering.
 
 ## How RSCs render
 
