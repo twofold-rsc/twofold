@@ -9,7 +9,7 @@ import slugify from "@sindresorhus/slugify";
 import * as PromisePost from "../posts/you-can-serialize-a-promise-in-react/components";
 import * as StreamingPost from "../posts/composable-streaming-with-suspense/components";
 import * as CachePost from "../posts/react-cache-its-about-consistency/components";
-import * as RouteRenderingPost from "../posts/recursive-and-parallel-route-rendering-with-rsc/components";
+import * as RouteRenderingPost from "../posts/parallel-and-recursive-route-rendering-with-rsc/components";
 import { getTitle } from "../../../../markdoc/utils";
 import { CLIMarkdocTags } from "../../../../components/cli/markdoc-tags";
 import { smartQuotesPlugin } from "@/lib/markdoc-smart-quotes";
@@ -96,7 +96,7 @@ export const loadComponents = cache(async (slug: string) => {
     "you-can-serialize-a-promise-in-react": PromisePost.components,
     "composable-streaming-with-suspense": StreamingPost.components,
     "react-cache-its-about-consistency": CachePost.components,
-    "recursive-and-parallel-route-rendering-with-rsc":
+    "parallel-and-recursive-route-rendering-with-rsc":
       RouteRenderingPost.components,
   };
 
@@ -125,7 +125,7 @@ export const loadTags = cache(async (slug: string) => {
     "you-can-serialize-a-promise-in-react": PromisePost.tags,
     "composable-streaming-with-suspense": StreamingPost.tags,
     "react-cache-its-about-consistency": CachePost.tags,
-    "recursive-and-parallel-route-rendering-with-rsc": RouteRenderingPost.tags,
+    "parallel-and-recursive-route-rendering-with-rsc": RouteRenderingPost.tags,
   };
 
   let tags = map[slug] ?? {};
