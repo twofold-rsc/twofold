@@ -166,6 +166,7 @@ export const loadContent = cache(async (slug: string) => {
       },
       footnote: {
         render: "Footnote",
+        children: ["inline"],
         attributes: {
           id: { type: String, required: true },
           children: { type: Array, required: true },

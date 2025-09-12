@@ -1,10 +1,15 @@
 # TODO
 
 - Router post
-- reload to waterfall arrow
-- browser history
-- mouse over reload
+- finish writing
+- final demo that doesnt waterfall (action returns array)
 - animation
+- reload to waterfall arrow
+- app.jsx should use renderToReadableStream
+- mouse over reload
+- make fence filenames match code tab filenames
+- browser history
+- multiline footnote
 
 - build/test kitchen sink in prod
 - Run through windows
