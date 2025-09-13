@@ -3,7 +3,14 @@ import AlicePhoto from "./alice.avif";
 import cookies from "@twofold/framework/cookies";
 import { flash } from "@twofold/framework/flash";
 import z from "zod";
-import { Client2, Form, LinkButton, SubmitButton } from "./demo1-client";
+import {
+  Client2,
+  Form,
+  LinkButton,
+  Placeholder,
+  StackedApp,
+  SubmitButton,
+} from "./demo1-client";
 import Spinner from "@/app/components/spinner";
 import clsx from "clsx";
 
@@ -72,6 +79,76 @@ export function Demo3() {
   );
 }
 
+function createStack(postId: string, delay: number = 0) {
+  return [
+    <Suspense fallback={<LoadingInParallel />} key="suspense-root">
+      <RootLayout delay={delay} key="root-layout">
+        <Placeholder />
+      </RootLayout>
+    </Suspense>,
+    <PostsLayout delay={delay} key="posts-layout">
+      <Placeholder />
+    </PostsLayout>,
+    <EditPost postId={postId} delay={delay} key="edit-post" />,
+  ];
+}
+
+export async function Demo4() {
+  async function reload(postId?: string) {
+    "use server";
+
+    let defaultPostId = getPosts()[0]?.id;
+    return createStack(postId ?? defaultPostId, 1200);
+  }
+
+  async function navigate(postId: string) {
+    "use server";
+    return createStack(postId);
+  }
+
+  async function save(postId: string, formData: FormData) {
+    "use server";
+
+    let newPost = updateSchema.parse(Object.fromEntries(formData));
+    let posts = getPosts();
+    let post = posts.find((p) => p.id === postId);
+
+    const newPosts = posts.map((p) =>
+      p.id === post?.id
+        ? {
+            id: p.id,
+            ...newPost,
+          }
+        : p,
+    );
+
+    flash({
+      // TODO: add demo id or something
+      type: "demo",
+      demo: "route-rendering-blog-post",
+      message: `Post "${newPost.title}" saved!`,
+    });
+
+    cookies.set("route-rendering-posts", JSON.stringify(newPosts));
+
+    return createStack(postId);
+  }
+
+  let defaultPostId = getPosts()[0]?.id;
+  let initial = createStack(defaultPostId);
+
+  return (
+    <div className="not-prose my-6 sm:-mx-8">
+      <StackedApp
+        stack={initial}
+        reload={reload}
+        navigate={navigate}
+        save={save}
+      />
+    </div>
+  );
+}
+
 let defaultPosts = [
   { id: "1", title: "Hello world", content: "This is my first post" },
   { id: "2", title: "Edit me!!!", content: "You can really edit these posts!" },
@@ -129,6 +206,15 @@ function Loading({ align }: { align: "left" | "center" }) {
     >
       <Spinner className="size-4" />
       <span>Loading...</span>
+    </div>
+  );
+}
+
+function LoadingInParallel() {
+  return (
+    <div className="flex items-center justify-center space-x-1.5 px-2 py-2">
+      <Spinner className="size-4" />
+      <span>Rendering all routes in parallel</span>
     </div>
   );
 }

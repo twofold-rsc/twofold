@@ -422,7 +422,7 @@ export function Placeholder() {
 
 Every time we render a `<Placeholder>` we're popping the top most item off the stack and rendering it in place of the actual placeholder. By using recursive components we've found a way to nest components that were rendered in parallel.
 
-Eventually the stack will run out of items and there will be nothing left to render. We'll add a terminating condition to `StackReader` to handle that case:
+Eventually the stack will run out of items and there will be nothing left to render. We'll add a terminating condition to `<StackReader>` to handle that case:
 
 ```jsx
 import { createContext } from "react";
@@ -433,7 +433,7 @@ function StackReader({ stack }) {
   const [first, ...rest] = stack;
 
   return rest.length > 0 ? (
-    <StackContext stack={rest}>{first}</StackContext>
+    <StackContext value={rest}>{first}</StackContext>
   ) : (
     first
   );
@@ -442,11 +442,11 @@ function StackReader({ stack }) {
 
 And that's it! We've found a way to render RSC routes in parallel on the server, and then stitch them back together recursively on the client. Since all routes run at the same time, this tree won't waterfall.
 
-\[ running all components demo \]
+{% demo4 /%}
 
 ## Implementation details
 
-One of the great things about this pattern is that it's completely hidden from the developer and only an implementation detail of the router or framework you're using. While this approach is certainly complex, it's something that you rarely have to think about when building an RSC app. If the framework you're using finds a better way to render routes then that's something that can be changed under the hood without affecting the app.
+One of the great things about this pattern is that it's completely hidden from the developer and only an implementation detail of the router. While this approach is certainly complex, it's something that you rarely have to think about when building an RSC app. If the framework you're using finds a better way to render routes then that's something that can be changed under the hood without affecting the app.
 
 In fact, instead of using a stack based approach like we did in this post, you could imagine a router using an n-ary tree instead. That way you could render not just a single hierarchy of routes, but an entire website in one pass. Admittedly this idea is somewhat unusual, but it's fun to think about the different approaches that could be taken with server and client route rendering.
 

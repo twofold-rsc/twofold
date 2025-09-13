@@ -1,8 +1,9 @@
-import { Demo1, Demo3 } from "./demo1";
+import { Demo1, Demo3, Demo4 } from "./demo1";
 
 export const components = {
   Demo1,
   Demo3,
+  Demo4,
 };
 
 export const tags = {
@@ -12,6 +13,10 @@ export const tags = {
   },
   demo3: {
     render: "Demo3",
+    attributes: {},
+  },
+  demo4: {
+    render: "Demo4",
     attributes: {},
   },
 };

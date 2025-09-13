@@ -1,14 +1,15 @@
 # TODO
 
 - Router post
-- finish writing
-- final demo that doesnt waterfall (action returns array)
 - animation
 - reload to waterfall arrow
-- app.jsx should use renderToReadableStream
-- mouse over reload
+- final demo arrow
 - make fence filenames match code tab filenames
+- mouse over reload
+- clean up demos
 - browser history
+- add demo id to save, refresh app if another demo saved (can be client side)
+- mobile
 - multiline footnote
 
 - build/test kitchen sink in prod

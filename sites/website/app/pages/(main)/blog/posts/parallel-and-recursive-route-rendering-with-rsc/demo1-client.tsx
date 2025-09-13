@@ -7,6 +7,7 @@ import {
   ReactElement,
   ReactNode,
   startTransition,
+  Suspense,
   useActionState,
   useContext,
   useEffect,
@@ -54,7 +55,7 @@ export function Client2({
   navigate: (postId: string) => Promise<ReactNode>;
   save: (postId: string, formData: FormData) => Promise<ReactNode>;
 }) {
-  let [state, dispatch, isPending] = useActionState<State, Action>(
+  let [state, dispatch] = useActionState<State, Action>(
     async (prev, action) => {
       if (action.type === "reload") {
         let newApp = await reload(prev.postId);
@@ -108,6 +109,95 @@ export function Client2({
         </Browser>
       </Context>
     </div>
+  );
+}
+
+type StackedState = {
+  version: number;
+  stack: ReactNode[];
+  history: string[];
+  postId: string | undefined;
+};
+
+export function StackedApp({
+  stack,
+  reload,
+  navigate,
+  save,
+}: {
+  stack: ReactNode[];
+  reload: (postId: string | undefined) => Promise<ReactNode[]>;
+  navigate: (postId: string) => Promise<ReactNode[]>;
+  save: (postId: string, formData: FormData) => Promise<ReactNode[]>;
+}) {
+  let [state, dispatch] = useActionState<StackedState, Action>(
+    async (prev, action) => {
+      if (action.type === "reload") {
+        let stack = await reload(prev.postId);
+        return {
+          ...prev,
+          version: prev.version + 1,
+          stack,
+        };
+      }
+
+      if (action.type === "navigate") {
+        let stack = await navigate(action.postId);
+        return {
+          ...prev,
+          stack,
+          history: [...prev.history, action.postId],
+        };
+      }
+
+      if (action.type === "save") {
+        let stack = await save(action.postId, action.formData);
+        return {
+          ...prev,
+          stack,
+        };
+      }
+
+      return prev;
+    },
+    {
+      version: 0,
+      stack,
+      history: [],
+      postId: undefined,
+    },
+  );
+
+  return (
+    <div className="relative" key={`${state.version}`}>
+      <Context
+        value={{
+          dispatch,
+        }}
+      >
+        <Browser
+          url="http://localhost:3000/"
+          onRefresh={() => startTransition(() => dispatch({ type: "reload" }))}
+        >
+          <Suspense fallback={<>Loading...</>}>
+            <StackReader stack={state.stack} />
+            <FlashAlerts />
+          </Suspense>
+        </Browser>
+      </Context>
+    </div>
+  );
+}
+
+const StackContext = createContext<ReactNode[]>([]);
+
+function StackReader({ stack }: { stack: ReactNode[] }) {
+  const [first, ...rest] = stack;
+
+  return rest.length > 0 ? (
+    <StackContext value={rest}>{first}</StackContext>
+  ) : (
+    first
   );
 }
 
@@ -213,6 +303,12 @@ export function SubmitButton({ children }: { children: ReactNode }) {
       <Spinner loading={isPending}>{children}</Spinner>
     </button>
   );
+}
+
+export function Placeholder() {
+  let stack = useContext(StackContext);
+
+  return <StackReader stack={stack} />;
 }
 
 function useDelayedPending(delay: number) {
