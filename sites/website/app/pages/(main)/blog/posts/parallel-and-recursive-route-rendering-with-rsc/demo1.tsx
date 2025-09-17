@@ -1,87 +1,67 @@
 import { ReactNode, Suspense } from "react";
 import AlicePhoto from "./alice.avif";
 import cookies from "@twofold/framework/cookies";
+import pageContext from "@twofold/framework/context/page";
 import { flash } from "@twofold/framework/flash";
 import z from "zod";
-import {
-  Client2,
-  Form,
-  LinkButton,
-  Placeholder,
-  StackedApp,
-  SubmitButton,
-} from "./demo1-client";
+import { Client2, Placeholder, StackedApp, SubmitButton } from "./demo1-client";
 import Spinner from "@/app/components/spinner";
 import clsx from "clsx";
-
-async function reload(postId?: string, waterfall?: number) {
-  "use server";
-  return <App postId={postId} waterfall={waterfall} />;
-}
-
-async function navigate(postId: string) {
-  "use server";
-  return <App postId={postId} />;
-}
-
-async function save(postId: string, formData: FormData) {
-  "use server";
-
-  let newPost = updateSchema.parse(Object.fromEntries(formData));
-  let posts = getPosts();
-  let post = posts.find((p) => p.id === postId);
-
-  const newPosts = posts.map((p) =>
-    p.id === post?.id
-      ? {
-          id: p.id,
-          ...newPost,
-        }
-      : p,
-  );
-
-  flash({
-    // TODO: add demo id or something
-    type: "demo",
-    demo: "route-rendering-blog-post",
-    message: `Post "${newPost.title}" saved!`,
-  });
-
-  cookies.set("route-rendering-posts", JSON.stringify(newPosts));
-
-  return <App postId={postId} />;
-}
+import Link from "@twofold/framework/link";
 
 export function Demo1() {
   return (
     <div className="not-prose my-6 sm:-mx-8">
-      <Client2 app={<App />} reload={reload} navigate={navigate} save={save} />
+      <Suspense fallback={null}>
+        <Client2>
+          <RootLayout>
+            <PostsLayout>
+              <EditPost />
+            </PostsLayout>
+          </RootLayout>
+        </Client2>
+      </Suspense>
     </div>
   );
 }
 
 export function Demo3() {
-  async function reloadWithWaterfall(postId?: string) {
-    "use server";
+  let waterfall = pageContext.searchParams.get("waterfall");
+  let delay = typeof waterfall === "string" ? parseInt(waterfall) : 0;
 
-    return reload(postId, 1200);
-  }
+  // use a suspense key so the boundaries have to rerender themselves
+  // this is so the reload button feels like its refreshing the app
+  let suspenseKey = pageContext.searchParams.get("suspenseKey") ?? "default";
 
   return (
     <div className="not-prose my-6 sm:-mx-8">
-      <Client2
-        app={<App />}
-        reload={reloadWithWaterfall}
-        navigate={navigate}
-        save={save}
-      />
+      <Client2 waterfall={1000}>
+        <Suspense fallback={<Loading align="center" />} key={suspenseKey}>
+          <RootLayout delay={delay}>
+            <Suspense fallback={<Loading align="center" />}>
+              <PostsLayout delay={delay}>
+                <Suspense fallback={<Loading align="left" />}>
+                  <EditPost delay={delay} />
+                </Suspense>
+              </PostsLayout>
+            </Suspense>
+          </RootLayout>
+        </Suspense>
+      </Client2>
     </div>
   );
 }
 
-function createStack(postId: string, delay: number = 0) {
-  return [
-    <Suspense fallback={<LoadingInParallel />} key="suspense-root">
+export async function Demo4() {
+  let waterfall = pageContext.searchParams.get("waterfall");
+  let delay = typeof waterfall === "string" ? parseInt(waterfall) : 0;
+
+  // use a suspense key so the boundaries have to rerender themselves
+  // this is so the reload button feels like its refreshing the app
+  let suspenseKey = pageContext.searchParams.get("suspenseKey") ?? "default";
+
+  let stack = [
+    <Suspense fallback={<LoadingInParallel />} key={suspenseKey}>
       <RootLayout delay={delay} key="root-layout">
         <Placeholder />
       </RootLayout>
@@ -89,62 +69,12 @@ function createStack(postId: string, delay: number = 0) {
     <PostsLayout delay={delay} key="posts-layout">
       <Placeholder />
     </PostsLayout>,
-    <EditPost postId={postId} delay={delay} key="edit-post" />,
+    <EditPost delay={delay} key="edit-post" />,
   ];
-}
-
-export async function Demo4() {
-  async function reload(postId?: string) {
-    "use server";
-
-    let defaultPostId = getPosts()[0]?.id;
-    return createStack(postId ?? defaultPostId, 1200);
-  }
-
-  async function navigate(postId: string) {
-    "use server";
-    return createStack(postId);
-  }
-
-  async function save(postId: string, formData: FormData) {
-    "use server";
-
-    let newPost = updateSchema.parse(Object.fromEntries(formData));
-    let posts = getPosts();
-    let post = posts.find((p) => p.id === postId);
-
-    const newPosts = posts.map((p) =>
-      p.id === post?.id
-        ? {
-            id: p.id,
-            ...newPost,
-          }
-        : p,
-    );
-
-    flash({
-      // TODO: add demo id or something
-      type: "demo",
-      demo: "route-rendering-blog-post",
-      message: `Post "${newPost.title}" saved!`,
-    });
-
-    cookies.set("route-rendering-posts", JSON.stringify(newPosts));
-
-    return createStack(postId);
-  }
-
-  let defaultPostId = getPosts()[0]?.id;
-  let initial = createStack(defaultPostId);
 
   return (
     <div className="not-prose my-6 sm:-mx-8">
-      <StackedApp
-        stack={initial}
-        reload={reload}
-        navigate={navigate}
-        save={save}
-      />
+      <StackedApp stack={stack} />
     </div>
   );
 }
@@ -177,25 +107,6 @@ function getPostById(postId: string) {
   return posts.find((post) => post.id === postId);
 }
 
-function App({ postId, waterfall }: { postId?: string; waterfall?: number }) {
-  let defaultPostId = getPosts()[0]?.id;
-  let delay = waterfall ?? 0;
-
-  return (
-    <Suspense fallback={<Loading align="center" />}>
-      <RootLayout delay={delay}>
-        <Suspense fallback={<Loading align="center" />}>
-          <PostsLayout delay={delay}>
-            <Suspense fallback={<Loading align="left" />}>
-              <EditPost postId={postId ?? defaultPostId} delay={delay} />
-            </Suspense>
-          </PostsLayout>
-        </Suspense>
-      </RootLayout>
-    </Suspense>
-  );
-}
-
 function Loading({ align }: { align: "left" | "center" }) {
   return (
     <div
@@ -220,11 +131,11 @@ function LoadingInParallel() {
 }
 
 async function RootLayout({
-  delay,
   children,
+  delay = 0,
 }: {
-  delay: number;
   children: ReactNode;
+  delay?: number;
 }) {
   await new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -245,10 +156,10 @@ async function RootLayout({
 
 async function PostsLayout({
   children,
-  delay,
+  delay = 0,
 }: {
   children: ReactNode;
-  delay: number;
+  delay?: number;
 }) {
   await new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -261,12 +172,14 @@ async function PostsLayout({
         <ul className="mt-1 space-y-1">
           {posts.map((post) => (
             <li key={post.id}>
-              <LinkButton
-                postId={post.id}
+              <Link
+                href={`/blog/parallel-and-recursive-route-rendering-with-rsc?postId=${post.id}`}
+                mask={`/blog/parallel-and-recursive-route-rendering-with-rsc`}
+                scroll="preserve"
                 className="cursor-pointer text-blue-600 hover:underline"
               >
                 {post.title}
-              </LinkButton>
+              </Link>
             </li>
           ))}
         </ul>
@@ -281,19 +194,50 @@ let updateSchema = z.object({
   content: z.string(),
 });
 
-async function EditPost({ postId, delay }: { postId: string; delay: number }) {
+function updatePost(postId: string, formData: FormData) {
+  let newPost = updateSchema.parse(Object.fromEntries(formData));
+  let posts = getPosts();
+  let post = posts.find((p) => p.id === postId);
+
+  const newPosts = posts.map((p) =>
+    p.id === post?.id
+      ? {
+          id: p.id,
+          ...newPost,
+        }
+      : p,
+  );
+
+  cookies.set("route-rendering-posts", JSON.stringify(newPosts));
+
+  flash({
+    // TODO: add demo id or something
+    type: "demo",
+    demo: "route-rendering-blog-post",
+    message: `Post "${newPost.title}" saved!`,
+  });
+}
+
+async function EditPost({ delay = 0 }: { delay?: number }) {
   await new Promise((resolve) => setTimeout(resolve, delay));
 
+  let defaultPostId = getPosts()[0]?.id;
+  let postId = pageContext.searchParams.get("postId") ?? defaultPostId;
   let post = getPostById(postId);
 
   if (!post) {
     return <div>Post not found. Try clearing your cookies...</div>;
   }
 
+  async function save(formData: FormData) {
+    "use server";
+    updatePost(postId, formData);
+  }
+
   return (
     <div>
       <div className="text-xl font-bold tracking-tight">{post.title}</div>
-      <Form postId={postId} className="mt-4 space-y-4" key={post.id}>
+      <form action={save} className="mt-4 space-y-4" key={post.id}>
         <div>
           <label
             htmlFor="title"
@@ -332,7 +276,7 @@ async function EditPost({ postId, delay }: { postId: string; delay: number }) {
         <div>
           <SubmitButton>Save</SubmitButton>
         </div>
-      </Form>
+      </form>
     </div>
   );
 }

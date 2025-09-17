@@ -2,9 +2,7 @@
 
 import Spinner from "@/app/components/spinner";
 import {
-  ComponentProps,
   createContext,
-  ReactElement,
   ReactNode,
   startTransition,
   Suspense,
@@ -12,179 +10,84 @@ import {
   useContext,
   useEffect,
   useOptimistic,
+  useRef,
+  useState,
 } from "react";
 import { useFormStatus } from "react-dom";
 import { Browser } from "../../components/browser";
 import { AnimatePresence, motion } from "motion/react";
 import { useFlash } from "@twofold/framework/flash";
 import z from "zod";
-
-let Context = createContext<{
-  dispatch: (action: Action) => void;
-}>({
-  dispatch: () => {},
-});
-
-type State = {
-  version: number;
-  app: ReactNode;
-  history: string[];
-  postId: string | undefined;
-};
-
-type Action =
-  | {
-      type: "navigate";
-      postId: string;
-    }
-  | { type: "reload" }
-  | {
-      type: "save";
-      postId: string;
-      formData: FormData;
-    };
+import { useRouter } from "@twofold/framework/use-router";
 
 export function Client2({
-  app,
-  reload,
-  navigate,
-  save,
+  children,
+  waterfall,
 }: {
-  app: ReactElement;
-  reload: (postId: string | undefined) => Promise<ReactNode>;
-  navigate: (postId: string) => Promise<ReactNode>;
-  save: (postId: string, formData: FormData) => Promise<ReactNode>;
+  children: ReactNode;
+  waterfall?: number;
 }) {
-  let [state, dispatch] = useActionState<State, Action>(
-    async (prev, action) => {
-      if (action.type === "reload") {
-        let newApp = await reload(prev.postId);
-        return {
-          ...prev,
-          version: prev.version + 1,
-          app: newApp,
-        };
-      }
+  let { path, searchParams, replace } = useRouter();
+  let postId = searchParams.get("postId") || undefined;
+  let reloadCount = useRef(0);
 
-      if (action.type === "navigate") {
-        let newApp = await navigate(action.postId);
-        return {
-          ...prev,
-          app: newApp,
-          history: [...prev.history, action.postId],
-        };
-      }
+  function reloadBrowser() {
+    let reloadSearchParams = new URLSearchParams();
 
-      if (action.type === "save") {
-        let newApp = await save(action.postId, action.formData);
-        return {
-          ...prev,
-          app: newApp,
-        };
-      }
+    if (postId) {
+      reloadSearchParams.set("postId", postId);
+    }
 
-      return prev;
-    },
-    {
-      version: 0,
-      app,
-      history: [],
-      postId: undefined,
-    },
-  );
+    if (waterfall) {
+      reloadCount.current = reloadCount.current + 1;
+      reloadSearchParams.set("suspenseKey", `reload-${reloadCount.current}`);
+      reloadSearchParams.set("waterfall", waterfall.toString());
+    }
+
+    replace(`${path}?${reloadSearchParams}`, {
+      scroll: false,
+      mask: path,
+    });
+  }
 
   return (
-    <div className="relative" key={`${state.version}`}>
-      <Context
-        value={{
-          dispatch,
-        }}
-      >
-        <Browser
-          url="http://localhost:3000/"
-          onRefresh={() => startTransition(() => dispatch({ type: "reload" }))}
-        >
-          {state.app}
-          <FlashAlerts />
-        </Browser>
-      </Context>
+    <div className="relative" key={`key`}>
+      <Browser url="http://localhost:3000/" onRefresh={reloadBrowser}>
+        {children}
+        <FlashAlerts />
+      </Browser>
     </div>
   );
 }
 
-type StackedState = {
-  version: number;
-  stack: ReactNode[];
-  history: string[];
-  postId: string | undefined;
-};
+export function StackedApp({ stack }: { stack: ReactNode[] }) {
+  let { path, searchParams, replace } = useRouter();
+  let postId = searchParams.get("postId") || undefined;
+  let reloadCount = useRef(0);
 
-export function StackedApp({
-  stack,
-  reload,
-  navigate,
-  save,
-}: {
-  stack: ReactNode[];
-  reload: (postId: string | undefined) => Promise<ReactNode[]>;
-  navigate: (postId: string) => Promise<ReactNode[]>;
-  save: (postId: string, formData: FormData) => Promise<ReactNode[]>;
-}) {
-  let [state, dispatch] = useActionState<StackedState, Action>(
-    async (prev, action) => {
-      if (action.type === "reload") {
-        let stack = await reload(prev.postId);
-        return {
-          ...prev,
-          version: prev.version + 1,
-          stack,
-        };
-      }
+  function reloadBrowser() {
+    let reloadSearchParams = new URLSearchParams();
 
-      if (action.type === "navigate") {
-        let stack = await navigate(action.postId);
-        return {
-          ...prev,
-          stack,
-          history: [...prev.history, action.postId],
-        };
-      }
+    if (postId) {
+      reloadSearchParams.set("postId", postId);
+    }
 
-      if (action.type === "save") {
-        let stack = await save(action.postId, action.formData);
-        return {
-          ...prev,
-          stack,
-        };
-      }
+    reloadCount.current = reloadCount.current + 1;
+    reloadSearchParams.set("suspenseKey", `reload-${reloadCount.current}`);
+    reloadSearchParams.set("waterfall", "1200");
 
-      return prev;
-    },
-    {
-      version: 0,
-      stack,
-      history: [],
-      postId: undefined,
-    },
-  );
+    replace(`${path}?${reloadSearchParams}`, {
+      scroll: false,
+      mask: path,
+    });
+  }
 
   return (
-    <div className="relative" key={`${state.version}`}>
-      <Context
-        value={{
-          dispatch,
-        }}
-      >
-        <Browser
-          url="http://localhost:3000/"
-          onRefresh={() => startTransition(() => dispatch({ type: "reload" }))}
-        >
-          <Suspense fallback={<>Loading...</>}>
-            <StackReader stack={state.stack} />
-            <FlashAlerts />
-          </Suspense>
-        </Browser>
-      </Context>
+    <div className="relative">
+      <Browser url="http://localhost:3000/" onRefresh={reloadBrowser}>
+        <StackReader stack={stack} />
+        <FlashAlerts />
+      </Browser>
     </div>
   );
 }
@@ -246,54 +149,8 @@ function FlashAlerts() {
   );
 }
 
-export function LinkButton({
-  postId,
-  children,
-  ...rest
-}: {
-  postId: string;
-  children: ReactNode;
-} & ComponentProps<"button">) {
-  let { dispatch } = useContext(Context);
-
-  return (
-    <button
-      {...rest}
-      onClick={() => {
-        startTransition(() => {
-          dispatch({ type: "navigate", postId });
-        });
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
-export function Form({
-  children,
-  postId,
-  ...rest
-}: {
-  children: ReactNode;
-  postId: string;
-} & ComponentProps<"form">) {
-  let { dispatch } = useContext(Context);
-
-  return (
-    <form
-      {...rest}
-      action={(formData: FormData) =>
-        dispatch({ type: "save", postId, formData })
-      }
-    >
-      {children}
-    </form>
-  );
-}
-
 export function SubmitButton({ children }: { children: ReactNode }) {
-  let isPending = useDelayedPending(100);
+  let isPending = useDelayedPending(120);
 
   return (
     <button

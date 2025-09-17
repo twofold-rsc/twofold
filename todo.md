@@ -2,16 +2,17 @@
 
 - Router post
 - updating a post in one demo should reload the others
+- make suspensekey & waterfall demo specific
 - mobile code tabs
 - reload to waterfall arrow
 - final demo arrow
 - make fence filenames match code tab filenames
 - mouse over reload
 - clean up demos
-- browser history
-- add demo id to save, refresh app if another demo saved (can be client side)
+- add demo id to save, use for flash messages
 - mobile
 - multiline footnote
+- add email link
 
 - build/test kitchen sink in prod
 - Run through windows
