@@ -1,7 +1,8 @@
 # TODO
 
 - Router post
-- animation
+- updating a post in one demo should reload the others
+- mobile code tabs
 - reload to waterfall arrow
 - final demo arrow
 - make fence filenames match code tab filenames

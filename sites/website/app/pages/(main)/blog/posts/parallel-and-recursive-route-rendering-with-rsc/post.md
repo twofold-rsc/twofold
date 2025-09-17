@@ -1,6 +1,6 @@
 ---
 publishedAt: "2025-09-15T08:00:00Z"
-description: "A look under the hood at RSC route rendering"
+description: "RSC route rendering without waterfalls."
 ---
 
 # Parallel and recursive route rendering
@@ -166,7 +166,7 @@ In this example a stream is created that contains the output of components `<Com
 
 If you've never seen `renderToReadableStream` before just know that it's an internal API from React that's used to render RSCs. This function returns a stream that contains the serialized output from the components that were passed to it.
 
-There's one other thing to know about `renderToReadableStream`, it isn't limited to only rendering React components. In fact, it it can render a wide variety of data types, including arrays and objects.
+There's one other thing to know about `renderToReadableStream`, it isn't limited to only rendering React components. In fact, it can render a wide variety of data types, including arrays and objects.
 
 ```jsx
 const stream = renderToReadableStream(
@@ -364,9 +364,9 @@ At this point it's up to the client to render this payload and run all of its cl
 
 ## Recursive components
 
-We're going to create a recursive component that takes the stack, and every time it sees a `<Placeholder />` component it'll pop the next item off the stack and render it in place of the placeholder. This will recursively iterate through the stack until there's nothing left to render.
+We're going to create a recursive component that renders the first item in the stack. Then every time it sees a `<Placeholder />` component it'll pop the next item off the stack and render it in place of the placeholder. This will recursively iterate through the stack until there's nothing left to render.
 
-\[ animation \]
+{% stack-to-nested /%}
 
 To get started, let's feed the stack into a React component conveniently named `<StackReader>`
 

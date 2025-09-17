@@ -1,9 +1,11 @@
 import { Demo1, Demo3, Demo4 } from "./demo1";
+import { StackToNested } from "./stack-to-nested";
 
 export const components = {
   Demo1,
   Demo3,
   Demo4,
+  StackToNested,
 };
 
 export const tags = {
@@ -17,6 +19,10 @@ export const tags = {
   },
   demo4: {
     render: "Demo4",
+    attributes: {},
+  },
+  "stack-to-nested": {
+    render: "StackToNested",
     attributes: {},
   },
 };
