@@ -40,8 +40,11 @@ export function Client2({
 
     if (waterfall) {
       reloadCount.current = reloadCount.current + 1;
-      reloadSearchParams.set("suspenseKey", `reload-${reloadCount.current}`);
-      reloadSearchParams.set("waterfall", waterfall.toString());
+      reloadSearchParams.set(
+        "app.suspenseKey",
+        `reload-${reloadCount.current}`,
+      );
+      reloadSearchParams.set("app.waterfall", waterfall.toString());
     }
 
     replace(`${path}?${reloadSearchParams}`, {
@@ -51,10 +54,9 @@ export function Client2({
   }
 
   return (
-    <div className="relative" key={`key`}>
+    <div className="relative">
       <Browser url="http://localhost:3000/" onRefresh={reloadBrowser}>
         {children}
-        <FlashAlerts />
       </Browser>
     </div>
   );
@@ -73,8 +75,11 @@ export function StackedApp({ stack }: { stack: ReactNode[] }) {
     }
 
     reloadCount.current = reloadCount.current + 1;
-    reloadSearchParams.set("suspenseKey", `reload-${reloadCount.current}`);
-    reloadSearchParams.set("waterfall", "1200");
+    reloadSearchParams.set(
+      "stack.suspenseKey",
+      `reload-${reloadCount.current}`,
+    );
+    reloadSearchParams.set("stack.waterfall", "1200");
 
     replace(`${path}?${reloadSearchParams}`, {
       scroll: false,
@@ -86,7 +91,6 @@ export function StackedApp({ stack }: { stack: ReactNode[] }) {
     <div className="relative">
       <Browser url="http://localhost:3000/" onRefresh={reloadBrowser}>
         <StackReader stack={stack} />
-        <FlashAlerts />
       </Browser>
     </div>
   );
@@ -104,15 +108,14 @@ function StackReader({ stack }: { stack: ReactNode[] }) {
   );
 }
 
-const flashSchema = z.object({
-  type: z.literal("demo"),
-  demo: z.literal("route-rendering-blog-post"),
-  message: z.string(),
-});
-
-function FlashAlerts() {
+export function FlashAlerts({ demoId }: { demoId: number }) {
   let { messagesWithId, removeMessageById } = useFlash({
-    schema: flashSchema,
+    schema: z.object({
+      demoId: z.number().refine((id) => id === demoId),
+      type: z.literal("demo"),
+      demo: z.literal("route-rendering-blog-post"),
+      message: z.string(),
+    }),
     clearAfter: 3000,
   });
 

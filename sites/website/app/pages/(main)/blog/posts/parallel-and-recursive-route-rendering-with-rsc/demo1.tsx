@@ -4,10 +4,17 @@ import cookies from "@twofold/framework/cookies";
 import pageContext from "@twofold/framework/context/page";
 import { flash } from "@twofold/framework/flash";
 import z from "zod";
-import { Client2, Placeholder, StackedApp, SubmitButton } from "./demo1-client";
+import {
+  Client2,
+  FlashAlerts,
+  Placeholder,
+  StackedApp,
+  SubmitButton,
+} from "./demo1-client";
 import Spinner from "@/app/components/spinner";
 import clsx from "clsx";
 import Link from "@twofold/framework/link";
+import { Arrow } from "../../components/arrows";
 
 export function Demo1() {
   return (
@@ -16,7 +23,7 @@ export function Demo1() {
         <Client2>
           <RootLayout>
             <PostsLayout>
-              <EditPost />
+              <EditPost demoId={1} />
             </PostsLayout>
           </RootLayout>
         </Client2>
@@ -26,22 +33,34 @@ export function Demo1() {
 }
 
 export function Demo3() {
-  let waterfall = pageContext.searchParams.get("waterfall");
+  let waterfall = pageContext.searchParams.get("app.waterfall");
   let delay = typeof waterfall === "string" ? parseInt(waterfall) : 0;
 
-  // use a suspense key so the boundaries have to rerender themselves
-  // this is so the reload button feels like its refreshing the app
-  let suspenseKey = pageContext.searchParams.get("suspenseKey") ?? "default";
+  // use a suspense key so the boundaries have to rerender themselves.
+  // this is so the reload button feels like its refreshing the app and
+  // less like a transition.
+  let suspenseKey =
+    pageContext.searchParams.get("app.suspenseKey") ?? "default";
 
   return (
-    <div className="not-prose my-6 sm:-mx-8">
+    <div className="not-prose group my-6 sm:-mx-8">
+      <div className="relative z-10 mt-18">
+        <div className="absolute transition-opacity group-has-[[data-loading]]:opacity-80 sm:-top-[54px] sm:left-[444px]">
+          <div className="relative">
+            <span className="font-handwriting absolute bottom-[42px] -left-[212px] text-xl font-semibold whitespace-nowrap text-red-500">
+              Refresh to see waterfall
+            </span>
+            <Arrow className="pointer-events-none w-18 rotate-[180deg] border border-blue-500 text-red-500" />
+          </div>
+        </div>
+      </div>
       <Client2 waterfall={1000}>
         <Suspense fallback={<Loading align="center" />} key={suspenseKey}>
           <RootLayout delay={delay}>
             <Suspense fallback={<Loading align="center" />}>
               <PostsLayout delay={delay}>
                 <Suspense fallback={<Loading align="left" />}>
-                  <EditPost delay={delay} />
+                  <EditPost delay={delay} demoId={3} />
                 </Suspense>
               </PostsLayout>
             </Suspense>
@@ -53,12 +72,14 @@ export function Demo3() {
 }
 
 export async function Demo4() {
-  let waterfall = pageContext.searchParams.get("waterfall");
+  let waterfall = pageContext.searchParams.get("stack.waterfall");
   let delay = typeof waterfall === "string" ? parseInt(waterfall) : 0;
 
-  // use a suspense key so the boundaries have to rerender themselves
-  // this is so the reload button feels like its refreshing the app
-  let suspenseKey = pageContext.searchParams.get("suspenseKey") ?? "default";
+  // use a suspense key so the boundaries have to rerender themselves.
+  // this is so the reload button feels like its refreshing the app and
+  // less like a transition.
+  let suspenseKey =
+    pageContext.searchParams.get("stack.suspenseKey") ?? "default";
 
   let stack = [
     <Suspense fallback={<LoadingInParallel />} key={suspenseKey}>
@@ -69,7 +90,7 @@ export async function Demo4() {
     <PostsLayout delay={delay} key="posts-layout">
       <Placeholder />
     </PostsLayout>,
-    <EditPost delay={delay} key="edit-post" />,
+    <EditPost delay={delay} demoId={4} key="edit-post" />,
   ];
 
   return (
@@ -114,6 +135,7 @@ function Loading({ align }: { align: "left" | "center" }) {
         "flex items-center justify-center space-x-1.5 px-2 py-2",
         align === "left" ? "justify-start" : "justify-center",
       )}
+      data-loading
     >
       <Spinner className="size-4" />
       <span>Loading...</span>
@@ -194,7 +216,7 @@ let updateSchema = z.object({
   content: z.string(),
 });
 
-function updatePost(postId: string, formData: FormData) {
+function updatePost(demoId: number, postId: string, formData: FormData) {
   let newPost = updateSchema.parse(Object.fromEntries(formData));
   let posts = getPosts();
   let post = posts.find((p) => p.id === postId);
@@ -211,14 +233,20 @@ function updatePost(postId: string, formData: FormData) {
   cookies.set("route-rendering-posts", JSON.stringify(newPosts));
 
   flash({
-    // TODO: add demo id or something
+    demoId,
     type: "demo",
     demo: "route-rendering-blog-post",
     message: `Post "${newPost.title}" saved!`,
   });
 }
 
-async function EditPost({ delay = 0 }: { delay?: number }) {
+async function EditPost({
+  demoId,
+  delay = 0,
+}: {
+  demoId: number;
+  delay?: number;
+}) {
   await new Promise((resolve) => setTimeout(resolve, delay));
 
   let defaultPostId = getPosts()[0]?.id;
@@ -231,13 +259,15 @@ async function EditPost({ delay = 0 }: { delay?: number }) {
 
   async function save(formData: FormData) {
     "use server";
-    updatePost(postId, formData);
+    updatePost(demoId, postId, formData);
   }
+
+  let key = `${post.id}-${post.title}-${post.content}`;
 
   return (
     <div>
       <div className="text-xl font-bold tracking-tight">{post.title}</div>
-      <form action={save} className="mt-4 space-y-4" key={post.id}>
+      <form action={save} className="mt-4 space-y-4" key={key}>
         <div>
           <label
             htmlFor="title"
@@ -249,6 +279,7 @@ async function EditPost({ delay = 0 }: { delay?: number }) {
             <input
               id="title"
               name="title"
+              required
               defaultValue={post.title}
               type="text"
               placeholder="Title"
@@ -267,6 +298,7 @@ async function EditPost({ delay = 0 }: { delay?: number }) {
             <textarea
               id="content"
               name="content"
+              required
               defaultValue={post.content}
               rows={4}
               className="block w-full rounded-md bg-white px-2.5 py-1.5 text-sm/6 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
@@ -277,6 +309,8 @@ async function EditPost({ delay = 0 }: { delay?: number }) {
           <SubmitButton>Save</SubmitButton>
         </div>
       </form>
+
+      <FlashAlerts demoId={demoId} />
     </div>
   );
 }

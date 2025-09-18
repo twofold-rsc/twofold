@@ -53,7 +53,12 @@ export async function Fence({
     >
       {file && (
         <div className="flex items-center justify-start">
-          <div className="inline-flex items-center justify-center rounded-t-md bg-[#24292e] px-4 pt-2 pb-1 text-xs font-medium text-gray-300">
+          <div
+            className={clsx(
+              "rounded-t-md px-4 pt-[8px] pb-[6px] font-mono text-xs",
+              "bg-[#24292e] text-slate-50",
+            )}
+          >
             {file}
           </div>
         </div>

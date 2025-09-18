@@ -7,6 +7,7 @@ import { getTitle } from "../../../markdoc/utils";
 import ryanPicture from "./images/ryan.avif";
 import { XTwitterIcon } from "@/app/icons/x-twitter";
 import { BlueskyIcon } from "@/app/icons/bluesky";
+import { EnvelopeIcon } from "@heroicons/react/24/outline";
 
 export default async function PostPage({ params, request }: PageProps<"slug">) {
   let slug = params.slug;
@@ -90,11 +91,18 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
             </div>
             <div className="flex items-center space-x-4">
               <a
+                href="mailto:ryanto@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <EnvelopeIcon className="size-[22px] stroke-[1.4]" />
+              </a>
+              <a
                 href="https://x.com/ryantotweets"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <XTwitterIcon className="size-5" />
+                <XTwitterIcon className="size-[18px]" />
               </a>
               <a
                 href="https://bsky.app/profile/ryantoron.to"

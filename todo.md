@@ -1,21 +1,21 @@
 # TODO
 
 - Router post
-- updating a post in one demo should reload the others
-- make suspensekey & waterfall demo specific
-- mobile code tabs
 - reload to waterfall arrow
+- make arrow reload, make app, waterfall app, stack app
 - final demo arrow
-- make fence filenames match code tab filenames
-- mouse over reload
-- clean up demos
-- add demo id to save, use for flash messages
 - mobile
+- mouse over reload
+- safari
+- firefox
+- video
+- clean up demos
 - multiline footnote
-- add email link
 
 - build/test kitchen sink in prod
 - Run through windows
+
+- dev reload with build error (syntax error)
 
 - handle PORT env
 - handle port CLI

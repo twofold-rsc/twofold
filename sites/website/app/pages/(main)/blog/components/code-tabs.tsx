@@ -13,13 +13,13 @@ export function CodeTabs({
   return (
     <div className="not-prose my-6">
       <Tabs.Root defaultValue={files[0]}>
-        <Tabs.List>
+        <Tabs.List className="-mx-2 sm:mx-0">
           {files.map((file) => (
             <Tabs.Trigger
               key={file}
               value={file}
               className={clsx(
-                "rounded-t-md px-3 pt-[8px] pb-[7px] font-mono text-xs",
+                "rounded-t-md px-4 pt-[8px] pb-[6px] font-mono text-xs",
                 "data-[state=active]:bg-[#24292e] data-[state=active]:text-slate-50",
                 "data-[state=inactive]:opacity-90",
               )}

@@ -13,7 +13,7 @@ import {
   useRef,
 } from "react";
 import { getDemo2 } from "./demo2-action";
-import { DownArrow } from "./arrows";
+import { DownArrow } from "../../components/arrows";
 import { motion, useScroll, useTransform } from "motion/react";
 import Spinner from "../../../../../components/spinner";
 import { useFormStatus } from "react-dom";

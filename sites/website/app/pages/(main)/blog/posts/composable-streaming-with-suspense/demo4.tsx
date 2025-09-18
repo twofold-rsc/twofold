@@ -11,7 +11,7 @@ import {
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import { Model, models } from "./models";
-import { Arrow } from "./arrows";
+import { Arrow } from "../../components/arrows";
 
 export function Demo4() {
   return (

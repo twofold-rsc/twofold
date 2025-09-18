@@ -111,7 +111,7 @@ And if you look at the source code for each of these components you'll notice th
 
 This ability to colocate the data fetches within the components that need the data is one of the biggest selling points of RSCs.
 
-But there's a problem... this combination of nested components and data fetching means that our app waterfalls.
+But there's a problem... This combination of nested components and data fetching means that our app waterfalls.
 
 If you haven't heard the term before, a waterfall is when a parent component fetches data and then renders a child component. That child component then fetches its own data, and renders its own child component.
 
