@@ -5,28 +5,28 @@ import pageContext from "@twofold/framework/context/page";
 import { flash } from "@twofold/framework/flash";
 import z from "zod";
 import {
-  Client2,
+  DemoApp,
   FlashAlerts,
   Placeholder,
   StackedApp,
   SubmitButton,
+  WaterfallApp,
 } from "./demo1-client";
 import Spinner from "@/app/components/spinner";
 import clsx from "clsx";
 import Link from "@twofold/framework/link";
-import { Arrow } from "../../components/arrows";
 
 export function Demo1() {
   return (
-    <div className="not-prose my-6 sm:-mx-8">
+    <div className="not-prose my-6 md:-mx-8">
       <Suspense fallback={null}>
-        <Client2>
+        <DemoApp>
           <RootLayout>
             <PostsLayout>
               <EditPost demoId={1} />
             </PostsLayout>
           </RootLayout>
-        </Client2>
+        </DemoApp>
       </Suspense>
     </div>
   );
@@ -43,18 +43,8 @@ export function Demo3() {
     pageContext.searchParams.get("app.suspenseKey") ?? "default";
 
   return (
-    <div className="not-prose group my-6 sm:-mx-8">
-      <div className="relative z-10 mt-18">
-        <div className="absolute transition-opacity group-has-[[data-loading]]:opacity-80 sm:-top-[54px] sm:left-[444px]">
-          <div className="relative">
-            <span className="font-handwriting absolute bottom-[42px] -left-[212px] text-xl font-semibold whitespace-nowrap text-red-500">
-              Refresh to see waterfall
-            </span>
-            <Arrow className="pointer-events-none w-18 rotate-[180deg] border border-blue-500 text-red-500" />
-          </div>
-        </div>
-      </div>
-      <Client2 waterfall={1000}>
+    <div className="not-prose group my-6 md:-mx-8">
+      <WaterfallApp>
         <Suspense fallback={<Loading align="center" />} key={suspenseKey}>
           <RootLayout delay={delay}>
             <Suspense fallback={<Loading align="center" />}>
@@ -66,7 +56,7 @@ export function Demo3() {
             </Suspense>
           </RootLayout>
         </Suspense>
-      </Client2>
+      </WaterfallApp>
     </div>
   );
 }
@@ -94,7 +84,7 @@ export async function Demo4() {
   ];
 
   return (
-    <div className="not-prose my-6 sm:-mx-8">
+    <div className="not-prose my-6 md:-mx-8">
       <StackedApp stack={stack} />
     </div>
   );

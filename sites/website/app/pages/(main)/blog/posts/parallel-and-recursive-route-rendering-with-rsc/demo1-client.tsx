@@ -5,13 +5,10 @@ import {
   createContext,
   ReactNode,
   startTransition,
-  Suspense,
-  useActionState,
   useContext,
   useEffect,
   useOptimistic,
   useRef,
-  useState,
 } from "react";
 import { useFormStatus } from "react-dom";
 import { Browser } from "../../components/browser";
@@ -19,14 +16,35 @@ import { AnimatePresence, motion } from "motion/react";
 import { useFlash } from "@twofold/framework/flash";
 import z from "zod";
 import { useRouter } from "@twofold/framework/use-router";
+import { Arrow } from "../../components/arrows";
 
-export function Client2({
-  children,
-  waterfall,
-}: {
-  children: ReactNode;
-  waterfall?: number;
-}) {
+export function DemoApp({ children }: { children: ReactNode }) {
+  let { path, searchParams, replace } = useRouter();
+  let postId = searchParams.get("postId") || undefined;
+
+  function reloadBrowser() {
+    let reloadSearchParams = new URLSearchParams();
+
+    if (postId) {
+      reloadSearchParams.set("postId", postId);
+    }
+
+    replace(`${path}?${reloadSearchParams}`, {
+      scroll: false,
+      mask: path,
+    });
+  }
+
+  return (
+    <div className="relative">
+      <Browser url="http://localhost:3000/" onRefresh={reloadBrowser}>
+        {children}
+      </Browser>
+    </div>
+  );
+}
+
+export function WaterfallApp({ children }: { children: ReactNode }) {
   let { path, searchParams, replace } = useRouter();
   let postId = searchParams.get("postId") || undefined;
   let reloadCount = useRef(0);
@@ -38,14 +56,9 @@ export function Client2({
       reloadSearchParams.set("postId", postId);
     }
 
-    if (waterfall) {
-      reloadCount.current = reloadCount.current + 1;
-      reloadSearchParams.set(
-        "app.suspenseKey",
-        `reload-${reloadCount.current}`,
-      );
-      reloadSearchParams.set("app.waterfall", waterfall.toString());
-    }
+    reloadCount.current = reloadCount.current + 1;
+    reloadSearchParams.set("app.suspenseKey", `reload-${reloadCount.current}`);
+    reloadSearchParams.set("app.waterfall", "1000");
 
     replace(`${path}?${reloadSearchParams}`, {
       scroll: false,
@@ -55,6 +68,23 @@ export function Client2({
 
   return (
     <div className="relative">
+      <div className="relative z-10 mt-18">
+        <div className="absolute -top-[54px] right-[16px] transition-opacity group-has-[[data-loading]]:opacity-80 md:-top-[54px] md:right-[200px]">
+          <div className="relative">
+            <span
+              onClick={reloadBrowser}
+              className="font-handwriting absolute right-[74px] bottom-[42px] text-xl font-semibold whitespace-nowrap text-red-500"
+            >
+              Refresh to see waterfall
+            </span>
+            <Arrow
+              onClick={reloadBrowser}
+              className="w-18 rotate-[180deg] text-red-500"
+            />
+          </div>
+        </div>
+      </div>
+
       <Browser url="http://localhost:3000/" onRefresh={reloadBrowser}>
         {children}
       </Browser>
@@ -89,6 +119,23 @@ export function StackedApp({ stack }: { stack: ReactNode[] }) {
 
   return (
     <div className="relative">
+      <div className="relative z-10 mt-18">
+        <div className="absolute -top-[54px] right-[16px] transition-opacity group-has-[[data-loading]]:opacity-80 md:-top-[54px] md:right-[200px]">
+          <div className="relative">
+            <span
+              onClick={reloadBrowser}
+              className="font-handwriting absolute right-[74px] bottom-[42px] text-xl font-semibold whitespace-nowrap text-red-500"
+            >
+              Refresh to render in parallel
+            </span>
+            <Arrow
+              onClick={reloadBrowser}
+              className="w-18 rotate-[180deg] text-red-500"
+            />
+          </div>
+        </div>
+      </div>
+
       <Browser url="http://localhost:3000/" onRefresh={reloadBrowser}>
         <StackReader stack={stack} />
       </Browser>

@@ -7,7 +7,7 @@ description: "RSC route rendering without waterfalls."
 
 RSC routers are tricky to understand. If you're like me and coming from a traditional React background then the RSC approach to route rendering is going to surprise you the first time you see it.
 
-For example, routes are rendered in parallel on the server and then stitched back together recursively on the client to avoid waterfalls. These sorts of patterns rarely come up in the day-to-day of building React apps, but they're essential for creating RSC routers.
+The biggest surprise is that routes are rendered in parallel on the server and then stitched back together recursively on the client to avoid waterfalls. This sort of pattern rarely comes up in the day-to-day of building a React app, but it's essential for creating RSC routers.
 
 I recently had the opportunity to add parallel and recursive route rendering to [Twofold]() and I think the idea is so interesting that I wanted to share it here.
 
@@ -115,9 +115,9 @@ But there's a problem... This combination of nested components and data fetching
 
 If you haven't heard the term before, a waterfall is when a parent component fetches data and then renders a child component. That child component then fetches its own data, and renders its own child component.
 
-This cycle of fetching and rendering creates a problem because child components do not fetch their data until their parents have finished rendering. In an app that waterfalls every child is blocked by its parent. Ultimately, this leads to a series of sequential data fetches and poor response times.
+This cycle of fetching and rendering is problematic because child components cannot begin fetching data until their parents have finished rendering. In an app that waterfalls every child is blocked by its parent. Ultimately, this leads to a series of sequential data fetches and poor response times.
 
-\[ demo 2, waterfall timeline \]
+{% waterfall-timeline /%}
 
 The term waterfall comes from the way these components appear on a rendering timeline. Since no component can render before it's parent finishes, it paints a picture that sort of looks like a waterfall.
 
@@ -219,7 +219,7 @@ const stream = renderToReableStream(
 );
 ```
 
-Not quite. The `<RootLayout />` and the `<PostsLayout />` both expect `children` in order to render correctly. If we render the components in a list like this the layouts won't work since the components are no longer nested.
+Not quite. The `<RootLayout />` and the `<PostsLayout />` both expect `children` in order to render correctly. If we render the components in a list like this the layouts won't work since these components are no longer nested.
 
 We've got a way to render components in parallel, but we don't yet have a way to nest them. Luckily we can take advantage of how React renders server and client components to solve this.
 
@@ -258,11 +258,13 @@ export function Placeholder() {
 
 The `<Placeholder />` component is just a literal placeholder for now. It's a client component that renders nothing.
 
-If you squint at the data that's being rendered it looks just like a stack. The top most item in the stack is the `RootLayout`, followed by the `PostsLayout`, and then finally the `EditPage`.
+If you squint at the data that's being rendered it looks just like a stack.
 
-\[ stack drawing \]
+{% card-stack /%}
 
-When called, `renderToReadableStream` creates a stack-like data structure, runs all of the server components, and then serializes the output into a stream. It's important to know that `renderToReadableStream` only runs server components, it leaves client components untouched.
+The top most item in the stack is the `RootLayout`, followed by the `PostsLayout`, and then finally the `EditPage`.
+
+That means when `renderToReadableStream` is called it's going to create a stack-like data structure, run all of the server components, and then serialize the output into a stream. It's important to know that `renderToReadableStream` only runs server components, it leaves client components untouched.
 
 If you could imagine the represented output of `renderToReadableStream` you might think of it as something like:
 
@@ -441,6 +443,8 @@ function StackReader({ stack }) {
 ```
 
 And that's it! We've found a way to render RSC routes in parallel on the server, and then stitch them back together recursively on the client. Since all routes run at the same time, this tree won't waterfall.
+
+Here's the same blog post editor with three components that each take a second to load. Since they all run in parallel the total time to render is just one second.
 
 {% demo4 /%}
 

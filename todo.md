@@ -1,13 +1,10 @@
 # TODO
 
 - Router post
-- reload to waterfall arrow
-- make arrow reload, make app, waterfall app, stack app
-- final demo arrow
-- mobile
-- mouse over reload
 - safari
 - firefox
+- mobile
+- mobile code tabs
 - video
 - clean up demos
 - multiline footnote
