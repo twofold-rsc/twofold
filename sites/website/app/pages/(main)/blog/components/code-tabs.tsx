@@ -13,24 +13,36 @@ export function CodeTabs({
   return (
     <div className="not-prose my-6">
       <Tabs.Root defaultValue={files[0]}>
-        <Tabs.List className="-mx-2 sm:mx-0">
+        <Tabs.List className="-mx-2 flex overflow-x-scroll sm:mx-0">
           {files.map((file) => (
             <Tabs.Trigger
               key={file}
               value={file}
               className={clsx(
-                "rounded-t-md px-4 pt-[8px] pb-[6px] font-mono text-xs",
+                "shrink-0 rounded-t-md pt-[8px] pb-[6px] font-mono text-xs",
+                "px-3 sm:px-4",
                 "data-[state=active]:bg-[#24292e] data-[state=active]:text-slate-50",
                 "data-[state=inactive]:opacity-90",
               )}
             >
-              {file}
+              <FilenameTab file={file} />
             </Tabs.Trigger>
           ))}
         </Tabs.List>
         <div>{children}</div>
       </Tabs.Root>
     </div>
+  );
+}
+
+function FilenameTab({ file }: { file: string }) {
+  let [name, ext] = file.split(".");
+
+  return (
+    <span>
+      {name}
+      <span className="hidden sm:inline">.{ext}</span>
+    </span>
   );
 }
 

@@ -5,17 +5,17 @@ export function WaterfallTimeline() {
     <div className="not-prose my-6">
       <div className="grid grid-cols-3 grid-rows-3">
         <div className="col-start-1 row-start-1">
-          <Card className="mt-0.5 border-amber-500 bg-amber-50 text-amber-600">
+          <Card className="border-amber-500 bg-amber-50 text-amber-600">
             &lt;RootLayout&gt;
           </Card>
         </div>
         <div className="col-start-2 row-start-2">
-          <Card className="mt-0.5 border-violet-500 bg-violet-50 text-violet-600">
+          <Card className="border-violet-500 bg-violet-50 text-violet-600">
             &lt;PostsLayout&gt;
           </Card>
         </div>
         <div className="col-start-3 row-start-3">
-          <Card className="mt-0.5 border-blue-500 bg-blue-50 text-blue-600">
+          <Card className="border-blue-500 bg-blue-50 text-blue-600">
             &lt;EditPage&gt;
           </Card>
         </div>
@@ -196,7 +196,7 @@ function Card({
   return (
     <div
       className={clsx(
-        "w-full rounded-md border-2 p-4 font-mono text-xs font-semibold sm:text-sm",
+        "w-full overflow-x-hidden rounded-md border-2 p-2.5 font-mono text-xs font-semibold sm:p-4 sm:text-sm",
         className,
       )}
     >

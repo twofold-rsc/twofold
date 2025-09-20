@@ -1,13 +1,10 @@
 # TODO
 
 - Router post
-- safari
-- firefox
-- mobile
-- mobile code tabs
 - video
 - clean up demos
 - multiline footnote
+- reword
 
 - build/test kitchen sink in prod
 - Run through windows
@@ -21,7 +18,6 @@
 
 - order of rss feed?
 - post content in rss feed?
-- MPA post
 
 - error handling
 - error boundaries
@@ -36,6 +32,7 @@
 
 - clear all for flash messages (should match schema)
 - flash messages need order that survives reload (create multiple order is good, but after reload order is random)
+- flash docs demo
 
 - rework build/startup
 - let externals plugin use the cache

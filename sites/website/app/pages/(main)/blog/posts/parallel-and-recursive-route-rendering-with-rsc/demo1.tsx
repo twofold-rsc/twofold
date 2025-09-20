@@ -18,7 +18,7 @@ import Link from "@twofold/framework/link";
 
 export function Demo1() {
   return (
-    <div className="not-prose my-6 md:-mx-8">
+    <div className="not-prose -mx-2 my-6 md:-mx-8">
       <Suspense fallback={null}>
         <DemoApp>
           <RootLayout>
@@ -43,7 +43,7 @@ export function Demo3() {
     pageContext.searchParams.get("app.suspenseKey") ?? "default";
 
   return (
-    <div className="not-prose group my-6 md:-mx-8">
+    <div className="not-prose group -mx-2 my-6 md:-mx-8">
       <WaterfallApp>
         <Suspense fallback={<Loading align="center" />} key={suspenseKey}>
           <RootLayout delay={delay}>
@@ -91,9 +91,9 @@ export async function Demo4() {
 }
 
 let defaultPosts = [
-  { id: "1", title: "Hello world", content: "This is my first post" },
+  { id: "1", title: "Hello world", content: "Hello and welcome to the blog." },
   { id: "2", title: "Edit me!!!", content: "You can really edit these posts!" },
-  { id: "3", title: "Welcome post", content: "Welcome to my blog!" },
+  { id: "3", title: "Welcome post", content: "Hello and welcome to the blog!" },
 ];
 
 let postSchema = z.object({
@@ -153,7 +153,7 @@ async function RootLayout({
 
   return (
     <div>
-      <div className="flex items-center justify-between bg-gray-800 px-4 py-2 text-base text-white">
+      <div className="flex items-center justify-between bg-gray-800 px-3 py-2 text-base text-white sm:px-4">
         <div className="font-bold tracking-tight">Blog Admin</div>
         <div className="relative">
           <img src={AlicePhoto} className="size-5 rounded-full" />
@@ -161,7 +161,7 @@ async function RootLayout({
           <div className="absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border-2 border-gray-800 bg-green-400" />
         </div>
       </div>
-      <div className="px-4 py-4">{children}</div>
+      <div className="px-3 py-4 sm:px-4">{children}</div>
     </div>
   );
 }
@@ -179,7 +179,7 @@ async function PostsLayout({
 
   return (
     <div className="flex items-start">
-      <div className="w-[175px]">
+      <div className="w-[125px] sm:w-[175px]">
         <div className="text-sm font-medium text-gray-500">Posts</div>
         <ul className="mt-1 space-y-1">
           {posts.map((post) => (
@@ -188,7 +188,7 @@ async function PostsLayout({
                 href={`/blog/parallel-and-recursive-route-rendering-with-rsc?postId=${post.id}`}
                 mask={`/blog/parallel-and-recursive-route-rendering-with-rsc`}
                 scroll="preserve"
-                className="cursor-pointer text-blue-600 hover:underline"
+                className="cursor-pointer break-words text-blue-600 hover:underline"
               >
                 {post.title}
               </Link>
@@ -256,7 +256,9 @@ async function EditPost({
 
   return (
     <div>
-      <div className="text-xl font-bold tracking-tight">{post.title}</div>
+      <div className="text-xl font-bold tracking-tight break-words">
+        {post.title}
+      </div>
       <form action={save} className="mt-4 space-y-4" key={key}>
         <div>
           <label

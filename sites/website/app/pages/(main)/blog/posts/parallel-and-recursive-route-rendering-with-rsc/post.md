@@ -1,5 +1,5 @@
 ---
-publishedAt: "2025-09-15T08:00:00Z"
+# publishedAt: "2025-09-15T08:00:00Z"
 description: "RSC route rendering without waterfalls."
 ---
 
@@ -9,7 +9,7 @@ RSC routers are tricky to understand. If you're like me and coming from a tradit
 
 The biggest surprise is that routes are rendered in parallel on the server and then stitched back together recursively on the client to avoid waterfalls. This sort of pattern rarely comes up in the day-to-day of building a React app, but it's essential for creating RSC routers.
 
-I recently had the opportunity to add parallel and recursive route rendering to [Twofold]() and I think the idea is so interesting that I wanted to share it here.
+I recently had the opportunity to add parallel and recursive route rendering to [Twofold](https://twofoldframework.com/) and I think the idea is so interesting that I wanted to share it here.
 
 But in order to understand RSC route rendering, we need to touch on a wide range of seemingly unrelated topics:
 
@@ -444,7 +444,7 @@ function StackReader({ stack }) {
 
 And that's it! We've found a way to render RSC routes in parallel on the server, and then stitch them back together recursively on the client. Since all routes run at the same time, this tree won't waterfall.
 
-Here's the same blog post editor with three components that each take a second to load. Since they all run in parallel the total time to render is just one second.
+Here's the same blog post editor with three components that each take a second to load. This version loads much faster since all of the routes render in parallel.
 
 {% demo4 /%}
 

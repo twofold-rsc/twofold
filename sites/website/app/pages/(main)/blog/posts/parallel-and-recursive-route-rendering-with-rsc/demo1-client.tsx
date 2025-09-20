@@ -75,7 +75,7 @@ export function WaterfallApp({ children }: { children: ReactNode }) {
               onClick={reloadBrowser}
               className="font-handwriting absolute right-[74px] bottom-[42px] text-xl font-semibold whitespace-nowrap text-red-500"
             >
-              Refresh to see waterfall
+              Refresh to see the waterfall
             </span>
             <Arrow
               onClick={reloadBrowser}

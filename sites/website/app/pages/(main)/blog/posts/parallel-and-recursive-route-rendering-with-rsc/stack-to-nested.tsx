@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, LayoutGroup, HTMLMotionProps } from "motion/react";
 import clsx from "clsx";
-import { BackwardIcon, PlayIcon } from "@heroicons/react/20/solid";
+import { PlayIcon } from "@heroicons/react/20/solid";
 
 export function StackToNested() {
   const [step, setStep] = useState(0);
@@ -20,7 +20,7 @@ export function StackToNested() {
   }
 
   return (
-    <div className="not-prose my-5 sm:my-8">
+    <div className="not-prose -mx-2 my-5 sm:mx-0 sm:my-8">
       <div className="mb-4 flex items-center justify-center gap-x-3">
         <button
           onClick={step === 0 ? start : restart}
@@ -97,7 +97,7 @@ export function StackToNested() {
               {step >= 1 ? (
                 <Card
                   id="A"
-                  className="border-amber-500 bg-amber-50 text-amber-600"
+                  className="relative z-10 border-amber-500 bg-amber-50 text-amber-600"
                   onLayoutAnimationComplete={() => {
                     if (step === 1) {
                       setTimeout(() => {
@@ -110,7 +110,7 @@ export function StackToNested() {
                   {step >= 3 ? (
                     <Card
                       id="B"
-                      className="my-4 w-full border-violet-500 bg-violet-50 text-violet-600"
+                      className="relative z-20 my-3 w-full border-violet-500 bg-violet-50 text-violet-600 sm:my-4"
                       onLayoutAnimationComplete={() => {
                         if (step === 3) {
                           setTimeout(() => {
@@ -123,7 +123,7 @@ export function StackToNested() {
                       {step >= 5 ? (
                         <Card
                           id="C"
-                          className="my-4 border-blue-500 bg-blue-50 text-blue-600"
+                          className="relative z-30 my-3 border-blue-500 bg-blue-50 text-blue-600 sm:my-4"
                           onLayoutAnimationComplete={() => {
                             if (step === 5) {
                               setTimeout(() => {
@@ -243,7 +243,7 @@ function Spacer({
   return (
     <pre
       className={clsx(
-        "border-2 border-transparent p-4 text-xs font-semibold sm:text-sm",
+        "border-2 border-transparent p-3 text-xs font-semibold sm:p-4 sm:text-sm",
         className,
       )}
     >
@@ -268,7 +268,7 @@ function Card({
       layout
       // transition={{ type: "spring", stiffness: 420, damping: 36 }}
       className={clsx(
-        "w-full rounded-md border-2 p-4 text-xs font-semibold sm:text-sm",
+        "w-full rounded-md border-2 p-3 text-xs font-semibold sm:p-4 sm:text-sm",
         className,
       )}
       {...rest}
