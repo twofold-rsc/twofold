@@ -5,34 +5,34 @@ import pageContext from "@twofold/framework/context/page";
 import { flash } from "@twofold/framework/flash";
 import z from "zod";
 import {
-  DemoApp,
+  DemoBrowser,
+  StackedBrowser,
+  WaterfallBrowser,
   FlashAlerts,
   Placeholder,
-  StackedApp,
   SubmitButton,
-  WaterfallApp,
-} from "./demo1-client";
+} from "./apps-client";
 import Spinner from "@/app/components/spinner";
 import clsx from "clsx";
 import Link from "@twofold/framework/link";
 
-export function Demo1() {
+export function DemoApp() {
   return (
     <div className="not-prose -mx-2 my-6 md:-mx-8">
       <Suspense fallback={null}>
-        <DemoApp>
+        <DemoBrowser>
           <RootLayout>
             <PostsLayout>
               <EditPost demoId={1} />
             </PostsLayout>
           </RootLayout>
-        </DemoApp>
+        </DemoBrowser>
       </Suspense>
     </div>
   );
 }
 
-export function Demo3() {
+export function WaterfallApp() {
   let waterfall = pageContext.searchParams.get("app.waterfall");
   let delay = typeof waterfall === "string" ? parseInt(waterfall) : 0;
 
@@ -44,7 +44,7 @@ export function Demo3() {
 
   return (
     <div className="not-prose group -mx-2 my-6 md:-mx-8">
-      <WaterfallApp>
+      <WaterfallBrowser>
         <Suspense fallback={<Loading align="center" />} key={suspenseKey}>
           <RootLayout delay={delay}>
             <Suspense fallback={<Loading align="center" />}>
@@ -56,12 +56,12 @@ export function Demo3() {
             </Suspense>
           </RootLayout>
         </Suspense>
-      </WaterfallApp>
+      </WaterfallBrowser>
     </div>
   );
 }
 
-export async function Demo4() {
+export async function StackedApp() {
   let waterfall = pageContext.searchParams.get("stack.waterfall");
   let delay = typeof waterfall === "string" ? parseInt(waterfall) : 0;
 
@@ -85,7 +85,7 @@ export async function Demo4() {
 
   return (
     <div className="not-prose my-6 md:-mx-8">
-      <StackedApp stack={stack} />
+      <StackedBrowser stack={stack} />
     </div>
   );
 }

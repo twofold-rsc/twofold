@@ -1,10 +1,8 @@
 # TODO
 
 - Router post
-- video
-- clean up demos
-- multiline footnote
 - reword
+- multiline footnote
 
 - build/test kitchen sink in prod
 - Run through windows

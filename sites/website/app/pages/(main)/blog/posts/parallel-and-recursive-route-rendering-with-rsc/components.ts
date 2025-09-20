@@ -1,27 +1,27 @@
-import { Demo1, Demo3, Demo4 } from "./demo1";
+import { DemoApp, WaterfallApp, StackedApp } from "./apps";
 import { StackToNested } from "./stack-to-nested";
 import { CardStack, WaterfallTimeline } from "./cards";
 
 export const components = {
   WaterfallTimeline,
   CardStack,
-  Demo1,
-  Demo3,
-  Demo4,
+  DemoApp,
+  WaterfallApp,
+  StackedApp,
   StackToNested,
 };
 
 export const tags = {
-  demo1: {
-    render: "Demo1",
+  "demo-app": {
+    render: "DemoApp",
     attributes: {},
   },
-  demo3: {
-    render: "Demo3",
+  "waterfall-app": {
+    render: "WaterfallApp",
     attributes: {},
   },
-  demo4: {
-    render: "Demo4",
+  "stacked-app": {
+    render: "StackedApp",
     attributes: {},
   },
   "waterfall-timeline": {

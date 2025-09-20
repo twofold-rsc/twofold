@@ -1,5 +1,5 @@
 ---
-# publishedAt: "2025-09-15T08:00:00Z"
+publishedAt: "2025-09-23T08:00:00Z"
 description: "RSC route rendering without waterfalls."
 ---
 
@@ -99,7 +99,7 @@ export default function EditPage({ postId }) {
 
 And here's the app rendered. You can click around and edit different posts.
 
-{% demo1 /%}
+{% demo-app /%}
 
 This app is made up of three different components: `RootLayout`, `PostsLayout`, and `PostEditPage`.
 
@@ -123,7 +123,7 @@ The term waterfall comes from the way these components appear on a rendering tim
 
 To show you how this affects the user experience of an app I've changed each data fetch to take one second to load. Try refreshing the app, see how the components load one after the other.
 
-{% demo3 /%}
+{% waterfall-app /%}
 
 Ouch. That's tough to watch.
 
@@ -446,7 +446,7 @@ And that's it! We've found a way to render RSC routes in parallel on the server,
 
 Here's the same blog post editor with three components that each take a second to load. This version loads much faster since all of the routes render in parallel.
 
-{% demo4 /%}
+{% stacked-app /%}
 
 ## Implementation details
 

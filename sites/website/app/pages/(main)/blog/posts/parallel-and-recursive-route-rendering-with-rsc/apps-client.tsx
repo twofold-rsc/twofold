@@ -18,7 +18,7 @@ import z from "zod";
 import { useRouter } from "@twofold/framework/use-router";
 import { Arrow } from "../../components/arrows";
 
-export function DemoApp({ children }: { children: ReactNode }) {
+export function DemoBrowser({ children }: { children: ReactNode }) {
   let { path, searchParams, replace } = useRouter();
   let postId = searchParams.get("postId") || undefined;
 
@@ -44,7 +44,7 @@ export function DemoApp({ children }: { children: ReactNode }) {
   );
 }
 
-export function WaterfallApp({ children }: { children: ReactNode }) {
+export function WaterfallBrowser({ children }: { children: ReactNode }) {
   let { path, searchParams, replace } = useRouter();
   let postId = searchParams.get("postId") || undefined;
   let reloadCount = useRef(0);
@@ -92,7 +92,7 @@ export function WaterfallApp({ children }: { children: ReactNode }) {
   );
 }
 
-export function StackedApp({ stack }: { stack: ReactNode[] }) {
+export function StackedBrowser({ stack }: { stack: ReactNode[] }) {
   let { path, searchParams, replace } = useRouter();
   let postId = searchParams.get("postId") || undefined;
   let reloadCount = useRef(0);
