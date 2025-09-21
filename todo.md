@@ -1,7 +1,9 @@
 # TODO
 
 - Router post
-- reword
+- deploy without publishing and test
+- tweet
+- check rss
 - multiline footnote
 
 - build/test kitchen sink in prod
@@ -13,6 +15,15 @@
 - handle port CLI
 - sigterm (test locally with serve)
 - prewarm imports (routing tree)
+
+- cloudflare uses zstd compression on text/x-component, which causes buffering of the response
+  one way to fix is using the cache control no transform header. maybe we enable that in dev
+  this doesnt affect prod because these responses are gziped
+  "cache-control": "no-transform"
+
+- cloudflare issue:
+  in prod we should gzip/compress action responses since they are x-component streams
+  use cache control no transform in dev though
 
 - order of rss feed?
 - post content in rss feed?
