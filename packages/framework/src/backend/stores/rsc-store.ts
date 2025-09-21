@@ -1,5 +1,4 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { ReactNode } from "react";
 import { SerializeOptions } from "cookie";
 
 type JSONValue =
@@ -31,6 +30,11 @@ export type Store = {
   flash: {
     add(message: JSONValue): void;
   };
+  context: {
+    type: "page";
+    request: Request;
+    assets: string[];
+  } | null;
   assets: string[];
 };
 

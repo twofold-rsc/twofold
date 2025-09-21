@@ -8,7 +8,7 @@ import {
   Demo6ModelSelect,
   Demo6ModelSelectOptions,
 } from "./demo6-model-select";
-import { Arrow } from "./arrows";
+import { Arrow } from "../../components/arrows";
 
 export function getDemo6() {
   return (

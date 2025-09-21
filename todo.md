@@ -1,14 +1,32 @@
 # TODO
 
+- Router post
+- deploy without publishing and test
+- tweet
+- check rss
+- multiline footnote
+
 - build/test kitchen sink in prod
 - Run through windows
 
-- Router post
-- animation
+- dev reload with build error (syntax error)
+
+- handle PORT env
+- handle port CLI
+- sigterm (test locally with serve)
+- prewarm imports (routing tree)
+
+- cloudflare uses zstd compression on text/x-component, which causes buffering of the response
+  one way to fix is using the cache control no transform header. maybe we enable that in dev
+  this doesnt affect prod because these responses are gziped
+  "cache-control": "no-transform"
+
+- cloudflare issue:
+  in prod we should gzip/compress action responses since they are x-component streams
+  use cache control no transform in dev though
 
 - order of rss feed?
 - post content in rss feed?
-- MPA post
 
 - error handling
 - error boundaries
@@ -20,6 +38,10 @@
 - newsletter signup (after 3 posts)
 
 - docs for pathless layouts
+
+- clear all for flash messages (should match schema)
+- flash messages need order that survives reload (create multiple order is good, but after reload order is random)
+- flash docs demo
 
 - rework build/startup
 - let externals plugin use the cache
@@ -37,16 +59,13 @@
 - api routes should use route matchers
 
 - components
-- NavigationLink
+- Link with transition helpers
 
 - error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
 
 - prefix encrypted cookie with app name
 
 - taint secret key (needs experimental react)
-- editing env file should trigger some sort of change so live reload works
-- editing config file should trigger reload
-- if build changes (stale browser, whatever) should live reload
 - production build should live reload in dev. live reload is really about the task, not the build environment
 
 - perf tracking: <https://github.com/facebook/react/pull/31729>
@@ -77,8 +96,6 @@ framework
 - not found and redirect should be server only
 - put all error boundaries in same client component
 - monkey patch console.error for not found/redirect boundaries
-
-- run middleware in RSC?
 
 - reload on file changes under pages? (ex editing an md file)
 

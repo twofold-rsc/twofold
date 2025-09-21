@@ -32,6 +32,7 @@
     "./not-found": "./src/client/http/not-found.ts",
     "./redirect": "./src/client/http/redirect.ts",
     "./encryption": "./dist/backend/encryption.js",
+    "./context/page": "./src/client/server-context/page.ts",
     "./flash": {
       "react-server": "./src/client/actions/flash.ts",
       "default": "./src/client/actions/flash-client.ts"

@@ -93,6 +93,15 @@ export class ActionRequest {
     let requestToRender = this.requestToRender;
     let pageRequest = this.#runtime.pageRequest(requestToRender);
 
+    let store = getStore();
+    store.assets = pageRequest.assets;
+    // see comment in page request file for this mutation
+    store.context = {
+      type: "page",
+      request: requestToRender,
+      assets: pageRequest.assets,
+    };
+
     try {
       await pageRequest.runMiddleware();
     } catch (err: unknown) {
@@ -105,9 +114,6 @@ export class ActionRequest {
         throw err;
       }
     }
-
-    let store = getStore();
-    store.assets = pageRequest.assets;
 
     let stack = await pageRequest.routeStack();
     let formState = await this.#action.getFormState(result);
@@ -392,7 +398,7 @@ class SPAAction implements Action {
 
     if (typeof fn !== "function") {
       throw new Error(
-        `Expected server action ${compiledAction.export} to be a function`
+        `Expected server action ${compiledAction.export} to be a function`,
       );
     }
 

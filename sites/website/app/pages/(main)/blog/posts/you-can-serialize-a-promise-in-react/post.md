@@ -227,7 +227,7 @@ Now while this works, our serialization format is brittle and full of bugs. But 
 
 ## React 19, RSC, and Serialization
 
-Inside of a react there are two packages, `react-server` and `react-client`. These packages are responsible for serializing and deserializing data between the server and client. Like our toy example, the React packages use a serialization format that is built on top of streams.
+Inside of a React there are two packages, `react-server` and `react-client`. These packages are responsible for serializing and deserializing data between the server and client. Like our toy example, the React packages use a serialization format that is built on top of streams.
 
 These packages are not importable directly by your React app. Instead, they are exposed through bundler specific implementations that your application ends up consuming.
 

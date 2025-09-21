@@ -2,17 +2,12 @@ import Markdoc, { RenderableTreeNodes } from "@markdoc/markdoc";
 import Link from "@twofold/framework/link";
 import { PageProps } from "@twofold/framework/types";
 import React, { ComponentType } from "react";
-import { Fence } from "./components/fence";
-import { Footnote } from "./components/footnote";
 import { loadComponents, loadContent, loadMetadata } from "./data-layer/posts";
 import { getTitle } from "../../../markdoc/utils";
-import { CLICommand } from "../../../components/cli/command";
-import { StandoutComment } from "./components/standout-comment";
 import ryanPicture from "./images/ryan.avif";
 import { XTwitterIcon } from "@/app/icons/x-twitter";
 import { BlueskyIcon } from "@/app/icons/bluesky";
-// import { Callout } from "./components/callout";
-// import { Image } from "./components/image";
+import { EnvelopeIcon } from "@heroicons/react/24/outline";
 
 export default async function PostPage({ params, request }: PageProps<"slug">) {
   let slug = params.slug;
@@ -65,7 +60,9 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
             </Link>
           </div>
           <div className="prose prose-h1:mb-4 prose-li:font-serif prose-p:font-serif first-of-type:prose-p:mt-0 mt-8">
-            <MarkdocContent content={content} components={components} />
+            {Markdoc.renderers.react(content, React, {
+              components,
+            })}
           </div>
 
           <div className="mt-12 flex items-center justify-between">
@@ -94,11 +91,18 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
             </div>
             <div className="flex items-center space-x-4">
               <a
+                href="mailto:ryanto@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <EnvelopeIcon className="size-[22px] stroke-[1.4]" />
+              </a>
+              <a
                 href="https://x.com/ryantotweets"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <XTwitterIcon className="size-5" />
+                <XTwitterIcon className="size-[18px]" />
               </a>
               <a
                 href="https://bsky.app/profile/ryantoron.to"
@@ -131,32 +135,6 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
           </ul>
         </div>
       </div> */}
-    </>
-  );
-}
-
-async function MarkdocContent({
-  content,
-  components,
-}: {
-  content: RenderableTreeNodes;
-  components: Record<string, ComponentType>;
-}) {
-  let allComponents = {
-    ...components,
-    Fence,
-    Footnote,
-    CLICommand,
-    StandoutComment,
-    // Callout,
-    // Image,
-  };
-
-  return (
-    <>
-      {Markdoc.renderers.react(content, React, {
-        components: allComponents,
-      })}
     </>
   );
 }
