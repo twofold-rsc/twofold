@@ -91,7 +91,7 @@ export async function StackedApp() {
 }
 
 let defaultPosts = [
-  { id: "1", title: "Hello world", content: "Hello and welcome to the blog." },
+  { id: "1", title: "Hello world", content: "This is a test blog post." },
   { id: "2", title: "Edit me!!!", content: "You can really edit these posts!" },
   { id: "3", title: "Welcome post", content: "Hello and welcome to the blog!" },
 ];
