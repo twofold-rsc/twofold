@@ -156,7 +156,7 @@ async function RootLayout({
       <div className="flex items-center justify-between bg-gray-800 px-3 py-2 text-base text-white sm:px-4">
         <div className="font-bold tracking-tight">Blog Admin</div>
         <div className="relative">
-          <img src={AlicePhoto} className="size-5 rounded-full" />
+          <img src={AlicePhoto} alt="" className="size-5 rounded-full" />
           <div className="pointer-events-none absolute inset-0 rounded-full border border-white/20" />
           <div className="absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border-2 border-gray-800 bg-green-400" />
         </div>
@@ -275,7 +275,11 @@ async function EditPost({
               defaultValue={post.title}
               type="text"
               placeholder="Title"
-              className="block w-full rounded-md bg-white px-2.5 py-1.5 text-sm/6 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
+              className={clsx(
+                "block w-full rounded-md bg-white px-2.5 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600",
+                "max-sm:w-[calc(100%/0.875)] max-sm:origin-top-left max-sm:scale-[0.875] max-sm:transform",
+                "sm:text-sm/6",
+              )}
             />
           </div>
         </div>
@@ -293,7 +297,11 @@ async function EditPost({
               required
               defaultValue={post.content}
               rows={4}
-              className="block w-full rounded-md bg-white px-2.5 py-1.5 text-sm/6 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
+              className={clsx(
+                "block w-full rounded-md bg-white px-2.5 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600",
+                "max-sm:w-[calc(100%/0.875)] max-sm:origin-top-left max-sm:scale-[0.875] max-sm:transform",
+                "sm:text-sm/6",
+              )}
             />
           </div>
         </div>

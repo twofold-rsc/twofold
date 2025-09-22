@@ -1,9 +1,5 @@
 # TODO
 
-- Router post
-- deploy without publishing and test
-- tweet
-- check rss
 - multiline footnote
 
 - build/test kitchen sink in prod
