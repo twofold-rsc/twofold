@@ -94,6 +94,7 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
                 href="mailto:ryanto@gmail.com"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Email"
               >
                 <EnvelopeIcon className="size-[22px] stroke-[1.4]" />
               </a>
@@ -101,6 +102,7 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
                 href="https://x.com/ryantotweets"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Follow on X (Twitter)"
               >
                 <XTwitterIcon className="size-[18px]" />
               </a>
@@ -108,6 +110,7 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
                 href="https://bsky.app/profile/ryantoron.to"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Follow on Bluesky"
               >
                 <BlueskyIcon className="size-5" />
               </a>

@@ -156,7 +156,7 @@ async function RootLayout({
       <div className="flex items-center justify-between bg-gray-800 px-3 py-2 text-base text-white sm:px-4">
         <div className="font-bold tracking-tight">Blog Admin</div>
         <div className="relative">
-          <img src={AlicePhoto} className="size-5 rounded-full" />
+          <img src={AlicePhoto} alt="" className="size-5 rounded-full" />
           <div className="pointer-events-none absolute inset-0 rounded-full border border-white/20" />
           <div className="absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border-2 border-gray-800 bg-green-400" />
         </div>

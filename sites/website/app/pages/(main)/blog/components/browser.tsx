@@ -32,6 +32,7 @@ export function Browser({
                   onBack && "hover:text-gray-800",
                 )}
                 onClick={onBack}
+                aria-label="Back"
               >
                 <ChevronLeftIcon className="size-5" />
               </button>
@@ -41,6 +42,7 @@ export function Browser({
                   onForward && "hover:text-gray-800",
                 )}
                 onClick={onForward}
+                aria-label="Forward"
               >
                 <ChevronRightIcon className="size-5" />
               </button>
@@ -58,6 +60,7 @@ export function Browser({
                 "absolute inset-y-0 right-3 flex items-center p-1 text-gray-500",
                 onRefresh && "hover:text-gray-800",
               )}
+              aria-label="Refresh"
             >
               <svg
                 viewBox="0 0 15 18"
@@ -80,6 +83,7 @@ export function Browser({
               "inline-flex items-center justify-center p-1 text-gray-500",
               onRefresh && "hover:text-gray-800",
             )}
+            aria-label="Refresh"
           >
             <svg
               viewBox="0 0 15 18"
