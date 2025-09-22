@@ -275,7 +275,11 @@ async function EditPost({
               defaultValue={post.title}
               type="text"
               placeholder="Title"
-              className="block w-full rounded-md bg-white px-2.5 py-1.5 text-sm/6 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
+              className={clsx(
+                "block w-full rounded-md bg-white px-2.5 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600",
+                "max-sm:w-[calc(100%/0.875)] max-sm:origin-top-left max-sm:scale-[0.875] max-sm:transform",
+                "sm:text-sm/6",
+              )}
             />
           </div>
         </div>
@@ -293,7 +297,11 @@ async function EditPost({
               required
               defaultValue={post.content}
               rows={4}
-              className="block w-full rounded-md bg-white px-2.5 py-1.5 text-sm/6 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
+              className={clsx(
+                "block w-full rounded-md bg-white px-2.5 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600",
+                "max-sm:w-[calc(100%/0.875)] max-sm:origin-top-left max-sm:scale-[0.875] max-sm:transform",
+                "sm:text-sm/6",
+              )}
             />
           </div>
         </div>

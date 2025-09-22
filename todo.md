@@ -1,9 +1,11 @@
 # TODO
 
 - Router post
-- deploy without publishing and test
 - tweet
-- check rss
+- image avatar should have alt
+- fix a11y issues from google
+- iphone zoom form input
+
 - multiline footnote
 
 - build/test kitchen sink in prod
