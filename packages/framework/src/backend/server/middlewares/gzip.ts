@@ -10,7 +10,7 @@ export function gzip(build: Build): RouteHandler {
     let buildSupportsCompression = build.name === "production";
 
     let encodings = parseHeaderValue(
-      ctx.request.headers.get("accept-encoding")
+      ctx.request.headers.get("accept-encoding"),
     );
     let acceptsGzip = encodings.find((e) => e.value === "gzip");
 
@@ -43,47 +43,11 @@ export function gzip(build: Build): RouteHandler {
       }
 
       let nodeStream = Readable.fromWeb(res.body as ReadableStream);
-      let gzip = createGzip({ level: 6, chunkSize: 1024 });
-
-      let lastFlush: number = 0;
-      let timeout: NodeJS.Timeout | null = null;
-
-      function flushNow() {
-        gzip.flush(zlibConstants.Z_SYNC_FLUSH);
-        lastFlush = performance.now();
-        timeout = null;
-      }
-
-      function flush() {
-        const now = performance.now();
-        const delta = now - lastFlush;
-
-        if (delta >= 20) {
-          flushNow();
-        } else if (!timeout) {
-          timeout = setTimeout(flushNow, 20 - delta);
-        }
-      }
-
-      function cleanup() {
-        nodeStream.off("data", flush);
-        nodeStream.off("end", cleanup);
-        nodeStream.off("error", cleanup);
-        nodeStream.off("close", cleanup);
-        gzip.off("close", cleanup);
-        gzip.off("error", cleanup);
-        if (timeout) {
-          clearTimeout(timeout);
-          timeout = null;
-        }
-      }
-
-      nodeStream.on("data", flush);
-      nodeStream.on("end", cleanup);
-      nodeStream.on("error", cleanup);
-      nodeStream.on("close", cleanup);
-      gzip.on("close", cleanup);
-      gzip.on("error", cleanup);
+      let gzip = createGzip({
+        level: 6,
+        chunkSize: 4 * 1024,
+        flush: zlibConstants.Z_SYNC_FLUSH,
+      });
 
       let headers = new Headers(res.headers);
       headers.delete("Content-Length");
@@ -104,7 +68,7 @@ export function gzip(build: Build): RouteHandler {
           status: res.status,
           statusText: res.statusText,
           headers,
-        }
+        },
       );
     }
   };
