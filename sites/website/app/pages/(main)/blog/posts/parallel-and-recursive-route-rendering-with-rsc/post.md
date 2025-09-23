@@ -19,8 +19,6 @@ But in order to understand RSC route rendering, we need to touch on a wide varie
 - Server component serialization
 - Recursive components
 
-These concepts all come together to create one of the most interesting RSC patterns I've had to joy to work with: Parallel and recursive route rendering.
-
 If you've ever wanted to peek under the hood and see how RSC routers avoid waterfalls, then this post is for you.
 
 ## Waterfalls
@@ -168,7 +166,8 @@ const stream = renderToReableStream(
 
 In this example a stream is created that contains the output of components `<ComponentA>`, `<ComponentB>`, and `<ComponentC>`. You may have already noticed that these components also cause a rendering waterfall.
 
-If you've never seen `renderToReadableStream` before just know that it's an internal API from React that's used to render RSCs. This function returns a stream that contains the serialized output from the components that were passed to it.
+If you've never seen `renderToReadableStream` before just know that it's an internal API from React that's used to render RSCs. This function returns a stream that contains the serialized output from the components that were passed to it. {%footnote id="1" %}There are multiple `renderToReadableStream`
+APIs in React. The one used in this article is specific to the bundler implementation you happen to be using. You can learn more about this API by looking at the [React server packages](https://github.com/facebook/react/tree/main/packages) used by Vite, Turbopack, Parcel, and Webpack.{% /footnote %}
 
 There's one other thing to know about `renderToReadableStream`, it isn't limited to only rendering React components. In fact, it can render a wide variety of data types, including arrays and objects.
 
@@ -302,7 +301,7 @@ If you could imagine the stream output of `renderToReadableStream` you might thi
 ];
 ```
 
-In this imagined payload, all server components have been executed, but client components have not yet run. {% footnote id="1" %}The example above is just a representation of the output from `renderToReadableStream`. In reality, the output is a [ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) that contains a text-based wire format. This wire format isn't readable for humans, so I didn't want to show it here. However, the wire format is similar to the example above in that it contains rendered server components and unrendered references to client components.{% /footnote %}
+In this imagined payload, all server components have been executed, but client components have not yet run. {% footnote id="2" %}The example above is just a representation of the output from `renderToReadableStream`. In reality, the output is a [ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) that contains a text-based wire format. This wire format isn't readable for humans, so I didn't want to show it here. However, the wire format is similar to the example above in that it contains rendered server components and unrendered references to client components.{% /footnote %}
 
 In the output above you'll also see each layout renders a placeholder where it's children should be. What's so interesting about this is that the actual children are the very next item in the stack.
 

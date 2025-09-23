@@ -22,6 +22,7 @@
   use cache control no transform in dev though
 
 - order of rss feed?
+- quotes in rss feed
 - post content in rss feed?
 
 - error handling
