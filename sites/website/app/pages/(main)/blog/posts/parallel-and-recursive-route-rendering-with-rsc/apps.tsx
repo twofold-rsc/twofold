@@ -19,15 +19,13 @@ import Link from "@twofold/framework/link";
 export function DemoApp() {
   return (
     <div className="not-prose -mx-2 my-6 md:-mx-8">
-      <Suspense fallback={null}>
-        <DemoBrowser>
-          <RootLayout>
-            <PostsLayout>
-              <EditPost demoId={1} />
-            </PostsLayout>
-          </RootLayout>
-        </DemoBrowser>
-      </Suspense>
+      <DemoBrowser>
+        <RootLayout>
+          <PostsLayout>
+            <EditPost demoId={1} />
+          </PostsLayout>
+        </RootLayout>
+      </DemoBrowser>
     </div>
   );
 }
