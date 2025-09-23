@@ -1,5 +1,5 @@
 ---
-# publishedAt: "2025-09-23T08:00:00Z"
+publishedAt: "2025-09-22T08:00:00Z"
 description: "RSC route rendering without waterfalls."
 ---
 
