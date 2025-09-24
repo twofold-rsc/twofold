@@ -1,7 +1,5 @@
 # TODO
 
-- multiline footnote
-
 - build/test kitchen sink in prod
 - Run through windows
 
@@ -24,6 +22,7 @@
 - order of rss feed?
 - quotes in rss feed
 - post content in rss feed?
+- multiline footnote
 
 - error handling
 - error boundaries

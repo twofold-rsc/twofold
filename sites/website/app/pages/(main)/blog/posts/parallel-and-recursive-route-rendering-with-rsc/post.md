@@ -19,7 +19,7 @@ But in order to understand RSC route rendering, we need to touch on a wide varie
 - Server component serialization
 - Recursive components
 
-If you've ever wanted to peek under the hood and see how RSC routers avoid waterfalls, then this post is for you.
+So, if you've ever wanted to peek under the hood and see how RSC routers avoid waterfalls, then this post is for you.
 
 ## Waterfalls
 
@@ -111,7 +111,7 @@ If you take a look at the source code for each of these components you'll notice
 - `<PostsLayout>` fetches a list of all the posts and displays them in the sidebar.
 - `<EditPage>` fetches the post being edited and displays it in the main content area.
 
-This ability to colocate the data fetches within the components that need the data is one of the biggest selling points of RSCs.
+The ability to colocate the data fetches within the components that need the data is one of the biggest selling points of RSCs.
 
 But there's a problem... This combination of nested components and data fetching means that this app waterfalls.
 
@@ -317,15 +317,18 @@ The opposite of `renderToReadableStream` is a function available to React client
 
 ```jsx
 // on the server
-const stream = renderToReadableStream([
-  <RootLayout>
-    <Placeholder />
-  </RootLayout>,
-  <PostsLayout>
-    <Placeholder />
-  </PostsLayout>,
-  <EditPage postId={123} />,
-]);
+const stream = renderToReadableStream(
+  [
+    <RootLayout>
+      <Placeholder />
+    </RootLayout>,
+    <PostsLayout>
+      <Placeholder />
+    </PostsLayout>,
+    <EditPage postId={123} />,
+  ],
+  clientModuleMap,
+);
 
 // [!client-boundary]
 
