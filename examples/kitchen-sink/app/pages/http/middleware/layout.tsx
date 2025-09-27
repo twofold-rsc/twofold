@@ -22,6 +22,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/http/middleware/global-redirect"
+              className="text-blue-500 underline"
+            >
+              Global middleware redirect
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/http/middleware/props"
               className="text-blue-500 underline"
             >
