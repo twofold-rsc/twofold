@@ -1,14 +1,22 @@
 # TODO
 
-- build/test kitchen sink in prod
-- Run through windows
-
-- dev reload with build error (syntax error)
+- global middleware that returns a response redirect
+- global middleware that returns nothing
 
 - handle PORT env
 - handle port CLI
 - sigterm (test locally with serve)
-- prewarm imports (routing tree)
+- prewarm imports (routing tree, test with website, and then gcp run delay)
+
+- build/test kitchen sink in prod
+- Run through windows
+
+- release
+
+- find mem leak (script it)
+- increase memory
+
+- dev reload with build error (syntax error)
 
 - cloudflare uses zstd compression on text/x-component, which causes buffering of the response
   one way to fix is using the cache control no transform header. maybe we enable that in dev
@@ -21,7 +29,7 @@
 
 - order of rss feed?
 - quotes in rss feed
-- post content in rss feed?
+- fix up missing client component map in router post
 - multiline footnote
 
 - error handling
