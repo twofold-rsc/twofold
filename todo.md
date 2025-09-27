@@ -1,8 +1,5 @@
 # TODO
 
-- global middleware that returns a response redirect
-- global middleware that returns nothing
-
 - handle PORT env
 - handle port CLI
 - sigterm (test locally with serve)
