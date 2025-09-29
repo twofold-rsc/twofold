@@ -60,7 +60,7 @@ export class DevTask {
   private async restart() {
     await this.#runtime.stop();
     await this.#build.stop();
-    await this.#server.stop();
+    await this.#server.hardStop();
 
     await this.#build.setup();
     await this.#server.start();
