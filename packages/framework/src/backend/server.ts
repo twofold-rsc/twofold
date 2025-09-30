@@ -325,10 +325,8 @@ export class Server {
 
       let poll = () => {
         if (!continuePolling) {
-          console.log("polling timeout");
           reject(new Error("Shutdown error: Timed out."));
         } else if (server && !server.listening && activeSockets.size === 0) {
-          console.log("shutdown complete");
           clearTimeout(timeout);
           this.#server = undefined;
           this.#activeSockets = undefined;
@@ -337,25 +335,21 @@ export class Server {
         } else if (server && !server.listening) {
           for (let [socket, count] of activeSockets) {
             if (count === 0) {
-              console.log("destroying socket");
               socket.destroy();
             }
           }
           setImmediate(poll);
         } else {
-          console.log("not ready");
           setTimeout(poll, 30);
         }
       };
 
       server.close((err) => {
         if (err) {
-          console.log("rejecting close");
           reject(err);
         }
       });
 
-      console.log("starting");
       poll();
     });
   }

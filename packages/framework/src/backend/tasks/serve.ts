@@ -48,14 +48,14 @@ export class ServeTask {
   }
 
   private async stop() {
-    // const timeoutId = setTimeout(() => {
-    //   console.error("Force shutdown since server did not stop within 9s");
-    //   process.exit(1);
-    // }, 9_000);
+    const timeoutId = setTimeout(() => {
+      console.error("Force shutdown since server did not stop within 9s");
+      process.exit(1);
+    }, 9_000);
 
     await this.#server.gracefulShutdown();
 
-    // clearTimeout(timeoutId);
+    clearTimeout(timeoutId);
     process.exit(0);
   }
 }
