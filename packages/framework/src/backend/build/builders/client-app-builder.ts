@@ -95,7 +95,7 @@ export class ClientAppBuilder extends Builder {
 
                 let errorHtml = await readFile(
                   new URL("./server-files/error.html", appCompiledDir),
-                  "utf-8"
+                  "utf-8",
                 );
 
                 let encodedHtml = JSON.stringify(errorHtml);
@@ -110,7 +110,7 @@ export class ClientAppBuilder extends Builder {
             async setup(build) {
               let loadersUrl = new URL(
                 "./client/apps/client/ext/webpack-loaders.ts",
-                frameworkSrcDir
+                frameworkSrcDir,
               );
               let loadersPath = fileURLToPath(loadersUrl);
               let loadersContents = await readFile(loadersPath, "utf-8");
@@ -131,7 +131,7 @@ export class ClientAppBuilder extends Builder {
                     contents: newContents,
                     loader: "js",
                   };
-                }
+                },
               );
             },
           },
@@ -167,7 +167,7 @@ export class ClientAppBuilder extends Builder {
                         loader: "empty",
                       };
                     }
-                  }
+                  },
                 );
               }
 
@@ -177,7 +177,7 @@ export class ClientAppBuilder extends Builder {
                 let appAppPath = fileURLToPath(appAppDir);
                 let escapedPrefix = escapeRegExp(appAppPath);
                 let appPathRegex = new RegExp(
-                  `^${escapedPrefix}.*\\.(ts|tsx)$`
+                  `^${escapedPrefix}.*\\.(ts|tsx)$`,
                 );
 
                 build.onLoad({ filter: appPathRegex }, async ({ path }) => {
@@ -230,7 +230,7 @@ export class ClientAppBuilder extends Builder {
                           prevRefreshSig = window.$RefreshSig$;
                           window.$RefreshReg$ = (type, refreshId) => {
                             let registerId = \`${encodeURIComponent(
-                              moduleName
+                              moduleName,
                             )} \${refreshId}\`;
                             window.$RefreshRuntime$.register(type, registerId);
                           };
@@ -274,7 +274,7 @@ export class ClientAppBuilder extends Builder {
     return {
       metafile: this.#metafile,
       clientComponentOutputMap: Object.fromEntries(
-        this.#clientComponentOutputMap.entries()
+        this.#clientComponentOutputMap.entries(),
       ),
       imagesMap: Object.fromEntries(this.#imagesMap.entries()),
     };
@@ -283,17 +283,19 @@ export class ClientAppBuilder extends Builder {
   load(data: any) {
     this.#metafile = data.metafile;
     this.#clientComponentOutputMap = new Map(
-      Object.entries(data.clientComponentOutputMap)
+      Object.entries(data.clientComponentOutputMap),
     );
     this.#imagesMap = new Map(Object.entries(data.imagesMap));
   }
+
+  warm() {}
 
   private get initializeBrowserPath() {
     let initializeBrowser = fileURLToPath(
       new URL(
         "./client/apps/client/browser/initialize-browser.tsx",
-        frameworkSrcDir
-      )
+        frameworkSrcDir,
+      ),
     );
 
     return initializeBrowser;
@@ -301,7 +303,7 @@ export class ClientAppBuilder extends Builder {
 
   private get srcSSRAppPath() {
     let initializeBrowser = fileURLToPath(
-      new URL("./client/apps/client/ssr/ssr-app.tsx", frameworkSrcDir)
+      new URL("./client/apps/client/ssr/ssr-app.tsx", frameworkSrcDir),
     );
 
     return initializeBrowser;
@@ -334,7 +336,7 @@ export class ClientAppBuilder extends Builder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentEntryMap.values()
+      this.#entriesBuilder.clientComponentEntryMap.values(),
     );
     let clientComponentModuleMap = new Map<
       string,
@@ -364,7 +366,7 @@ export class ClientAppBuilder extends Builder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentEntryMap.values()
+      this.#entriesBuilder.clientComponentEntryMap.values(),
     );
     let clientComponentMap = new Map<
       string,
@@ -412,7 +414,7 @@ export class ClientAppBuilder extends Builder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentEntryMap.values()
+      this.#entriesBuilder.clientComponentEntryMap.values(),
     );
     let ssrManifestModuleMap = new Map<
       string,

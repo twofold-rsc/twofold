@@ -48,6 +48,8 @@ export class StaticFilesBuilder extends Builder {
     this.#fileMap = new Map(Object.entries(data.fileMap));
   }
 
+  warm() {}
+
   async addFile(file: File) {
     let filePath = file.path.slice(fileURLToPath(this.#staticUrl).length);
     let httpPath = filePath.split(path.sep).join("/");

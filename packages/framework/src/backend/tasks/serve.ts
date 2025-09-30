@@ -25,6 +25,7 @@ export class ServeTask {
 
     await this.#server.start();
     await this.#runtime.start();
+    await this.#build.warm();
 
     process.on("SIGTERM", () => {
       console.log("Received SIGTERM, shutting down gracefully");
