@@ -19,4 +19,4 @@ FROM base AS website
 COPY --from=build /usr/src/twofold /usr/src/twofold
 WORKDIR /usr/src/twofold/sites/website
 EXPOSE 3000
-CMD [ "pnpm", "serve" ]
+CMD ["pnpm", "exec", "twofold", "serve"]

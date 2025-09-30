@@ -40,7 +40,7 @@ RUN pnpm prune --prod
 FROM base
 COPY --from=build /app /app
 EXPOSE 3000
-CMD [ "pnpm", "serve" ]
+CMD ["pnpm", "exec", "twofold", "serve"]
 ```
 
 Note that this Dockerfile uses the `pnpm` package manager. If you are using `npm`, you will need to modify the Dockerfile accordingly.

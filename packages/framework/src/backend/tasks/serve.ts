@@ -20,12 +20,12 @@ export class ServeTask {
     this.verifyEnv();
 
     await this.#build.load();
+    await this.#build.warm();
 
     console.log(`Loaded build [version: ${this.#build.key}]`);
 
     await this.#server.start();
     await this.#runtime.start();
-    await this.#build.warm();
 
     process.on("SIGTERM", () => {
       console.log("Received SIGTERM, shutting down gracefully");

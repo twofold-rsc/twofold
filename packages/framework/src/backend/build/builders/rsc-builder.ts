@@ -190,6 +190,8 @@ export class RSCBuilder extends Builder {
     let promises = [
       ...this.pages.map((p) => p.preload()),
       ...this.layouts.map((l) => l.preload()),
+      // wrappers
+      // serverActionMap
     ];
 
     await Promise.all(promises);
