@@ -34,4 +34,8 @@ export class API {
     let module = await import(this.#fileUrl.href);
     return module;
   }
+
+  async preload() {
+    await this.loadModule();
+  }
 }

@@ -187,11 +187,34 @@ export class RSCBuilder extends Builder {
   }
 
   async warm() {
+    let loadLayouts = this.layouts.map((l) => l.preload());
+    let loadPages = this.pages.map((p) => p.preload());
+    let loadNotFound = this.notFoundPage.preload();
+    let loadOuterRootWrapper = this.outerRootWrapper.preload();
+    let apiEndpoints = this.apiEndpoints.map((api) => api.preload());
+
+    let loadServerActions = this.#serverActionMap
+      .values()
+      .map((a) => import(pathToFileURL(a.path).href));
+
+    let hasMiddleware = await this.hasMiddleware();
+    let loadGlobalMiddleware = hasMiddleware
+      ? import(pathToFileURL(this.middlewarePath).href)
+      : Promise.resolve();
+
+    let loadRouteStackPlaceholder = import(
+      pathToFileURL(this.routeStackPlaceholderPath).href
+    );
+
     let promises = [
-      ...this.pages.map((p) => p.preload()),
-      ...this.layouts.map((l) => l.preload()),
-      // wrappers
-      // serverActionMap
+      ...loadLayouts,
+      ...loadPages,
+      loadNotFound,
+      loadOuterRootWrapper,
+      ...apiEndpoints,
+      ...loadServerActions,
+      loadGlobalMiddleware,
+      loadRouteStackPlaceholder,
     ];
 
     await Promise.all(promises);
