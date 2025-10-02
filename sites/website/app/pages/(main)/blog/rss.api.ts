@@ -6,7 +6,7 @@ export async function GET({ request }: APIProps) {
   let rssXml = await generateRSS({ baseUrl });
 
   return new Response(rssXml, {
-    headers: { "Content-Type": "application/rss+xml" },
+    headers: { "Content-Type": "application/rss+xml; charset=utf-8" },
   });
 }
 
@@ -22,6 +22,10 @@ async function generateRSS({ baseUrl }: { baseUrl: URL }) {
     <atom:link href="${new URL("/blog/rss", baseUrl).href}" rel="self" type="application/rss+xml" />
     ${items
       .filter((item) => item.published)
+      .toSorted(
+        (a, b) =>
+          (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0),
+      )
       .map(
         (item) => `<item>
       <title><![CDATA[${item.title}]]></title>

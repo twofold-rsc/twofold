@@ -380,15 +380,18 @@ To get started, let's feed the stack into a React component conveniently named `
 
 ```jsx
 // on the server
-const stream = renderToReadableStream([
-  <RootLayout>
-    <Placeholder />
-  </RootLayout>,
-  <PostsLayout>
-    <Placeholder />
-  </PostsLayout>,
-  <EditPage postId={123} />,
-]);
+const stream = renderToReadableStream(
+  [
+    <RootLayout>
+      <Placeholder />
+    </RootLayout>,
+    <PostsLayout>
+      <Placeholder />
+    </PostsLayout>,
+    <EditPage postId={123} />,
+  ],
+  clientModuleMap,
+);
 
 // [!client-boundary]
 

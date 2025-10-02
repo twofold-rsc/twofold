@@ -1,5 +1,6 @@
 # TODO
 
+- 19.2
 - build/test kitchen sink in prod
 - Run through windows
 
@@ -18,9 +19,6 @@
   in prod we should gzip/compress action responses since they are x-component streams
   use cache control no transform in dev though
 
-- order of rss feed?
-- quotes in rss feed
-- fix up missing client component map in router post
 - multiline footnote
 
 - error handling
