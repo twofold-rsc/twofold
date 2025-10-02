@@ -40,4 +40,6 @@ export class ServerFilesBuilder extends Builder {
   }
 
   load(data: any) {}
+
+  warm() {}
 }

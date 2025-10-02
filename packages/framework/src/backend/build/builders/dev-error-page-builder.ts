@@ -58,9 +58,11 @@ export class DevErrorPageBuilder extends Builder {
     this.#metafile = data.metafile;
   }
 
+  warm() {}
+
   private get appPath() {
     let appPath = fileURLToPath(
-      new URL("./client/apps/errors/app.tsx", frameworkSrcDir)
+      new URL("./client/apps/errors/app.tsx", frameworkSrcDir),
     );
     return appPath;
   }

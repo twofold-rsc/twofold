@@ -196,6 +196,8 @@ export class EntriesBuilder extends Builder {
     );
     this.#discoveredExternals = new Set(data.discoveredExternals);
   }
+
+  warm() {}
 }
 
 async function pathToEntry(path: string) {

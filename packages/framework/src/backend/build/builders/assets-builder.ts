@@ -39,7 +39,7 @@ export class AssetsBuilder extends Builder {
     if (this.#build.name === "production") {
       await mkdir(this.#assetDir, { recursive: true });
       await Promise.all(
-        dirs.map((dir) => mkdir(new URL(`./${dir}`, this.#assetDir)))
+        dirs.map((dir) => mkdir(new URL(`./${dir}`, this.#assetDir))),
       );
     }
   }
@@ -50,7 +50,7 @@ export class AssetsBuilder extends Builder {
     let clientAppChunks = this.#build.getBuilder("client").chunks;
     let clientAppEntries = [
       ...Object.values(
-        this.#build.getBuilder("client").clientComponentModuleMap
+        this.#build.getBuilder("client").clientComponentModuleMap,
       ).map((c) => c.path),
       this.#build.getBuilder("client").bootstrapPath,
     ];
@@ -76,7 +76,7 @@ export class AssetsBuilder extends Builder {
         await pipeline(
           createReadStream(url),
           createBrotliCompress(),
-          createWriteStream(brotliUrl)
+          createWriteStream(brotliUrl),
         );
         return brotliUrl;
       }
@@ -111,7 +111,7 @@ export class AssetsBuilder extends Builder {
           assetPath: assetUrl.pathname,
           brotliPath: brotliUrl?.pathname,
         };
-      }
+      },
     );
 
     let clientChunkPromises = clientAppChunks.map(async (chunk) => {
@@ -182,4 +182,6 @@ export class AssetsBuilder extends Builder {
       this.#assetMap = new Map(Object.entries(data.assetMap));
     }
   }
+
+  warm() {}
 }

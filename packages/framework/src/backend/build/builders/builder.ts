@@ -5,6 +5,7 @@ export abstract class Builder {
   abstract stop(): Promise<void>;
   abstract serialize(): Record<string, any>;
   abstract load(data: any): void;
+  abstract warm(): Promise<void> | void;
 
   #error: Error | null = null;
 

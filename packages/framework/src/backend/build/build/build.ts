@@ -92,7 +92,7 @@ export abstract class Build {
           [builder.name]: builder,
         };
       },
-      {}
+      {},
     );
   }
 
@@ -209,7 +209,7 @@ export abstract class Build {
         };
         return outputs;
       },
-      {}
+      {},
     );
 
     let config = await this.getAppConfig();
@@ -234,7 +234,7 @@ export abstract class Build {
     let parsedConfig = configSchema.safeParse(data.config);
     if (parsedConfig.error) {
       throw new Error(
-        "Invalid configuration. This is most likely a bug in Twofold."
+        "Invalid configuration. This is most likely a bug in Twofold.",
       );
     }
     this.#appConfig = parsedConfig.data;
@@ -248,6 +248,11 @@ export abstract class Build {
 
     // mark as built
     this.#hasBuilt = true;
+  }
+
+  async warm() {
+    let promises = this.#builders.map((builder) => builder.warm());
+    await Promise.all(promises);
   }
 }
 

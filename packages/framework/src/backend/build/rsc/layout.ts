@@ -2,6 +2,7 @@ import {
   pathMatches,
   pathPartialMatches,
 } from "../../runtime/helpers/routing.js";
+import { partition } from "../../utils/partition.js";
 import { Page } from "./page.js";
 import { Wrapper } from "./wrapper.js";
 
@@ -60,11 +61,11 @@ export class Layout {
   findPageForPath(realPath: string): Page | undefined {
     let [staticAndDynamicPages, catchAllPages] = partition(
       this.#pages,
-      (page) => !page.isCatchAll
+      (page) => !page.isCatchAll,
     );
     let [dynamicPages, staticPages] = partition(
       staticAndDynamicPages,
-      (page) => page.isDynamic
+      (page) => page.isDynamic,
     );
 
     let sortBy = (a: Page, b: Page) =>
@@ -106,7 +107,7 @@ export class Layout {
   private addLayout(layout: Layout) {
     // can it go under a child of mine?
     let child = this.#children.find((possibleParent) =>
-      canGoUnder(layout, possibleParent)
+      canGoUnder(layout, possibleParent),
     );
 
     if (child) {
@@ -114,7 +115,7 @@ export class Layout {
     } else if (canGoUnder(layout, this)) {
       // re-balance my children
       let [move, keep] = partition(this.#children, (child) =>
-        canGoUnder(child, layout)
+        canGoUnder(child, layout),
       );
       this.#children = keep;
 
@@ -138,7 +139,7 @@ export class Layout {
   private addPage(page: Page) {
     let isMatch = page.path.startsWith(this.path);
     let matchingChild = this.#children.find((child) =>
-      page.path.startsWith(child.path)
+      page.path.startsWith(child.path),
     );
 
     if (matchingChild) {
@@ -198,6 +199,10 @@ export class Layout {
     let module = await import(this.#fileUrl.href);
     return module;
   }
+
+  async preload() {
+    await this.loadModule();
+  }
 }
 
 /**
@@ -209,24 +214,10 @@ export class Layout {
  */
 function canGoUnder(child: Layout, parent: Layout) {
   let alreadyHave = parent.children.some(
-    (current) => current.path === child.path
+    (current) => current.path === child.path,
   );
   let matchingPath =
     child.path.startsWith(parent.path) && child.path !== parent.path;
 
   return !alreadyHave && matchingPath;
-}
-
-function partition<T>(arr: T[], condition: (item: T) => boolean) {
-  return arr.reduce<[T[], T[]]>(
-    (acc, item) => {
-      if (condition(item)) {
-        acc[0].push(item);
-      } else {
-        acc[1].push(item);
-      }
-      return acc;
-    },
-    [[], []]
-  );
 }

@@ -7,6 +7,10 @@ export class API {
     this.#fileUrl = fileUrl;
   }
 
+  get path() {
+    return this.#path;
+  }
+
   get isDynamic() {
     return this.#path.includes("$");
   }
@@ -15,7 +19,13 @@ export class API {
     return this.#path.includes("$$");
   }
 
-  // todo: add matches function
+  get dynamicSegments() {
+    return this.#path.match(/(?<!\$)\$([^/]+)/g) ?? [];
+  }
+
+  get catchAllSegments() {
+    return this.#path.match(/\$\$([^/]+)/g) ?? [];
+  }
 
   get pattern() {
     let pathname = this.#path
@@ -33,5 +43,9 @@ export class API {
   async loadModule() {
     let module = await import(this.#fileUrl.href);
     return module;
+  }
+
+  async preload() {
+    await this.loadModule();
   }
 }

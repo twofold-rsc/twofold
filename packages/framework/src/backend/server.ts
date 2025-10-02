@@ -17,6 +17,7 @@ import { Runtime } from "./runtime.js";
 import { filterRequests } from "./server/middlewares/filter-requests.js";
 import { gzip } from "./server/middlewares/gzip.js";
 import kleur from "kleur";
+import { Socket } from "net";
 
 async function createHandler(server: Server) {
   let runtime = server.runtime;
@@ -236,12 +237,35 @@ function log(
   console.log(`${kleur[color](`[${label}]`)} ${info}`);
 }
 
+type Options = {
+  hostname: string;
+  port: number;
+};
+
 export class Server {
+  #hostname: string;
+  #port: number;
   #runtime: Runtime;
   #server?: NodeHttpServer;
+  #activeSockets?: Map<Socket, number>;
 
-  constructor(runtime: Runtime) {
+  constructor(runtime: Runtime, options: Options) {
     this.#runtime = runtime;
+    this.#hostname = options.hostname;
+    this.#port = options.port;
+  }
+
+  get baseUrl() {
+    let domain = this.hostname === "0.0.0.0" ? "localhost" : this.hostname;
+    return `http://${domain}:${this.port}`;
+  }
+
+  get hostname() {
+    return this.#hostname;
+  }
+
+  get port() {
+    return this.#port;
   }
 
   get build() {
@@ -253,7 +277,7 @@ export class Server {
   }
 
   async start() {
-    if (!this.#server) {
+    if (!this.#server && !this.#activeSockets) {
       let runtime = this.runtime;
       let handler = await createHandler(this);
       let config = await this.build.getAppConfig();
@@ -262,29 +286,131 @@ export class Server {
         trustProxy: config.trustProxy ?? false,
       });
 
+      let activeSockets = new Map();
+
+      server
+        .on("connection", (socket) => {
+          activeSockets.set(socket, 0);
+          socket.on("close", () => activeSockets.delete(socket));
+        })
+        .on("request", (req, res) => {
+          let socket = req.socket;
+          activeSockets.set(socket, (activeSockets.get(socket) || 0) + 1);
+          res.once("close", () => {
+            const n = activeSockets.get(socket) || 0;
+            if (n > 1) {
+              activeSockets.set(socket, n - 1);
+            } else {
+              activeSockets.delete(socket);
+            }
+          });
+        });
+
       this.#server = server;
+      this.#activeSockets = activeSockets;
 
       return new Promise<void>((resolve) => {
-        server.listen(runtime.port, runtime.hostname, () => {
+        server.listen(this.#port, this.#hostname, () => {
           resolve();
         });
       });
+    } else {
+      throw new Error("Server is already running");
     }
   }
 
-  async stop() {
-    return new Promise<void>((resolve) => {
+  async gracefulShutdown() {
+    return new Promise<void>((resolve, reject) => {
       let server = this.#server;
+      let activeSockets = this.#activeSockets;
 
-      if (server) {
-        server.close(() => {
-          this.#server = undefined;
-          resolve();
-        });
-        server.closeAllConnections();
-      } else {
+      if (!server && !activeSockets) {
         resolve();
+        return;
       }
+
+      if (server && !server.listening) {
+        reject(new Error("Shutdown called on a server that is not listening."));
+        return;
+      }
+
+      if (!server || !activeSockets) {
+        reject(new Error("Shutdown error: Server is in an invalid state."));
+        return;
+      }
+
+      // max timeout so poll function can't run forever
+      let continuePolling = true;
+      const timeout = setTimeout(() => {
+        continuePolling = false;
+      }, 60_000);
+
+      let poll = () => {
+        if (!continuePolling) {
+          reject(new Error("Shutdown error: Timed out."));
+        } else if (server && !server.listening && activeSockets.size === 0) {
+          clearTimeout(timeout);
+          this.#server = undefined;
+          this.#activeSockets = undefined;
+          server.removeAllListeners();
+          resolve();
+        } else if (server && !server.listening) {
+          for (let [socket, count] of activeSockets) {
+            if (count === 0) {
+              socket.destroy();
+            }
+          }
+          setImmediate(poll);
+        } else {
+          setTimeout(poll, 30);
+        }
+      };
+
+      server.close((err) => {
+        if (err) {
+          reject(err);
+        }
+      });
+
+      poll();
+    });
+  }
+
+  async hardStop() {
+    return new Promise<void>((resolve, reject) => {
+      let server = this.#server;
+      let activeSockets = this.#activeSockets;
+
+      if (!server && !activeSockets) {
+        resolve();
+        return;
+      }
+
+      if (server && !server.listening) {
+        reject(new Error("Shutdown called on a server that is not listening."));
+        return;
+      }
+
+      if (!server || !activeSockets) {
+        reject(new Error("Shutdown error: Server is in an invalid state."));
+        return;
+      }
+
+      server.close((err) => {
+        this.#server = undefined;
+        this.#activeSockets = undefined;
+        server.removeAllListeners();
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+
+      for (let socket of activeSockets.keys()) {
+        socket.destroy();
+      }
+      server.closeAllConnections();
     });
   }
 }

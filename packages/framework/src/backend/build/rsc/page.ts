@@ -81,7 +81,7 @@ export class Page {
 
   get assets() {
     return [...this.layouts.map((layout) => layout.css), this.#css].filter(
-      Boolean
+      Boolean,
     );
   }
 
@@ -130,5 +130,9 @@ export class Page {
   private async loadModule() {
     let module = await import(this.#fileUrl.href);
     return module;
+  }
+
+  async preload() {
+    await this.loadModule();
   }
 }
