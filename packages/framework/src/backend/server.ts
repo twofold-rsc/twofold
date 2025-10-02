@@ -237,13 +237,35 @@ function log(
   console.log(`${kleur[color](`[${label}]`)} ${info}`);
 }
 
+type Options = {
+  hostname: string;
+  port: number;
+};
+
 export class Server {
+  #hostname: string;
+  #port: number;
   #runtime: Runtime;
   #server?: NodeHttpServer;
   #activeSockets?: Map<Socket, number>;
 
-  constructor(runtime: Runtime) {
+  constructor(runtime: Runtime, options: Options) {
     this.#runtime = runtime;
+    this.#hostname = options.hostname;
+    this.#port = options.port;
+  }
+
+  get baseUrl() {
+    let domain = this.hostname === "0.0.0.0" ? "localhost" : this.hostname;
+    return `http://${domain}:${this.port}`;
+  }
+
+  get hostname() {
+    return this.#hostname;
+  }
+
+  get port() {
+    return this.#port;
   }
 
   get build() {
@@ -288,7 +310,7 @@ export class Server {
       this.#activeSockets = activeSockets;
 
       return new Promise<void>((resolve) => {
-        server.listen(runtime.port, runtime.hostname, () => {
+        server.listen(this.#port, this.#hostname, () => {
           resolve();
         });
       });

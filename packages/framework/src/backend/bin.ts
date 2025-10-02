@@ -26,12 +26,19 @@ program.name("twofold").description("Twofold CLI");
 
 program
   .command("dev")
+  .option(
+    "-p, --port <number>",
+    "Port to run the development server on",
+    "3000",
+  )
   .description("Run the development server")
-  .action(async () => {
+  .action(async (options) => {
     let build =
       nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
 
-    let task = new DevTask({ build });
+    let port = parseInt(options.port, 10) || 3000;
+
+    let task = new DevTask({ build, port });
     task.start();
   });
 
@@ -54,13 +61,20 @@ program
 
 program
   .command("serve")
+  .option(
+    "-p, --port <number>",
+    "Port to run the development server on",
+    "3000",
+  )
   .alias("start")
   .description("Serve a production build")
-  .action(async () => {
+  .action(async (options) => {
     let build =
       nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
 
-    let task = new ServeTask({ build });
+    let port = parseInt(options.port, 10) || 3000;
+
+    let task = new ServeTask({ build, port });
     task.start();
   });
 

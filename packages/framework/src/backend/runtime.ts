@@ -18,12 +18,13 @@ import { ProductionBuild } from "./build/build/production.js";
 import { DevelopmentBuild } from "./build/build/development.js";
 import { ActionRequest } from "./runtime/action-request.js";
 import { injectResolver } from "./monkey-patch.js";
+import { partition } from "./utils/partition.js";
+import { pathMatches } from "./runtime/helpers/routing.js";
+import { API } from "./build/rsc/api.js";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
 export class Runtime {
-  #hostname = "0.0.0.0";
-  #port = 3000;
   #build: Build;
   #ssrWorker?: Worker;
 
@@ -35,33 +36,30 @@ export class Runtime {
     return this.#build;
   }
 
-  get clientComponentMap() {
-    return this.build.getBuilder("client").clientComponentMap;
-  }
-
-  // move these to server
-  get baseUrl() {
-    let domain = this.hostname === "0.0.0.0" ? "localhost" : this.hostname;
-    return `http://${domain}:${this.port}`;
-  }
-
-  get hostname() {
-    return this.#hostname;
-  }
-
-  get port() {
-    return this.#port;
-  }
-
   // api endpoints
 
   apiRequest(request: Request) {
     let url = new URL(request.url);
+    let realPath = url.pathname;
+    let apiEndpoints = this.build.getBuilder("rsc").apiEndpoints;
 
-    let api = this.build.getBuilder("rsc").apiEndpoints.find((api) => {
-      // change to use something like api.match
-      return api.pattern.test(url.pathname, this.baseUrl);
-    });
+    let [staticAndDynamicApis, catchAllApis] = partition(
+      apiEndpoints,
+      (api) => !api.isCatchAll,
+    );
+    let [dynamicApis, staticApis] = partition(
+      staticAndDynamicApis,
+      (api) => api.isDynamic,
+    );
+
+    let dynamicApisInOrder = dynamicApis.toSorted(
+      (a, b) => a.dynamicSegments.length - b.dynamicSegments.length,
+    );
+
+    let api =
+      staticApis.find((api) => pathMatches(api.path, realPath)) ??
+      dynamicApisInOrder.find((api) => pathMatches(api.path, realPath)) ??
+      catchAllApis.find((api) => pathMatches(api.path, realPath));
 
     if (api) {
       return new APIRequest({ api, request, runtime: this });

@@ -16,10 +16,13 @@ export class DevTask {
   #runtime: Runtime;
   #server: Server;
 
-  constructor({ build }: { build: Build }) {
+  constructor({ build, port }: { build: Build; port: number }) {
     this.#build = build;
     this.#runtime = new Runtime(build);
-    this.#server = new Server(this.#runtime);
+    this.#server = new Server(this.#runtime, {
+      hostname: "0.0.0.0",
+      port,
+    });
   }
 
   async start() {
@@ -29,7 +32,7 @@ export class DevTask {
     await this.#server.start();
 
     console.log(
-      `Server started on ${this.#runtime.hostname}:${this.#runtime.port}`,
+      `Server started on ${this.#server.hostname}:${this.#server.port}`,
     );
 
     let build = await this.#build.build();
@@ -40,7 +43,7 @@ export class DevTask {
     await this.#runtime.start();
 
     console.log(
-      `Visit ${kleur.cyan(`${this.#runtime.baseUrl}/`)} to see your app!`,
+      `Visit ${kleur.cyan(`${this.#server.baseUrl}/`)} to see your app!`,
     );
 
     this.watch();
@@ -66,7 +69,7 @@ export class DevTask {
     await this.#server.start();
 
     console.log(
-      `Server restarted on ${this.#runtime.hostname}:${this.#runtime.port}`,
+      `Server restarted on ${this.#server.hostname}:${this.#server.port}`,
     );
 
     let build = await this.#build.build();

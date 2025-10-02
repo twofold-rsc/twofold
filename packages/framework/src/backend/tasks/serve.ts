@@ -10,10 +10,13 @@ export class ServeTask {
   #runtime: Runtime;
   #server: Server;
 
-  constructor({ build }: { build: Build }) {
+  constructor({ build, port }: { build: Build; port: number }) {
     this.#build = build;
     this.#runtime = new Runtime(build);
-    this.#server = new Server(this.#runtime);
+    this.#server = new Server(this.#runtime, {
+      hostname: "0.0.0.0",
+      port,
+    });
   }
 
   async start() {
@@ -33,7 +36,7 @@ export class ServeTask {
     });
 
     console.log(
-      `Server started on ${this.#runtime.hostname}:${this.#runtime.port}`,
+      `Server started on ${this.#server.hostname}:${this.#server.port}`,
     );
   }
 

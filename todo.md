@@ -1,18 +1,11 @@
 # TODO
 
-- handle PORT env
-- handle port CLI
-- prewarm imports (routing tree, test with website, and then gcp run delay)
-
-- google cloud run entrypoint + sigterm
-
 - build/test kitchen sink in prod
 - Run through windows
 
 - release
 
 - find mem leak (script it)
-- increase memory
 
 - dev reload with build error (syntax error)
 

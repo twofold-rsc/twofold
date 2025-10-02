@@ -2,6 +2,7 @@ import {
   pathMatches,
   pathPartialMatches,
 } from "../../runtime/helpers/routing.js";
+import { partition } from "../../utils/partition.js";
 import { Page } from "./page.js";
 import { Wrapper } from "./wrapper.js";
 
@@ -219,18 +220,4 @@ function canGoUnder(child: Layout, parent: Layout) {
     child.path.startsWith(parent.path) && child.path !== parent.path;
 
   return !alreadyHave && matchingPath;
-}
-
-function partition<T>(arr: T[], condition: (item: T) => boolean) {
-  return arr.reduce<[T[], T[]]>(
-    (acc, item) => {
-      if (condition(item)) {
-        acc[0].push(item);
-      } else {
-        acc[1].push(item);
-      }
-      return acc;
-    },
-    [[], []],
-  );
 }
