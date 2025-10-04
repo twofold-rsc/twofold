@@ -1,9 +1,9 @@
 # TODO
 
-- 19.2
 - eslint stuff
 - ts6
 - approve builds
+- run through
 
 - build/test kitchen sink in prod
 - Run through windows
