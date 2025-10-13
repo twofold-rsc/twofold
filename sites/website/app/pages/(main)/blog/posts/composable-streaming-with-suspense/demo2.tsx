@@ -174,7 +174,7 @@ function EmptyState({
       </h3>
       <div className="flex items-center space-x-2">
         <Switch.Root
-          defaultChecked={stream ? true : undefined}
+          defaultChecked={stream}
           name="stream-comments"
           id="demo-2-stream-comments"
           className={clsx(

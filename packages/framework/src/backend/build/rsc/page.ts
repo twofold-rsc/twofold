@@ -3,10 +3,10 @@ import "urlpattern-polyfill";
 
 export class Page {
   #path: string;
-  #css?: string;
+  #css?: string | undefined;
   #fileUrl: URL;
 
-  #layout?: Layout;
+  #layout?: Layout | undefined;
 
   constructor({
     path,
@@ -14,7 +14,7 @@ export class Page {
     fileUrl,
   }: {
     path: string;
-    css?: string;
+    css?: string | undefined;
     fileUrl: URL;
   }) {
     this.#path = path;

@@ -214,8 +214,10 @@ export class ActionRequest {
     if (name?.startsWith("tf$serverFunction$")) {
       let parts = name.split("$");
       return parts[3] ?? id;
-    } else {
+    } else if (name) {
       return name;
+    } else {
+      return id;
     }
   }
 
@@ -354,10 +356,12 @@ class SPAAction implements Action {
     let request = this.#request;
     let temporaryReferences = this.#temporaryReferences;
 
-    let args = [];
+    let args: unknown[] = [];
     let [contentType] = parseHeaderValue(request.headers.get("content-type"));
 
-    if (contentType.value === "text/plain") {
+    if (!contentType) {
+      return args;
+    } else if (contentType.value === "text/plain") {
       let text = await request.text();
       args = await decodeReply(text, {}, { temporaryReferences });
     } else if (contentType.value === "multipart/form-data") {

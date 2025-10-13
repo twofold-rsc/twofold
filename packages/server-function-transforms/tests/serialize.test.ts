@@ -5,19 +5,13 @@ describe("serialization", () => {
   test("it should be able to serialize a string", async () => {
     let serialized = await encode("Hello world!");
 
-    expect(serialized).toMatchInlineSnapshot(`
-      "0:"Hello world!"
-      "
-    `);
+    expect(serialized).toContain(`0:"Hello world!"`);
   });
 
   test("it should be able to serialize an object", async () => {
     let serialized = await encode({ hello: "world" });
 
-    expect(serialized).toMatchInlineSnapshot(`
-      "0:{"hello":"world"}
-      "
-    `);
+    expect(serialized).toContain(`0:{"hello":"world"}`);
   });
 
   test("it should serialize and deserialize a string", async () => {

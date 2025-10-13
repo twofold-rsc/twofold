@@ -1,5 +1,3 @@
-import { ReadableStreamReadResult } from "node:stream/web";
-
 export function readStream<T>(
   stream: ReadableStream<T>,
   controls: {

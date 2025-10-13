@@ -1,3 +1,5 @@
+import { invariant } from "../../utils/invariant.js";
+
 type ClientComponentMap = {
   [key: string]: {
     chunks: string[];
@@ -36,6 +38,7 @@ function getChunkSetFromClientComponentMap(
   let chunks = new Set();
   for (let key of Object.keys(clientComponentMap)) {
     let component = clientComponentMap[key];
+    invariant(component, "Client component map is invalid");
     if (component.chunks) {
       chunks.add(component.chunks[0]);
     }

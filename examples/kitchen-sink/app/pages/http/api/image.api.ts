@@ -13,9 +13,10 @@ export async function GET() {
     .png()
     .toBuffer();
 
-  return new Response(image, {
+  return new Response(new Uint8Array(image), {
     headers: {
       "content-type": "image/png",
+      "Content-Length": image.length.toString(),
     },
   });
 }

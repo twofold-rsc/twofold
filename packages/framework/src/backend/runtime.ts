@@ -20,13 +20,12 @@ import { ActionRequest } from "./runtime/action-request.js";
 import { injectResolver } from "./monkey-patch.js";
 import { partition } from "./utils/partition.js";
 import { pathMatches } from "./runtime/helpers/routing.js";
-import { API } from "./build/rsc/api.js";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
 export class Runtime {
   #build: Build;
-  #ssrWorker?: Worker;
+  #ssrWorker?: Worker | undefined;
 
   constructor(build: Build) {
     this.#build = build;

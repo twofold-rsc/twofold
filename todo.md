@@ -1,6 +1,11 @@
 # TODO
 
-- 19.2
+- run through
+
+- release
+
+- focus homepage button
+
 - build/test kitchen sink in prod
 - Run through windows
 

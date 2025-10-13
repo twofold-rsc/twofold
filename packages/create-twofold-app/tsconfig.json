@@ -6,6 +6,10 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "ESNext",
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedSideEffectImports": true,
+    "isolatedModules": true
   },
-  "include": ["./src/"],
+  "include": ["./src/"]
 }

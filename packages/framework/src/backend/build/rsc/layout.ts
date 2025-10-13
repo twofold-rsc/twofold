@@ -8,11 +8,11 @@ import { Wrapper } from "./wrapper.js";
 
 export class Layout {
   #path: string;
-  #css?: string;
+  #css?: string | undefined;
   #fileUrl: URL;
 
   #children: Layout[] = [];
-  #parent?: Layout;
+  #parent?: Layout | undefined;
   #pages: Page[] = [];
   #wrappers: Wrapper[] = [];
 
@@ -22,7 +22,7 @@ export class Layout {
     fileUrl,
   }: {
     path: string;
-    css?: string;
+    css?: string | undefined;
     fileUrl: URL;
   }) {
     this.#path = path;

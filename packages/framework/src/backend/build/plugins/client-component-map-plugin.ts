@@ -79,12 +79,12 @@ export function clientComponentMapPlugin({
 
         let outputDirPath = join(
           process.cwd(),
-          build.initialOptions.outdir ?? ""
+          build.initialOptions.outdir ?? "",
         );
 
         for (const outputFile in metafile.outputs) {
           let output = metafile.outputs[outputFile];
-          let entryPoint = output.entryPoint;
+          let entryPoint = output?.entryPoint;
           if (entryPoint) {
             let entryPointPath = join(process.cwd(), entryPoint);
             let isClientComponent = clientEntryPoints.includes(entryPointPath);

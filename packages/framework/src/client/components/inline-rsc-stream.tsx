@@ -80,7 +80,7 @@ async function Inline({
             <script
               dangerouslySetInnerHTML={{
                 __html: `window.initialRSC.push(${sanitize(
-                  JSON.stringify(string)
+                  JSON.stringify(string),
                 )});`,
               }}
             />
@@ -107,7 +107,7 @@ let ESCAPE_LOOKUP: Record<string, string> = {
 let ESCAPE_REGEX = /[><\u2028\u2029]/g;
 
 function escaper(match: string | number) {
-  return ESCAPE_LOOKUP[match];
+  return ESCAPE_LOOKUP[match] ?? "";
 }
 
 function sanitize(str: string) {

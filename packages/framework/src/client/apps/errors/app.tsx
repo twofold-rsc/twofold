@@ -1,6 +1,7 @@
 import { deserializeError } from "serialize-error";
 import { createRoot } from "react-dom/client";
 import { ErrorViewer } from "./error-viewer.js";
+// @ts-expect-error we dont want to setup a module declaration for this import. esbuild handles it just fine.
 import "./app.css";
 import { useEffect } from "react";
 

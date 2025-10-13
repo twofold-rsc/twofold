@@ -12,7 +12,7 @@ type Asset = {
   id: string;
   type: string;
   assetPath: string;
-  brotliPath?: string;
+  brotliPath?: string | undefined;
 };
 
 export class AssetsBuilder extends Builder {

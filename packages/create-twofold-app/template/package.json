@@ -21,14 +21,14 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-server-dom-webpack": "catalog:",
-    "tailwindcss": "^4.1.11",
-    "zod": "4.0.5"
+    "tailwindcss": "^4.1.14",
+    "zod": "4.1.11"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "eslint": "^9.31.0",
+    "eslint": "^9.37.0",
     "eslint-plugin-twofold": "workspace:*",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",

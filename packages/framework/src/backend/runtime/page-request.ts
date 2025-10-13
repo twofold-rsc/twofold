@@ -9,6 +9,7 @@ import {
 import { ComponentType, createElement, ReactElement } from "react";
 import { applyPathParams } from "./helpers/routing.js";
 import xxhash from "xxhash-wasm";
+import { invariant } from "../utils/invariant.js";
 
 export class PageRequest {
   #page: Page;
@@ -292,6 +293,8 @@ export function componentsToTree<T extends object>(
     props: T;
   }[],
 ): ReactElement {
+  invariant(list[0], "Invalid component list");
+
   let { component, props } = list[0];
   if (list.length === 1) {
     return createElement<T>(component, props);

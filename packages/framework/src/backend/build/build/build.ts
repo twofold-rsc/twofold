@@ -42,9 +42,9 @@ export abstract class Build {
 
   #key = randomBytes(6).toString("hex");
   #builders: Builder[] = [];
-  #appConfig?: Config;
+  #appConfig?: Config | undefined;
 
-  #lock?: Promise<Complete>;
+  #lock?: Promise<Complete> | undefined;
   #hasBuilt = false;
 
   #events = new BuildEvents();
@@ -203,10 +203,15 @@ export abstract class Build {
     let builderKeys = Object.keys(builders);
     let builderOutputs = builderKeys.reduce<Record<string, any>>(
       (outputs, key) => {
-        outputs[key] = {
-          name: builders[key].name,
-          ...builders[key].serialize(),
-        };
+        let builder = builders[key];
+
+        if (builder) {
+          outputs[key] = {
+            name: builder.name,
+            ...builder.serialize(),
+          };
+        }
+
         return outputs;
       },
       {},

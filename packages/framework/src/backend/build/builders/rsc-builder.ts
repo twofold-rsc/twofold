@@ -34,7 +34,7 @@ export type CompiledAction = {
 export class RSCBuilder extends Builder {
   readonly name = "rsc";
 
-  #metafile?: Metafile;
+  #metafile?: Metafile | undefined;
   #entriesBuilder: EntriesBuilder;
   #build: Build;
   #serverActionMap = new Map<string, CompiledAction>();
@@ -92,7 +92,7 @@ export class RSCBuilder extends Builder {
 
     try {
       let appConfig = await this.#build.getAppConfig();
-      let userDefinedExternalPackages = appConfig.externalPackages;
+      let userDefinedExternalPackages = appConfig.externalPackages ?? [];
       let discoveredExternals = this.#entriesBuilder.discoveredExternals;
 
       let result = await build({
@@ -289,13 +289,16 @@ export class RSCBuilder extends Builder {
     let keys = Object.keys(outputs);
     return keys
       .filter((key) => {
-        let entryPoint = outputs[key].entryPoint;
+        let entryPoint = outputs[key]?.entryPoint;
         return entryPoint && entryPoint.endsWith(pageSuffix);
       })
       .map((key) => {
         let output = outputs[key];
-        let entryPoint = outputs[key].entryPoint;
+        if (!output) {
+          throw new Error("No output found for key");
+        }
 
+        let entryPoint = output.entryPoint;
         if (!entryPoint) {
           throw new Error("No entry point");
         }
@@ -337,13 +340,16 @@ export class RSCBuilder extends Builder {
 
     return keys
       .filter((key) => {
-        let entryPoint = outputs[key].entryPoint;
+        let entryPoint = outputs[key]?.entryPoint;
         return entryPoint && entryPoint.endsWith(layoutSuffix);
       })
       .map((key) => {
         let output = outputs[key];
-        let entryPoint = output.entryPoint;
+        if (!output) {
+          throw new Error("No output found for key");
+        }
 
+        let entryPoint = output.entryPoint;
         if (!entryPoint) {
           throw new Error("No entry point");
         }
@@ -378,12 +384,16 @@ export class RSCBuilder extends Builder {
     let keys = Object.keys(outputs);
     return keys
       .filter((key) => {
-        let entryPoint = outputs[key].entryPoint;
+        let entryPoint = outputs[key]?.entryPoint;
         return entryPoint && apiSuffix.test(entryPoint);
       })
       .map((key) => {
-        let entryPoint = outputs[key].entryPoint;
+        let output = outputs[key];
+        if (!output) {
+          throw new Error("No output found for key");
+        }
 
+        let entryPoint = output.entryPoint;
         if (!entryPoint) {
           throw new Error("No entry point");
         }

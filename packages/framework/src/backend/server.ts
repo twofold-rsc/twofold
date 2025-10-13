@@ -246,8 +246,8 @@ export class Server {
   #hostname: string;
   #port: number;
   #runtime: Runtime;
-  #server?: NodeHttpServer;
-  #activeSockets?: Map<Socket, number>;
+  #server: NodeHttpServer | undefined;
+  #activeSockets: Map<Socket, number> | undefined;
 
   constructor(runtime: Runtime, options: Options) {
     this.#runtime = runtime;
@@ -278,7 +278,6 @@ export class Server {
 
   async start() {
     if (!this.#server && !this.#activeSockets) {
-      let runtime = this.runtime;
       let handler = await createHandler(this);
       let config = await this.build.getAppConfig();
 

@@ -19,7 +19,7 @@ import { Image, imagesPlugin } from "../plugins/images-plugin.js";
 export class ClientAppBuilder extends Builder {
   readonly name = "client";
 
-  #metafile?: Metafile;
+  #metafile?: Metafile | undefined;
   #build: Build;
   #entriesBuilder: EntriesBuilder;
   #clientComponentOutputMap = new Map<string, ClientComponentOutput>();

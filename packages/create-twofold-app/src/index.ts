@@ -9,7 +9,7 @@ import * as tar from "tar";
 import { remapped } from "./remapped.js";
 import * as childProcess from "child_process";
 import util from "util";
-import { parse } from "yaml";
+import { parse, stringify } from "yaml";
 import { randomBytes } from "crypto";
 let exec = util.promisify(childProcess.exec);
 
@@ -32,9 +32,19 @@ async function main() {
   // if using pnpm, verify the version
   if (packageManager === "pnpm") {
     let [agentVersion] = npmUserAgent.split(/\s/);
+    if (!agentVersion) {
+      signale.error("Could not determine pnpm version, exiting.");
+      process.exit(1);
+    }
+
     let [_, versionString] = agentVersion.split(/\//);
+    if (!versionString) {
+      signale.error("Could not determine pnpm version, exiting.");
+      process.exit(1);
+    }
+
     let pnpmVersion = versionString.split(".").map(Number);
-    let hasRequiredPnpmVersion = pnpmVersion[0] >= 9;
+    let hasRequiredPnpmVersion = pnpmVersion[0] && pnpmVersion[0] >= 9;
     if (!hasRequiredPnpmVersion) {
       signale.error(
         "You must use pnpm version 9.0.0 or higher to create a new app.",
@@ -45,6 +55,16 @@ async function main() {
 
   // verify node version
   let nodeVersion = process.versions.node.split(".").map(Number);
+  if (
+    !nodeVersion ||
+    typeof nodeVersion[0] !== "number" ||
+    typeof nodeVersion[1] !== "number" ||
+    typeof nodeVersion[2] !== "number"
+  ) {
+    signale.error("Could not determine Node.js version, exiting.");
+    process.exit(1);
+  }
+
   let hasRequiredNodeVersion =
     nodeVersion[0] > 22 ||
     (nodeVersion[0] === 22 &&
@@ -219,14 +239,18 @@ async function main() {
   modifyVersions(pkg.dependencies);
   modifyVersions(pkg.devDependencies);
 
-  if (packageManager === "pnpm") {
-    pkg.pnpm = {
-      neverBuiltDependencies: [],
-    };
-  }
-
   let newPackage = JSON.stringify(pkg, null, 2);
   await writeFile(new URL("./package.json", appUrl), newPackage);
+
+  if (packageManager === "pnpm") {
+    let contents = {
+      onlyBuiltDependencies: ["@tailwindcss/oxide", "esbuild"],
+    };
+    await writeFile(
+      new URL("./pnpm-workspace.yaml", appUrl),
+      stringify(contents),
+    );
+  }
 
   // edit .env file, add secret key
   let secret = randomBytes(32).toString("hex");

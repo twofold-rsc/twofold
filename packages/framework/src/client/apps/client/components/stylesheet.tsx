@@ -11,16 +11,16 @@ function load(href: string) {
       let link = document.createElement("link");
       let head = document.getElementsByTagName("head")[0];
 
-      if (!head) {
+      if (head) {
+        link.href = href;
+        link.onload = () => resolve();
+        link.onerror = reject;
+        link.rel = "stylesheet";
+
+        head.appendChild(link);
+      } else {
         reject(new Error("No <head> element found"));
       }
-
-      link.href = href;
-      link.onload = () => resolve();
-      link.onerror = reject;
-      link.rel = "stylesheet";
-
-      head.appendChild(link);
     } else {
       resolve();
     }
@@ -48,12 +48,12 @@ export function Stylesheet({ href }: { href: string }) {
     let links = document.getElementsByTagName("link");
     for (let i = 0; i < links.length; i++) {
       let link = links[i];
-      if (link.getAttribute("href") === href) {
+      if (link && link.getAttribute("href") === href) {
         shouldAdd = false;
       }
     }
 
-    if (shouldAdd) {
+    if (shouldAdd && head) {
       let link = document.createElement("link");
       link.href = href;
       link.rel = "stylesheet";
@@ -64,7 +64,7 @@ export function Stylesheet({ href }: { href: string }) {
       let links = document.getElementsByTagName("link");
       for (let i = 0; i < links.length; i++) {
         let link = links[i];
-        if (link.getAttribute("href") === href) {
+        if (link && link.getAttribute("href") === href) {
           link.disabled = true;
           link.parentNode?.removeChild(link);
         }
