@@ -54,6 +54,9 @@ export class RedirectBoundary extends Component<
 
 function getUrlFromError(error: Error & { digest: string }) {
   let [_name, _status, url] = error.digest.split(":");
+  if (!url) {
+    throw new Error("Invalid redirect URL");
+  }
   return decodeURIComponent(url);
 }
 

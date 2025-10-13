@@ -12,6 +12,7 @@
   },
   "scripts": {
     "compile": "node compile.js",
+    "lint": "tsc --noEmit",
     "update-template": "node dist/update-template.js",
     "dev": "node dist/index.js"
   },

@@ -28,7 +28,7 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
 
       function getPathActions(path: string) {
         return Array.from(serverActions).filter(
-          (action) => action.path === path
+          (action) => action.path === path,
         );
       }
 
@@ -96,6 +96,9 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
 
         for (let outputFile in outputs) {
           let output = outputs[outputFile];
+          if (!output) {
+            throw new Error(`Failed to get output for ${outputFile}`);
+          }
           let inputs = output.inputs;
           let inputFiles = Object.keys(inputs);
 

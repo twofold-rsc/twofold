@@ -114,7 +114,6 @@ export async function render({
     }),
     {
       bootstrapModules: [bootstrapUrl],
-      // @ts-expect-error formState is not in @types/react-dom
       formState,
       onError(err: unknown) {
         if (err instanceof Error && isSafeError(err)) {
@@ -127,11 +126,11 @@ export async function render({
           // is cancelled on the react-server side
         } else {
           console.error(
-            `An unknown error occurred while SSR rendering: ${url.pathname}`
+            `An unknown error occurred while SSR rendering: ${url.pathname}`,
           );
         }
       },
-    }
+    },
   );
 
   return htmlStream;

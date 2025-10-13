@@ -34,6 +34,9 @@ let moduleMap = new Map();
 globalThis.__webpack_chunk_load__ = async function (chunkId: string) {
   // console.log("*** server loading chunk", chunkId);
   let [moduleId, name, hash] = chunkId.split(":");
+  if (!moduleId) {
+    throw new Error(`Invalid chunk id ${chunkId}`);
+  }
   let modulePath = resolvers.moduleIdToPath(moduleId);
   if (!modulePath) {
     throw new Error(`Failed to resolve module id ${moduleId}`);

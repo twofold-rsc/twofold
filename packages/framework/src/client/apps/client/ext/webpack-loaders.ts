@@ -11,6 +11,9 @@ if (typeof window !== "undefined") {
   if (!window.__webpack_chunk_load__) {
     window.__webpack_chunk_load__ = async function (chunkId) {
       let [moduleId, name, hash] = chunkId.split(":");
+      if (!moduleId) {
+        throw new Error("Invalid chunk id");
+      }
       let modulePath = `/__tf/assets/${name}-${hash}.js`;
       let mod = moduleMap.get(moduleId);
       if (!mod) {
@@ -25,6 +28,9 @@ if (typeof window !== "undefined") {
   if (!window.__twofold__chunk_reload__) {
     window.__twofold__chunk_reload__ = async function (chunk) {
       let [moduleId, name, hash] = chunk.split(":");
+      if (!moduleId) {
+        throw new Error("Invalid chunk id");
+      }
       let modulePath = `/__tf/assets/${name}-${hash}.js?v=${Date.now()}`;
       let mod = await import(modulePath);
       moduleMap.set(moduleId, mod);
@@ -35,6 +41,9 @@ if (typeof window !== "undefined") {
   if (!window.__webpack_require__) {
     window.__webpack_require__ = function (id) {
       let [moduleId] = id.split("#");
+      if (!moduleId) {
+        throw new Error("Invalid id");
+      }
       // console.log("browser require", id);
       return moduleMap.get(moduleId);
     };

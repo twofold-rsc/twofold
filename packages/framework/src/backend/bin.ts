@@ -8,6 +8,17 @@ import { DevTask } from "./tasks/dev.js";
 import { ServeTask } from "./tasks/serve.js";
 
 let nodeVersion = process.versions.node.split(".").map(Number);
+
+if (
+  !nodeVersion ||
+  typeof nodeVersion[0] !== "number" ||
+  typeof nodeVersion[1] !== "number" ||
+  typeof nodeVersion[2] !== "number"
+) {
+  console.log("Could determine Node.js version, exiting.");
+  process.exit(1);
+}
+
 let hasRequiredNodeVersion =
   nodeVersion[0] > 22 ||
   (nodeVersion[0] === 22 &&

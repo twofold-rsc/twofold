@@ -77,7 +77,7 @@ export function gzip(build: Build): RouteHandler {
 function shouldCompressContentType(contentType: string | null) {
   if (!contentType) return false;
 
-  const mediaType = contentType.split(";")[0].trim().toLowerCase();
+  const mediaType = contentType.split(";")?.[0]?.trim().toLowerCase() ?? "";
 
   return (
     mediaType.startsWith("text/") ||

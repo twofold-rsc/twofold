@@ -47,7 +47,7 @@ export function externalsPlugin({
           !path.startsWith("./") &&
           !path.startsWith("../") &&
           possibleExternals.some(
-            (dep) => path === dep || path.startsWith(`${dep}/`)
+            (dep) => path === dep || path.startsWith(`${dep}/`),
           )
         ) {
           let resolvePath = require.resolve(path);
@@ -102,12 +102,13 @@ async function dependsOnReact(dep: string) {
 }
 
 function getPackageName(specifier: string) {
-  if (specifier.startsWith("@")) {
-    let parts = specifier.split("/");
+  let parts = specifier.split("/");
+  if (specifier.startsWith("@") && parts[0] && parts[1]) {
     return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : specifier;
-  } else {
-    let parts = specifier.split("/");
+  } else if (parts.length > 0 && parts[0]) {
     return parts[0];
+  } else {
+    return specifier;
   }
 }
 

@@ -1,9 +1,10 @@
 # TODO
 
-- eslint stuff
-- ts6
-- approve builds
 - run through
+
+- release
+
+- focus homepage button
 
 - build/test kitchen sink in prod
 - Run through windows

@@ -53,6 +53,8 @@ export default function DevReload() {
   useEffect(() => {
     cssToCleanup.forEach((file) => removeCSSFile(file));
     if (cssToCleanup.length > 0) {
+      // i really need to find a better way to express this...
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCSSToCleanup([]);
     }
   }, [cssToCleanup]);
@@ -154,16 +156,17 @@ let cssBase = "/__tf/assets/styles/";
 
 function removeCSSFile(file: string) {
   let hrefToRemove = `${cssBase}${file}`;
-
   let links = document.getElementsByTagName("link");
 
   for (let i = 0; i < links.length; i++) {
     let link = links[i];
 
-    let href = link.getAttribute("href");
-    if (href && href === hrefToRemove) {
-      link.disabled = true;
-      link.parentNode?.removeChild(link);
+    if (link) {
+      let href = link.getAttribute("href");
+      if (href && href === hrefToRemove) {
+        link.disabled = true;
+        link.parentNode?.removeChild(link);
+      }
     }
   }
 }
@@ -173,17 +176,17 @@ function addCSSFile(href: string) {
     let link = document.createElement("link");
     let head = document.getElementsByTagName("head")[0];
 
-    if (!head) {
+    if (head) {
+      link.href = `${cssBase}${href}`;
+      link.onload = () => {
+        resolve();
+      };
+      link.onerror = reject;
+      link.rel = "stylesheet";
+
+      head.appendChild(link);
+    } else {
       reject(new Error("No <head> element found"));
     }
-
-    link.href = `${cssBase}${href}`;
-    link.onload = () => {
-      resolve();
-    };
-    link.onerror = reject;
-    link.rel = "stylesheet";
-
-    head.appendChild(link);
   });
 }

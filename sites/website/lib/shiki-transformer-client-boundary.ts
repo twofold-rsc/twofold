@@ -1,4 +1,5 @@
 import { ShikiTransformer } from "shiki";
+import invariant from "tiny-invariant";
 
 export type Options = {
   color?: string;
@@ -45,7 +46,7 @@ export function transformerClientBoundary(
       let removeIgnores = false;
 
       for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
+        let line = lines[i] ?? "";
         let ignoreLine =
           removeIgnores &&
           (line.trim() === "// prettier-ignore" || line.trim() === "");
@@ -70,8 +71,10 @@ export function transformerClientBoundary(
       if (
         node.type === "element" &&
         node.children.length === 1 &&
+        node.children[0] &&
         node.children[0].type === "element" &&
         node.children[0].children.length === 1 &&
+        node.children[0].children[0] &&
         node.children[0].children[0].type === "text" &&
         node.children[0].children[0].value.trim() === TOKEN
       ) {

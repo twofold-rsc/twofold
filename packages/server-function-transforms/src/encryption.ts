@@ -1,4 +1,5 @@
 import { webcrypto } from "crypto";
+import { invariant } from "./utils/invariant.js";
 
 let subtle = webcrypto.subtle;
 let algorithm = "AES-GCM";
@@ -39,6 +40,8 @@ export async function encrypt(plainText: string, password: string) {
 export async function decrypt(encrypted: string, password: string) {
   let decoder = new TextDecoder();
   let [iv, cipherText] = encrypted.split(":");
+  invariant(iv, "Invalid encrypted text");
+  invariant(cipherText, "Invalid encrypted text");
   let key = await deriveKeyFromString(password);
 
   let decrypted = await subtle.decrypt(

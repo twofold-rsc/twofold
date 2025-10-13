@@ -20,7 +20,7 @@ type State = {
   encryption: {
     hasEncryptedVariables: boolean;
     module: string;
-    key?: t.Expression;
+    key?: t.Expression | undefined;
   };
   getUniqueFunctionName: (name: string) => string;
 };
@@ -724,7 +724,9 @@ function insertKeyCheck(path: NodePath<t.Program>, key: t.Expression) {
   let insertPosition =
     firstNonImportIndex === -1 ? body.length : firstNonImportIndex;
 
-  body[insertPosition].insertBefore(ifStatement);
+  if (body[insertPosition]) {
+    body[insertPosition].insertBefore(ifStatement);
+  }
 }
 
 function isTopLevelFunction(

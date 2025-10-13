@@ -12,7 +12,7 @@ function randomMessage() {
     "Form successfully saved",
   ];
 
-  return messages[Math.floor(Math.random() * messages.length)];
+  return messages[Math.floor(Math.random() * messages.length)] ?? "";
 }
 
 async function toast() {

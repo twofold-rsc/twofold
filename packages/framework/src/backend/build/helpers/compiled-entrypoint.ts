@@ -11,7 +11,7 @@ export function getCompiledEntrypoint(
   let outputFiles = Object.keys(outputs);
 
   let file = outputFiles.find((outputFile) => {
-    let entryPoint = outputs[outputFile].entryPoint;
+    let entryPoint = outputs[outputFile]?.entryPoint;
     if (entryPoint) {
       let fullEntryPointPath = path.join(base, entryPoint);
       return fullEntryPointPath === entryPointPath;

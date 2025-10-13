@@ -11,9 +11,9 @@ export function Browser({
 }: {
   children: ReactNode;
   url: string;
-  onRefresh?: MouseEventHandler<HTMLButtonElement>;
-  onBack?: MouseEventHandler<HTMLButtonElement>;
-  onForward?: MouseEventHandler<HTMLButtonElement>;
+  onRefresh?: MouseEventHandler<HTMLButtonElement> | undefined;
+  onBack?: MouseEventHandler<HTMLButtonElement> | undefined;
+  onForward?: MouseEventHandler<HTMLButtonElement> | undefined;
 }) {
   return (
     <div className="relative flex h-full flex-col rounded-lg">

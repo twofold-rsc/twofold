@@ -12,6 +12,7 @@
   },
   "scripts": {
     "compile": "node compile.js && tsc --emitDeclarationOnly --declaration --outDir ./dist",
+    "lint": "tsc --noEmit",
     "test": "vitest"
   },
   "keywords": [],
@@ -27,10 +28,10 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@babel/core": "^7.28.0",
-    "@babel/generator": "^7.28.0",
-    "@babel/types": "^7.28.1",
-    "dedent": "^1.6.0",
+    "@babel/core": "^7.28.4",
+    "@babel/generator": "^7.28.3",
+    "@babel/types": "^7.28.4",
+    "dedent": "^1.7.0",
     "esbuild": "catalog:"
   },
   "peerDependencies": {

@@ -9,7 +9,7 @@ import { Builder } from "./builder.js";
 export class DevErrorPageBuilder extends Builder {
   readonly name = "dev-error-page";
 
-  #metafile?: Metafile;
+  #metafile?: Metafile | undefined;
   #context?: BuildContext;
   #rebuild = false;
 
@@ -82,7 +82,7 @@ export class DevErrorPageBuilder extends Builder {
     let outputFiles = Object.keys(outputs);
 
     let file = outputFiles.find((outputFile) => {
-      let entryPoint = outputs[outputFile].entryPoint;
+      let entryPoint = outputs[outputFile]?.entryPoint;
       if (entryPoint) {
         let fullEntryPointPath = path.join(process.cwd(), entryPoint);
         return fullEntryPointPath === this.appPath;
@@ -93,7 +93,7 @@ export class DevErrorPageBuilder extends Builder {
       throw new Error("Failed to get bootstrap module");
     }
 
-    let cssFile = outputs[file].cssBundle;
+    let cssFile = outputs[file]?.cssBundle;
 
     if (!cssFile) {
       throw new Error("Failed to get css bundle");

@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Fence } from "./fence";
 import * as Tabs from "@radix-ui/react-tabs";
 import clsx from "clsx";
+import invariant from "tiny-invariant";
 
 export function CodeTabs({
   files,
@@ -10,6 +11,8 @@ export function CodeTabs({
   files: string[];
   children: ReactNode;
 }) {
+  invariant(files[0], "files must have at least one file");
+
   return (
     <div className="not-prose my-6">
       <Tabs.Root defaultValue={files[0]}>

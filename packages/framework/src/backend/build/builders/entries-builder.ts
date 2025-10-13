@@ -59,7 +59,7 @@ export class EntriesBuilder extends Builder {
     let frameworkComponentsPath = fileURLToPath(frameworkComponentsUrl);
 
     let appConfig = await this.#build.getAppConfig();
-    let userDefinedExternalPackages = appConfig.externalPackages;
+    let userDefinedExternalPackages = appConfig.externalPackages ?? [];
 
     let builder = this;
     this.#context = await context({

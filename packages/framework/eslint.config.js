@@ -11,6 +11,7 @@ export default tseslint.config(
 
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
+  ...eslintPluginReactHooks.configs["recommended-latest"],
 
   {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
@@ -32,12 +33,10 @@ export default tseslint.config(
   {
     plugins: {
       react: eslintPluginReact,
-      "react-hooks": eslintPluginReactHooks,
     },
   },
   {
     rules: {
-      ...eslintPluginReactHooks.configs.recommended.rules,
       "prefer-const": "off",
       "no-unused-vars": "off",
       "no-unused-private-class-members": "off",
@@ -45,5 +44,5 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-this-alias": "off",
     },
-  }
+  },
 );

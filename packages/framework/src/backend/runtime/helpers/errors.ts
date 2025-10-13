@@ -19,6 +19,10 @@ export function isRedirectError(err: unknown) {
 export function redirectErrorToResponse(err: Error & { digest: string }) {
   let [name, status, url] = err.digest.split(":");
 
+  if (!url) {
+    throw new Error("Invalid redirect");
+  }
+
   return new Response(null, {
     status: Number(status),
     headers: {
@@ -35,6 +39,11 @@ export function redirectErrorInfo(err: unknown) {
     err.digest.startsWith("TwofoldRedirectError")
   ) {
     let [name, status, url] = err.digest.split(":");
+
+    if (!url) {
+      throw new Error("Invalid redirect");
+    }
+
     return {
       status: Number(status),
       url: decodeURIComponent(url),

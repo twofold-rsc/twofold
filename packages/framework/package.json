@@ -45,7 +45,7 @@
     "node": ">=22.12.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.31.0",
+    "@eslint/js": "^9.37.0",
     "@types/babel__core": "^7.20.5",
     "@types/etag": "^1.8.4",
     "@types/mime-types": "^3.0.1",
@@ -53,13 +53,13 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "cookie": "^1.0.2",
-    "eslint": "^9.31.0",
+    "eslint": "^9.37.0",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "5.2.0",
-    "globals": "^16.3.0",
+    "eslint-plugin-react-hooks": "6.1.1",
+    "globals": "^16.4.0",
     "nodemon": "^3.1.10",
     "typescript": "catalog:",
-    "typescript-eslint": "^8.38.0"
+    "typescript-eslint": "^8.45.0"
   },
   "peerDependencies": {
     "react": "catalog:",
@@ -74,7 +74,7 @@
     }
   },
   "dependencies": {
-    "@babel/core": "^7.28.0",
+    "@babel/core": "^7.28.4",
     "@hattip/adapter-node": "^0.0.49",
     "@hattip/compose": "^0.0.49",
     "@hattip/cookie": "^0.0.49",
@@ -83,25 +83,25 @@
     "@hattip/router": "^0.0.49",
     "@hattip/static": "^0.0.49",
     "@ryanto/esbuild-plugin-tailwind": "^0.0.3",
-    "@tailwindcss/node": "4.1.11",
-    "@tailwindcss/oxide": "4.1.11",
+    "@tailwindcss/node": "4.1.14",
+    "@tailwindcss/oxide": "4.1.14",
     "@twofold/client-component-transforms": "workspace:*",
     "@twofold/server-function-transforms": "workspace:*",
-    "babel-plugin-react-compiler": "19.1.0-rc.2",
+    "babel-plugin-react-compiler": "19.1.0-rc.3",
     "client-only": "^0.0.1",
-    "commander": "^14.0.0",
-    "dotenv": "^17.2.0",
+    "commander": "^14.0.1",
+    "dotenv": "^17.2.3",
     "esbuild": "catalog:",
     "etag": "^1.8.1",
-    "jiti": "^2.4.2",
+    "jiti": "^2.6.1",
     "kleur": "^4.1.5",
     "mime-types": "^3.0.1",
     "minimatch": "^10.0.3",
-    "react-refresh": "^0.17.0",
+    "react-refresh": "^0.18.0",
     "serialize-error": "^12.0.0",
     "server-only": "^0.0.1",
     "urlpattern-polyfill": "10.1.0",
     "xxhash-wasm": "^1.1.0",
-    "zod": "4.0.5"
+    "zod": "4.1.11"
   }
 }
