@@ -1,4 +1,4 @@
-FROM node:22.12.0-slim AS base
+FROM node:24.10.0-slim AS base
 WORKDIR /usr/src/twofold
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--conditions react-server"

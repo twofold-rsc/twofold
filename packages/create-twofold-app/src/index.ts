@@ -68,11 +68,11 @@ async function main() {
   let hasRequiredNodeVersion =
     nodeVersion[0] > 22 ||
     (nodeVersion[0] === 22 &&
-      (nodeVersion[1] > 12 || (nodeVersion[1] === 12 && nodeVersion[2] >= 0)));
+      (nodeVersion[1] > 20 || (nodeVersion[1] === 20 && nodeVersion[2] >= 0)));
 
   if (!hasRequiredNodeVersion) {
     signale.error(
-      "You must use Node.js version 22.12.0 or higher to create a new app.",
+      "You must use Node.js version 22.20.0 or higher to create a new app.",
     );
     process.exit(1);
   }
