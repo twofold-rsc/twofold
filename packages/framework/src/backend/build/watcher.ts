@@ -28,11 +28,13 @@ export class Watcher {
     this.#cwd = cwd;
 
     this.#routes = options.routes.map(({ patterns, callback }) => ({
-      matchers: patterns.map((g) => picomatch(g)),
+      matchers: patterns.map((g) => picomatch(g, { dot: true })),
       callback,
     }));
 
-    this.#ignoreMatchers = (options.ignores ?? []).map((g) => picomatch(g));
+    this.#ignoreMatchers = (options.ignores ?? []).map((g) =>
+      picomatch(g, { dot: true }),
+    );
   }
 
   async start(): Promise<void> {
