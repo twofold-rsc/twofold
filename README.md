@@ -14,4 +14,4 @@ npx create-twofold-app@latest
 pnpm create twofold-app@latest
 ```
 
-Twofold requires Node.js `22.12.0` or higher.
+Twofold requires Node.js `22.20.0` or higher.

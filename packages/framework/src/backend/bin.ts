@@ -22,10 +22,10 @@ if (
 let hasRequiredNodeVersion =
   nodeVersion[0] > 22 ||
   (nodeVersion[0] === 22 &&
-    (nodeVersion[1] > 12 || (nodeVersion[1] === 12 && nodeVersion[2] >= 0)));
+    (nodeVersion[1] > 20 || (nodeVersion[1] === 20 && nodeVersion[2] >= 0)));
 
 if (!hasRequiredNodeVersion) {
-  console.log("You must use Node.js version 22.12.0 or higher to run twofold.");
+  console.log("You must use Node.js version 22.20.0 or higher to run twofold.");
   process.exit(1);
 }
 

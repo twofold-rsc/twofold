@@ -19,7 +19,7 @@ Create a file called `Dockerfile` in the root of your app. This file will contai
 ```dockerfile
 # Dockerfile
 
-ARG NODE_VERSION=22.12.0
+ARG NODE_VERSION=22.20.0
 
 FROM node:${NODE_VERSION}-slim AS base
 WORKDIR /app

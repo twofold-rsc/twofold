@@ -4,6 +4,8 @@
 
 - release
 
+- bug: start kitchen, goto url, exit kitchen start base. get strange error when base tries to push a reload to kitchen app
+
 - focus homepage button
 
 - build/test kitchen sink in prod

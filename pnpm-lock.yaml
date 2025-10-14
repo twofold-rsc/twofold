@@ -284,7 +284,7 @@ importers:
         version: 0.0.49
       '@ryanto/esbuild-plugin-tailwind':
         specifier: ^0.0.3
-        version: 0.0.3(esbuild@0.25.10)(tailwindcss@4.1.11)
+        version: 0.0.3(esbuild@0.25.10)(tailwindcss@4.1.14)
       '@tailwindcss/node':
         specifier: 4.1.14
         version: 4.1.14
@@ -300,6 +300,9 @@ importers:
       babel-plugin-react-compiler:
         specifier: 19.1.0-rc.3
         version: 19.1.0-rc.3
+      chokidar:
+        specifier: ^4.0.3
+        version: 4.0.3
       client-only:
         specifier: ^0.0.1
         version: 0.0.1
@@ -327,6 +330,9 @@ importers:
       minimatch:
         specifier: ^10.0.3
         version: 10.0.3
+      picomatch:
+        specifier: ^4.0.3
+        version: 4.0.3
       react:
         specifier: 'catalog:'
         version: 19.2.0
@@ -347,7 +353,7 @@ importers:
         version: 0.0.1
       tailwindcss:
         specifier: '>=4.0.0'
-        version: 4.1.11
+        version: 4.1.14
       urlpattern-polyfill:
         specifier: 10.1.0
         version: 10.1.0
@@ -373,6 +379,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.10.2
+      '@types/picomatch':
+        specifier: ^4.0.2
+        version: 4.0.2
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.0
@@ -1896,6 +1905,9 @@ packages:
   '@types/node@24.0.15':
     resolution: {integrity: sha512-oaeTSbCef7U/z7rDeJA138xpG3NuKc64/rZ2qmUFkFJmnMsAPaluIifqyWd8hSSMxyP9oie3dLAqYPblag9KgA==}
 
+  '@types/picomatch@4.0.2':
+    resolution: {integrity: sha512-qHHxQ+P9PysNEGbALT8f8YOSHW0KJu6l2xU8DYY0fu/EmGxXdVnuTLvFUvBgPJMSqXq29SYHveejeAha+4AYgA==}
+
   '@types/prompts@2.4.9':
     resolution: {integrity: sha512-qTxFi6Buiu8+50/+3DGIWLHM6QuWsEKugJnnP6iv2Mc4ncxE4A/OJkjuVOA+5X0X1S/nq5VJRa8Lu+nwcvbrKA==}
 
@@ -2312,6 +2324,10 @@ packages:
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
+
+  chokidar@4.0.3:
+    resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
+    engines: {node: '>= 14.16.0'}
 
   chownr@3.0.0:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
@@ -3914,6 +3930,10 @@ packages:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
 
+  readdirp@4.1.2:
+    resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
+    engines: {node: '>= 14.18.0'}
+
   reflect.getprototypeof@1.0.10:
     resolution: {integrity: sha512-00o4I+DVrefhv+nX0ulyi3biSHCPDe+yLv5o/p6d/UVlirijB8E16FtfwSAi4g3tcqrQ4lRAqQSoFEZJehYEcw==}
     engines: {node: '>= 0.4'}
@@ -4232,9 +4252,6 @@ packages:
 
   tabbable@6.2.0:
     resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
-
-  tailwindcss@4.1.11:
-    resolution: {integrity: sha512-2E9TBm6MDD/xKYe+dvJZAmg3yxIEDNRc0jwlNyDg/4Fil2QcSLjFKGVff0lAf1jjeaArlG/M75Ey/EYr/OJtBA==}
 
   tailwindcss@4.1.14:
     resolution: {integrity: sha512-b7pCxjGO98LnxVkKjaZSDeNuljC4ueKUddjENJOADtubtdo8llTaJy7HwBMeLNSSo2N5QIAgklslK1+Ir8r6CA==}
@@ -5804,13 +5821,13 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.37.0':
     optional: true
 
-  '@ryanto/esbuild-plugin-tailwind@0.0.3(esbuild@0.25.10)(tailwindcss@4.1.11)':
+  '@ryanto/esbuild-plugin-tailwind@0.0.3(esbuild@0.25.10)(tailwindcss@4.1.14)':
     dependencies:
       '@tailwindcss/node': 4.1.14
       '@tailwindcss/oxide': 4.1.14
       esbuild: 0.25.10
       lightningcss: 1.30.1
-      tailwindcss: 4.1.11
+      tailwindcss: 4.1.14
 
   '@shikijs/core@3.13.0':
     dependencies:
@@ -6018,6 +6035,8 @@ snapshots:
   '@types/node@24.0.15':
     dependencies:
       undici-types: 7.8.0
+
+  '@types/picomatch@4.0.2': {}
 
   '@types/prompts@2.4.9':
     dependencies:
@@ -6633,6 +6652,10 @@ snapshots:
       readdirp: 3.6.0
     optionalDependencies:
       fsevents: 2.3.3
+
+  chokidar@4.0.3:
+    dependencies:
+      readdirp: 4.1.2
 
   chownr@3.0.0: {}
 
@@ -8435,6 +8458,8 @@ snapshots:
     dependencies:
       picomatch: 2.3.1
 
+  readdirp@4.1.2: {}
+
   reflect.getprototypeof@1.0.10:
     dependencies:
       call-bind: 1.0.8
@@ -8894,8 +8919,6 @@ snapshots:
   supports-preserve-symlinks-flag@1.0.0: {}
 
   tabbable@6.2.0: {}
-
-  tailwindcss@4.1.11: {}
 
   tailwindcss@4.1.14: {}
 
