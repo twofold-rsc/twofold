@@ -28,7 +28,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "eslint": "^9.37.0",
+    "eslint": "^9.38.0",
     "eslint-plugin-twofold": "workspace:*",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
