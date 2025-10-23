@@ -1,7 +1,8 @@
+import { defineConfig } from "eslint/config";
 import eslintPluginTwofold from "eslint-plugin-twofold";
 
-export default [
-  ...eslintPluginTwofold.configs.recommended,
+export default defineConfig([
+  eslintPluginTwofold.configs.recommended,
   {
     rules: {
       // your custom rules here...
@@ -9,4 +10,4 @@ export default [
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
-];
+]);

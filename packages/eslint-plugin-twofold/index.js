@@ -18,8 +18,8 @@ let plugin = {
   configs: {
     recommended: [
       eslint.configs.recommended,
-      ...tseslint.configs.recommended,
-      ...eslintPluginReactHooks.configs["recommended-latest"],
+      tseslint.configs.recommended,
+      eslintPluginReactHooks.configs.flat["recommended-latest"],
       {
         ignores: [".twofold/"],
       },
