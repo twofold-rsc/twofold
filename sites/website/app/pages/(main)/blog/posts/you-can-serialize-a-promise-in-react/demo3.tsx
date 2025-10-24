@@ -67,13 +67,13 @@ type State = {
   next: string | null;
   originalPromise: Promise<string>;
   stream: ReadableStream;
-  recreatedPromise?: Promise<string | undefined>;
+  recreatedPromise?: Promise<string> | undefined;
   recreatedValue?: string;
 };
 
 export function Demo3({ children }: { children: ReactNode }) {
-  const [state, action] = useActionState(
-    async (prev: State | null, action: string) => {
+  const [state, action] = useActionState<State | null, string>(
+    async (prev, action) => {
       if (action === "serialize") {
         const promise = new Promise<string>((resolve) => {
           setTimeout(() => resolve("Hello!"), 1_500);
@@ -101,7 +101,7 @@ export function Demo3({ children }: { children: ReactNode }) {
           recreatedPromise: recreated.promise,
         };
       } else if (action === "await" && prev) {
-        const value = await prev.recreatedPromise;
+        const value = (await prev.recreatedPromise) ?? "";
         return {
           ...prev,
           log: [...prev.log, `Resolved with: ${value}`],

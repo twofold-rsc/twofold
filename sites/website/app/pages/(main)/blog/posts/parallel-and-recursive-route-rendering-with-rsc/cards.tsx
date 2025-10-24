@@ -42,7 +42,7 @@ export function WaterfallTimeline() {
             x="0"
             y="15"
             fontSize="14"
-            textAnchor="left"
+            textAnchor="start"
             fill="currentColor"
           >
             0s
@@ -150,7 +150,7 @@ export function WaterfallTimeline() {
             x="825"
             y="15"
             fontSize="14"
-            textAnchor="right"
+            textAnchor="start"
             fill="currentColor"
           >
             3s

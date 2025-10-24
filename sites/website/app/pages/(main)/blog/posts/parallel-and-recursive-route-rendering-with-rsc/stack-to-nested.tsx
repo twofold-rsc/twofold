@@ -154,7 +154,7 @@ export function StackToNested() {
                             duration: 0.4,
                             ease: "linear",
                           }}
-                          animate={step === 4 ? "on" : undefined}
+                          {...(step === 4 ? { animate: "on" } : {})}
                           onAnimationComplete={() => {
                             if (step === 4) {
                               setTimeout(() => {
@@ -187,7 +187,7 @@ export function StackToNested() {
                         duration: 0.4,
                         ease: "linear",
                       }}
-                      animate={step === 2 ? "on" : undefined}
+                      {...(step === 2 ? { animate: "on" } : {})}
                       onAnimationComplete={() => {
                         if (step === 2) {
                           setTimeout(() => {
@@ -219,8 +219,8 @@ function Tag({
   ...rest
 }: {
   text: string;
-  className?: string;
-  indent?: number;
+  className?: string | undefined;
+  indent?: number | undefined;
 } & HTMLMotionProps<"pre">) {
   let output = `${" ".repeat(indent * 2)}${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
 
