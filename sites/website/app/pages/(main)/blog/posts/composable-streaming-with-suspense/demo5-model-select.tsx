@@ -10,9 +10,11 @@ import {
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import { Model } from "./models";
+import invariant from "tiny-invariant";
 
 export function Demo5ModelSelect({ models }: { models: Model[] }) {
   const [selectedModel, setSelectedModel] = useState(models[0]);
+  invariant(selectedModel);
 
   return (
     <Listbox value={selectedModel} onChange={setSelectedModel}>

@@ -15,6 +15,7 @@ import {
 import Spinner from "@/app/components/spinner";
 import clsx from "clsx";
 import Link from "@twofold/framework/link";
+import invariant from "tiny-invariant";
 
 export function DemoApp() {
   return (
@@ -105,7 +106,9 @@ function getPosts() {
     let cookie = cookies.get("route-rendering-posts");
     let raw = cookie ? JSON.parse(cookie) : defaultPosts;
     let parsed = z.array(postSchema).safeParse(raw);
-    return parsed.success ? parsed.data : defaultPosts;
+    return parsed.success && parsed.data.length > 0
+      ? parsed.data
+      : defaultPosts;
   } catch {
     return defaultPosts;
   }
@@ -238,6 +241,7 @@ async function EditPost({
   await new Promise((resolve) => setTimeout(resolve, delay));
 
   let defaultPostId = getPosts()[0]?.id;
+  invariant(defaultPostId);
   let postId = pageContext.searchParams.get("postId") ?? defaultPostId;
   let post = getPostById(postId);
 
