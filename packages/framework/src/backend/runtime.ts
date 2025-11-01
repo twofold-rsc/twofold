@@ -126,7 +126,9 @@ export class Runtime {
     data: any,
     options: { temporaryReferences?: unknown } = {},
   ) {
-    let clientComponentMap = this.build.getBuilder("client").clientComponentMap;
+    // let clientComponentMap = this.build.getBuilder("client").clientComponentMap;
+    let clientComponentMap =
+      this.build.getBuilder("client-rolldown").clientComponentMap;
     let streamError: unknown;
 
     let rscStream = renderToReadableStream(data, clientComponentMap, {
@@ -281,7 +283,9 @@ export class Runtime {
 
   private async createSSRWorker() {
     if (!this.build.error) {
-      let bootstrapPath = this.build.getBuilder("client").bootstrapPath;
+      // let bootstrapPath = this.build.getBuilder("client").bootstrapPath;
+      let bootstrapPath =
+        this.build.getBuilder("client-rolldown").bootstrapPath;
       let bootstrapFile = path.basename(bootstrapPath);
       let bootstrapUrl = `/__tf/assets/entries/${bootstrapFile}`;
       let workerUrl = new URL("./ssr/worker.js", import.meta.url);
@@ -289,9 +293,12 @@ export class Runtime {
       this.#ssrWorker = new Worker(workerUrl, {
         workerData: {
           bootstrapUrl,
-          appPath: this.build.getBuilder("client").SSRAppPath,
+          // appPath: this.build.getBuilder("client").SSRAppPath,
+          appPath: this.build.getBuilder("client-rolldown").SSRAppPath,
+          // clientComponentModuleMap:
+          //   this.build.getBuilder("client").clientComponentModuleMap,
           clientComponentModuleMap:
-            this.build.getBuilder("client").clientComponentModuleMap,
+            this.build.getBuilder("client-rolldown").clientComponentModuleMap,
         },
         execArgv: ["-C", "default"],
         env: {

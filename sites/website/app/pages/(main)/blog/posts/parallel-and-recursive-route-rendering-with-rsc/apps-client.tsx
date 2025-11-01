@@ -14,7 +14,7 @@ import { useFormStatus } from "react-dom";
 import { Browser } from "../../components/browser";
 import { AnimatePresence, motion } from "motion/react";
 import { useFlash } from "@twofold/framework/flash";
-import z from "zod";
+import * as z from "zod";
 import { useRouter } from "@twofold/framework/use-router";
 import { Arrow } from "../../components/arrows";
 

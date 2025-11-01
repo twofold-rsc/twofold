@@ -2,7 +2,7 @@
 
 import cookies from "@twofold/framework/cookies";
 import { redirect } from "@twofold/framework/redirect";
-import { z } from "zod";
+import * as z from "zod";
 
 export async function login(formData: FormData) {
   await new Promise((resolve) => setTimeout(resolve, 750));

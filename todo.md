@@ -1,8 +1,25 @@
 # TODO
 
+- finish rolldown builder
+- dev reload and hmr tests
 - run through
 
+- prod build
+- test prod error
+
+- website
+- page speed tests
+
+- client app as single chunk
+- server app as chunk (will import client app)
+
+- run through
+
+- deploy website
+
 - release
+
+- can the toast system accept mini schemas
 
 - bug: start kitchen, goto url, exit kitchen start base. get strange error when base tries to push a reload to kitchen app
 

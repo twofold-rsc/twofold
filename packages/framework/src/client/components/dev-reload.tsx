@@ -2,7 +2,7 @@
 
 import { startTransition, useEffect, useRef, useState } from "react";
 import { useRouter } from "../hooks/use-router";
-import z from "zod";
+import * as z from "zod";
 
 declare global {
   interface Window {

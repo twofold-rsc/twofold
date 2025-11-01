@@ -157,7 +157,7 @@ On the client, a schema ensures only specific messages are returned:
 "use client";
 
 import { useFlash } from "@twofold/framework/flash";
-import z from "zod";
+import * as z from "zod";
 
 export function SuccessMessages() {
   let { messages } = useFlash({

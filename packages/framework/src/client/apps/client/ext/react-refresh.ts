@@ -1,7 +1,6 @@
 // this file shouldn't end up in prod builds
-/* eslint-disable */
 
-// @ts-ignore
+// @ts-expect-error no types
 import RefreshRuntime from "react-refresh/runtime";
 
 declare global {
@@ -26,7 +25,7 @@ if (process.env.NODE_ENV !== "production") {
       30,
     );
 
-    // @ts-ignore
+    // @ts-expect-error setup by refresh
     window.$RefreshRuntime$.injectIntoGlobalHook(window);
     window.$RefreshReg$ = () => {};
     window.$RefreshSig$ = () => (type: string) => type;

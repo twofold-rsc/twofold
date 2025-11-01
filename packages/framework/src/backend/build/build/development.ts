@@ -11,6 +11,7 @@ import { RSCSnapshot } from "../snapshots/rsc-snapshot.js";
 import { CSSSnapshot } from "../snapshots/css-snapshot.js";
 import { Build } from "./build.js";
 import { AssetsBuilder } from "../builders/assets-builder.js";
+import { ClientAppRolldownBuilder } from "../builders/client-app-rolldown-builder.js";
 
 export class DevelopmentBuild extends Build {
   readonly name = "development";
@@ -36,6 +37,11 @@ export class DevelopmentBuild extends Build {
       build: this,
       entriesBuilder,
     });
+
+    let clientAppRolldownBuilder = new ClientAppRolldownBuilder({
+      build: this,
+      entriesBuilder,
+    });
     let serverFilesBuilder = new ServerFilesBuilder({
       build: this,
     });
@@ -48,6 +54,7 @@ export class DevelopmentBuild extends Build {
     this.addBuilder(errorPageBuilder);
     this.addBuilder(rscBuilder);
     this.addBuilder(clientAppBuilder);
+    this.addBuilder(clientAppRolldownBuilder);
     this.addBuilder(serverFilesBuilder);
     this.addBuilder(staticFilesBuilder);
     this.addBuilder(assetsBuilder);
@@ -58,9 +65,13 @@ export class DevelopmentBuild extends Build {
     return await this.createNewBuild(async () => {
       if (!this.error) {
         this.#clientComponentMapSnapshot.take(
-          this.getBuilder("client").clientComponentMap
+          // this.getBuilder("client").clientComponentMap,
+          this.getBuilder("client-rolldown").clientComponentMap,
         );
-        this.#clientChunksSnapshot.take(this.getBuilder("client").chunks);
+        // this.#clientChunksSnapshot.take(this.getBuilder("client").chunks);
+        this.#clientChunksSnapshot.take(
+          this.getBuilder("client-rolldown").chunks,
+        );
         this.#rscSnapshot.take(this.getBuilder("rsc").files);
         this.#cssSnapshot.take(this.getBuilder("rsc").files);
       }
@@ -91,11 +102,13 @@ export class DevelopmentBuild extends Build {
       // above happened to error
       if (!firstPhaseError) {
         let rscBuild = this.getBuilder("rsc").build();
-        let clientBuild = this.getBuilder("client").build();
+        // let clientBuild = this.getBuilder("client").build();
+        let clientRolldownBuild = this.getBuilder("client-rolldown").build();
 
         let appTime = time("app build");
         appTime.start();
-        await Promise.all([clientBuild, rscBuild]);
+        // await Promise.all([clientBuild, rscBuild]);
+        await Promise.all([clientRolldownBuild, rscBuild]);
         appTime.end();
         // appTime.log();
       }
@@ -121,10 +134,14 @@ export class DevelopmentBuild extends Build {
     }
 
     this.#clientComponentMapSnapshot.latest(
-      this.getBuilder("client").clientComponentMap
+      // this.getBuilder("client").clientComponentMap,
+      this.getBuilder("client-rolldown").clientComponentMap,
     );
 
-    this.#clientChunksSnapshot.latest(this.getBuilder("client").chunks);
+    this.#clientChunksSnapshot.latest(
+      // this.getBuilder("client").chunks
+      this.getBuilder("client-rolldown").chunks,
+    );
 
     this.#rscSnapshot.latest(this.getBuilder("rsc").files);
 

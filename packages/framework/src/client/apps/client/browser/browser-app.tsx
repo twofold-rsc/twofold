@@ -35,7 +35,7 @@ export function BrowserApp() {
   );
 }
 
-let origin = window.location.origin;
+let origin = typeof window !== "undefined" ? window.location.origin : "";
 
 function Router() {
   let [routerState, dispatch] = useRouterReducer();
