@@ -6,6 +6,7 @@ import { time } from "../helpers/time.js";
 import { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import { Build } from "./build.js";
 import { AssetsBuilder } from "../builders/assets-builder.js";
+import { ClientAppRolldownBuilder } from "../builders/client-app-rolldown-builder.js";
 
 export class ProductionBuild extends Build {
   readonly name = "production";
@@ -25,6 +26,10 @@ export class ProductionBuild extends Build {
       build: this,
       entriesBuilder,
     });
+    let clientAppRolldownBuilder = new ClientAppRolldownBuilder({
+      build: this,
+      entriesBuilder,
+    });
     let serverFilesBuilder = new ServerFilesBuilder({
       build: this,
     });
@@ -36,6 +41,7 @@ export class ProductionBuild extends Build {
     this.addBuilder(entriesBuilder);
     this.addBuilder(rscBuilder);
     this.addBuilder(clientAppBuilder);
+    this.addBuilder(clientAppRolldownBuilder);
     this.addBuilder(serverFilesBuilder);
     this.addBuilder(staticFilesBuilder);
     this.addBuilder(assetsBuilder);
@@ -60,17 +66,19 @@ export class ProductionBuild extends Build {
 
       if (!firstPassError) {
         let rscBuild = this.getBuilder("rsc").build();
-        let clientBuild = this.getBuilder("client").build();
+        // let clientBuild = this.getBuilder("client").build();
+        let clientRolldownBuild = this.getBuilder("client-rolldown").build();
 
         let appTime = time("app build");
         appTime.start();
-        await Promise.all([clientBuild, rscBuild]);
+        await Promise.all([clientRolldownBuild, rscBuild]);
         appTime.end();
         // appTime.log();
       }
 
       let secondPhaseError =
-        this.getBuilder("rsc").error || this.getBuilder("client").error;
+        this.getBuilder("rsc").error ||
+        this.getBuilder("client-rolldown").error;
 
       if (!secondPhaseError) {
         let assetsBuild = this.getBuilder("assets").build();

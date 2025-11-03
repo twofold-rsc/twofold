@@ -1,25 +1,33 @@
 # TODO
 
-- finish rolldown builder
-- dev reload and hmr tests
 - run through
-
-- prod build
-- test prod error
 
 - website
 - page speed tests
+
+- deploy website
+
+- cleanup old client bundler
+
+- merge
 
 - client app as single chunk
 - server app as chunk (will import client app)
 
 - run through
 
+- base app
+
+- website
 - deploy website
 
 - release
 
 - can the toast system accept mini schemas
+
+- see if you can avoid the facade modules, the map should have enough to link actual chunk outputs. see: preserveEntrySignature
+
+- bug: prod error html does not handle back button correctly
 
 - bug: start kitchen, goto url, exit kitchen start base. get strange error when base tries to push a reload to kitchen app
 

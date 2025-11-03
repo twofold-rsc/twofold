@@ -14,12 +14,6 @@ import { fileURLToEscapedPath, hashFile } from "../helpers/file.js";
 import { transform } from "esbuild";
 import { transformAsync } from "@babel/core";
 
-// TODO: excluded files?
-
-// TODO: [\\/] in path ids? i think so need to test windows
-
-type Output = OutputAsset | OutputChunk;
-
 export class ClientAppRolldownBuilder extends Builder {
   readonly name = "client-rolldown";
 
@@ -95,20 +89,26 @@ export class ClientAppRolldownBuilder extends Builder {
 
     const result = await build({
       // platform: "browser",
+      tsconfig: "./tsconfig.json",
       input: [
         ...this.clientEntryPoints,
         this.initializeBrowserPath,
         this.srcSSRAppPath,
       ],
+      transform: {
+        define: {
+          "process.env.NODE_ENV": `"${this.#env}"`,
+        },
+      },
       // logLevel: "error",
       treeshake: true,
       plugins: [
-        // TODO: PROD ERROR HTML
+        this.#env === "production" ? createProdErrorHtmlPlugin() : null,
         {
           name: "server-actions",
           transform: {
             filter: {
-              id: /^(?!.*react-server-dom-webpack\/.*\/react-server-dom-webpack-client\.(edge|browser)\..*\.js$).*\.(js|ts|jsx|tsx|mjs)$/,
+              id: /^(?!.*react-server-dom-webpack[\\/].*[\\/]react-server-dom-webpack-client\.(edge|browser)\..*\.js$).*\.(js|ts|jsx|tsx|mjs)$/,
               code: /["']use server["']/,
               moduleType: ["ts", "tsx", "js", "jsx"],
             },
@@ -171,13 +171,11 @@ export class ClientAppRolldownBuilder extends Builder {
           name: "react-refresh-ext-loader",
           load: {
             filter: {
-              id: path.join(
-                fileURLToPath(frameworkSrcDir),
-                "client",
-                "apps",
-                "client",
-                "ext",
-                "react-refresh.ts",
+              id: fileURLToPath(
+                new URL(
+                  "./client/apps/client/ext/react-refresh.ts",
+                  frameworkSrcDir,
+                ),
               ),
             },
             handler() {
@@ -260,9 +258,7 @@ export class ClientAppRolldownBuilder extends Builder {
       },
     });
 
-    // TODO: clean output
-
-    this.#outputs = result.output;
+    this.#outputs = trimRolldownOutput(result.output);
 
     // write result output to disk
     await writeFile(
@@ -273,9 +269,17 @@ export class ClientAppRolldownBuilder extends Builder {
 
   async stop() {}
 
-  async serialize() {}
+  serialize() {
+    return {
+      outputs: this.#outputs,
+      imagesMap: Object.fromEntries(this.#imagesMap.entries()),
+    };
+  }
 
-  async load() {}
+  load(data: any) {
+    this.#outputs = data.outputs;
+    this.#imagesMap = new Map(Object.entries(data.imagesMap));
+  }
 
   warm() {}
 
@@ -300,7 +304,7 @@ export class ClientAppRolldownBuilder extends Builder {
 
   get bootstrapPath() {
     if (!this.#outputs) {
-      throw new Error("Outputs missing");
+      throw new Error("Chunks missing");
     }
 
     return getCompiledEntrypoint(this.#outputs, this.initializeBrowserPath);
@@ -308,7 +312,7 @@ export class ClientAppRolldownBuilder extends Builder {
 
   get SSRAppPath() {
     if (!this.#outputs) {
-      throw new Error("Outputs missing");
+      throw new Error("Chunks missing");
     }
 
     return getCompiledEntrypoint(this.#outputs, this.srcSSRAppPath);
@@ -381,7 +385,7 @@ export class ClientAppRolldownBuilder extends Builder {
 
     for (let clientComponent of clientComponents) {
       let { moduleId } = clientComponent;
-      let chunk = getChunk(this.#outputs, clientComponent.path);
+      let chunk = getOutput(this.#outputs, clientComponent.path);
       let fileName = chunk.fileName;
       let name = getNameFromChunkFileName(fileName);
       let hash = getHashFromChunkFileName(fileName);
@@ -457,16 +461,30 @@ export class ClientAppRolldownBuilder extends Builder {
   }
 }
 
-function getChunk(outputs: Output[], id: string) {
-  let chunk = outputs.find(
-    (o) => o.type === "chunk" && o.facadeModuleId === id,
-  );
+type Output = {
+  fileName: OutputChunk["fileName"];
+  facadeModuleId: OutputChunk["facadeModuleId"];
+  exports: OutputChunk["exports"];
+};
 
-  if (!chunk || chunk.type !== "chunk") {
+function trimRolldownOutput(outputs: (OutputChunk | OutputAsset)[]): Output[] {
+  return outputs
+    .filter((o) => o.type === "chunk")
+    .map((o) => ({
+      fileName: o.fileName,
+      facadeModuleId: o.facadeModuleId,
+      exports: o.exports,
+    }));
+}
+
+function getOutput(outputs: Output[], id: string): Output {
+  let output = outputs.find((o) => o.facadeModuleId === id);
+
+  if (!output) {
     throw new Error(`Failed to get chunk from id: ${id}`);
   }
 
-  return chunk;
+  return output;
 }
 
 function getNameFromChunkFileName(fileName: string) {
@@ -484,11 +502,39 @@ function getHashFromChunkFileName(fileName: string) {
 }
 
 function getCompiledEntrypoint(outputs: Output[], id: string) {
-  let chunk = getChunk(outputs, id);
+  let chunk = getOutput(outputs, id);
   let baseUrl = new URL("./client-app-rolldown/", appCompiledDir);
   let basePath = fileURLToPath(baseUrl);
 
   return path.join(basePath, chunk.fileName);
+}
+
+// prod error html
+
+function createProdErrorHtmlPlugin(): Plugin {
+  return {
+    name: "prod-error-html",
+    async options(options) {
+      let errorHtml = await readFile(
+        new URL("./server-files/error.html", appCompiledDir),
+        "utf-8",
+      );
+
+      let encodedHtml = JSON.stringify(errorHtml);
+      let currentTransform = options.transform ?? {};
+      let currentDefine = currentTransform.define ?? {};
+
+      options.transform = {
+        ...currentTransform,
+        define: {
+          ...currentDefine,
+          "process.env.TWOFOLD_PROD_ERROR_HTML": encodedHtml,
+        },
+      };
+
+      return options;
+    },
+  };
 }
 
 // images plugin
@@ -603,27 +649,27 @@ function createReactBabelPlugin({
                   .replace(/\.(tsx|jsx|js|jsx)$/, "");
 
                 let start = `
-            let prevRefreshReg = undefined;
-            let prevRefreshSig = undefined;
-            if (typeof window !== 'undefined') {
-              prevRefreshReg = window.$RefreshReg$;
-              prevRefreshSig = window.$RefreshSig$;
-              window.$RefreshReg$ = (type, refreshId) => {
-                let registerId = \`${encodeURIComponent(
-                  moduleName,
-                )} \${refreshId}\`;
-                window.$RefreshRuntime$.register(type, registerId);
-              };
-              window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
-            }
-          `;
+                  let prevRefreshReg = undefined;
+                  let prevRefreshSig = undefined;
+                  if (typeof window !== 'undefined') {
+                    prevRefreshReg = window.$RefreshReg$;
+                    prevRefreshSig = window.$RefreshSig$;
+                    window.$RefreshReg$ = (type, refreshId) => {
+                      let registerId = \`${encodeURIComponent(
+                        moduleName,
+                      )} \${refreshId}\`;
+                      window.$RefreshRuntime$.register(type, registerId);
+                    };
+                    window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
+                  }
+                `;
 
                 let end = `
-            if (typeof window !== 'undefined') {
-              window.$RefreshReg$ = prevRefreshReg;
-              window.$RefreshSig$ = prevRefreshSig;
-            }
-          `;
+                  if (typeof window !== 'undefined') {
+                    window.$RefreshReg$ = prevRefreshReg;
+                    window.$RefreshSig$ = prevRefreshSig;
+                  }
+                `;
                 newCode = `${start}\n${newCode}\n${end}`;
               }
 
