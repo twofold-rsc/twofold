@@ -100,7 +100,7 @@ export abstract class Build {
   getBuilder(name: "entries"): EntriesBuilder;
   getBuilder(name: "dev-error-page"): DevErrorPageBuilder;
   getBuilder(name: "rsc"): RSCBuilder;
-  getBuilder(name: "client"): ClientAppBuilder;
+  // getBuilder(name: "client"): ClientAppBuilder;
   getBuilder(name: "client-rolldown"): ClientAppRolldownBuilder;
   getBuilder(name: "static-files"): StaticFilesBuilder;
   getBuilder(name: "server-files"): ServerFilesBuilder;

@@ -15,6 +15,11 @@ declare global {
 
 let messagesSchema = z.discriminatedUnion("type", [
   z.object({
+    type: z.literal("error"),
+    key: z.string(),
+    message: z.string(),
+  }),
+  z.object({
     type: z.literal("welcome"),
     key: z.string(),
   }),
@@ -41,6 +46,7 @@ let messagesSchema = z.discriminatedUnion("type", [
 
 type Message = z.infer<typeof messagesSchema>;
 type ChangesMessage = Extract<Message, { type: "changes" }>;
+type ErrorMessage = Extract<Message, { type: "error" }>;
 type WelcomeMessage = Extract<Message, { type: "welcome" }>;
 
 export default function DevReload() {
@@ -68,6 +74,14 @@ export default function DevReload() {
         key.current = message.key;
         refresh();
       }
+    }
+
+    async function handleError(message: ErrorMessage) {
+      key.current = message.key;
+
+      startTransition(async () => {
+        refresh();
+      });
     }
 
     async function handleChanges(message: ChangesMessage) {
@@ -125,14 +139,16 @@ export default function DevReload() {
 
       let message = result.data;
 
-      if (message.type === "changes") {
+      if (message.type === "error") {
+        handleError(message);
+      } else if (message.type === "changes") {
         handleChanges(message);
       } else if (message.type === "welcome") {
         handleWelcome(message);
       }
     };
 
-    eventSource.onerror = (error) => {
+    eventSource.onerror = (_error) => {
       // ignore
     };
 

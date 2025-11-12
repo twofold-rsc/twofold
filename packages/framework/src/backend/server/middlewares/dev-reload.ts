@@ -31,12 +31,17 @@ export function devReload(build: DevelopmentBuild): RouteHandler {
           }
 
           onBuildComplete = () => {
-            let payload = {
-              type: "changes",
-              key: build.key,
-              changes: build.changes,
-            };
-            // console.log(payload);
+            let payload = build.error
+              ? {
+                  type: "error",
+                  key: build.key,
+                  message: build.error.message,
+                }
+              : {
+                  type: "changes",
+                  key: build.key,
+                  changes: build.changes,
+                };
             sink.sendMessage(JSON.stringify(payload));
           };
 

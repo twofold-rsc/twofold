@@ -1,11 +1,9 @@
 # TODO
 
-- run through
-
-- website
-- page speed tests
-
 - deploy website
+- page speed tests website
+
+- try base app
 
 - cleanup old client bundler
 
@@ -16,10 +14,7 @@
 
 - run through
 
-- base app
-
-- website
-- deploy website
+- update deps
 
 - release
 
@@ -27,20 +22,15 @@
 
 - see if you can avoid the facade modules, the map should have enough to link actual chunk outputs. see: preserveEntrySignature
 
-- bug: prod error html does not handle back button correctly
-
-- bug: start kitchen, goto url, exit kitchen start base. get strange error when base tries to push a reload to kitchen app
+- bug: error html does not handle back button correctly
+- verify this in prod too
 
 - focus homepage button
 
 - build/test kitchen sink in prod
 - Run through windows
 
-- release
-
 - find mem leak (script it)
-
-- dev reload with build error (syntax error)
 
 - cloudflare uses zstd compression on text/x-component, which causes buffering of the response
   one way to fix is using the cache control no transform header. maybe we enable that in dev

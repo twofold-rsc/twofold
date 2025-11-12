@@ -114,7 +114,8 @@ export class DevelopmentBuild extends Build {
       }
 
       let secondPhaseError =
-        this.getBuilder("rsc").error || this.getBuilder("client").error;
+        this.getBuilder("rsc").error ||
+        this.getBuilder("client-rolldown").error;
 
       if (!firstPhaseError && !secondPhaseError) {
         let assetsBuild = this.getBuilder("assets").build();

@@ -59,7 +59,8 @@ export class AssetsBuilder extends Builder {
     ];
     let images = [
       ...build.getBuilder("rsc").imagesMap.values(),
-      ...build.getBuilder("client").imagesMap.values(),
+      // ...build.getBuilder("client").imagesMap.values(),
+      ...build.getBuilder("client-rolldown").imagesMap.values(),
     ];
     let fonts = [...build.getBuilder("rsc").fontsMap.values()];
 

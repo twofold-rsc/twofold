@@ -76,7 +76,7 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
                 <div className="pointer-events-none absolute inset-0 rounded-full ring ring-black/5 ring-inset" />
               </div>
               <div>
-                <div className="font-semibold">Ryan Toronto</div>
+                <div className="font-bold">Ryan Toronto</div>
                 {meta.publishedAt && (
                   <div className="text-sm text-gray-500">
                     {" "}

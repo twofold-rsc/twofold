@@ -10,12 +10,12 @@
     U+2215, U+FEFF, U+FFFD;
 }
 
-.inter-font {
-  font-family: "Inter", sans-serif;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-variation-settings: "slnt" 0;
-}
+/* .inter-font { */
+/*   font-family: "Inter", sans-serif; */
+/*   font-optical-sizing: auto; */
+/*   font-style: normal; */
+/*   font-variation-settings: "slnt" 0; */
+/* } */
 
 @font-face {
   font-family: "Merriweather";
@@ -56,12 +56,12 @@
     U+2215, U+FEFF, U+FFFD;
 }
 
-.merriweather-font {
-  font-family: "Merriweather", serif;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-}
+/* .merriweather-font { */
+/*   font-family: "Merriweather", serif; */
+/*   font-optical-sizing: auto; */
+/*   font-style: normal; */
+/*   font-variation-settings: "wdth" 100; */
+/* } */
 
 /* latin */
 @font-face {
@@ -76,8 +76,8 @@
     U+2215, U+FEFF, U+FFFD;
 }
 
-.gochi-hand-regular {
-  font-family: "Gochi Hand", cursive;
-  font-weight: 400;
-  font-style: normal;
-}
+/* .gochi-hand-regular { */
+/*   font-family: "Gochi Hand", cursive; */
+/*   font-weight: 400; */
+/*   font-style: normal; */
+/* } */
