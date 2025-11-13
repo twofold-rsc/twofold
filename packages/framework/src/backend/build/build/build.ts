@@ -6,14 +6,13 @@ import { EntriesBuilder } from "../builders/entries-builder.js";
 import { StaticFilesBuilder } from "../builders/static-files-builder.js";
 import { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import { RSCBuilder } from "../builders/rsc-builder.js";
-import { ClientAppBuilder } from "../builders/client-app-builder.js";
 import { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
 import { createJiti } from "jiti";
 import { time } from "../helpers/time.js";
 import EventEmitter from "events";
 import * as z from "zod";
 import { AssetsBuilder } from "../builders/assets-builder.js";
-import { ClientAppRolldownBuilder } from "../builders/client-app-rolldown-builder.js";
+import { ClientBuilder } from "../builders/client-builder.js";
 
 let jiti = createJiti(import.meta.url, {
   debug: false,
@@ -100,8 +99,7 @@ export abstract class Build {
   getBuilder(name: "entries"): EntriesBuilder;
   getBuilder(name: "dev-error-page"): DevErrorPageBuilder;
   getBuilder(name: "rsc"): RSCBuilder;
-  // getBuilder(name: "client"): ClientAppBuilder;
-  getBuilder(name: "client-rolldown"): ClientAppRolldownBuilder;
+  getBuilder(name: "client"): ClientBuilder;
   getBuilder(name: "static-files"): StaticFilesBuilder;
   getBuilder(name: "server-files"): ServerFilesBuilder;
   getBuilder(name: "assets"): AssetsBuilder;

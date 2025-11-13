@@ -47,20 +47,16 @@ export class AssetsBuilder extends Builder {
   async build() {
     let build = this.#build;
     let rscCss = this.#build.getBuilder("rsc").css;
-    // let clientAppChunks = this.#build.getBuilder("client").chunks;
-    let clientAppChunks = this.#build.getBuilder("client-rolldown").chunks;
+    let clientAppChunks = this.#build.getBuilder("client").chunks;
     let clientAppEntries = [
       ...Object.values(
-        // this.#build.getBuilder("client").clientComponentModuleMap,
-        this.#build.getBuilder("client-rolldown").clientComponentModuleMap,
+        this.#build.getBuilder("client").clientComponentModuleMap,
       ).map((c) => c.path),
-      // this.#build.getBuilder("client").bootstrapPath,
-      this.#build.getBuilder("client-rolldown").bootstrapPath,
+      this.#build.getBuilder("client").bootstrapPath,
     ];
     let images = [
       ...build.getBuilder("rsc").imagesMap.values(),
-      // ...build.getBuilder("client").imagesMap.values(),
-      ...build.getBuilder("client-rolldown").imagesMap.values(),
+      ...build.getBuilder("client").imagesMap.values(),
     ];
     let fonts = [...build.getBuilder("rsc").fontsMap.values()];
 

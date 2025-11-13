@@ -1,7 +1,6 @@
 import { Plugin } from "esbuild";
 import path from "path";
 import * as mime from "mime-types";
-import { ClientAppBuilder } from "../builders/client-app-builder.js";
 import { RSCBuilder } from "../builders/rsc-builder.js";
 import { hashFile } from "../helpers/file.js";
 
@@ -15,7 +14,7 @@ export function imagesPlugin({
   builder,
   prefixPath,
 }: {
-  builder: RSCBuilder | ClientAppBuilder;
+  builder: RSCBuilder;
   prefixPath: string;
 }): Plugin {
   return {

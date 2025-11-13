@@ -1,12 +1,5 @@
 # TODO
 
-- deploy website
-- page speed tests website
-
-- try base app
-
-- cleanup old client bundler
-
 - merge
 
 - client app as single chunk
@@ -17,6 +10,7 @@
 - update deps
 
 - release
+- release create app (only built deps)
 
 - can the toast system accept mini schemas
 

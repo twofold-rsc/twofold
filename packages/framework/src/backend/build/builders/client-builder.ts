@@ -14,8 +14,8 @@ import { fileURLToEscapedPath, hashFile } from "../helpers/file.js";
 import { transform } from "esbuild";
 import { transformAsync } from "@babel/core";
 
-export class ClientAppRolldownBuilder extends Builder {
-  readonly name = "client-rolldown";
+export class ClientBuilder extends Builder {
+  readonly name = "client";
 
   #build: Build;
   #entriesBuilder: EntriesBuilder;
