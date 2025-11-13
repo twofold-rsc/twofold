@@ -144,7 +144,18 @@ export function EnterDocsLink({
   }
 
   return (
-    <Link onClick={handleClick} {...rest} href={href}>
+    <Link
+      onClick={handleClick}
+      {...rest}
+      href={href}
+      ref={(el) => {
+        if (el && el.getAttribute("data-focus")) {
+          el.focus();
+          el.removeAttribute("data-focus");
+        }
+        return () => {};
+      }}
+    >
       {children}
     </Link>
   );
