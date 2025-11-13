@@ -4,7 +4,7 @@ import { useFlash } from "@twofold/framework/flash";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import * as RadixToast from "@radix-ui/react-toast";
 import { AnimatePresence, motion } from "motion/react";
-import { z } from "zod";
+import * as z from "zod";
 
 export function Toaster() {
   let { messagesWithId, removeMessageById } = useFlash({

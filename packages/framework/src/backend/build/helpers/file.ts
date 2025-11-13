@@ -1,5 +1,6 @@
 import { PathLike, createReadStream } from "fs";
 import { readFile, stat } from "fs/promises";
+import { fileURLToPath } from "url";
 import xxhash from "xxhash-wasm";
 
 export async function readFirstNBytes(path: PathLike, n: number) {
@@ -24,4 +25,10 @@ export async function hashFile(path: string) {
   let buffer = await readFile(path);
   let hash = h64Raw(buffer);
   return hash.toString(16);
+}
+
+export function fileURLToEscapedPath(url: URL) {
+  let urlToPath = fileURLToPath(url);
+  let escaped = urlToPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return escaped;
 }

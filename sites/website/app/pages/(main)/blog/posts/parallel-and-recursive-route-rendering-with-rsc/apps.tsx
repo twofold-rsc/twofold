@@ -3,7 +3,7 @@ import AlicePhoto from "./alice.avif";
 import cookies from "@twofold/framework/cookies";
 import pageContext from "@twofold/framework/context/page";
 import { flash } from "@twofold/framework/flash";
-import z from "zod";
+import * as z from "zod";
 import {
   DemoBrowser,
   StackedBrowser,

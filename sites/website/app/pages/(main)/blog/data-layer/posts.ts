@@ -3,7 +3,7 @@ import { notFound } from "@twofold/framework/not-found";
 import { readdir, readFile } from "fs/promises";
 import path from "path";
 import { cache, ComponentType } from "react";
-import { z } from "zod";
+import * as z from "zod";
 import yaml from "js-yaml";
 import slugify from "@sindresorhus/slugify";
 import * as PromisePost from "../posts/you-can-serialize-a-promise-in-react/components";

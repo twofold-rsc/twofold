@@ -2,9 +2,9 @@ import "client-only";
 
 import { use, useEffect, useRef } from "react";
 import { FlashContext, JSONValue, Message } from "../components/flash-provider";
-import { z, ZodType } from "zod";
+import * as z from "zod";
 
-type ZodTypeAny = ZodType<any, any, any>;
+type ZodTypeAny = z.ZodType<any, any, any>;
 
 type Result<T = JSONValue> = {
   messagesWithId: Message<T>[];
@@ -20,13 +20,13 @@ export function useFlash(options?: Options): Result<JSONValue>;
 export function useFlash<T extends ZodTypeAny>(
   options: Options & {
     schema?: T;
-  }
+  },
 ): Result<z.infer<T>>;
 
 export function useFlash<T extends ZodTypeAny>(
   options?: Options & {
     schema?: T;
-  }
+  },
 ): Result {
   let schema = options?.schema;
   let clearAfter = options?.clearAfter;
@@ -44,7 +44,7 @@ export function useFlash<T extends ZodTypeAny>(
   let messages = parsedMessagesWithId.map(({ content }) => content);
 
   let scheduledRemovals = useRef<{ timeoutId: NodeJS.Timeout; id: string }[]>(
-    []
+    [],
   );
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export function useFlash<T extends ZodTypeAny>(
       if (!isScheduled) {
         let timeoutId = setTimeout(() => {
           scheduledRemovals.current = scheduledRemovals.current.filter(
-            (r) => r.id !== id
+            (r) => r.id !== id,
           );
           removeMessageById(id);
         }, 5000);

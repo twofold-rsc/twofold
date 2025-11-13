@@ -1,7 +1,7 @@
 "use client";
 
 import { useFlash } from "@twofold/framework/flash";
-import { z } from "zod";
+import * as z from "zod";
 
 export function ObjectFlash({ action }: { action: () => void }) {
   let { messages } = useFlash({

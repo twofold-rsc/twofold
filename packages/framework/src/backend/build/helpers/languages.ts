@@ -1,5 +1,5 @@
 import path from "path";
-import { z } from "zod";
+import * as z from "zod";
 
 let languageSchema = z.union([
   z.literal("ts"),
@@ -28,7 +28,7 @@ export function pathToLanguage(filePath: string) {
   let extension = path.extname(filePath).slice(1);
   let scopedExtension = fileExtensionSchema.parse(extension);
   let language = languageSchema.parse(
-    fileExtensionToLanguageMap[scopedExtension]
+    fileExtensionToLanguageMap[scopedExtension],
   );
 
   return language;

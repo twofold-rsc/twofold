@@ -380,6 +380,12 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
 }
 
 async function getInitialRouterState() {
+  if (typeof window === "undefined") {
+    throw new Error(
+      "Tried to load router-hooks in a non-browser environment. This is a bug in Twofold.",
+    );
+  }
+
   let initialPath = `${location.pathname}${location.search}${location.hash}`;
   let cache = new Map<string, RouteStackEntry[]>();
   let path = initialPath;

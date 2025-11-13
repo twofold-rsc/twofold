@@ -244,7 +244,7 @@ async function main() {
 
   if (packageManager === "pnpm") {
     let contents = {
-      onlyBuiltDependencies: ["@tailwindcss/oxide", "esbuild"],
+      onlyBuiltDependencies: ["@tailwindcss/oxide", "esbuild", "rolldown"],
     };
     await writeFile(
       new URL("./pnpm-workspace.yaml", appUrl),

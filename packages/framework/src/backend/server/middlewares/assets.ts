@@ -23,7 +23,7 @@ export function assets(build: Build): RouteHandler {
 
       if (asset) {
         let encodings = parseHeaderValue(
-          request.headers.get("accept-encoding")
+          request.headers.get("accept-encoding"),
         );
         let acceptsBr = encodings.find((e) => e.value === "br");
         let file =

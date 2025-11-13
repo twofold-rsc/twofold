@@ -1,4 +1,4 @@
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 export const cwd = process.cwd();
 

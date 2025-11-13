@@ -1,4 +1,3 @@
-import { ClientAppBuilder } from "../builders/client-app-builder.js";
 import { RSCBuilder } from "../builders/rsc-builder.js";
 import { StaticFilesBuilder } from "../builders/static-files-builder.js";
 import { EntriesBuilder } from "../builders/entries-builder.js";
@@ -6,6 +5,7 @@ import { time } from "../helpers/time.js";
 import { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import { Build } from "./build.js";
 import { AssetsBuilder } from "../builders/assets-builder.js";
+import { ClientBuilder } from "../builders/client-builder.js";
 
 export class ProductionBuild extends Build {
   readonly name = "production";
@@ -21,7 +21,7 @@ export class ProductionBuild extends Build {
       build: this,
       entriesBuilder,
     });
-    let clientAppBuilder = new ClientAppBuilder({
+    let clientBuilder = new ClientBuilder({
       build: this,
       entriesBuilder,
     });
@@ -35,7 +35,7 @@ export class ProductionBuild extends Build {
 
     this.addBuilder(entriesBuilder);
     this.addBuilder(rscBuilder);
-    this.addBuilder(clientAppBuilder);
+    this.addBuilder(clientBuilder);
     this.addBuilder(serverFilesBuilder);
     this.addBuilder(staticFilesBuilder);
     this.addBuilder(assetsBuilder);

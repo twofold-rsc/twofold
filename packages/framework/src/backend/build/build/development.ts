@@ -1,4 +1,3 @@
-import { ClientAppBuilder } from "../builders/client-app-builder.js";
 import { RSCBuilder } from "../builders/rsc-builder.js";
 import { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
 import { StaticFilesBuilder } from "../builders/static-files-builder.js";
@@ -11,6 +10,7 @@ import { RSCSnapshot } from "../snapshots/rsc-snapshot.js";
 import { CSSSnapshot } from "../snapshots/css-snapshot.js";
 import { Build } from "./build.js";
 import { AssetsBuilder } from "../builders/assets-builder.js";
+import { ClientBuilder } from "../builders/client-builder.js";
 
 export class DevelopmentBuild extends Build {
   readonly name = "development";
@@ -32,7 +32,8 @@ export class DevelopmentBuild extends Build {
       build: this,
       entriesBuilder,
     });
-    let clientAppBuilder = new ClientAppBuilder({
+
+    let clientBuilder = new ClientBuilder({
       build: this,
       entriesBuilder,
     });
@@ -47,7 +48,7 @@ export class DevelopmentBuild extends Build {
     this.addBuilder(entriesBuilder);
     this.addBuilder(errorPageBuilder);
     this.addBuilder(rscBuilder);
-    this.addBuilder(clientAppBuilder);
+    this.addBuilder(clientBuilder);
     this.addBuilder(serverFilesBuilder);
     this.addBuilder(staticFilesBuilder);
     this.addBuilder(assetsBuilder);
@@ -58,7 +59,7 @@ export class DevelopmentBuild extends Build {
     return await this.createNewBuild(async () => {
       if (!this.error) {
         this.#clientComponentMapSnapshot.take(
-          this.getBuilder("client").clientComponentMap
+          this.getBuilder("client").clientComponentMap,
         );
         this.#clientChunksSnapshot.take(this.getBuilder("client").chunks);
         this.#rscSnapshot.take(this.getBuilder("rsc").files);
@@ -121,7 +122,7 @@ export class DevelopmentBuild extends Build {
     }
 
     this.#clientComponentMapSnapshot.latest(
-      this.getBuilder("client").clientComponentMap
+      this.getBuilder("client").clientComponentMap,
     );
 
     this.#clientChunksSnapshot.latest(this.getBuilder("client").chunks);
