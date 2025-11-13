@@ -1,7 +1,5 @@
 import { ReactNode } from "react";
 import MerriweatherFont from "@/public/fonts/merriweather-latin-regular.woff2";
-import Merriweather700Font from "@/public/fonts/merriweather-latin-700.woff2";
-import MerriweatherItalicFont from "@/public/fonts/merriweather-latin-italic.woff2";
 
 export default function BlogLayout({ children }: { children: ReactNode }) {
   return (
@@ -9,20 +7,6 @@ export default function BlogLayout({ children }: { children: ReactNode }) {
       <link
         rel="preload"
         href={MerriweatherFont}
-        as="font"
-        type="font/woff2"
-        crossOrigin="anonymous"
-      />
-      <link
-        rel="preload"
-        href={MerriweatherItalicFont}
-        as="font"
-        type="font/woff2"
-        crossOrigin="anonymous"
-      />
-      <link
-        rel="preload"
-        href={Merriweather700Font}
         as="font"
         type="font/woff2"
         crossOrigin="anonymous"

@@ -8,6 +8,8 @@ import ryanPicture from "./images/ryan.avif";
 import { XTwitterIcon } from "@/app/icons/x-twitter";
 import { BlueskyIcon } from "@/app/icons/bluesky";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
+import Merriweather700Font from "@/public/fonts/merriweather-latin-700.woff2";
+import MerriweatherItalicFont from "@/public/fonts/merriweather-latin-italic.woff2";
 
 export default async function PostPage({ params, request }: PageProps<"slug">) {
   let slug = params.slug;
@@ -36,6 +38,21 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={meta.description} />
       <meta name="twitter:image" content={ogImageUrl.href} />
+
+      <link
+        rel="preload"
+        href={MerriweatherItalicFont}
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+      <link
+        rel="preload"
+        href={Merriweather700Font}
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
 
       <link
         rel="canonical"
