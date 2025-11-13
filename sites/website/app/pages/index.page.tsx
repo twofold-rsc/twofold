@@ -1,5 +1,6 @@
 import { PageProps } from "@twofold/framework/types";
 import { EnterDocsLink } from "./enter-docs";
+import clsx from "clsx";
 
 export default async function Page({ request }: PageProps) {
   let rows = 25;
@@ -55,7 +56,14 @@ export default async function Page({ request }: PageProps) {
             <div className="mt-6">
               <EnterDocsLink
                 href="/docs/guides/getting-started"
-                className="inline-flex items-center space-x-2 rounded-md bg-blue-600 px-6 py-3 text-xl font-semibold text-white shadow hover:bg-blue-700"
+                className={clsx(
+                  "inline-flex items-center space-x-2 rounded-md bg-blue-600 px-6 py-3 text-xl font-semibold text-white shadow transition-colors",
+                  "hover:bg-blue-700 hover:ring-blue-700",
+                  "ring-blue-600 ring-offset-[2.5px] focus:outline-none",
+                  "ring-3 md:ring-0",
+                  "md:focus:ring-3 md:data-[focus]:ring-3",
+                )}
+                data-focus={true}
               >
                 <span>Get started</span>
               </EnterDocsLink>
@@ -64,32 +72,5 @@ export default async function Page({ request }: PageProps) {
         </div>
       </div>
     </>
-  );
-}
-
-function GridLines({
-  rows,
-  cols,
-  color,
-}: {
-  rows: number;
-  cols: number;
-  color: "blue" | "gray";
-}) {
-  let grid = new Array(rows).fill(0).map((_, i) => new Array(cols).fill(false));
-
-  let colors = {
-    blue: "bg-blue-100",
-    gray: "bg-gray-100",
-  };
-
-  return (
-    <div
-      className={`absolute inset-0 z-0 grid grid-cols-[repeat(25,_minmax(0,_1fr))] gap-px ${colors[color]} p-px`}
-    >
-      {grid.map((row, i) =>
-        row.map((_, j) => <div key={`${i}_${j}`} className="bg-white"></div>),
-      )}
-    </div>
   );
 }

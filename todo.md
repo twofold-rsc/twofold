@@ -1,7 +1,5 @@
 # TODO
 
-- merge
-
 - client app as single chunk
 - server app as chunk (will import client app)
 
@@ -12,16 +10,13 @@
 - release
 - release create app (only built deps)
 
+- use node version of rsdw
+- how can we bundle rsdw?
+
 - can the toast system accept mini schemas
 
 - see if you can avoid the facade modules, the map should have enough to link actual chunk outputs. see: preserveEntrySignature
 
-- bug: error html does not handle back button correctly
-- verify this in prod too
-
-- focus homepage button
-
-- build/test kitchen sink in prod
 - Run through windows
 
 - find mem leak (script it)
