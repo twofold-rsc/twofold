@@ -1,5 +1,5 @@
 import "../ext/react-refresh";
-import { use, createElement } from "react";
+import { use, createElement, Suspense } from "react";
 import { renderToReadableStream } from "react-dom/server.edge";
 // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client.edge'.
 import { createFromReadableStream } from "react-server-dom-webpack/client.edge";

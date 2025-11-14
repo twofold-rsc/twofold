@@ -210,7 +210,45 @@ export class ClientBuilder extends Builder {
               name: "react-vendor",
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-refresh|react-server-dom-webpack)[\\/](?!.*(server|edge))/,
               priority: 999,
-              minShareCount: 2,
+              // minShareCount: 2,
+            },
+            // {
+            //   name: "client-app",
+            //   test: new RegExp(
+            //     `^${fileURLToEscapedPath(
+            //       new URL("./client/apps/client", frameworkSrcDir),
+            //     )}`,
+            //   ),
+            //   priority: 990,
+            //   minShareCount: 2,
+            // },
+            {
+              name: "client-browser-app",
+              test: new RegExp(
+                `^${fileURLToEscapedPath(
+                  new URL("./client/apps/client/browser/", frameworkSrcDir),
+                )}`,
+              ),
+              priority: 990,
+              // minShareCount: 2,
+            },
+            {
+              name: "client-ssr-app",
+              test: new RegExp(
+                `^${fileURLToEscapedPath(
+                  new URL("./client/apps/client/ssr/", frameworkSrcDir),
+                )}`,
+              ),
+              priority: 980,
+              // minShareCount: 2,
+            },
+            {
+              name: "twofold-client-pieces",
+              test: new RegExp(
+                `^${fileURLToEscapedPath(new URL("./client/", frameworkSrcDir))}(components|hooks|actions)[\\/]`,
+              ),
+              priority: 970,
+              // minShareCount: 2,
             },
             {
               name: (id) => {
@@ -222,7 +260,7 @@ export class ClientBuilder extends Builder {
                 return `vendor-${pkg}`;
               },
               test: /[\\/]node_modules[\\/]/,
-              priority: 990,
+              priority: 970,
               minSize: 15 * 1024,
               minShareCount: 2,
               // maxSize: 200 * 1024,
@@ -233,24 +271,6 @@ export class ClientBuilder extends Builder {
               priority: 900,
               minSize: 0,
               maxSize: 220 * 1024,
-              minShareCount: 2,
-            },
-            {
-              name: "client-app",
-              test: new RegExp(
-                `^${fileURLToEscapedPath(
-                  new URL("./client/apps/client", frameworkSrcDir),
-                )}`,
-              ),
-              priority: 899,
-              minShareCount: 2,
-            },
-            {
-              name: "twofold-client-pieces",
-              test: new RegExp(
-                `^${fileURLToEscapedPath(new URL("./client/", frameworkSrcDir))}(components|hooks|actions)[\\/]`,
-              ),
-              priority: 890,
               minShareCount: 2,
             },
           ],

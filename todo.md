@@ -3,6 +3,14 @@
 - client app as single chunk
 - server app as chunk (will import client app)
 
+- inline stream (see contexts/stream) needs to only be rendered in ssr
+- inline stream no longer needs to be in twofoldframework
+- add context dir to twofold pieces
+
+- merge
+
+- app setup issues
+
 - run through
 
 - update deps
@@ -16,6 +24,8 @@
 - can the toast system accept mini schemas
 
 - see if you can avoid the facade modules, the map should have enough to link actual chunk outputs. see: preserveEntrySignature
+
+- can we drop twofoldframework component. only thing is assets
 
 - Run through windows
 
