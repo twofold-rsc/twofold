@@ -4,7 +4,7 @@ import { renderToReadableStream } from "react-dom/server.edge";
 // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client.edge'.
 import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
 import { RoutingContext } from "../contexts/routing-context";
-import { StreamContext } from "../contexts/stream-context";
+import { InlineRSCStream } from "../components/inline-rsc-stream";
 import { RouteStackEntry, RouteStack } from "../contexts/route-stack-context";
 
 export function SSRApp({
@@ -36,22 +36,24 @@ export function SSRApp({
   let routeStack = use(routeStackPromise);
 
   return (
-    <RoutingContext
-      path={url.pathname}
-      mask={undefined}
-      searchParams={url.searchParams}
-      optimisticPath={url.pathname}
-      optimisticSearchParams={url.searchParams}
-      isTransitioning={false}
-      navigate={navigate}
-      replace={replace}
-      refresh={refresh}
-      notFound={notFound}
-    >
-      <StreamContext reader={rscStreamReader}>
+    <>
+      <RoutingContext
+        path={url.pathname}
+        mask={undefined}
+        searchParams={url.searchParams}
+        optimisticPath={url.pathname}
+        optimisticSearchParams={url.searchParams}
+        isTransitioning={false}
+        navigate={navigate}
+        replace={replace}
+        refresh={refresh}
+        notFound={notFound}
+      >
         <RouteStack stack={routeStack} />
-      </StreamContext>
-    </RoutingContext>
+      </RoutingContext>
+
+      <InlineRSCStream reader={rscStreamReader} />
+    </>
   );
 }
 

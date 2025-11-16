@@ -12,6 +12,7 @@ export function assets(build: Build): RouteHandler {
     build.name === "production"
       ? "public, max-age=31536000, immutable"
       : "no-store, no-cache, must-revalidate, proxy-revalidate";
+  // : "public, max-age=300, immutable";
 
   let allowedMethods = ["GET", "HEAD"];
 

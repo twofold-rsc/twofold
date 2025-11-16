@@ -10,9 +10,11 @@ function main() {
       document,
       <StrictMode>
         <BrowserApp />
-      </StrictMode>
+      </StrictMode>,
     );
   });
 }
 
-main();
+if (typeof window !== "undefined") {
+  main();
+}

@@ -1,11 +1,10 @@
-"use client";
+import { ReactNode, Component, Suspense } from "react";
 
-import { Component, ReactNode, Suspense, useContext } from "react";
-import { Context } from "../apps/client/contexts/stream-context";
-
-export default function InlineRSCStream() {
-  let reader = useContext(Context);
-
+export function InlineRSCStream({
+  reader,
+}: {
+  reader?: ReadableStreamDefaultReader<Uint8Array>;
+}) {
   if (!reader) {
     return null;
   }
