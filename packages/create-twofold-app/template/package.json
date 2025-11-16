@@ -18,9 +18,11 @@
   },
   "dependencies": {
     "@twofold/framework": "workspace:*",
+    "client-only": "^0.0.1",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-server-dom-webpack": "catalog:",
+    "server-only": "^0.0.1",
     "tailwindcss": "^4.1.14",
     "zod": "4.1.11"
   },

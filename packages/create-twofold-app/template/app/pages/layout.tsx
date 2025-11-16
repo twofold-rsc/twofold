@@ -1,6 +1,7 @@
 import TwofoldFramework from "@twofold/framework/twofold-framework";
+import InterFont from "@/public/fonts/inter-var-latin.woff2";
+import { Toaster } from "@/app/components/toaster";
 import { LayoutProps } from "@twofold/framework/types";
-import { Toaster } from "../components/toaster";
 import "./global.css";
 
 export default function Layout({ children }: LayoutProps) {
@@ -10,9 +11,18 @@ export default function Layout({ children }: LayoutProps) {
         <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta charSet="utf-8" />
+        <link
+          rel="preload"
+          href={InterFont}
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
       </head>
-      <body className="relative min-h-dvh">
-        <main className="mx-auto max-w-7xl grow px-4 py-8">{children}</main>
+      <body className="relative antialiased">
+        <main className="mx-auto flex min-h-dvh max-w-7xl grow flex-col p-6">
+          {children}
+        </main>
 
         <Toaster />
       </body>

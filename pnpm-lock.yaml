@@ -47,6 +47,9 @@ importers:
       '@twofold/framework':
         specifier: workspace:*
         version: link:../../packages/framework
+      client-only:
+        specifier: ^0.0.1
+        version: 0.0.1
       react:
         specifier: 'catalog:'
         version: 19.2.0
@@ -56,6 +59,9 @@ importers:
       react-server-dom-webpack:
         specifier: 'catalog:'
         version: 19.2.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(webpack@5.96.1)
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
       tailwindcss:
         specifier: ^4.1.14
         version: 4.1.14
