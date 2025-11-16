@@ -1,7 +1,5 @@
 # TODO
 
-- merge
-
 - app setup issues
 
 - run through
