@@ -87,6 +87,9 @@ export class ClientBuilder extends Builder {
       this.#env === "development" && process.env.NODE_ENV !== "production";
     let compilerEnabled = appConfig.reactCompiler ?? false;
 
+    // route chunks
+    let appAppPath = fileURLToPath(appAppDir);
+
     const result = await build({
       // platform: "browser",
       tsconfig: "./tsconfig.json",
@@ -102,6 +105,7 @@ export class ClientBuilder extends Builder {
       },
       // logLevel: "error",
       treeshake: true,
+      preserveEntrySignatures: "allow-extension",
       plugins: [
         this.#env === "production" ? createProdErrorHtmlPlugin() : null,
         {
@@ -196,7 +200,7 @@ export class ClientBuilder extends Builder {
       ],
 
       output: {
-        dir: "./.twofold/client-app-rolldown/",
+        dir: "./.twofold/client/",
         hashCharacters: "base36",
         entryFileNames: "entries/[name]-[hash].js",
         chunkFileNames: "chunks/chunk-[hash].js",
@@ -212,16 +216,6 @@ export class ClientBuilder extends Builder {
               priority: 999,
               // minShareCount: 2,
             },
-            // {
-            //   name: "client-app",
-            //   test: new RegExp(
-            //     `^${fileURLToEscapedPath(
-            //       new URL("./client/apps/client", frameworkSrcDir),
-            //     )}`,
-            //   ),
-            //   priority: 990,
-            //   minShareCount: 2,
-            // },
             {
               name: "client-browser-app",
               test: new RegExp(
@@ -230,7 +224,6 @@ export class ClientBuilder extends Builder {
                 )}`,
               ),
               priority: 990,
-              // minShareCount: 2,
             },
             {
               name: "client-ssr-app",
@@ -240,17 +233,18 @@ export class ClientBuilder extends Builder {
                 )}`,
               ),
               priority: 980,
-              // minShareCount: 2,
             },
             {
               name: "twofold-client-pieces",
               test: new RegExp(
-                `^${fileURLToEscapedPath(new URL("./client/", frameworkSrcDir))}(components|hooks|actions)[\\/]`,
+                `^${fileURLToEscapedPath(new URL("./client/", frameworkSrcDir))}(components|hooks|actions|contexts)[\\/]`,
               ),
               priority: 970,
-              // minShareCount: 2,
+              minShareCount: 2,
             },
             {
+              // vendor libs get their own chunk for now
+              // eventually move to hash bucket approach?
               name: (id) => {
                 let modulePath = id.split(/[\\/]node_modules[\\/]/).at(-1);
                 if (!modulePath) return null;
@@ -263,15 +257,61 @@ export class ClientBuilder extends Builder {
               priority: 970,
               minSize: 15 * 1024,
               minShareCount: 2,
+              // i want this, but it causes some circular dep/import issues rn
               // maxSize: 200 * 1024,
             },
             {
               name: "vendor-small",
               test: /[\\/]node_modules[\\/]/,
-              priority: 900,
+              priority: 960,
               minSize: 0,
               maxSize: 220 * 1024,
               minShareCount: 2,
+            },
+            {
+              // splitting for shared components under app/
+              name: (id) => {
+                // if the module id is in a single directory under app, then
+                // we chunk by the directory name + filename, otherwise we chunk
+                // by the directory name.
+                //
+                // example:
+                //   components/spinner.tsx => components/spinner
+                //   components/dropdown/menu.tsx => components/dropdown
+                let dir = dirname(id);
+                let relativeDirPath = dir.substring(appAppPath.length);
+                let extension = path.extname(id);
+                let relativeFilePath = id
+                  .substring(appAppPath.length)
+                  .slice(0, -extension.length);
+
+                let name = relativeDirPath.match(/[\\/]/)
+                  ? relativeDirPath
+                  : relativeFilePath;
+
+                return name;
+              },
+              test: new RegExp(`^${fileURLToEscapedPath(appAppDir)}`),
+              priority: 890,
+              minSize: 0,
+              minShareCount: 2,
+              // would be good but need to figure out circular deps comment above
+              // maxSize: 220 * 1024,
+            },
+            {
+              // route splitting for components under app/pages/
+              name: (id) => {
+                let dir = dirname(id);
+                let relativeDirPath = dir.substring(appAppPath.length);
+                return relativeDirPath;
+              },
+              test: new RegExp(
+                `^${fileURLToEscapedPath(new URL("./pages/", appAppDir))}`,
+              ),
+              priority: 880,
+              minSize: 0,
+              // would be good but need to figure out circular deps comment above
+              // maxSize: 220 * 1024,
             },
           ],
         },
@@ -279,12 +319,6 @@ export class ClientBuilder extends Builder {
     });
 
     this.#outputs = trimRolldownOutput(result.output);
-
-    // write result output to disk
-    await writeFile(
-      "./.twofold/debug-output.json",
-      JSON.stringify(result.output, null, 2),
-    );
   }
 
   async stop() {}
@@ -475,7 +509,7 @@ export class ClientBuilder extends Builder {
       return {
         hash,
         file,
-        path: path.join(appCompiledPath, "client-app-rolldown", chunk.fileName),
+        path: path.join(appCompiledPath, "client", chunk.fileName),
       };
     });
   }
@@ -523,7 +557,7 @@ function getHashFromChunkFileName(fileName: string) {
 
 function getCompiledEntrypoint(outputs: Output[], id: string) {
   let chunk = getOutput(outputs, id);
-  let baseUrl = new URL("./client-app-rolldown/", appCompiledDir);
+  let baseUrl = new URL("./client/", appCompiledDir);
   let basePath = fileURLToPath(baseUrl);
 
   return path.join(basePath, chunk.fileName);

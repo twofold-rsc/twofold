@@ -1,19 +1,10 @@
 # TODO
 
-- client app as single chunk
-- server app as chunk (will import client app)
-
-- inline stream (see contexts/stream) needs to only be rendered in ssr
-- inline stream no longer needs to be in twofoldframework
-- add context dir to twofold pieces
-
 - merge
 
 - app setup issues
 
 - run through
-
-- update deps
 
 - release
 - release create app (only built deps)
@@ -23,9 +14,9 @@
 
 - can the toast system accept mini schemas
 
-- see if you can avoid the facade modules, the map should have enough to link actual chunk outputs. see: preserveEntrySignature
-
 - can we drop twofoldframework component. only thing is assets
+
+- see if we can avoid rolldown facades. might need to open issue about finding a moduleId's exports in a chunk
 
 - Run through windows
 
@@ -47,7 +38,7 @@
 - simplify return types (get rid of serialized error and offsite redirect)
 - a good test for this is that mpa mode works with actions that throw errors
 
-- add cache support to the build, explore rolldown
+- add cache support to build, rolldown might do this in the future
 
 - newsletter signup (after 3 posts)
 

@@ -1,29 +1,10 @@
-import { ReactNode, createContext } from "react";
-import { Component, Suspense, useContext } from "react";
+import { ReactNode, Component, Suspense } from "react";
 
-export const Context =
-  createContext<ReadableStreamDefaultReader<Uint8Array> | null>(null);
-
-export function StreamContext({
+export function InlineRSCStream({
   reader,
-  children,
 }: {
-  reader: ReadableStreamDefaultReader<Uint8Array>;
-  children: ReactNode;
+  reader?: ReadableStreamDefaultReader<Uint8Array>;
 }) {
-  return (
-    <Context value={reader}>
-      {children}
-      <InlineRSCStream />
-    </Context>
-  );
-}
-
-// TEST
-
-export default function InlineRSCStream() {
-  let reader = useContext(Context);
-
   if (!reader) {
     return null;
   }

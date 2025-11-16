@@ -11,6 +11,7 @@ import { useRouterReducer } from "./router-hooks";
 import { ErrorBoundary } from "../components/error-boundary";
 import { CrashBoundary } from "../components/crash-boundary";
 import { RouteStack, RouteStackEntry } from "../contexts/route-stack-context";
+import { InlineRSCStream } from "../components/inline-rsc-stream";
 
 declare global {
   interface Window {
@@ -262,6 +263,12 @@ function Router() {
       >
         <RouteStack stack={stack} />
       </RoutingContext>
+
+      {/*
+        This doesnt do anything, but its needed to match the shape
+        of the SSR app.
+      */}
+      <InlineRSCStream />
     </ErrorBoundary>
   );
 }
