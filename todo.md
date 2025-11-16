@@ -1,9 +1,5 @@
 # TODO
 
-- app setup issues
-
-- run through
-
 - release
 - release create app (only built deps)
 
@@ -13,6 +9,7 @@
 - can the toast system accept mini schemas
 
 - can we drop twofoldframework component. only thing is assets
+- idea would be to import/render link tag for assets, which i like
 
 - see if we can avoid rolldown facades. might need to open issue about finding a moduleId's exports in a chunk
 
