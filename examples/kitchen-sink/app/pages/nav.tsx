@@ -383,6 +383,11 @@ export default function Nav() {
                         href="/error-handling/ssr"
                       />
                       <ExampleLink
+                        title="Middleware errors"
+                        description="Errors that happen during middleware execution."
+                        href="/error-handling/middleware"
+                      />
+                      <ExampleLink
                         title="Boundary"
                         description="Add a custom error boundary to your app."
                         href="/error-handling/boundary"
