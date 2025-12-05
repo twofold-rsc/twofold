@@ -38,7 +38,7 @@ export function errors(build: Build): RouteHandler {
               },
             ],
           },
-          {}
+          {},
         );
         return new Response(stream, {
           status,

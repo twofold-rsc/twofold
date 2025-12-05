@@ -11,7 +11,6 @@ export class DevErrorPageBuilder extends Builder {
 
   #metafile?: Metafile | undefined;
   #context?: BuildContext;
-  #rebuild = false;
 
   async setup() {
     this.#context = await context({
@@ -35,7 +34,7 @@ export class DevErrorPageBuilder extends Builder {
   }
 
   async build() {
-    let shouldBuild = this.#rebuild || !this.#metafile;
+    let shouldBuild = !this.#metafile;
 
     if (shouldBuild) {
       this.#metafile = undefined;
@@ -45,6 +44,7 @@ export class DevErrorPageBuilder extends Builder {
   }
 
   async stop() {
+    this.#metafile = undefined;
     await this.#context?.dispose();
   }
 
