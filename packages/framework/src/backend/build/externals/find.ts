@@ -6,7 +6,7 @@ import { fileExists } from "../helpers/file.js";
 
 let require = createRequire(import.meta.url);
 
-export async function scan(root: URL, ignore: string[]) {
+export async function findExternals(root: URL, ignore: string[]) {
   let dependencies = await getAppDependencies(root);
   let ignoredPackages = new Set([
     ...ignore,

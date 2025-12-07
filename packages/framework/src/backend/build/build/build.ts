@@ -2,7 +2,6 @@ import { randomBytes } from "crypto";
 import { Builder } from "../builders/builder.js";
 import { appCompiledDir, appConfigDir } from "../../files.js";
 import { readFile, rm, writeFile } from "fs/promises";
-import { EntriesBuilder } from "../builders/entries-builder.js";
 import { StaticFilesBuilder } from "../builders/static-files-builder.js";
 import { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import { RSCBuilder } from "../builders/rsc-builder.js";
@@ -13,6 +12,7 @@ import EventEmitter from "events";
 import * as z from "zod";
 import { AssetsBuilder } from "../builders/assets-builder.js";
 import { ClientBuilder } from "../builders/client-builder.js";
+import { EntriesBuilder } from "../builders/entries-builder.js";
 
 let jiti = createJiti(import.meta.url, {
   debug: false,
