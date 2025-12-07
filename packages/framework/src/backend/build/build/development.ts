@@ -67,6 +67,15 @@ export class DevelopmentBuild extends Build {
       }
 
       let entriesBuild = this.getBuilder("entries").build();
+
+      // about 250ms
+      // TODO: remove
+      // let entriesTime = time("entries");
+      // entriesTime.start();
+      // await entriesBuild;
+      // entriesTime.end();
+      // entriesTime.log();
+
       let errorPageBuild = this.getBuilder("dev-error-page").build();
       let serverFilesBuild = this.getBuilder("server-files").build();
       let staticFilesBuild = this.getBuilder("static-files").build();

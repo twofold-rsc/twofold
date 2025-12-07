@@ -101,7 +101,7 @@
     "minimatch": "^10.0.3",
     "picomatch": "^4.0.3",
     "react-refresh": "^0.18.0",
-    "rolldown": "1.0.0-beta.45",
+    "rolldown": "1.0.0-beta.53",
     "serialize-error": "^12.0.0",
     "server-only": "^0.0.1",
     "urlpattern-polyfill": "10.1.0",

@@ -8,7 +8,6 @@ import {
 } from "../../files.js";
 import { clientComponentProxyPlugin } from "../plugins/client-component-proxy-plugin.js";
 import { serverActionsPlugin } from "../plugins/server-actions-plugin.js";
-import { externalPackages } from "../packages.js";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
 import { EntriesBuilder } from "./entries-builder.js";
 import path from "path";
@@ -22,6 +21,7 @@ import { API } from "../rsc/api.js";
 import { esbuildPluginTailwind } from "@ryanto/esbuild-plugin-tailwind";
 import { Image, imagesPlugin } from "../plugins/images-plugin.js";
 import { Font, fontsPlugin } from "../plugins/fonts-plugin.js";
+import { excludePackages } from "../externals/predefined-externals.js";
 
 export type CompiledAction = {
   id: string;
@@ -95,6 +95,8 @@ export class RSCBuilder extends Builder {
       let userDefinedExternalPackages = appConfig.externalPackages ?? [];
       let discoveredExternals = this.#entriesBuilder.discoveredExternals;
 
+      // console.log("externals", externals);
+
       let result = await build({
         bundle: true,
         format: "esm",
@@ -115,7 +117,7 @@ export class RSCBuilder extends Builder {
         outbase: "app",
         entryNames: "[ext]/[name]-[hash]",
         external: [
-          ...externalPackages,
+          ...excludePackages,
           ...userDefinedExternalPackages,
           ...discoveredExternals,
         ],

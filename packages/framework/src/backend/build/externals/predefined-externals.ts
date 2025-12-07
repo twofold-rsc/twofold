@@ -1,4 +1,4 @@
-export const externalPackages = [
+export const excludePackages = [
   // common and no need to bundle in rsc
   "react",
   "react-dom",

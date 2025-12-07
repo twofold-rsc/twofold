@@ -5,7 +5,7 @@ import { Builder } from "./builder.js";
 import { EntriesBuilder } from "./entries-builder.js";
 import { build, OutputAsset, OutputChunk, Plugin } from "rolldown";
 import path, { dirname, relative, sep } from "path";
-import { writeFile, readFile } from "fs/promises";
+import { readFile } from "fs/promises";
 import { transform as serverFunctionTransform } from "@twofold/server-function-transforms";
 import { pathToLanguage } from "../helpers/languages.js";
 import { getModuleId } from "../helpers/module.js";
@@ -92,7 +92,7 @@ export class ClientBuilder extends Builder {
 
     const result = await build({
       // platform: "browser",
-      tsconfig: "./tsconfig.json",
+      tsconfig: true,
       input: [
         ...this.clientEntryPoints,
         this.initializeBrowserPath,

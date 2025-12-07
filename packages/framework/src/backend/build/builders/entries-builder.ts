@@ -1,12 +1,10 @@
-import { externalPackages } from "../packages.js";
 import { BuildContext, context } from "esbuild";
 import { readFile } from "fs/promises";
-import { frameworkSrcDir } from "../../files.js";
+import { cwdUrl, frameworkSrcDir } from "../../files.js";
 import { fileURLToPath } from "url";
 import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";
 import { getModuleId } from "../helpers/module.js";
-import { externalsPlugin } from "../plugins/externals-plugin.js";
 import { check as checkClientModule } from "@twofold/client-component-transforms";
 import { check as checkServerModule } from "@twofold/server-function-transforms";
 import { pathToLanguage } from "../helpers/languages.js";
@@ -14,6 +12,8 @@ import {
   shouldIgnoreUseClient,
   shouldIgnoreUseServer,
 } from "../helpers/excluded.js";
+import { scan } from "../externals/scan.js";
+import { excludePackages } from "../externals/predefined-externals.js";
 
 type Entry = {
   moduleId: string;
@@ -31,7 +31,7 @@ export class EntriesBuilder extends Builder {
 
   #clientComponentEntryMap = new Map<string, Entry>();
   #serverActionEntryMap = new Map<string, Entry>();
-  #discoveredExternals = new Set<string>();
+  #discoveredExternals: string[] = [];
 
   constructor({ build }: { build: Build }) {
     super();
@@ -61,6 +61,9 @@ export class EntriesBuilder extends Builder {
     let appConfig = await this.#build.getAppConfig();
     let userDefinedExternalPackages = appConfig.externalPackages ?? [];
 
+    const discoveredExternals = await scan(cwdUrl, userDefinedExternalPackages);
+    this.#discoveredExternals = discoveredExternals;
+
     let builder = this;
     this.#context = await context({
       entryPoints: [
@@ -88,14 +91,12 @@ export class EntriesBuilder extends Builder {
         ".svg": "empty",
         ".woff2": "empty",
       },
-      external: [...externalPackages, ...userDefinedExternalPackages],
+      external: [
+        ...excludePackages,
+        ...userDefinedExternalPackages,
+        ...discoveredExternals,
+      ],
       plugins: [
-        externalsPlugin({
-          userDefinedExternalPackages: userDefinedExternalPackages,
-          onEnd: (discoveredExternals) => {
-            builder.#discoveredExternals = discoveredExternals;
-          },
-        }),
         {
           name: "find-entry-points-plugin",
           setup(build) {
@@ -159,7 +160,6 @@ export class EntriesBuilder extends Builder {
 
     this.#clientComponentEntryMap = new Map();
     this.#serverActionEntryMap = new Map();
-    this.#discoveredExternals = new Set();
 
     this.clearError();
 
@@ -183,7 +183,7 @@ export class EntriesBuilder extends Builder {
       serverActionEntryMap: Object.fromEntries(
         this.#serverActionEntryMap.entries(),
       ),
-      discoveredExternals: Array.from(this.#discoveredExternals),
+      discoveredExternals: this.#discoveredExternals,
     };
   }
 
@@ -194,7 +194,7 @@ export class EntriesBuilder extends Builder {
     this.#serverActionEntryMap = new Map(
       Object.entries(data.serverActionEntryMap),
     );
-    this.#discoveredExternals = new Set(data.discoveredExternals);
+    this.#discoveredExternals = data.discoveredExternals;
   }
 
   warm() {}
