@@ -8,9 +8,7 @@ import {
 } from "../../files.js";
 import { clientComponentProxyPlugin } from "../plugins/client-component-proxy-plugin.js";
 import { serverActionsPlugin } from "../plugins/server-actions-plugin.js";
-import { externalPackages } from "../packages.js";
 import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
-import { EntriesBuilder } from "./entries-builder.js";
 import path from "path";
 import { Page } from "../rsc/page.js";
 import { Wrapper } from "../rsc/wrapper.js";
@@ -22,6 +20,8 @@ import { API } from "../rsc/api.js";
 import { esbuildPluginTailwind } from "@ryanto/esbuild-plugin-tailwind";
 import { Image, imagesPlugin } from "../plugins/images-plugin.js";
 import { Font, fontsPlugin } from "../plugins/fonts-plugin.js";
+import { excludePackages } from "../externals/predefined-externals.js";
+import { EntriesBuilder } from "./entries-builder.js";
 
 export type CompiledAction = {
   id: string;
@@ -115,7 +115,7 @@ export class RSCBuilder extends Builder {
         outbase: "app",
         entryNames: "[ext]/[name]-[hash]",
         external: [
-          ...externalPackages,
+          ...excludePackages,
           ...userDefinedExternalPackages,
           ...discoveredExternals,
         ],

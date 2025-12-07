@@ -2,10 +2,9 @@ import { fileURLToPath } from "url";
 import { appAppDir, appCompiledDir, frameworkSrcDir } from "../../files.js";
 import { Build } from "../build/build.js";
 import { Builder } from "./builder.js";
-import { EntriesBuilder } from "./entries-builder.js";
 import { build, OutputAsset, OutputChunk, Plugin } from "rolldown";
 import path, { dirname, relative, sep } from "path";
-import { writeFile, readFile } from "fs/promises";
+import { readFile } from "fs/promises";
 import { transform as serverFunctionTransform } from "@twofold/server-function-transforms";
 import { pathToLanguage } from "../helpers/languages.js";
 import { getModuleId } from "../helpers/module.js";
@@ -13,6 +12,7 @@ import * as mime from "mime-types";
 import { fileURLToEscapedPath, hashFile } from "../helpers/file.js";
 import { transform } from "esbuild";
 import { transformAsync } from "@babel/core";
+import { EntriesBuilder } from "./entries-builder.js";
 
 export class ClientBuilder extends Builder {
   readonly name = "client";
@@ -90,235 +90,254 @@ export class ClientBuilder extends Builder {
     // route chunks
     let appAppPath = fileURLToPath(appAppDir);
 
-    const result = await build({
-      // platform: "browser",
-      tsconfig: "./tsconfig.json",
-      input: [
-        ...this.clientEntryPoints,
-        this.initializeBrowserPath,
-        this.srcSSRAppPath,
-      ],
-      transform: {
-        define: {
-          "process.env.NODE_ENV": `"${this.#env}"`,
-        },
-      },
-      // logLevel: "error",
-      treeshake: true,
-      preserveEntrySignatures: "allow-extension",
-      plugins: [
-        this.#env === "production" ? createProdErrorHtmlPlugin() : null,
-        {
-          name: "server-actions",
-          transform: {
-            filter: {
-              id: /^(?!.*react-server-dom-webpack[\\/].*[\\/]react-server-dom-webpack-client\.(edge|browser)\..*\.js$).*\.(js|ts|jsx|tsx|mjs)$/,
-              code: /["']use server["']/,
-              moduleType: ["ts", "tsx", "js", "jsx"],
-            },
-            async handler(code, id) {
-              let moduleId = getModuleId(id);
-              let language = pathToLanguage(id);
-              let path = id;
-
-              let dir = dirname(path);
-              let relativeCallServerPath = relative(dir, callServerPath);
-              let callServerImportPath = relativeCallServerPath
-                .split(sep)
-                .join("/")
-                .replace(/\.ts$/, "");
-
-              let transformed = await serverFunctionTransform({
-                input: {
-                  code,
-                  language,
-                },
-                moduleId,
-                client: {
-                  callServerModule: callServerImportPath,
-                },
-              });
-
-              let hasServerFunctions = transformed.serverFunctions.length > 0;
-              return hasServerFunctions
-                ? {
-                    code: transformed.code,
-                    moduleType: "js",
-                  }
-                : null;
-            },
+    try {
+      let result = await build({
+        // platform: "browser",
+        tsconfig: true,
+        input: [
+          ...this.clientEntryPoints,
+          this.initializeBrowserPath,
+          this.srcSSRAppPath,
+        ],
+        transform: {
+          define: {
+            "process.env.NODE_ENV": `"${this.#env}"`,
           },
         },
+        onLog(_level, log) {
+          // Rolldown will treat some errors (like module not found) as warnings.
+          // The idea is that if rolldown can't resolve the module it will treat it
+          // as a global and let the runtime try to resolve it. From our point of view
+          // this is a bug in the app and we need to stop the build and tell the user.
+          //
+          // Right now it's hard to stop the build when this happens, the best way
+          // to do this today is hook into the logs and throw if you see an unresolved
+          // import error.
+          if (log.code === "UNRESOLVED_IMPORT") {
+            throw new Error(
+              `Could not resolve import "${log.exporter}" in ${log.id}`,
+            );
+          }
+        },
+        treeshake: true,
+        preserveEntrySignatures: "allow-extension",
+        plugins: [
+          this.#env === "production" ? createProdErrorHtmlPlugin() : null,
+          {
+            name: "server-actions",
+            transform: {
+              filter: {
+                id: /^(?!.*react-server-dom-webpack[\\/].*[\\/]react-server-dom-webpack-client\.(edge|browser)\..*\.js$).*\.(js|ts|jsx|tsx|mjs)$/,
+                code: /["']use server["']/,
+                moduleType: ["ts", "tsx", "js", "jsx"],
+              },
+              async handler(code, id) {
+                let moduleId = getModuleId(id);
+                let language = pathToLanguage(id);
+                let path = id;
 
-        {
-          name: "add-webpack-loaders-to-rsdw-client",
-          transform: {
-            filter: {
-              id: /[\\/]node_modules[\\/]react-server-dom-webpack[\\/]client/,
-            },
-            handler(code) {
-              let newCode = `${rsdwHeader}\n\n${code}`;
-              return {
-                code: newCode,
-                moduleType: "js",
-              };
+                let dir = dirname(path);
+                let relativeCallServerPath = relative(dir, callServerPath);
+                let callServerImportPath = relativeCallServerPath
+                  .split(sep)
+                  .join("/")
+                  .replace(/\.ts$/, "");
+
+                let transformed = await serverFunctionTransform({
+                  input: {
+                    code,
+                    language,
+                  },
+                  moduleId,
+                  client: {
+                    callServerModule: callServerImportPath,
+                  },
+                });
+
+                let hasServerFunctions = transformed.serverFunctions.length > 0;
+                return hasServerFunctions
+                  ? {
+                      code: transformed.code,
+                      moduleType: "js",
+                    }
+                  : null;
+              },
             },
           },
-        },
 
-        createImagesPlugin({
-          prefixPath: "/__tf/assets/images",
-          onImage: (image) => this.#imagesMap.set(image.id, image),
-        }),
+          {
+            name: "add-webpack-loaders-to-rsdw-client",
+            transform: {
+              filter: {
+                id: /[\\/]node_modules[\\/]react-server-dom-webpack[\\/]client/,
+              },
+              handler(code) {
+                let newCode = `${rsdwHeader}\n\n${code}`;
+                return {
+                  code: newCode,
+                  moduleType: "js",
+                };
+              },
+            },
+          },
 
-        {
-          name: "react-refresh-ext-loader",
-          load: {
-            filter: {
-              id: fileURLToPath(
-                new URL(
-                  "./client/apps/client/ext/react-refresh.ts",
-                  frameworkSrcDir,
+          createImagesPlugin({
+            prefixPath: "/__tf/assets/images",
+            onImage: (image) => this.#imagesMap.set(image.id, image),
+          }),
+
+          {
+            name: "react-refresh-ext-loader",
+            load: {
+              filter: {
+                id: fileURLToPath(
+                  new URL(
+                    "./client/apps/client/ext/react-refresh.ts",
+                    frameworkSrcDir,
+                  ),
                 ),
-              ),
-            },
-            handler() {
-              return refreshEnabled
-                ? null
-                : {
-                    code: "",
-                    moduleType: "js",
-                  };
+              },
+              handler() {
+                return refreshEnabled
+                  ? null
+                  : {
+                      code: "",
+                      moduleType: "js",
+                    };
+              },
             },
           },
+
+          createReactBabelPlugin({
+            refreshEnabled,
+            compilerEnabled,
+          }),
+        ],
+
+        output: {
+          dir: "./.twofold/client/",
+          hashCharacters: "base36",
+          entryFileNames: "entries/[name]-[hash].js",
+          chunkFileNames: "chunks/chunk-[hash].js",
+          minify: this.#env === "production",
+          format: "esm",
+          cleanDir: true,
+
+          advancedChunks: {
+            groups: [
+              {
+                name: "react-vendor",
+                test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-refresh|react-server-dom-webpack)[\\/](?!.*(server|edge))/,
+                priority: 999,
+                // minShareCount: 2,
+              },
+              {
+                name: "client-browser-app",
+                test: new RegExp(
+                  `^${fileURLToEscapedPath(
+                    new URL("./client/apps/client/browser/", frameworkSrcDir),
+                  )}`,
+                ),
+                priority: 990,
+              },
+              {
+                name: "client-ssr-app",
+                test: new RegExp(
+                  `^${fileURLToEscapedPath(
+                    new URL("./client/apps/client/ssr/", frameworkSrcDir),
+                  )}`,
+                ),
+                priority: 980,
+              },
+              {
+                name: "twofold-client-pieces",
+                test: new RegExp(
+                  `^${fileURLToEscapedPath(new URL("./client/", frameworkSrcDir))}(components|hooks|actions|contexts)[\\/]`,
+                ),
+                priority: 970,
+                minShareCount: 2,
+              },
+              {
+                // vendor libs get their own chunk for now
+                // eventually move to hash bucket approach?
+                name: (id) => {
+                  let modulePath = id.split(/[\\/]node_modules[\\/]/).at(-1);
+                  if (!modulePath) return null;
+                  let pkg = modulePath.startsWith("@")
+                    ? modulePath.split(/[\\/]/).slice(0, 2).join("__")
+                    : modulePath.split(/[\\/]/)[0];
+                  return `vendor-${pkg}`;
+                },
+                test: /[\\/]node_modules[\\/]/,
+                priority: 970,
+                minSize: 15 * 1024,
+                minShareCount: 2,
+                // i want this, but it causes some circular dep/import issues rn
+                // maxSize: 200 * 1024,
+              },
+              {
+                name: "vendor-small",
+                test: /[\\/]node_modules[\\/]/,
+                priority: 960,
+                minSize: 0,
+                maxSize: 220 * 1024,
+                minShareCount: 2,
+              },
+              {
+                // splitting for shared components under app/
+                name: (id) => {
+                  // if the module id is in a single directory under app, then
+                  // we chunk by the directory name + filename, otherwise we chunk
+                  // by the directory name.
+                  //
+                  // example:
+                  //   components/spinner.tsx => components/spinner
+                  //   components/dropdown/menu.tsx => components/dropdown
+                  let dir = dirname(id);
+                  let relativeDirPath = dir.substring(appAppPath.length);
+                  let extension = path.extname(id);
+                  let relativeFilePath = id
+                    .substring(appAppPath.length)
+                    .slice(0, -extension.length);
+
+                  let name = relativeDirPath.match(/[\\/]/)
+                    ? relativeDirPath
+                    : relativeFilePath;
+
+                  return name;
+                },
+                test: new RegExp(`^${fileURLToEscapedPath(appAppDir)}`),
+                priority: 890,
+                minSize: 0,
+                minShareCount: 2,
+                // would be good but need to figure out circular deps comment above
+                // maxSize: 220 * 1024,
+              },
+              {
+                // route splitting for components under app/pages/
+                name: (id) => {
+                  let dir = dirname(id);
+                  let relativeDirPath = dir.substring(appAppPath.length);
+                  return relativeDirPath;
+                },
+                test: new RegExp(
+                  `^${fileURLToEscapedPath(new URL("./pages/", appAppDir))}`,
+                ),
+                priority: 880,
+                minSize: 0,
+                // would be good but need to figure out circular deps comment above
+                // maxSize: 220 * 1024,
+              },
+            ],
+          },
         },
+      });
 
-        createReactBabelPlugin({
-          refreshEnabled,
-          compilerEnabled,
-        }),
-      ],
-
-      output: {
-        dir: "./.twofold/client/",
-        hashCharacters: "base36",
-        entryFileNames: "entries/[name]-[hash].js",
-        chunkFileNames: "chunks/chunk-[hash].js",
-        minify: this.#env === "production",
-        format: "esm",
-        cleanDir: true,
-
-        advancedChunks: {
-          groups: [
-            {
-              name: "react-vendor",
-              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-refresh|react-server-dom-webpack)[\\/](?!.*(server|edge))/,
-              priority: 999,
-              // minShareCount: 2,
-            },
-            {
-              name: "client-browser-app",
-              test: new RegExp(
-                `^${fileURLToEscapedPath(
-                  new URL("./client/apps/client/browser/", frameworkSrcDir),
-                )}`,
-              ),
-              priority: 990,
-            },
-            {
-              name: "client-ssr-app",
-              test: new RegExp(
-                `^${fileURLToEscapedPath(
-                  new URL("./client/apps/client/ssr/", frameworkSrcDir),
-                )}`,
-              ),
-              priority: 980,
-            },
-            {
-              name: "twofold-client-pieces",
-              test: new RegExp(
-                `^${fileURLToEscapedPath(new URL("./client/", frameworkSrcDir))}(components|hooks|actions|contexts)[\\/]`,
-              ),
-              priority: 970,
-              minShareCount: 2,
-            },
-            {
-              // vendor libs get their own chunk for now
-              // eventually move to hash bucket approach?
-              name: (id) => {
-                let modulePath = id.split(/[\\/]node_modules[\\/]/).at(-1);
-                if (!modulePath) return null;
-                let pkg = modulePath.startsWith("@")
-                  ? modulePath.split(/[\\/]/).slice(0, 2).join("__")
-                  : modulePath.split(/[\\/]/)[0];
-                return `vendor-${pkg}`;
-              },
-              test: /[\\/]node_modules[\\/]/,
-              priority: 970,
-              minSize: 15 * 1024,
-              minShareCount: 2,
-              // i want this, but it causes some circular dep/import issues rn
-              // maxSize: 200 * 1024,
-            },
-            {
-              name: "vendor-small",
-              test: /[\\/]node_modules[\\/]/,
-              priority: 960,
-              minSize: 0,
-              maxSize: 220 * 1024,
-              minShareCount: 2,
-            },
-            {
-              // splitting for shared components under app/
-              name: (id) => {
-                // if the module id is in a single directory under app, then
-                // we chunk by the directory name + filename, otherwise we chunk
-                // by the directory name.
-                //
-                // example:
-                //   components/spinner.tsx => components/spinner
-                //   components/dropdown/menu.tsx => components/dropdown
-                let dir = dirname(id);
-                let relativeDirPath = dir.substring(appAppPath.length);
-                let extension = path.extname(id);
-                let relativeFilePath = id
-                  .substring(appAppPath.length)
-                  .slice(0, -extension.length);
-
-                let name = relativeDirPath.match(/[\\/]/)
-                  ? relativeDirPath
-                  : relativeFilePath;
-
-                return name;
-              },
-              test: new RegExp(`^${fileURLToEscapedPath(appAppDir)}`),
-              priority: 890,
-              minSize: 0,
-              minShareCount: 2,
-              // would be good but need to figure out circular deps comment above
-              // maxSize: 220 * 1024,
-            },
-            {
-              // route splitting for components under app/pages/
-              name: (id) => {
-                let dir = dirname(id);
-                let relativeDirPath = dir.substring(appAppPath.length);
-                return relativeDirPath;
-              },
-              test: new RegExp(
-                `^${fileURLToEscapedPath(new URL("./pages/", appAppDir))}`,
-              ),
-              priority: 880,
-              minSize: 0,
-              // would be good but need to figure out circular deps comment above
-              // maxSize: 220 * 1024,
-            },
-          ],
-        },
-      },
-    });
-
-    this.#outputs = trimRolldownOutput(result.output);
+      this.#outputs = trimRolldownOutput(result.output);
+    } catch (error) {
+      console.error(error);
+      this.reportError(error);
+    }
   }
 
   async stop() {}
