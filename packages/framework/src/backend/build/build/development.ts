@@ -1,6 +1,7 @@
 import { RSCBuilder } from "../builders/rsc-builder.js";
 import { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
 import { StaticFilesBuilder } from "../builders/static-files-builder.js";
+import { EntriesBuilder } from "../builders/entries-builder.js";
 import { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import { time } from "../helpers/time.js";
 import { ClientComponentMapSnapshot } from "../snapshots/client-component-map-snapshot.js";
@@ -10,7 +11,6 @@ import { CSSSnapshot } from "../snapshots/css-snapshot.js";
 import { Build } from "./build.js";
 import { AssetsBuilder } from "../builders/assets-builder.js";
 import { ClientBuilder } from "../builders/client-builder.js";
-import { EntriesBuilder } from "../builders/entries-builder.js";
 
 export class DevelopmentBuild extends Build {
   readonly name = "development";

@@ -1,11 +1,11 @@
 import { RSCBuilder } from "../builders/rsc-builder.js";
 import { StaticFilesBuilder } from "../builders/static-files-builder.js";
+import { EntriesBuilder } from "../builders/entries-builder.js";
 import { time } from "../helpers/time.js";
 import { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import { Build } from "./build.js";
 import { AssetsBuilder } from "../builders/assets-builder.js";
 import { ClientBuilder } from "../builders/client-builder.js";
-import { EntriesBuilder } from "../builders/entries-builder.js";
 
 export class ProductionBuild extends Build {
   readonly name = "production";
