@@ -95,8 +95,6 @@ export class RSCBuilder extends Builder {
       let userDefinedExternalPackages = appConfig.externalPackages ?? [];
       let discoveredExternals = this.#entriesBuilder.discoveredExternals;
 
-      // console.log("externals", externals);
-
       let result = await build({
         bundle: true,
         format: "esm",
