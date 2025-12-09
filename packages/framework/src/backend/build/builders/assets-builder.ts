@@ -6,7 +6,7 @@ import { pipeline } from "stream/promises";
 import { createReadStream, createWriteStream } from "fs";
 import { createBrotliCompress } from "zlib";
 import { basename } from "path";
-import { pathToFileURL } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 
 type Asset = {
   id: string;
@@ -91,8 +91,8 @@ export class AssetsBuilder extends Builder {
       return {
         id,
         type: "text/css",
-        assetPath: assetUrl.pathname,
-        brotliPath: brotliUrl?.pathname,
+        assetPath: fileURLToPath(assetUrl),
+        brotliPath: brotliUrl ? fileURLToPath(brotliUrl) : undefined,
       };
     });
 
@@ -108,8 +108,8 @@ export class AssetsBuilder extends Builder {
         return {
           id,
           type: "text/javascript",
-          assetPath: assetUrl.pathname,
-          brotliPath: brotliUrl?.pathname,
+          assetPath: fileURLToPath(assetUrl),
+          brotliPath: brotliUrl ? fileURLToPath(brotliUrl) : undefined,
         };
       },
     );
@@ -124,8 +124,8 @@ export class AssetsBuilder extends Builder {
       return {
         id,
         type: "text/javascript",
-        assetPath: assetUrl.pathname,
-        brotliPath: brotliUrl?.pathname,
+        assetPath: fileURLToPath(assetUrl),
+        brotliPath: brotliUrl ? fileURLToPath(brotliUrl) : undefined,
       };
     });
 
@@ -137,7 +137,7 @@ export class AssetsBuilder extends Builder {
       return {
         id,
         type: image.type,
-        assetPath: assetUrl.pathname,
+        assetPath: fileURLToPath(assetUrl),
       };
     });
 
@@ -149,7 +149,7 @@ export class AssetsBuilder extends Builder {
       return {
         id,
         type: font.type,
-        assetPath: assetUrl.pathname,
+        assetPath: fileURLToPath(assetUrl),
       };
     });
 
@@ -169,7 +169,7 @@ export class AssetsBuilder extends Builder {
     this.#assetMap = assetMap;
   }
 
-  async stop() {}
+  async stop() { }
 
   serialize() {
     return {
@@ -183,5 +183,5 @@ export class AssetsBuilder extends Builder {
     }
   }
 
-  warm() {}
+  warm() { }
 }

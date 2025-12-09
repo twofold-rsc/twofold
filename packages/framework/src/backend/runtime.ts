@@ -20,6 +20,7 @@ import { ActionRequest } from "./runtime/action-request.js";
 import { injectResolver } from "./monkey-patch.js";
 import { partition } from "./utils/partition.js";
 import { pathMatches } from "./runtime/helpers/routing.js";
+import { pathToFileURL } from "node:url";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -72,7 +73,8 @@ export class Runtime {
     let placeholderPath =
       this.build.getBuilder("rsc").routeStackPlaceholderPath;
 
-    let mod = await import(placeholderPath);
+    let placeholderUrl = pathToFileURL(placeholderPath)
+    let mod = await import(placeholderUrl.href);
     if (!mod.default) {
       throw new Error(
         `Route stack placeholder module at ${placeholderPath} has no default export.`,
