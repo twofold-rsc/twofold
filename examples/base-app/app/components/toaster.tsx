@@ -23,7 +23,7 @@ export function Toaster() {
 
   return (
     <div className="absolute top-4 right-4">
-      <div className="w-64 rounded bg-white p-4 text-sm shadow ring ring-gray-200 ring-inset">
+      <div className="w-64 rounded bg-white p-4 text-sm shadow ring ring-gray-950/10">
         <div className="truncate">{latestMessage}</div>
       </div>
     </div>
