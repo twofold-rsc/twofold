@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-twofold",
-  "version": "0.0.72",
+  "version": "0.0.73",
   "description": "",
   "main": "index.js",
   "scripts": {},
