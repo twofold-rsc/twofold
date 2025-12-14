@@ -22,6 +22,8 @@ import { Image, imagesPlugin } from "../plugins/images-plugin.js";
 import { Font, fontsPlugin } from "../plugins/fonts-plugin.js";
 import { excludePackages } from "../externals/predefined-externals.js";
 import { EntriesBuilder } from "./entries-builder.js";
+import { ErrorWrapper } from "../rsc/error-template.js";
+import { Generic } from "../rsc/generic.js";
 
 export type CompiledAction = {
   id: string;
@@ -101,6 +103,7 @@ export class RSCBuilder extends Builder {
         jsx: "automatic",
         logLevel: "error",
         entryPoints: [
+          "./app/pages/**/*.error.tsx",
           "./app/pages/**/*.page.tsx",
           "./app/pages/**/layout.tsx",
           "./app/pages/**/*.api.ts",
@@ -110,6 +113,7 @@ export class RSCBuilder extends Builder {
           notFoundEntry,
           srcPaths.framework.outerRootWrapper,
           srcPaths.framework.routeStackPlaceholder,
+          srcPaths.framework.catchBoundary,
         ],
         outdir: "./.twofold/rsc/",
         outbase: "app",
@@ -215,6 +219,8 @@ export class RSCBuilder extends Builder {
       ...loadServerActions,
       loadGlobalMiddleware,
       loadRouteStackPlaceholder,
+      // TODO: catch boundary
+      // TODO: error components
     ];
 
     await Promise.all(promises);
@@ -290,7 +296,11 @@ export class RSCBuilder extends Builder {
     return keys
       .filter((key) => {
         let entryPoint = outputs[key]?.entryPoint;
-        return entryPoint && entryPoint.endsWith(pageSuffix);
+        return (
+          entryPoint &&
+          entryPoint.startsWith(prefix) &&
+          entryPoint.endsWith(pageSuffix)
+        );
       })
       .map((key) => {
         let output = outputs[key];
@@ -319,6 +329,53 @@ export class RSCBuilder extends Builder {
       });
   }
 
+  get errorWrappers() {
+    let metafile = this.#metafile;
+    if (!metafile) {
+      return [];
+    }
+
+    let outputs = metafile.outputs;
+    let cwd = process.cwd();
+    let baseUrl = pathToFileURL(`${cwd}/`);
+    let prefix = "app/pages/";
+    let errorSuffix = ".error.tsx";
+
+    let keys = Object.keys(outputs);
+    return keys
+      .filter((key) => {
+        let entryPoint = outputs[key]?.entryPoint;
+        return (
+          entryPoint &&
+          entryPoint.startsWith(prefix) &&
+          entryPoint.endsWith(errorSuffix)
+        );
+      })
+      .map((key) => {
+        let output = outputs[key];
+        if (!output) {
+          throw new Error("No output found for key");
+        }
+
+        let entryPoint = output.entryPoint;
+        if (!entryPoint) {
+          throw new Error("No entry point");
+        }
+
+        let path = `/${entryPoint
+          .slice(prefix.length)
+          .slice(0, -errorSuffix.length)}`;
+
+        let tag = path.split("/").at(-1) ?? "unknown";
+
+        return new ErrorWrapper({
+          tag,
+          path,
+          fileUrl: new URL(key, baseUrl),
+        });
+      });
+  }
+
   get layouts() {
     let metafile = this.#metafile;
 
@@ -338,10 +395,17 @@ export class RSCBuilder extends Builder {
 
     let keys = Object.keys(outputs);
 
+    let routeStackPlaceholder = this.routeStackPlaceholder;
+    let catchBoundary = this.catchBoundary;
+
     return keys
       .filter((key) => {
         let entryPoint = outputs[key]?.entryPoint;
-        return entryPoint && entryPoint.endsWith(layoutSuffix);
+        return (
+          entryPoint &&
+          entryPoint.startsWith(prefix) &&
+          entryPoint.endsWith(layoutSuffix)
+        );
       })
       .map((key) => {
         let output = outputs[key];
@@ -364,6 +428,7 @@ export class RSCBuilder extends Builder {
             ? output.cssBundle.slice(cssPrefix.length)
             : undefined,
           fileUrl: new URL(key, baseUrl),
+          routeStackPlaceholder,
         });
       });
   }
@@ -385,7 +450,11 @@ export class RSCBuilder extends Builder {
     return keys
       .filter((key) => {
         let entryPoint = outputs[key]?.entryPoint;
-        return entryPoint && apiSuffix.test(entryPoint);
+        return (
+          entryPoint &&
+          entryPoint.startsWith(prefix) &&
+          apiSuffix.test(entryPoint)
+        );
       })
       .map((key) => {
         let output = outputs[key];
@@ -452,6 +521,24 @@ export class RSCBuilder extends Builder {
     return this.compiledPathForEntry(srcPaths.framework.routeStackPlaceholder);
   }
 
+  private get routeStackPlaceholder() {
+    let placeholderPath = this.routeStackPlaceholderPath;
+    let placeholderUrl = pathToFileURL(placeholderPath);
+    let placeholder = new Generic({ fileUrl: placeholderUrl });
+    return placeholder;
+  }
+
+  private get catchBoundary() {
+    let catchBoundaryPath = this.catchBoundaryPath;
+    let catchBoundaryUrl = pathToFileURL(catchBoundaryPath);
+    let catchBoundary = new Generic({ fileUrl: catchBoundaryUrl });
+    return catchBoundary;
+  }
+
+  get catchBoundaryPath() {
+    return this.compiledPathForEntry(srcPaths.framework.catchBoundary);
+  }
+
   get css() {
     let layoutCss = this.layouts.map((layout) => layout.css);
     let pageCss = this.pages.map((page) => page.css);
@@ -464,6 +551,7 @@ export class RSCBuilder extends Builder {
   get tree() {
     let pages = this.pages;
     let layouts = this.layouts;
+    let errorWrappers = this.errorWrappers;
     let outerRootWrapper = this.outerRootWrapper;
 
     let root = layouts.find((layout) => layout.path === "/");
@@ -475,6 +563,7 @@ export class RSCBuilder extends Builder {
 
     otherLayouts.forEach((layout) => root?.add(layout));
     pages.forEach((page) => root?.add(page));
+    errorWrappers.forEach((error) => root?.add(error));
 
     root.addWrapper(outerRootWrapper);
 
@@ -546,6 +635,13 @@ let srcPaths = {
       "components",
       "route-stack",
       "placeholder.tsx",
+    ),
+    catchBoundary: path.join(
+      frameworkSrcPath,
+      "client",
+      "components",
+      "boundaries",
+      "catch-boundary.tsx",
     ),
   },
   app: {

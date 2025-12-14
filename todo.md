@@ -1,7 +1,30 @@
 # TODO
 
-- release
-- release create app (only built deps)
+- errors
+  - [ ] route wrappers
+  - [ ] clear error
+    - [ ] back / popstate
+    - [ ] refresh helper?
+  - [ ] Debug component for dev mode
+  - [ ] clean up ssr error renderer
+  - [ ] pages/layouts can use client
+    - [ ] route stack placeholder should be client component only
+  - [ ] not found
+  - [ ] unauthorized
+  - [ ] invariant
+  - misc
+    - [ ] errors in folders without layouts
+- build
+  - css / assets cleanup
+- endpoints
+- tests
+- db
+- queue
+
+- pass a client component to a server action
+- pass a server action to a server action
+
+- windows test that index routes work, they should just had my doubts for a second
 
 - use node version of rsdw
 - how can we bundle rsdw?
@@ -12,10 +35,6 @@
 - idea would be to import/render link tag for assets, which i like
 
 - see if we can avoid rolldown facades. might need to open issue about finding a moduleId's exports in a chunk
-
-- Run through windows
-
-- find mem leak (script it)
 
 - cloudflare uses zstd compression on text/x-component, which causes buffering of the response
   one way to fix is using the cache control no transform header. maybe we enable that in dev

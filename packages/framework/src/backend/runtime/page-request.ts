@@ -149,8 +149,10 @@ export class PageRequest {
 
     let params = this.dynamicParams;
     let props = this.props;
-    let routeStackPlaceholderComponent =
-      await this.#runtime.routeStackPlaceholder();
+
+    // TODO: remove
+    let catchBoundaryModule = await this.#runtime.catchBoundaryModule();
+    let catchBoundaryComponent = catchBoundaryModule.default;
 
     let stack = segments.map((segment) => {
       let segmentKey = `${segment.path}:${applyPathParams(
@@ -162,16 +164,12 @@ export class PageRequest {
       // certain bots will try to crawl them
       let key = hash(segmentKey);
 
-      let components =
-        segment.type === "layout"
-          ? [...segment.components, routeStackPlaceholderComponent]
-          : segment.components;
-
-      let componentsWithProps = components.map((component, index) => {
+      let componentsWithProps = segment.components.map((component, index) => {
         return {
-          component,
+          component: component.func,
           props: {
-            ...props,
+            ...component.props,
+            ...(component.requirements.includes("dynamicRequest") ? props : {}),
             ...(index === 0 ? { key } : {}),
           },
         };

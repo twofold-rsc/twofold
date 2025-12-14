@@ -3,6 +3,8 @@ import {
   pathPartialMatches,
 } from "../../runtime/helpers/routing.js";
 import { partition } from "../../utils/partition.js";
+import { ErrorWrapper } from "./error-template.js";
+import { Generic } from "./generic.js";
 import { Page } from "./page.js";
 import { Wrapper } from "./wrapper.js";
 
@@ -14,20 +16,29 @@ export class Layout {
   #children: Layout[] = [];
   #parent?: Layout | undefined;
   #pages: Page[] = [];
+  #routeStackPlaceholder: Generic;
+  #catchBoundary: Generic;
+  #errorWrappers: ErrorWrapper[] = [];
   #wrappers: Wrapper[] = [];
 
   constructor({
     path,
     css,
     fileUrl,
+    routeStackPlaceholder,
+    catchBoundary,
   }: {
     path: string;
     css?: string | undefined;
     fileUrl: URL;
+    routeStackPlaceholder: Generic;
+    catchBoundary: Generic;
   }) {
     this.#path = path;
     this.#fileUrl = fileUrl;
     this.#css = css;
+    this.#routeStackPlaceholder = routeStackPlaceholder;
+    this.#catchBoundary = catchBoundary;
   }
 
   get path() {
@@ -50,11 +61,13 @@ export class Layout {
     return this.#parent;
   }
 
-  add(child: Layout | Page) {
+  add(child: Layout | Page | ErrorWrapper) {
     if (child instanceof Layout) {
       this.addLayout(child);
     } else if (child instanceof Page) {
       this.addPage(child);
+    } else if (child instanceof ErrorWrapper) {
+      this.addErrorWrapper(child);
     }
   }
 
@@ -92,6 +105,9 @@ export class Layout {
     let print = (layout: Layout) => {
       console.log(`${" ".repeat(indent)} ${layout.path} (layout)`);
       indent++;
+      layout.#errorWrappers.map((errorWrapper) => {
+        console.log(`${" ".repeat(indent)} ${errorWrapper.path} (error)`);
+      });
       layout.#pages.map((page) => {
         console.log(`${" ".repeat(indent)} ${page.path} (page)`);
       });
@@ -152,6 +168,23 @@ export class Layout {
     }
   }
 
+  private addErrorWrapper(errorWrapper: ErrorWrapper) {
+    let isMatch = errorWrapper.path.startsWith(this.path);
+    let matchingChild = this.#children.find((child) =>
+      errorWrapper.path.startsWith(child.path),
+    );
+
+    if (matchingChild) {
+      matchingChild.addErrorWrapper(errorWrapper);
+    } else if (isMatch) {
+      this.#errorWrappers.push(errorWrapper);
+    } else {
+      throw new Error(
+        `Could not add error page ${errorWrapper.path} to ${this.path}`,
+      );
+    }
+  }
+
   addWrapper(wrapper: Wrapper) {
     this.#wrappers.push(wrapper);
   }
@@ -163,25 +196,103 @@ export class Layout {
         throw new Error(`Wrapper for ${wrapper.path} has no default export.`);
       }
 
-      return module.default;
+      // wrappers dont have any requirements or need for props today, but maybe
+      // in the future they will.
+      return {
+        func: module.default,
+        requirements: [],
+        props: {},
+      };
     });
 
-    let wrapperComponents = await Promise.all(loadWrapperModules);
-    return wrapperComponents;
+    return Promise.all(loadWrapperModules);
   }
 
+  async loadRouteStackPlaceholder() {
+    let routeStackPlaceholder = this.#routeStackPlaceholder;
+    let module = await routeStackPlaceholder.loadModule();
+    if (!module.default) {
+      throw new Error(
+        `Route placeholder for ${this.#path} has no default export.`,
+      );
+    }
+
+    return {
+      func: module.default,
+      requirements: [],
+      props: {},
+    };
+  }
+
+  async loadCatchBoundary() {
+    let catchBoundary = this.#catchBoundary;
+    let module = await catchBoundary.loadModule();
+    if (!module.default) {
+      throw new Error(
+        `Route placeholder for ${this.#path} has no default export.`,
+      );
+    }
+
+    return {
+      func: module.default,
+      requirements: [],
+      props: {},
+    };
+  }
+
+  /**
+   * Gets a list of component functions and their requirements and
+   * props for rendering.
+   */
   async components() {
-    // flat list of all the modules the render tree needs
-    // -> [Outer, Layout]
+    // flat list of all the components needed to render this layout.
+    // it includes props as well as requirements.
+    //
+    // has this shape:
+    //
+    // -> [
+    //      {
+    //        func: Outer,
+    //        requirements: [],
+    //        props: {}
+    //      },
+    //      {
+    //        func: Layout,
+    //        requirements: ["dynamicRequest"],
+    //        props: {}
+    //      },
+    //      {
+    //        func: CatchBoundary,
+    //        requirements: [],
+    //        props: {} // pre-wired
+    //      },
+    //      {
+    //        func: RouteStackPlaceholder,
+    //        requirements: [],
+    //        props: {}
+    //      }
+    //    ]
 
     let module = await this.loadModule();
     if (!module.default) {
       throw new Error(`Layout for ${this.path}/ has no default export.`);
     }
 
+    let layout = {
+      func: module.default,
+      requirements: ["dynamicRequest"],
+      props: {},
+    };
+
+    // wrappers
     let wrappers = await this.loadWrappers();
 
-    return [...wrappers, module.default];
+    // route stack placeholder
+    let routeStackPlaceholder = await this.loadRouteStackPlaceholder();
+
+    // TODO: load crash CatchBoundary w/ errors
+
+    return [...wrappers, layout, routeStackPlaceholder];
   }
 
   async runMiddleware(props: {

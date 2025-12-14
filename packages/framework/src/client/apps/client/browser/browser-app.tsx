@@ -1,4 +1,5 @@
 import {
+  Suspense,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -264,7 +265,7 @@ function Router() {
         <RouteStack stack={stack} />
       </RoutingContext>
 
-      {/*
+      {/* 
         This doesnt do anything, but its needed to match the shape
         of the SSR app.
       */}

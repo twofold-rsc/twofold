@@ -1,11 +1,5 @@
-import { ReactNode, Suspense } from "react";
-import { ErrorBoundary } from "./error-boundary";
+import { ReactNode } from "react";
 
 export default function BoundaryLayout({ children }: { children: ReactNode }) {
-  return (
-    <ErrorBoundary>
-      {/* Suspense is needed for ssr */}
-      <Suspense>{children}</Suspense>
-    </ErrorBoundary>
-  );
+  return children;
 }

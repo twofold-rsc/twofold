@@ -89,7 +89,6 @@ export class Page {
     let loadLayouts = this.layouts.map(async (layout) => {
       let components = await layout.components();
       return {
-        type: "layout",
         path: layout.path,
         components,
       };
@@ -99,7 +98,6 @@ export class Page {
 
     let components = await this.components();
     let page = {
-      type: "page",
       path: this.#path,
       components,
     };
@@ -113,7 +111,13 @@ export class Page {
       throw new Error(`Page ${this.path} has no default export.`);
     }
 
-    return [module.default];
+    return [
+      {
+        func: module.default,
+        requirements: ["dynamicRequest"],
+        props: {},
+      },
+    ];
   }
 
   async runMiddleware(props: {

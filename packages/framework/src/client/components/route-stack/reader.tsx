@@ -16,10 +16,12 @@ export function Reader() {
   // setup entry specific boundaries here in this tree so
   // they can catch from the Entry component
 
+  // TODO: remove, routes will define their own not founds
   const WrapperBoundaries = depth === 1 ? NotFoundBoundary : Fragment;
 
   return (
     <RouteStack stack={rest} depth={depth + 1}>
+      {/* tagged errors */}
       <RedirectBoundary>
         <WrapperBoundaries>
           {entry ? <Entry entry={entry} /> : null}

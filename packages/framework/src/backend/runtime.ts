@@ -68,20 +68,19 @@ export class Runtime {
 
   // routing
 
-  // this is really build output
-  async routeStackPlaceholder() {
-    let placeholderPath =
-      this.build.getBuilder("rsc").routeStackPlaceholderPath;
+  // build output, i hate that this is here. need to fix.
+  async catchBoundaryModule() {
+    let catchBoundaryPath = this.build.getBuilder("rsc").catchBoundaryPath;
 
-    let placeholderUrl = pathToFileURL(placeholderPath)
-    let mod = await import(placeholderUrl.href);
+    let catchBoundaryUrl = pathToFileURL(catchBoundaryPath);
+    let mod = await import(catchBoundaryUrl.href);
     if (!mod.default) {
       throw new Error(
-        `Route stack placeholder module at ${placeholderPath} has no default export.`,
+        `Catch boundary module at ${catchBoundaryPath} has no default export.`,
       );
     }
 
-    return mod.default;
+    return mod;
   }
 
   // pages
@@ -191,7 +190,7 @@ export class Runtime {
 
   async renderHtmlStreamFromRSCStream(
     rscStream: ReadableStream<Uint8Array>,
-    method: "stream" | "page" | "static",
+    mode: "page",
     data: Record<string, any> = {},
   ) {
     let { port1, port2 } = new MessageChannel();
@@ -215,7 +214,7 @@ export class Runtime {
 
     this.#ssrWorker.postMessage(
       {
-        method,
+        mode,
         data,
         port: port2,
         rscStream,
@@ -230,6 +229,7 @@ export class Runtime {
     if (message.status === "OK") {
       return { stream: readStream };
     } else if (message.status === "ERROR") {
+      // TODO: review this
       let error = deserializeError(message.serializedError);
 
       if (isNotFoundError(error)) {
@@ -247,6 +247,10 @@ export class Runtime {
           },
         };
       } else {
+        // TODO:
+        // recreate the stream in error mode  (if we arent already in error mode)
+        // if we are in error mode and we error again then we should throw
+        // we dont want to throw, we want to render the client app
         throw error;
       }
     } else {

@@ -17,7 +17,7 @@ let ssrManifestModuleMap = workerData.ssrManifestModuleMap;
 let appModule = await import(pathToFileURL(appPath).href);
 let render = appModule.render;
 
-type PageRenderRequest = Extract<RenderRequest, { method: "page" }>;
+type PageRenderRequest = Extract<RenderRequest, { mode: "page" }>;
 
 export async function pageSSR(request: PageRenderRequest) {
   return await render({
