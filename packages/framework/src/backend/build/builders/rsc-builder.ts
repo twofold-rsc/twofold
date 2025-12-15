@@ -24,6 +24,7 @@ import { excludePackages } from "../externals/predefined-externals.js";
 import { EntriesBuilder } from "./entries-builder.js";
 import { ErrorWrapper } from "../rsc/error-template.js";
 import { Generic } from "../rsc/generic.js";
+import { TreeNode } from "../rsc/tree-node.js";
 
 export type CompiledAction = {
   id: string;
@@ -615,6 +616,102 @@ export class RSCBuilder extends Builder {
       },
       {},
     );
+  }
+}
+
+class RscBuildOutput {
+  #builder: RSCBuilder;
+  #metafile: Metafile;
+
+  constructor({
+    builder,
+    metafile,
+  }: {
+    builder: RSCBuilder;
+    metafile: Metafile;
+  }) {
+    this.#builder = builder;
+    this.#metafile = metafile;
+  }
+
+  private get routeStackPlaceholder() {
+    let placeholderPath = this.#builder.routeStackPlaceholderPath;
+    let placeholderUrl = pathToFileURL(placeholderPath);
+    let placeholder = new Generic({ fileUrl: placeholderUrl });
+    return placeholder;
+  }
+
+  get layouts() {
+    let metafile = this.#metafile;
+    let outputs = metafile.outputs;
+    let cwd = process.cwd();
+    let baseUrl = pathToFileURL(`${cwd}/`);
+    let prefix = "app/pages/";
+    let layoutSuffix = "/layout.tsx";
+
+    let cssUrl = new URL("./rsc/css/", appCompiledDir);
+    let cssPath = fileURLToPath(cssUrl);
+    let cssPrefix = cssPath.slice(process.cwd().length + 1);
+
+    let keys = Object.keys(outputs);
+
+    let routeStackPlaceholder = this.routeStackPlaceholder;
+
+    return keys
+      .filter((key) => {
+        let entryPoint = outputs[key]?.entryPoint;
+        return (
+          entryPoint &&
+          entryPoint.startsWith(prefix) &&
+          entryPoint.endsWith(layoutSuffix)
+        );
+      })
+      .map((key) => {
+        let output = outputs[key];
+        if (!output) {
+          throw new Error("No output found for key");
+        }
+
+        let entryPoint = output.entryPoint;
+        if (!entryPoint) {
+          throw new Error("No entry point");
+        }
+
+        let path = entryPoint
+          .slice(prefix.length)
+          .slice(0, -layoutSuffix.length);
+
+        return new Layout({
+          path: `/${path}`,
+          css: output.cssBundle
+            ? output.cssBundle.slice(cssPrefix.length)
+            : undefined,
+          fileUrl: new URL(key, baseUrl),
+          routeStackPlaceholder,
+        });
+      });
+  }
+
+  // #cachedTree: TreeNode<Layout>;
+
+  tree() {
+    // if (this.#cachedTree) {
+    //   return this.#cachedTree;
+    // }
+
+    let layouts = this.layouts;
+
+    let rootLayout = layouts.find((layout) => layout.path === "/");
+    let otherLayouts = layouts.filter((layout) => layout.path !== "/");
+
+    if (!rootLayout) {
+      throw new Error("No root layout");
+    }
+
+    let root = new TreeNode(rootLayout);
+    otherLayouts.forEach((layout) => root.addChild(new TreeNode(layout)));
+
+    return root;
   }
 }
 

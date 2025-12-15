@@ -6,39 +6,42 @@ import { partition } from "../../utils/partition.js";
 import { ErrorWrapper } from "./error-template.js";
 import { Generic } from "./generic.js";
 import { Page } from "./page.js";
+import { TreeNode, TreeStore } from "./tree-store.js";
 import { Wrapper } from "./wrapper.js";
 
-export class Layout {
+export class Layout implements TreeNode {
   #path: string;
   #css?: string | undefined;
   #fileUrl: URL;
 
-  #children: Layout[] = [];
+  #children: (Layout | Page)[] = [];
   #parent?: Layout | undefined;
-  #pages: Page[] = [];
+  // #pages: Page[] = [];
   #routeStackPlaceholder: Generic;
-  #catchBoundary: Generic;
-  #errorWrappers: ErrorWrapper[] = [];
+  // #catchBoundary: Generic;
+  // #errorWrappers: ErrorWrapper[] = [];
   #wrappers: Wrapper[] = [];
+
+  tree = new TreeStore();
 
   constructor({
     path,
     css,
     fileUrl,
     routeStackPlaceholder,
-    catchBoundary,
+    // catchBoundary,
   }: {
     path: string;
     css?: string | undefined;
     fileUrl: URL;
     routeStackPlaceholder: Generic;
-    catchBoundary: Generic;
+    // catchBoundary: Generic;
   }) {
     this.#path = path;
     this.#fileUrl = fileUrl;
     this.#css = css;
     this.#routeStackPlaceholder = routeStackPlaceholder;
-    this.#catchBoundary = catchBoundary;
+    // this.#catchBoundary = catchBoundary;
   }
 
   get path() {
@@ -49,31 +52,64 @@ export class Layout {
     return this.#css;
   }
 
-  get children() {
-    return this.#children;
+  canGoUnderMe(other: Layout) {
+    return false;
   }
 
-  set parent(parent: Layout | undefined) {
-    this.#parent = parent;
+  addChild(node: Layout) {
+    this.tree.addChild(this, node);
+  }
+
+  detach() {
+    this.tree.detach(this);
+  }
+
+  setParent(parent: Layout | null) {
+    this.tree.setParent(this, parent);
   }
 
   get parent() {
-    return this.#parent;
+    return this.tree.parent;
   }
+
+  get children() {
+    return this.tree.children;
+  }
+
+  // get children() {
+  //   return this.#children;
+  // }
+
+  private get pages() {
+    return this.#children.filter((c) => c instanceof Page);
+  }
+
+  private get childLayouts() {
+    return this.#children.filter((c) => c instanceof Layout);
+  }
+
+  // set parent(parent: Layout | undefined) {
+  //   this.#parent = parent;
+  // }
+  //
+  // get parent() {
+  //   return this.#parent;
+  // }
 
   add(child: Layout | Page | ErrorWrapper) {
     if (child instanceof Layout) {
       this.addLayout(child);
     } else if (child instanceof Page) {
       this.addPage(child);
-    } else if (child instanceof ErrorWrapper) {
-      this.addErrorWrapper(child);
     }
+    // } else if (child instanceof ErrorWrapper) {
+    //   this.addErrorWrapper(child);
+    // }
   }
 
   findPageForPath(realPath: string): Page | undefined {
     let [staticAndDynamicPages, catchAllPages] = partition(
-      this.#pages,
+      this.pages,
       (page) => !page.isCatchAll,
     );
     let [dynamicPages, staticPages] = partition(
@@ -88,7 +124,7 @@ export class Layout {
     let page =
       staticPages.find((page) => pathMatches(page.path, realPath)) ??
       dynamicPagesInOrder.find((page) => pathMatches(page.path, realPath)) ??
-      this.#children
+      this.childLayouts
         .filter((child) => pathPartialMatches(child.path, realPath))
         .map((child) => child.findPageForPath(realPath))
         .find(Boolean) ??
@@ -105,13 +141,14 @@ export class Layout {
     let print = (layout: Layout) => {
       console.log(`${" ".repeat(indent)} ${layout.path} (layout)`);
       indent++;
-      layout.#errorWrappers.map((errorWrapper) => {
-        console.log(`${" ".repeat(indent)} ${errorWrapper.path} (error)`);
-      });
-      layout.#pages.map((page) => {
+      // TODO: remove
+      // layout.#errorWrappers.map((errorWrapper) => {
+      //   console.log(`${" ".repeat(indent)} ${errorWrapper.path} (error)`);
+      // });
+      layout.pages.map((page) => {
         console.log(`${" ".repeat(indent)} ${page.path} (page)`);
       });
-      layout.children.forEach(print);
+      layout.childLayouts.forEach(print);
       indent--;
     };
 
@@ -121,8 +158,10 @@ export class Layout {
   }
 
   private addLayout(layout: Layout) {
+    let childLayouts = this.childLayouts;
+
     // can it go under a child of mine?
-    let child = this.#children.find((possibleParent) =>
+    let child = childLayouts.find((possibleParent) =>
       canGoUnder(layout, possibleParent),
     );
 
@@ -130,7 +169,7 @@ export class Layout {
       child.addLayout(layout);
     } else if (canGoUnder(layout, this)) {
       // re-balance my children
-      let [move, keep] = partition(this.#children, (child) =>
+      let [move, keep] = partition(childLayouts, (child) =>
         canGoUnder(child, layout),
       );
       this.#children = keep;
@@ -142,9 +181,10 @@ export class Layout {
       this.#children.push(layout);
       layout.parent = this;
 
+      // TODO: needs proper balancing here
       // readd all my pages?
-      let pages = this.#pages;
-      this.#pages = [];
+      let pages = this.pages;
+      this.#children = this.#children.filter((c) => !(c instanceof Page));
       pages.forEach((page) => this.addPage(page));
     } else {
       // cant go under a child, cant go under me
@@ -154,36 +194,36 @@ export class Layout {
 
   private addPage(page: Page) {
     let isMatch = page.path.startsWith(this.path);
-    let matchingChild = this.#children.find((child) =>
+    let matchingChild = this.childLayouts.find((child) =>
       page.path.startsWith(child.path),
     );
 
     if (matchingChild) {
       matchingChild.addPage(page);
     } else if (isMatch) {
-      this.#pages.push(page);
+      this.#children.push(page);
       page.layout = this;
     } else {
       throw new Error(`Could not add page ${page.path} to ${this.path}`);
     }
   }
 
-  private addErrorWrapper(errorWrapper: ErrorWrapper) {
-    let isMatch = errorWrapper.path.startsWith(this.path);
-    let matchingChild = this.#children.find((child) =>
-      errorWrapper.path.startsWith(child.path),
-    );
-
-    if (matchingChild) {
-      matchingChild.addErrorWrapper(errorWrapper);
-    } else if (isMatch) {
-      this.#errorWrappers.push(errorWrapper);
-    } else {
-      throw new Error(
-        `Could not add error page ${errorWrapper.path} to ${this.path}`,
-      );
-    }
-  }
+  // private addErrorWrapper(errorWrapper: ErrorWrapper) {
+  //   let isMatch = errorWrapper.path.startsWith(this.path);
+  //   let matchingChild = this.#children.find((child) =>
+  //     errorWrapper.path.startsWith(child.path),
+  //   );
+  //
+  //   if (matchingChild) {
+  //     matchingChild.addErrorWrapper(errorWrapper);
+  //   } else if (isMatch) {
+  //     this.#errorWrappers.push(errorWrapper);
+  //   } else {
+  //     throw new Error(
+  //       `Could not add error page ${errorWrapper.path} to ${this.path}`,
+  //     );
+  //   }
+  // }
 
   addWrapper(wrapper: Wrapper) {
     this.#wrappers.push(wrapper);
@@ -224,21 +264,21 @@ export class Layout {
     };
   }
 
-  async loadCatchBoundary() {
-    let catchBoundary = this.#catchBoundary;
-    let module = await catchBoundary.loadModule();
-    if (!module.default) {
-      throw new Error(
-        `Route placeholder for ${this.#path} has no default export.`,
-      );
-    }
-
-    return {
-      func: module.default,
-      requirements: [],
-      props: {},
-    };
-  }
+  // async loadCatchBoundary() {
+  //   let catchBoundary = this.#catchBoundary;
+  //   let module = await catchBoundary.loadModule();
+  //   if (!module.default) {
+  //     throw new Error(
+  //       `Route placeholder for ${this.#path} has no default export.`,
+  //     );
+  //   }
+  //
+  //   return {
+  //     func: module.default,
+  //     requirements: [],
+  //     props: {},
+  //   };
+  // }
 
   /**
    * Gets a list of component functions and their requirements and
@@ -260,11 +300,6 @@ export class Layout {
     //        func: Layout,
     //        requirements: ["dynamicRequest"],
     //        props: {}
-    //      },
-    //      {
-    //        func: CatchBoundary,
-    //        requirements: [],
-    //        props: {} // pre-wired
     //      },
     //      {
     //        func: RouteStackPlaceholder,
