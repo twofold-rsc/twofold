@@ -1,12 +1,13 @@
 import { Layout } from "./layout.js";
 import "urlpattern-polyfill";
+import { Treeable, TreeNode } from "./tree-node.js";
 
-export class Page {
+export class Page implements Treeable {
   #path: string;
   #css?: string | undefined;
   #fileUrl: URL;
 
-  #layout?: Layout | undefined;
+  tree: TreeNode;
 
   constructor({
     path,
@@ -20,6 +21,33 @@ export class Page {
     this.#path = path;
     this.#css = css;
     this.#fileUrl = fileUrl;
+
+    this.tree = new TreeNode(this);
+  }
+
+  canAcceptAsChild() {
+    return false;
+  }
+
+  addChild() {
+    throw new Error("Cannot add children to pages.");
+  }
+
+  get children() {
+    return this.tree.children.map((c) => c.value);
+  }
+
+  get parent() {
+    return this.layout;
+  }
+
+  get layout() {
+    let parent = this.tree.parent?.value;
+    return parent instanceof Layout ? parent : undefined;
+  }
+
+  set layout(layout: Layout | undefined) {
+    this.tree.parent = layout ? layout.tree : null;
   }
 
   get path() {
@@ -59,21 +87,13 @@ export class Page {
     });
   }
 
-  set layout(layout: Layout | undefined) {
-    this.#layout = layout;
-  }
-
-  get layout() {
-    return this.#layout;
-  }
-
   get layouts() {
     let layouts = [];
-    let layout = this.#layout;
+    let layout = this.layout;
 
     while (layout) {
       layouts.push(layout);
-      layout = layout.parent;
+      layout = layout.parent instanceof Layout ? layout.parent : undefined;
     }
 
     return layouts.reverse();

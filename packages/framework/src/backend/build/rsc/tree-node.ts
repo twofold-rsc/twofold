@@ -1,66 +1,41 @@
-import { partition } from "../../utils/partition.js";
 import { Layout } from "./layout.js";
+import { Page } from "./page.js";
 
-type Value = Layout;
+export type Node = Layout | Page;
+
+export type Treeable = {
+  tree: TreeNode;
+  canAcceptAsChild(other: Node): boolean;
+
+  addChild: (node: Node) => void;
+
+  children: Node[];
+  parent: Node | undefined;
+};
 
 export class TreeNode {
-  value: Value;
-
+  #value: Node;
   #parent: TreeNode | null = null;
-  #children = new Set<TreeNode>();
+  #children: TreeNode[] = [];
 
-  constructor(value: Value) {
-    this.value = value;
+  constructor(value: Node) {
+    this.#value = value;
+  }
+
+  get children() {
+    return this.#children;
+  }
+
+  set children(children: TreeNode[]) {
+    this.#children = children;
   }
 
   get parent() {
     return this.#parent;
   }
 
-  get children() {
-    return Array.from(this.#children);
-  }
-
-  detach() {
-    if (this.#parent) {
-      this.#parent.#children.delete(this);
-      this.#parent = null;
-    }
-  }
-
-  private isAncestorOf(node: TreeNode) {
-    let p = node.#parent;
-    while (p) {
-      if (p === this) {
-        return true;
-      }
-      p = p.#parent;
-    }
-    return false;
-  }
-
-  addChild(node: TreeNode) {
-    if (node === this) {
-      throw new Error("A tree node cannot be its own child.");
-    }
-
-    if (node.isAncestorOf(this)) {
-      throw new Error("Cannot move a node under its own descendant.");
-    }
-
-    let addToChild = this.children.find((child) =>
-      node.value.canGoUnder(child.value),
-    );
-
-    if (addToChild) {
-      addToChild.addChild(node);
-      this.#rebalanceChildrenAgainst(addToChild);
-    } else {
-      node.detach();
-      node.#parent = this;
-      this.#children.add(node);
-      this.#rebalanceChildrenAgainst(node);
-    }
+  get value() {
+    return this.#value;
   }
 
   set parent(parent: TreeNode | null) {
@@ -71,19 +46,57 @@ export class TreeNode {
     }
   }
 
-  /**
-   * Rebalance children against a single pivot node. Useful after we add a node to
-   * the tree and want to see if our children can fit under it.
-   */
-  #rebalanceChildrenAgainst(pivot: TreeNode) {
-    let siblings = Array.from(this.#children).filter((c) => c !== pivot);
+  detach() {
+    if (this.#parent) {
+      this.#parent.children = this.#parent.children.filter((c) => c !== this);
+      this.#parent = null;
+    }
+  }
 
-    let [move, keep] = partition(siblings, (child) =>
-      child.value.canGoUnder(pivot.value),
+  #isAncestorOf(node: TreeNode) {
+    let p = this.#parent;
+    while (p) {
+      if (p === node) {
+        return true;
+      }
+      p = p.#parent;
+    }
+    return false;
+  }
+
+  addChild(node: TreeNode) {
+    if (this === node) {
+      throw new Error("A tree node cannot be its own child.");
+    }
+
+    if (this.#isAncestorOf(node)) {
+      throw new Error("Cannot move a node under its own descendant.");
+    }
+
+    let addToChild = this.children.find((child) =>
+      child.#value.canAcceptAsChild(node.#value),
     );
 
-    move.forEach((child) => {
-      pivot.addChild(child);
-    });
+    if (addToChild) {
+      addToChild.addChild(node);
+      this.#rebalanceChildrenAgainst(addToChild);
+    } else if (this.#value.canAcceptAsChild(node.#value)) {
+      node.detach();
+      node.#parent = this;
+      this.#children.push(node);
+      this.#rebalanceChildrenAgainst(node);
+    } else {
+      console.log("this", this.value.path);
+      console.log("adding", node.value.path);
+      throw new Error("Could not add child to this node");
+    }
+  }
+
+  #rebalanceChildrenAgainst(pivot: TreeNode) {
+    let siblings = this.children.filter((c) => c !== pivot);
+
+    siblings
+      .filter((sib) => pivot.#value.canAcceptAsChild(sib.#value))
+      .forEach((sib) => pivot.addChild(sib));
   }
 }

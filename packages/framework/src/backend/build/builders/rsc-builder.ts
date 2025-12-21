@@ -24,7 +24,6 @@ import { excludePackages } from "../externals/predefined-externals.js";
 import { EntriesBuilder } from "./entries-builder.js";
 import { ErrorWrapper } from "../rsc/error-template.js";
 import { Generic } from "../rsc/generic.js";
-import { TreeNode } from "../rsc/tree-node.js";
 
 export type CompiledAction = {
   id: string;
@@ -397,7 +396,7 @@ export class RSCBuilder extends Builder {
     let keys = Object.keys(outputs);
 
     let routeStackPlaceholder = this.routeStackPlaceholder;
-    let catchBoundary = this.catchBoundary;
+    // let catchBoundary = this.catchBoundary;
 
     return keys
       .filter((key) => {
@@ -552,7 +551,7 @@ export class RSCBuilder extends Builder {
   get tree() {
     let pages = this.pages;
     let layouts = this.layouts;
-    let errorWrappers = this.errorWrappers;
+    // let errorWrappers = this.errorWrappers;
     let outerRootWrapper = this.outerRootWrapper;
 
     let root = layouts.find((layout) => layout.path === "/");
@@ -562,9 +561,9 @@ export class RSCBuilder extends Builder {
       throw new Error("No root layout");
     }
 
-    otherLayouts.forEach((layout) => root?.add(layout));
-    pages.forEach((page) => root?.add(page));
-    errorWrappers.forEach((error) => root?.add(error));
+    otherLayouts.forEach((layout) => root.addChild(layout));
+    pages.forEach((page) => root.addChild(page));
+    // errorWrappers.forEach((error) => root?.add(error));
 
     root.addWrapper(outerRootWrapper);
 
@@ -708,10 +707,9 @@ class RscBuildOutput {
       throw new Error("No root layout");
     }
 
-    let root = new TreeNode(rootLayout);
-    otherLayouts.forEach((layout) => root.addChild(new TreeNode(layout)));
+    otherLayouts.forEach((layout) => rootLayout.addChild(layout));
 
-    return root;
+    return rootLayout;
   }
 }
 
