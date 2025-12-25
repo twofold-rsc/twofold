@@ -5,7 +5,7 @@
   - [ ] clear error
     - [ ] back / popstate
     - [ ] refresh helper?
-  - [ ] Debug component for dev mode
+  - [ ] Debug component for errors in dev mode
   - [ ] clean up ssr error renderer
   - [ ] pages/layouts can use client
     - [ ] route stack placeholder should be client component only
@@ -13,6 +13,7 @@
   - [ ] unauthorized
   - [ ] invariant
   - misc
+    - [ ] how do errors and layouts interact, who is the parent (layout is parent)
     - [ ] errors in folders without layouts
 - build
   - css / assets cleanup

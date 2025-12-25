@@ -1,6 +1,7 @@
 import { Layout } from "./layout.js";
 import "urlpattern-polyfill";
 import { Treeable, TreeNode } from "./tree-node.js";
+import { CatchBoundary } from "./catch-boundary.js";
 
 export class Page implements Treeable {
   #path: string;
@@ -38,17 +39,17 @@ export class Page implements Treeable {
   }
 
   get parent() {
-    return this.layout;
+    return this.tree.parent?.value;
   }
 
-  get layout() {
-    let parent = this.tree.parent?.value;
-    return parent instanceof Layout ? parent : undefined;
-  }
-
-  set layout(layout: Layout | undefined) {
-    this.tree.parent = layout ? layout.tree : null;
-  }
+  // get layout() {
+  //   let parent = this.parent;
+  //   return parent instanceof Layout ? parent : undefined;
+  // }
+  //
+  // set layout(layout: Layout | undefined) {
+  //   this.tree.parent = layout ? layout.tree : null;
+  // }
 
   get path() {
     return this.#path;
@@ -87,42 +88,44 @@ export class Page implements Treeable {
     });
   }
 
+  get parents() {
+    let parents = this.tree.parents.map((node) => node.value);
+    return parents.reverse();
+  }
+
   get layouts() {
-    let layouts = [];
-    let layout = this.layout;
-
-    while (layout) {
-      layouts.push(layout);
-      layout = layout.parent instanceof Layout ? layout.parent : undefined;
-    }
-
-    return layouts.reverse();
+    return this.parents.filter((p) => p instanceof Layout);
   }
 
   get assets() {
-    return [...this.layouts.map((layout) => layout.css), this.#css].filter(
+    let parentLayouts = this.parents.filter((p) => p instanceof Layout);
+    return [...parentLayouts.map((layout) => layout.css), this.#css].filter(
       Boolean,
     );
   }
 
   async segments() {
-    let loadLayouts = this.layouts.map(async (layout) => {
-      let components = await layout.components();
-      return {
-        path: layout.path,
-        components,
-      };
-    });
+    let loadParents = this.parents
+      .filter(
+        (parent) => parent instanceof Layout || parent instanceof CatchBoundary,
+      )
+      .map(async (parent) => {
+        let components = await parent.components();
+        return {
+          path: parent.path,
+          components,
+        };
+      });
 
-    let layouts = await Promise.all(loadLayouts);
+    let parentSegments = await Promise.all(loadParents);
 
     let components = await this.components();
-    let page = {
+    let pageSegment = {
       path: this.#path,
       components,
     };
 
-    return [...layouts, page];
+    return [...parentSegments, pageSegment];
   }
 
   private async components() {

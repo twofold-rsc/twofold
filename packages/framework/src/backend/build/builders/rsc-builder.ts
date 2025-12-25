@@ -22,8 +22,9 @@ import { Image, imagesPlugin } from "../plugins/images-plugin.js";
 import { Font, fontsPlugin } from "../plugins/fonts-plugin.js";
 import { excludePackages } from "../externals/predefined-externals.js";
 import { EntriesBuilder } from "./entries-builder.js";
-import { ErrorWrapper } from "../rsc/error-template.js";
+import { ErrorTemplate } from "../rsc/error-template.js";
 import { Generic } from "../rsc/generic.js";
+import { CatchBoundary } from "../rsc/catch-boundary.js";
 
 export type CompiledAction = {
   id: string;
@@ -166,6 +167,8 @@ export class RSCBuilder extends Builder {
       });
 
       this.#metafile = result?.metafile;
+
+      this.tree.tree.print();
     } catch (error) {
       console.error(error);
       this.reportError(error);
@@ -251,6 +254,7 @@ export class RSCBuilder extends Builder {
       : srcPaths.framework.notFound;
   }
 
+  // TODO: remove
   get notFoundPage() {
     let metafile = this.#metafile;
 
@@ -258,7 +262,7 @@ export class RSCBuilder extends Builder {
       throw new Error("Could not find not-found page");
     }
 
-    let page = this.tree.findPageForPath("/errors/not-found");
+    let page = this.tree.tree.findPageForPath("/errors/not-found");
 
     if (!page) {
       let entryPoint = srcPaths.framework.notFound;
@@ -269,7 +273,8 @@ export class RSCBuilder extends Builder {
         path: "/errors/not-found",
         fileUrl: pathToFileURL(outputFile),
       });
-      page.layout = rootLayout;
+      // page.layout = rootLayout;
+      rootLayout?.addChild(page);
     }
 
     return page;
@@ -329,7 +334,7 @@ export class RSCBuilder extends Builder {
       });
   }
 
-  get errorWrappers() {
+  private get errorTemplates() {
     let metafile = this.#metafile;
     if (!metafile) {
       return [];
@@ -340,6 +345,8 @@ export class RSCBuilder extends Builder {
     let baseUrl = pathToFileURL(`${cwd}/`);
     let prefix = "app/pages/";
     let errorSuffix = ".error.tsx";
+
+    // TODO: account for anything under /errors/
 
     let keys = Object.keys(outputs);
     return keys
@@ -368,7 +375,7 @@ export class RSCBuilder extends Builder {
 
         let tag = path.split("/").at(-1) ?? "unknown";
 
-        return new ErrorWrapper({
+        return new ErrorTemplate({
           tag,
           path,
           fileUrl: new URL(key, baseUrl),
@@ -528,15 +535,30 @@ export class RSCBuilder extends Builder {
     return placeholder;
   }
 
-  private get catchBoundary() {
-    let catchBoundaryPath = this.catchBoundaryPath;
+  private get catchBoundaries() {
+    let routeStackPlaceholder = this.routeStackPlaceholder;
+    let catchBoundaryPath = this.compiledPathForEntry(
+      srcPaths.framework.catchBoundary,
+    );
     let catchBoundaryUrl = pathToFileURL(catchBoundaryPath);
-    let catchBoundary = new Generic({ fileUrl: catchBoundaryUrl });
-    return catchBoundary;
-  }
+    let errorTemplates = this.errorTemplates;
 
-  get catchBoundaryPath() {
-    return this.compiledPathForEntry(srcPaths.framework.catchBoundary);
+    let paths = errorTemplates.map((template) =>
+      template.path === "/"
+        ? "/"
+        : "/" + template.path.split("/").filter(Boolean).slice(0, -1).join("/"),
+    );
+
+    let catchBoundaries = [...new Set(paths)].map(
+      (path) =>
+        new CatchBoundary({
+          path,
+          fileUrl: catchBoundaryUrl,
+          routeStackPlaceholder,
+        }),
+    );
+
+    return catchBoundaries;
   }
 
   get css() {
@@ -551,7 +573,8 @@ export class RSCBuilder extends Builder {
   get tree() {
     let pages = this.pages;
     let layouts = this.layouts;
-    // let errorWrappers = this.errorWrappers;
+    let errorTemplates = this.errorTemplates;
+    let catchBoundaries = this.catchBoundaries;
     let outerRootWrapper = this.outerRootWrapper;
 
     let root = layouts.find((layout) => layout.path === "/");
@@ -562,8 +585,9 @@ export class RSCBuilder extends Builder {
     }
 
     otherLayouts.forEach((layout) => root.addChild(layout));
+    catchBoundaries.forEach((catchBoundary) => root.addChild(catchBoundary));
     pages.forEach((page) => root.addChild(page));
-    // errorWrappers.forEach((error) => root?.add(error));
+    errorTemplates.forEach((errorTemplate) => root.addChild(errorTemplate));
 
     root.addWrapper(outerRootWrapper);
 

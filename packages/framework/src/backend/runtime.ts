@@ -69,25 +69,28 @@ export class Runtime {
   // routing
 
   // build output, i hate that this is here. need to fix.
-  async catchBoundaryModule() {
-    let catchBoundaryPath = this.build.getBuilder("rsc").catchBoundaryPath;
-
-    let catchBoundaryUrl = pathToFileURL(catchBoundaryPath);
-    let mod = await import(catchBoundaryUrl.href);
-    if (!mod.default) {
-      throw new Error(
-        `Catch boundary module at ${catchBoundaryPath} has no default export.`,
-      );
-    }
-
-    return mod;
-  }
+  // async catchBoundaryModule() {
+  //   let catchBoundaryPath = this.build.getBuilder("rsc").catchBoundaryPath;
+  //
+  //   let catchBoundaryUrl = pathToFileURL(catchBoundaryPath);
+  //   let mod = await import(catchBoundaryUrl.href);
+  //   if (!mod.default) {
+  //     throw new Error(
+  //       `Catch boundary module at ${catchBoundaryPath} has no default export.`,
+  //     );
+  //   }
+  //
+  //   return mod;
+  // }
 
   // pages
 
   pageRequest(request: Request) {
     let url = new URL(request.url);
-    let page = this.build.getBuilder("rsc").tree.findPageForPath(url.pathname);
+    // TODO: messy, clean up this api
+    let page = this.build
+      .getBuilder("rsc")
+      .tree.tree.findPageForPath(url.pathname);
 
     let pageRequest = page
       ? new PageRequest({ page, request, runtime: this })

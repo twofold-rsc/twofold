@@ -150,10 +150,6 @@ export class PageRequest {
     let params = this.dynamicParams;
     let props = this.props;
 
-    // TODO: remove
-    let catchBoundaryModule = await this.#runtime.catchBoundaryModule();
-    let catchBoundaryComponent = catchBoundaryModule.default;
-
     let stack = segments.map((segment) => {
       let segmentKey = `${segment.path}:${applyPathParams(
         segment.path,
