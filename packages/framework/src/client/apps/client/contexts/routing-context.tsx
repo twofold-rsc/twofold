@@ -6,6 +6,7 @@ type NavigateOptions = {
 };
 
 type ContextShape = {
+  version: number;
   path: string;
   mask: string | undefined;
   searchParams: URLSearchParams;
@@ -19,6 +20,7 @@ type ContextShape = {
 };
 
 export const Context = createContext<ContextShape>({
+  version: 0,
   path: "/",
   mask: undefined,
   searchParams: new URLSearchParams(),
@@ -32,6 +34,7 @@ export const Context = createContext<ContextShape>({
 });
 
 export function RoutingContext({
+  version,
   path,
   mask,
   searchParams,
@@ -44,6 +47,7 @@ export function RoutingContext({
   notFound,
   children,
 }: {
+  version: number;
   path: string;
   mask: string | undefined;
   searchParams: URLSearchParams;
@@ -59,6 +63,7 @@ export function RoutingContext({
   return (
     <Context
       value={{
+        version,
         path,
         mask,
         searchParams,

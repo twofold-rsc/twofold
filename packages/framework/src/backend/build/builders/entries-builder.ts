@@ -47,6 +47,9 @@ export class EntriesBuilder extends Builder {
   async build() {
     this.clearError();
 
+    this.#clientComponentEntryMap = new Map();
+    this.#serverActionEntryMap = new Map();
+
     let frameworkComponentsUrl = new URL(
       "./client/components/",
       frameworkSrcDir,

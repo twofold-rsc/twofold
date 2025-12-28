@@ -1,10 +1,11 @@
-import { Metafile, build } from "esbuild";
+import { Metafile, PartialMessage, build } from "esbuild";
 import { fileURLToPath, pathToFileURL } from "url";
 import {
   appCompiledDir,
   appAppDir,
   frameworkCompiledDir,
   frameworkSrcDir,
+  cwd,
 } from "../../files.js";
 import { clientComponentProxyPlugin } from "../plugins/client-component-proxy-plugin.js";
 import { serverActionsPlugin } from "../plugins/server-actions-plugin.js";
@@ -12,7 +13,7 @@ import { getCompiledEntrypoint } from "../helpers/compiled-entrypoint.js";
 import path from "path";
 import { Page } from "../rsc/page.js";
 import { Wrapper } from "../rsc/wrapper.js";
-import { fileExists } from "../helpers/file.js";
+import { fileExists, fileURLToEscapedPath } from "../helpers/file.js";
 import { Builder } from "./builder.js";
 import { Build } from "../build/build.js";
 import { Layout } from "../rsc/layout.js";
@@ -144,6 +145,7 @@ export class RSCBuilder extends Builder {
             builder,
             prefixPath: "/__tf/assets/fonts",
           }),
+
           {
             name: "stores",
             setup(build) {
@@ -163,12 +165,57 @@ export class RSCBuilder extends Builder {
               });
             },
           },
+
+          {
+            name: "error-templates-must-be-client-components",
+            setup(build) {
+              let pagesDir = new URL("./pages", appAppDir);
+              let errorsRegex = `^${fileURLToEscapedPath(pagesDir)}/.*\\.error\\.tsx$`;
+
+              function isClientComponent(file: string) {
+                return builder.#entriesBuilder.clientComponentEntryMap.has(
+                  file,
+                );
+              }
+
+              build.onEnd(async (result) => {
+                let metafile = result.metafile;
+                if (!metafile) {
+                  throw new Error("Missing metafile");
+                }
+
+                let inputs = Object.keys(metafile.inputs)
+                  .filter((input) => input.endsWith("error.tsx"))
+                  .map((input) =>
+                    path.isAbsolute(input) ? input : path.resolve(cwd, input),
+                  );
+
+                let errors = inputs.reduce<PartialMessage[]>(
+                  (errors, input) => {
+                    return input.match(errorsRegex) && !isClientComponent(input)
+                      ? [
+                          ...errors,
+                          {
+                            text: "Error components must be client components",
+                            location: {
+                              file: input,
+                              suggestion: 'Mark this file with "use client"',
+                            },
+                          },
+                        ]
+                      : errors;
+                  },
+                  [],
+                );
+
+                return errors.length > 0 ? { errors } : null;
+              });
+            },
+          },
         ],
       });
 
       this.#metafile = result?.metafile;
-
-      this.tree.tree.print();
     } catch (error) {
       console.error(error);
       this.reportError(error);
@@ -541,24 +588,37 @@ export class RSCBuilder extends Builder {
       srcPaths.framework.catchBoundary,
     );
     let catchBoundaryUrl = pathToFileURL(catchBoundaryPath);
+
     let errorTemplates = this.errorTemplates;
+    let catchBoundaryMap = new Map<string, CatchBoundary>();
 
-    let paths = errorTemplates.map((template) =>
-      template.path === "/"
-        ? "/"
-        : "/" + template.path.split("/").filter(Boolean).slice(0, -1).join("/"),
-    );
+    // TODO: always have a root level catch boundary
 
-    let catchBoundaries = [...new Set(paths)].map(
-      (path) =>
-        new CatchBoundary({
+    for (let errorTemplate of errorTemplates) {
+      let path =
+        errorTemplate.path === "/"
+          ? "/"
+          : "/" +
+            errorTemplate.path
+              .split("/")
+              .filter(Boolean)
+              .slice(0, -1)
+              .join("/");
+
+      let catchBoundary = catchBoundaryMap.get(path);
+
+      if (!catchBoundary) {
+        catchBoundary = new CatchBoundary({
           path,
           fileUrl: catchBoundaryUrl,
           routeStackPlaceholder,
-        }),
-    );
+        });
 
-    return catchBoundaries;
+        catchBoundaryMap.set(path, catchBoundary);
+      }
+    }
+
+    return [...catchBoundaryMap.values()];
   }
 
   get css() {

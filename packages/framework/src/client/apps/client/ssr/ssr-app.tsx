@@ -38,6 +38,7 @@ export function SSRApp({
   return (
     <>
       <RoutingContext
+        version={1}
         path={url.pathname}
         mask={undefined}
         searchParams={url.searchParams}

@@ -1,5 +1,4 @@
 import {
-  Suspense,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -251,6 +250,7 @@ function Router() {
   return (
     <ErrorBoundary>
       <RoutingContext
+        version={routerState.version}
         path={url.pathname}
         mask={routerState.mask}
         searchParams={url.searchParams}

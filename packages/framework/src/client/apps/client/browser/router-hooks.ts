@@ -9,6 +9,7 @@ import { RedirectError } from "../../../errors/redirect-error";
 import { RouteStackEntry } from "../contexts/route-stack-context";
 
 type State = {
+  version: number;
   path: string;
   mask: string | undefined;
   action: "seed" | "render" | "refresh" | "navigate" | "popstate";
@@ -41,6 +42,7 @@ export function useRouterReducer() {
   }, [finalizedState]);
 
   let returnedState = {
+    version: finalizedState.version,
     path: finalizedState.path,
     mask: finalizedState.mask,
     action: finalizedState.action,
@@ -124,6 +126,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             path,
             mask: action.mask,
             action: "navigate",
@@ -141,6 +144,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             path: action.path,
             mask: action.mask,
             action: "popstate",
@@ -162,6 +166,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             action: "refresh",
             history: "none",
             cache: newCache,
@@ -196,6 +201,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             cache: newCache,
           };
         },
@@ -214,6 +220,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             path: rsc.path,
             mask: action.mask,
             action: "render",
@@ -251,6 +258,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             path: rsc.path,
             action: "render",
             history: "none",
@@ -403,6 +411,7 @@ async function getInitialRouterState() {
   }
 
   let state: State = {
+    version: 1,
     path,
     mask: undefined,
     action: "seed",

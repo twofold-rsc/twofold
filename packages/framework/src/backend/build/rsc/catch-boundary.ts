@@ -1,6 +1,9 @@
+import { error } from "console";
+import { ErrorTemplate } from "./error-template.js";
 import { Generic } from "./generic.js";
 import { Layout } from "./layout.js";
 import { Node, Treeable, TreeNode } from "./tree-node.js";
+import { lazy } from "react";
 
 export class CatchBoundary implements Treeable {
   #path;
@@ -29,12 +32,16 @@ export class CatchBoundary implements Treeable {
     return this.#path;
   }
 
-  addChild() {
-    throw new Error("No impl");
+  addChild(node: Node) {
+    this.tree.addChild(node.tree);
   }
 
   get children() {
     return this.tree.children.map((c) => c.value);
+  }
+
+  get errorTemplates() {
+    return this.children.filter((c) => c instanceof ErrorTemplate);
   }
 
   get parent() {
@@ -71,7 +78,10 @@ export class CatchBoundary implements Treeable {
     //        func: CatchBoundary,
     //        requirements: [],
     //        props: {
-    //          // TODO: list of error templates and tags
+    //          taggedErrorComponents: [{
+    //            tag: "unexpected",
+    //            component: Component
+    //          }]
     //        }
     //      },
     //      {
@@ -94,13 +104,32 @@ export class CatchBoundary implements Treeable {
       );
     }
 
+    let errorTemplates = this.errorTemplates;
+
+    let loadErrorComponents = errorTemplates.map(async (errorTemplate) => {
+      let errorTemplateModule = await errorTemplate.loadModule();
+
+      if (!errorTemplateModule.default) {
+        throw new Error(
+          `Error template for ${errorTemplate.path}/ has no default export.`,
+        );
+      }
+
+      return {
+        tag: errorTemplate.tag,
+        component: errorTemplateModule.default,
+      };
+    });
+
+    let taggedErrorComponents = await Promise.all(loadErrorComponents);
+
     return [
       // catchBoundary
       {
         func: catchBoundaryModule.default,
         requirements: [],
         props: {
-          // TODO: templates
+          taggedErrorComponents,
         },
       },
       {
