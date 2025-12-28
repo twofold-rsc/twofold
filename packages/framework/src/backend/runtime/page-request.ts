@@ -73,7 +73,7 @@ export class PageRequest {
 
     let renderStack = await this.routeStack();
 
-    let { stream, error, redirect, notFound } =
+    let { stream, error, redirect, notFound, unauthorized } =
       await this.#runtime.renderRSCStream({
         stack: renderStack,
       });
@@ -95,7 +95,9 @@ export class PageRequest {
       ? 500
       : this.#conditions.includes("not-found")
         ? 404
-        : 200;
+        : unauthorized
+          ? 401
+          : 200;
 
     // give back the stream wrapped in a response
     return new Response(stream, {

@@ -70,10 +70,18 @@ export default class CatchBoundary extends Component<Props, State> {
     }
   }
 
+  static #digestToTag: Record<string, string> = {
+    TwofoldUnauthorizedError: "unauthorized",
+  };
+
   render() {
     if (this.state.error) {
+      let digest = this.state.error.digest;
+
+      let errorTag = CatchBoundary.#digestToTag[digest] ?? "unexpected";
+
       const taggedComponent = this.props.taggedErrorComponents.find(
-        (tagged) => tagged.tag === "unexpected",
+        (tagged) => tagged.tag === errorTag,
       );
 
       if (!taggedComponent) {

@@ -9,6 +9,7 @@ import {
 import {
   isNotFoundError,
   isRedirectError,
+  isUnauthorizedError,
   redirectErrorInfo,
 } from "./runtime/helpers/errors.js";
 import { randomUUID } from "node:crypto";
@@ -137,8 +138,14 @@ export class Runtime {
       temporaryReferences: options.temporaryReferences,
       onError(err: unknown) {
         streamError = err;
+
+        let isSafeError =
+          isNotFoundError(err) ||
+          isRedirectError(err) ||
+          isUnauthorizedError(err);
+
         if (
-          (isNotFoundError(err) || isRedirectError(err)) &&
+          isSafeError &&
           err instanceof Error &&
           "digest" in err &&
           typeof err.digest === "string"
@@ -173,6 +180,11 @@ export class Runtime {
       return {
         stream: t2,
         notFound: true,
+      };
+    } else if (isUnauthorizedError(streamError)) {
+      return {
+        stream: t2,
+        unauthorized: true,
       };
     } else if (isRedirectError(streamError)) {
       let { status, url } = redirectErrorInfo(streamError);

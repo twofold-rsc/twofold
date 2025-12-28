@@ -4,18 +4,23 @@
   - [x] catch boundary & error template
     - [x] unexpected error
     - [x] error templates must be client components
-  - [ ] clear error
-    - [ ] back / popstate
-    - [ ] refresh helper?
+  - [x] clear error
+    - [x] back / popstate
+    - [x] reset helper?
+  - [ ] error types
+    - [ ] unauthorized
+      - [x] root error boundary
+      - [x] ssr error for unauthorized
+      - [x] prevent unauthorized errors from logging
+      - [ ] middleware unauthorized
+      - [ ] customized unauthorized
+    - [ ] not found
+    - [ ] tagged errors
+    - [ ] error props
   - [ ] Debug component for errors in dev mode
   - [ ] clean up ssr error renderer
   - [ ] pages/layouts can use client
     - [ ] route stack placeholder should be client component only
-  - [ ] error types
-    - [ ] not found
-    - [ ] unauthorized
-    - [ ] tagged errors
-    - [ ] error props
   - misc
     - [ ] how do errors and layouts interact, who is the parent (layout is parent)
     - [ ] errors in folders without layouts

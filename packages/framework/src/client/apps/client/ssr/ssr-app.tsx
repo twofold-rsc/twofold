@@ -161,9 +161,12 @@ export async function render({
   return htmlStream;
 }
 
+// TODO: unsure if err.message is avilable in prod, safer to use digest
+
 function isSafeError(err: Error) {
   return (
     err.message === "TwofoldNotFoundError" ||
+    err.message === "TwofoldUnauthorizedError" ||
     err.message.startsWith("TwofoldRedirectError")
   );
 }
