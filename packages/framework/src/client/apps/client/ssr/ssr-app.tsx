@@ -144,7 +144,9 @@ export async function render({
 
     // at this point we can cancel the error stream since we don't need it
     rscStream6.cancel();
-  } catch {
+  } catch (e: unknown) {
+    // console.log("ssr stream crashed");
+    // console.log(e);
     // if this fails we need to send a crash back
     htmlStream = await renderToReadableStream(
       createElement(InlineRSCStream, {

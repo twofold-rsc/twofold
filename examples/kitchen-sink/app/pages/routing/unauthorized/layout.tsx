@@ -15,6 +15,14 @@ export default function Layout({ children }: LayoutProps) {
               Page calls unauthorized
             </Link>
           </li>
+          <li>
+            <Link
+              href="/routing/unauthorized/middleware-calls-unauthorized"
+              className="text-blue-500 underline"
+            >
+              Middleware calls unauthorized
+            </Link>
+          </li>
         </ul>
       </div>
       <div>{children}</div>

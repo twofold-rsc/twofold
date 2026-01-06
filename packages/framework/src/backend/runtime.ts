@@ -109,6 +109,15 @@ export class Runtime {
     });
   }
 
+  unauthorizedPageRequest(request: Request) {
+    return new PageRequest({
+      page: this.build.getBuilder("rsc").unauthorizedPage,
+      request,
+      runtime: this,
+      conditions: ["unauthorized"],
+    });
+  }
+
   // actions
 
   actionRequest(request: Request) {

@@ -19,7 +19,7 @@ function main() {
             isUnauthorizedError(error);
 
           if (!isSafeError && process.env.NODE_ENV !== "production") {
-            // I want to redisplay the normal react error message here.
+            // Let's redisplay the normal react error message here.
             //
             // This is taken from: https://github.com/facebook/react/blob/65eec428c40d542d4d5a9c1af5c3f406aecf3440/packages/react-reconciler/src/ReactFiberErrorLogger.js#L60
 

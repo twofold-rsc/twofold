@@ -127,12 +127,19 @@ export class TreeNode {
         `${" ".repeat(indent)} ${node.value.path} (${node.value.constructor.name})`,
       );
       indent++;
-      node.children.map((child) => {
+
+      let [childrenWithChildren, childrenWithoutChildren] = partition(
+        node.children,
+        (child) => child.children.length > 0,
+      );
+
+      childrenWithChildren.forEach(print);
+
+      childrenWithoutChildren.map((child) => {
         console.log(
           `${" ".repeat(indent)} ${child.value.path} (${child.value.constructor.name})`,
         );
       });
-      node.children.forEach(print);
       indent--;
     };
 

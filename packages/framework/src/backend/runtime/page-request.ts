@@ -4,6 +4,7 @@ import { getStore } from "../stores/rsc-store.js";
 import {
   isNotFoundError,
   isRedirectError,
+  isUnauthorizedError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
 import { ComponentType, createElement, ReactElement } from "react";
@@ -38,6 +39,11 @@ export class PageRequest {
     return this.#conditions.includes("not-found");
   }
 
+  // TODO: dont think we need this
+  get isUnauthorized() {
+    return this.#conditions.includes("unauthorized");
+  }
+
   get page() {
     return this.#page;
   }
@@ -63,6 +69,8 @@ export class PageRequest {
     } catch (error: unknown) {
       if (isNotFoundError(error)) {
         return this.notFoundRscResponse();
+      } else if (isUnauthorizedError(error)) {
+        return this.unauthorizedRscResponse();
       } else if (isRedirectError(error)) {
         let { status, url } = redirectErrorInfo(error);
         return this.redirectResponse(status, url);
@@ -72,6 +80,9 @@ export class PageRequest {
     }
 
     let renderStack = await this.routeStack();
+
+    console.log("routeStack");
+    console.log(renderStack);
 
     let { stream, error, redirect, notFound, unauthorized } =
       await this.#runtime.renderRSCStream({
@@ -91,11 +102,14 @@ export class PageRequest {
       "Content-type": "text/x-component",
     });
 
+    const isUnauthorized =
+      this.#conditions.includes("unauthorized") || unauthorized;
+
     let status = error
       ? 500
       : this.#conditions.includes("not-found")
         ? 404
-        : unauthorized
+        : isUnauthorized
           ? 401
           : 200;
 
@@ -223,6 +237,19 @@ export class PageRequest {
 
     let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
     return notFoundRequest.rscResponse();
+  }
+
+  private unauthorizedRscResponse() {
+    // TODO: i dont think this is needed since its always calling our page
+    if (this.isUnauthorized) {
+      throw new Error("The unauthorized page cannot call unauthorized()");
+    }
+
+    let unauthorizedRequest = this.#runtime.unauthorizedPageRequest(
+      this.#request,
+    );
+
+    return unauthorizedRequest.rscResponse();
   }
 
   private notFoundSsrResponse() {

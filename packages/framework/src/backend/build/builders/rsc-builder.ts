@@ -82,7 +82,8 @@ export class RSCBuilder extends Builder {
     let middlewareEntry = hasMiddleware ? [srcPaths.app.globalMiddleware] : [];
 
     let notFoundEntry = await this.notFoundSrcPath();
-    let unauthorizedEntry = await this.unauthorizedSrcPath();
+    let unauthorizedTemplateEntry =
+      await this.unauthorizedErrorTemplateSrcPath();
 
     // files need to be sorted for deterministic builds
     let serverActionEntries = Array.from(
@@ -114,7 +115,8 @@ export class RSCBuilder extends Builder {
           ...middlewareEntry,
           ...serverActionEntries,
           notFoundEntry,
-          unauthorizedEntry,
+          unauthorizedTemplateEntry,
+          srcPaths.framework.pages.unauthorized,
           srcPaths.framework.outerRootWrapper,
           srcPaths.framework.routeStackPlaceholder,
           srcPaths.framework.catchBoundary,
@@ -218,6 +220,8 @@ export class RSCBuilder extends Builder {
       });
 
       this.#metafile = result?.metafile;
+
+      this.tree.tree.print();
     } catch (error) {
       console.error(error);
       this.reportError(error);
@@ -300,21 +304,19 @@ export class RSCBuilder extends Builder {
     let hasCustomNotFound = await fileExists(srcPaths.app.notFound);
     return hasCustomNotFound
       ? srcPaths.app.notFound
-      : srcPaths.framework.notFound;
+      : srcPaths.framework.pages.notFound;
   }
 
-  private async hasCustomUnauthorized() {
-    return await fileExists(srcPaths.app.unauthorized);
-  }
-
-  private async unauthorizedSrcPath() {
+  private async unauthorizedErrorTemplateSrcPath() {
     let hasCustomUnauthorized = await fileExists(srcPaths.app.unauthorized);
     return hasCustomUnauthorized
       ? srcPaths.app.unauthorized
-      : srcPaths.framework.unauthorized;
+      : srcPaths.framework.errorTemplates.unauthorized;
   }
 
-  // TODO: remove
+  // TODO: not found page is not user customizable, only the template is.
+  // this basically just becomes a generic page that middleware or http routing
+  // can use when needed. see unauthorized
   get notFoundPage() {
     let metafile = this.#metafile;
 
@@ -325,7 +327,7 @@ export class RSCBuilder extends Builder {
     let page = this.tree.tree.findPageForPath("/errors/not-found");
 
     if (!page) {
-      let entryPoint = srcPaths.framework.notFound;
+      let entryPoint = srcPaths.framework.pages.notFound;
       let outputFile = getCompiledEntrypoint(entryPoint, metafile);
       let rootLayout = this.layouts.find((layout) => layout.path === "/");
 
@@ -336,6 +338,26 @@ export class RSCBuilder extends Builder {
       // page.layout = rootLayout;
       rootLayout?.addChild(page);
     }
+
+    return page;
+  }
+
+  get unauthorizedPage() {
+    let metafile = this.#metafile;
+
+    if (!metafile) {
+      throw new Error("Could not find unauthorized page");
+    }
+
+    let entryPoint = srcPaths.framework.pages.unauthorized;
+    let outputFile = getCompiledEntrypoint(entryPoint, metafile);
+    let rootLayout = this.layouts.find((layout) => layout.path === "/");
+
+    let page = new Page({
+      path: "/__tf/errors/unauthorized",
+      fileUrl: pathToFileURL(outputFile),
+    });
+    rootLayout?.addChild(page);
 
     return page;
   }
@@ -440,11 +462,10 @@ export class RSCBuilder extends Builder {
         });
       });
 
-    // if there is no root level authorized template we will add the default
-
+    // if there is no root level unauthorized template we will add the default
     if (!templates.some((t) => t.tag === "unauthorized" && t.path === "/")) {
       let defaultUnauthorizedPath = getCompiledEntrypoint(
-        srcPaths.framework.unauthorized,
+        srcPaths.framework.errorTemplates.unauthorized,
         metafile,
       );
 
@@ -456,11 +477,6 @@ export class RSCBuilder extends Builder {
         }),
       );
     }
-
-    // console.log(
-    //   "templates",
-    //   templates.map((t) => t.path),
-    // );
 
     return templates;
   }
@@ -660,6 +676,9 @@ export class RSCBuilder extends Builder {
       }
     }
 
+    // console.log("catchBoundaries");
+    // console.log(catchBoundaryMap.keys().toArray());
+
     return [...catchBoundaryMap.values()];
   }
 
@@ -843,14 +862,24 @@ let appAppPath = fileURLToPath(appAppDir);
 let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
 let srcPaths = {
   framework: {
-    notFound: path.join(frameworkSrcPath, "client", "pages", "not-found.tsx"),
-    unauthorized: path.join(
-      frameworkSrcPath,
-      "client",
-      "components",
-      "error-templates",
-      "unauthorized.tsx",
-    ),
+    pages: {
+      notFound: path.join(frameworkSrcPath, "client", "pages", "not-found.tsx"),
+      unauthorized: path.join(
+        frameworkSrcPath,
+        "client",
+        "pages",
+        "unauthorized.tsx",
+      ),
+    },
+    errorTemplates: {
+      unauthorized: path.join(
+        frameworkSrcPath,
+        "client",
+        "components",
+        "error-templates",
+        "unauthorized.tsx",
+      ),
+    },
     outerRootWrapper: path.join(
       frameworkSrcPath,
       "client",

@@ -13,10 +13,14 @@
       - [x] ssr error for unauthorized
       - [x] prevent unauthorized errors from logging
       - [ ] middleware unauthorized
+      - [ ] action unauthorized
+      - [ ] async unauthorized
+      - [ ] client side transition unauthorized?
+      - [ ] suspended unauthorized
       - [ ] customized unauthorized
     - [ ] not found
     - [ ] tagged errors
-    - [ ] error props
+    - [ ] error props type
   - [ ] Debug component for errors in dev mode
   - [ ] clean up ssr error renderer
   - [ ] pages/layouts can use client
@@ -24,6 +28,7 @@
   - misc
     - [ ] how do errors and layouts interact, who is the parent (layout is parent)
     - [ ] errors in folders without layouts
+    - [ ] review client app bundling for error templates
   - to test
     - [ ] two catch errors where the inner doesn't have a template/tag, but the outer does
   - [ ] cleanup
