@@ -23,6 +23,30 @@ export default function Layout({ children }: LayoutProps) {
               Middleware calls unauthorized
             </Link>
           </li>
+          <li>
+            <Link
+              href="/routing/unauthorized/async-unauthorized"
+              className="text-blue-500 underline"
+            >
+              Async unauthorized
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/unauthorized/suspended-unauthorized"
+              className="text-blue-500 underline"
+            >
+              Suspended unauthorized
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/unauthorized/action-calls-unauthorized"
+              className="text-blue-500 underline"
+            >
+              Action calls unauthorized
+            </Link>
+          </li>
         </ul>
       </div>
       <div>{children}</div>

@@ -81,9 +81,6 @@ export class PageRequest {
 
     let renderStack = await this.routeStack();
 
-    console.log("routeStack");
-    console.log(renderStack);
-
     let { stream, error, redirect, notFound, unauthorized } =
       await this.#runtime.renderRSCStream({
         stack: renderStack,

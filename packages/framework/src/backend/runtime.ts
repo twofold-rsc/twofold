@@ -22,6 +22,7 @@ import { injectResolver } from "./monkey-patch.js";
 import { partition } from "./utils/partition.js";
 import { pathMatches } from "./runtime/helpers/routing.js";
 import { pathToFileURL } from "node:url";
+import { invariant } from "./utils/invariant.js";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -110,8 +111,15 @@ export class Runtime {
   }
 
   unauthorizedPageRequest(request: Request) {
+    // TODO: messy, clean up this api
+    let page = this.build
+      .getBuilder("rsc")
+      .tree.tree.findPageForPath("/__tf/errors/unauthorized");
+
+    invariant(page, "Could not find unauthorized page");
+
     return new PageRequest({
-      page: this.build.getBuilder("rsc").unauthorizedPage,
+      page,
       request,
       runtime: this,
       conditions: ["unauthorized"],

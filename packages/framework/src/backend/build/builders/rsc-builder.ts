@@ -26,6 +26,7 @@ import { EntriesBuilder } from "./entries-builder.js";
 import { ErrorTemplate } from "../rsc/error-template.js";
 import { Generic } from "../rsc/generic.js";
 import { CatchBoundary } from "../rsc/catch-boundary.js";
+import { invariant } from "../../utils/invariant.js";
 
 export type CompiledAction = {
   id: string;
@@ -221,7 +222,7 @@ export class RSCBuilder extends Builder {
 
       this.#metafile = result?.metafile;
 
-      this.tree.tree.print();
+      // this.tree.tree.print();
     } catch (error) {
       console.error(error);
       this.reportError(error);
@@ -317,6 +318,7 @@ export class RSCBuilder extends Builder {
   // TODO: not found page is not user customizable, only the template is.
   // this basically just becomes a generic page that middleware or http routing
   // can use when needed. see unauthorized
+  // TODO: this is out of date, copy from unauthorized
   get notFoundPage() {
     let metafile = this.#metafile;
 
@@ -342,22 +344,17 @@ export class RSCBuilder extends Builder {
     return page;
   }
 
-  get unauthorizedPage() {
+  private get unauthorizedPage() {
     let metafile = this.#metafile;
-
-    if (!metafile) {
-      throw new Error("Could not find unauthorized page");
-    }
+    invariant(metafile, "Could not find metafile");
 
     let entryPoint = srcPaths.framework.pages.unauthorized;
     let outputFile = getCompiledEntrypoint(entryPoint, metafile);
-    let rootLayout = this.layouts.find((layout) => layout.path === "/");
 
     let page = new Page({
       path: "/__tf/errors/unauthorized",
       fileUrl: pathToFileURL(outputFile),
     });
-    rootLayout?.addChild(page);
 
     return page;
   }
@@ -709,6 +706,8 @@ export class RSCBuilder extends Builder {
     catchBoundaries.forEach((catchBoundary) => root.addChild(catchBoundary));
     pages.forEach((page) => root.addChild(page));
     errorTemplates.forEach((errorTemplate) => root.addChild(errorTemplate));
+
+    root.addChild(this.unauthorizedPage);
 
     root.addWrapper(outerRootWrapper);
 
