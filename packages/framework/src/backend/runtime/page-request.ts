@@ -134,8 +134,10 @@ export class PageRequest {
       });
 
     if (notFound) {
+      stream.cancel();
       return this.notFoundSsrResponse();
     } else if (redirect) {
+      stream.cancel();
       let { status, url } = redirect;
       return this.redirectResponse(status, url);
     }

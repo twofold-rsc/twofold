@@ -6,7 +6,7 @@ async function action() {
   //  TODO: this errors and renders the correct component, but is not
   //  being caught correctly on the server (probs needs a safe error)
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 100));
   unauthorized();
 }
 

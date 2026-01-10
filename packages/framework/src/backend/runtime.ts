@@ -264,10 +264,17 @@ export class Runtime {
       // TODO: review this
       let error = deserializeError(message.serializedError);
 
+      // TODO: i dont think these are possible, if they happen ssr should
+      // render shell
       if (isNotFoundError(error)) {
         return {
           stream: readStream,
           notFound: true,
+        };
+      } else if (isUnauthorizedError(error)) {
+        return {
+          stream: readStream,
+          unauthorized: true,
         };
       } else if (isRedirectError(error)) {
         let { status, url } = redirectErrorInfo(error);
@@ -280,6 +287,7 @@ export class Runtime {
         };
       } else {
         // TODO:
+        // outdated? worker always sends back html even if it errors...
         // recreate the stream in error mode  (if we arent already in error mode)
         // if we are in error mode and we error again then we should throw
         // we dont want to throw, we want to render the client app

@@ -56,22 +56,31 @@ export function callServer(id: string, args: any) {
           callServer,
           temporaryReferences,
         });
+
         stack = streams.stack;
-        result = streams.action;
-      } else if (contentType === "text/x-serialized-error") {
-        let json = await response.json();
-        let error = deserializeError(json);
-        let stream = new ReadableStream({
-          start(controller) {
-            controller.error(error);
-          },
-        });
-        result = createFromReadableStream(stream, {
-          callServer,
-        });
-        // should we reject here?
-        // reject(error);
+
+        if (streams.action.type === "return") {
+          // normal return from action
+          result = streams.action.result;
+        } else if (streams.action.type === "throw") {
+          // action threw an error. put it into an rsc render stream
+          // so it triggers an error boundary. it feels like there
+          // should be a better way to do this. my mental model is
+          // off here because i thought errors thrown in transitions trigger
+          // boundaries
+          let error = deserializeError(streams.action.error);
+          let stream = new ReadableStream({
+            start(controller) {
+              controller.error(error);
+            },
+          });
+          result = createFromReadableStream(stream, {
+            callServer,
+          });
+          // would it be better to reject?
+        }
       } else if (contentType === "application/json") {
+        // TODO: maybe we can encode this in the stream
         let json = await response.json();
         if (json.type === "twofold-offsite-redirect") {
           window.location.href = json.url;

@@ -47,6 +47,14 @@ export default function Layout({ children }: LayoutProps) {
               Action calls unauthorized
             </Link>
           </li>
+          <li>
+            <Link
+              href="/routing/unauthorized/custom-unauthorized"
+              className="text-blue-500 underline"
+            >
+              Custom unauthorized
+            </Link>
+          </li>
         </ul>
       </div>
       <div>{children}</div>

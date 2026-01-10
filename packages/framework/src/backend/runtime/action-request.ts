@@ -10,6 +10,7 @@ import {
 import {
   isNotFoundError,
   isRedirectError,
+  isUnauthorizedError,
   NotFoundError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
@@ -30,14 +31,23 @@ type ServerManifest = Record<
 
 type ServerActionMap = Map<string, CompiledAction>;
 
+type Result =
+  | {
+      type: "return";
+      result: unknown;
+    }
+  | {
+      type: "throw";
+      error: Error;
+    };
+
 export class ActionRequest {
   #action: SPAAction | MPAAction;
   #request: Request;
   #runtime: Runtime;
   #temporaryReferences: unknown = createTemporaryReferenceSet();
 
-  #result: unknown;
-  #didRun = false;
+  #result: Result | undefined = undefined;
 
   constructor({
     request,
@@ -71,21 +81,14 @@ export class ActionRequest {
   }
 
   async rscResponse() {
-    let result: unknown;
+    let result = await this.getResult();
 
-    try {
-      result = await this.getResult();
-    } catch (error) {
-      let errorObject =
-        error instanceof Error ? error : new Error("Internal Server Error");
-      return this.errorResponse(errorObject);
-    }
-
+    /// TODO: should be the same as unauthorized
     if (isNotFoundError(result)) {
       return this.notFoundRscResponse();
     }
 
-    if (isRedirectError(result)) {
+    if (result.type === "throw" && isRedirectError(result.error)) {
       let { url } = redirectErrorInfo(result);
       return this.redirectResponse(url);
     }
@@ -107,6 +110,9 @@ export class ActionRequest {
     } catch (err: unknown) {
       if (isNotFoundError(err)) {
         return this.notFoundRscResponse();
+      } else if (isUnauthorizedError(err)) {
+        //  TODO: handle middleware unauthorized
+        // return this.unauthorizedRscResponse();
       } else if (isRedirectError(err)) {
         let { url } = redirectErrorInfo(err);
         return this.redirectResponse(url);
@@ -120,15 +126,28 @@ export class ActionRequest {
 
     let data = {
       stack,
-      action: result,
+
+      // if we try to give an error to react to serialize then it loses
+      // some properties like digest. i think digest is really only
+      // used when rendering. so we need to take ownership of doing
+      // the error serialization. maybe a react bug?
+      action:
+        result.type === "throw"
+          ? {
+              ...result,
+              error: serializeError(result.error),
+            }
+          : result,
+
       formState,
     };
 
-    let { stream, error, redirect, notFound } =
+    let { stream, error, redirect, unauthorized, notFound } =
       await this.#runtime.renderRSCStream(data, {
         temporaryReferences: this.#temporaryReferences,
       });
 
+    // TODO: remove
     if (notFound) {
       stream.cancel();
       return this.notFoundRscResponse();
@@ -137,7 +156,12 @@ export class ActionRequest {
       return this.redirectResponse(redirect.url);
     }
 
-    let status = error ? 500 : 200;
+    const isUnauthorized =
+      (result.type === "throw" && isUnauthorizedError(result.error)) ||
+      unauthorized;
+
+    let status = isUnauthorized ? 401 : error ? 500 : 200;
+
     let headers = new Headers({
       "Content-type": "text/x-component",
     });
@@ -149,6 +173,23 @@ export class ActionRequest {
   }
 
   async ssrResponse() {
+    let result = await this.getResult();
+
+    // how do handle with js disabled? think maybe ignore for now
+
+    if (result.type === "throw") {
+      if (isUnauthorizedError(result.error)) {
+        return this.unauthorizedSsrResponse();
+      } else if (isNotFoundError(result.error)) {
+        return this.notFoundSsrResponse();
+      } else if (isRedirectError(result.error)) {
+        let { url } = redirectErrorInfo(result.error);
+        return this.redirectResponse(url);
+      } else {
+        throw result.error;
+      }
+    }
+
     let rscResponse = await this.rscResponse();
 
     // response is not SSRable
@@ -159,17 +200,32 @@ export class ActionRequest {
     let rscStream = rscResponse.body;
     let url = new URL(this.#action.renderPath, this.#request.url);
 
-    let { stream, notFound, redirect } =
-      await this.#runtime.renderHtmlStreamFromRSCStream(rscStream, "page", {
-        urlString: url.toString(),
-      });
+    // TODO: a test here would be an action take works, but the page
+    // it's rendered on now throws an error. we should deal with that
+    // correctly.
 
-    if (notFound) {
-      return this.notFoundSsrResponse();
-    } else if (redirect) {
-      let { url } = redirect;
-      return this.redirectResponse(url);
-    }
+    // TODO: remove
+    // let { stream, notFound, unauthorized, redirect } =
+    //   await this.#runtime.renderHtmlStreamFromRSCStream(rscStream, "page", {
+    //     urlString: url.toString(),
+    //   });
+    //
+    // if (notFound) {
+    //   stream.cancel();
+    //   return this.notFoundSsrResponse();
+    // } else if (redirect) {
+    //   stream.cancel();
+    //   let { url } = redirect;
+    //   return this.redirectResponse(url);
+    // }
+
+    let { stream } = await this.#runtime.renderHtmlStreamFromRSCStream(
+      rscStream,
+      "page",
+      {
+        urlString: url.toString(),
+      },
+    );
 
     let status = rscResponse.status;
     let headers = new Headers(rscResponse.headers);
@@ -182,30 +238,38 @@ export class ActionRequest {
   }
 
   async getResult() {
-    if (!this.#didRun) {
-      let result = await this.runAction();
-      this.#result = result;
-      this.#didRun = true;
+    if (!this.#result) {
+      this.#result = await this.runAction();
     }
 
     return this.#result;
   }
 
-  async runAction() {
-    let result;
+  async runAction(): Promise<Result> {
     try {
-      result = await this.#action.runAction();
+      let result = await this.#action.runAction();
+      return {
+        type: "return",
+        result,
+      };
     } catch (err: unknown) {
-      if (isNotFoundError(err) || isRedirectError(err)) {
-        result = err;
-      } else {
-        // rethrow
-        console.error(err);
-        throw err;
-      }
-    }
+      const isSafeError =
+        isNotFoundError(err) ||
+        isUnauthorizedError(err) ||
+        isRedirectError(err);
 
-    return result;
+      if (!isSafeError) {
+        console.error(err);
+      }
+
+      let errorObject =
+        err instanceof Error ? err : new Error("Action threw non error");
+
+      return {
+        type: "throw",
+        error: errorObject,
+      };
+    }
   }
 
   async name() {
@@ -244,6 +308,13 @@ export class ActionRequest {
     return notFoundRequest.ssrResponse();
   }
 
+  private unauthorizedSsrResponse() {
+    let unauthorizedRequest = this.#runtime.unauthorizedPageRequest(
+      this.#request,
+    );
+    return unauthorizedRequest.ssrResponse();
+  }
+
   private redirectResponse(url: string) {
     let requestUrl = new URL(this.requestToRender.url, this.#request.url);
     let redirectUrl = new URL(url, this.#request.url);
@@ -279,19 +350,6 @@ export class ActionRequest {
         },
       });
     }
-  }
-
-  private errorResponse(error: Error) {
-    // temporary function to serialize error
-    // todo: use rsc serialization for this sort of thing
-
-    let json = JSON.stringify(serializeError(error));
-    return new Response(json, {
-      status: 500,
-      headers: {
-        "content-type": "text/x-serialized-error",
-      },
-    });
   }
 }
 
@@ -411,7 +469,7 @@ class SPAAction implements Action {
     return fn.bind(null, ...args);
   }
 
-  async getFormState(result: unknown) {
+  async getFormState(result: Result) {
     return null;
   }
 
@@ -520,9 +578,13 @@ class MPAAction implements Action {
     return fn();
   }
 
-  async getFormState(result: unknown) {
+  async getFormState(result: Result) {
     let formData = await this.formData();
-    let formState = decodeFormState(result, formData, this.#serverManifest);
+    let formState = decodeFormState(
+      result.type === "return" ? result.result : result.error,
+      formData,
+      this.#serverManifest,
+    );
     return formState;
   }
 }

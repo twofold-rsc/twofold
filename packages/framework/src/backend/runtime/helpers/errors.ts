@@ -16,7 +16,7 @@ export function isRedirectError(err: unknown) {
   );
 }
 
-export function isUnauthorizedError(err: unknown) {
+export function isUnauthorizedError(err: unknown): err is Error {
   return (
     err instanceof Error &&
     "digest" in err &&

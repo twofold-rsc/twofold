@@ -8,27 +8,26 @@
     - [x] back / popstate
     - [x] reset helper?
   - [ ] error types
-    - [ ] unauthorized
-      - [x] root error boundary
-      - [x] ssr error for unauthorized
-      - [x] prevent unauthorized errors from logging
-      - [ ] middleware unauthorized
-      - [ ] action unauthorized
-      - [ ] async unauthorized
-      - [ ] client side transition unauthorized?
-      - [ ] suspended unauthorized
-      - [ ] customized unauthorized
+    - [x] unauthorized
     - [ ] not found
+      - [ ] middleware not found after action
+      - [ ] custom not found
+    - [ ] redirect
     - [ ] tagged errors
+      - [ ] user customizable errors
     - [ ] error props type
   - [ ] Debug component for errors in dev mode
   - [ ] clean up ssr error renderer
   - [ ] pages/layouts can use client
     - [ ] route stack placeholder should be client component only
   - misc
-    - [ ] how do errors and layouts interact, who is the parent (layout is parent)
-    - [ ] errors in folders without layouts
+    - [x] how do errors and layouts interact, who is the parent (layout is parent)
+    - [x] errors in folders without layouts
     - [ ] review client app bundling for error templates
+    - [ ] update mpa server action page to have examples of all errors
+      - [ ] the ssr error renderer should show something with js is offsite
+            (right now it blank pages)
+      - [ ] also have an example of throwing an uncaught error
   - to test
     - [ ] two catch errors where the inner doesn't have a template/tag, but the outer does
   - [ ] cleanup
@@ -40,6 +39,7 @@
 - endpoints
 - tests
 - db
+
 - queue
 
 - pass a client component to a server action
