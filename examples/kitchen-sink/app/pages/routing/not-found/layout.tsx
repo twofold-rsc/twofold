@@ -25,6 +25,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/routing/not-found/custom-not-found"
+              className="text-blue-500 underline"
+            >
+              Custom not found
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/not-found/async-page-calls-not-found"
               className="text-blue-500 underline"
             >
@@ -78,6 +86,14 @@ export default function Layout({ children }: { children: ReactNode }) {
               className="text-blue-500 underline"
             >
               Not found after action
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/not-found/not-found-middleware-after-action"
+              className="text-blue-500 underline"
+            >
+              Not found middleware after action
             </Link>
           </li>
         </ul>

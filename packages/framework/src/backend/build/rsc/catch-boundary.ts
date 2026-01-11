@@ -1,9 +1,7 @@
-import { error } from "console";
 import { ErrorTemplate } from "./error-template.js";
 import { Generic } from "./generic.js";
 import { Layout } from "./layout.js";
 import { Node, Treeable, TreeNode } from "./tree-node.js";
-import { lazy } from "react";
 
 export class CatchBoundary implements Treeable {
   #path;
@@ -49,17 +47,31 @@ export class CatchBoundary implements Treeable {
   }
 
   canAcceptAsChild(child: Node) {
-    let alreadyHave = this.tree.children.some(
-      (c) =>
-        c.value.path === child.path &&
-        c.value.constructor === child.constructor,
-    );
+    let alreadyHave;
+
+    if (child.constructor === ErrorTemplate) {
+      // if adding an error template lets add an additonal check that
+      // makes sure we dont already have the tag
+      alreadyHave = this.tree.children.some(
+        (c) =>
+          c.value.constructor === ErrorTemplate &&
+          c.value.tag === child.tag &&
+          c.value.path === child.path,
+      );
+    } else {
+      alreadyHave = this.tree.children.some(
+        (c) =>
+          c.value.path === child.path &&
+          c.value.constructor === child.constructor,
+      );
+    }
 
     let isCatchBoundaryForLayout =
       child instanceof Layout && child.path === this.path;
 
     let isSame =
       child.path === this.path && child.constructor === CatchBoundary;
+
     let hasMatchingPath = child.path.startsWith(this.path);
 
     return (
@@ -130,6 +142,7 @@ export class CatchBoundary implements Treeable {
         requirements: [],
         props: {
           taggedErrorComponents,
+          path: this.path,
         },
       },
       {

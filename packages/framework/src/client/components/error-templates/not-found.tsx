@@ -2,7 +2,7 @@
 
 import { useRouter } from "../../hooks/use-router";
 
-export default function UnauthorizedError() {
+export default function NotFoundError() {
   let router = useRouter();
 
   return (
@@ -22,10 +22,10 @@ export default function UnauthorizedError() {
             letterSpacing: "-0.025em",
           }}
         >
-          Not authorized
+          Not found
         </h1>
         <p style={{ marginTop: "12px" }}>
-          You are not authorized to view the path{" "}
+          The path{" "}
           <code
             style={{
               fontSize: "0.85rem",
@@ -38,8 +38,8 @@ export default function UnauthorizedError() {
             {router.searchParams.size > 0
               ? `?${router.searchParams.toString()}`
               : ""}
-          </code>
-          .
+          </code>{" "}
+          was not found.
         </p>
       </div>
     </div>

@@ -39,7 +39,6 @@ export class PageRequest {
     return this.#conditions.includes("not-found");
   }
 
-  // TODO: dont think we need this
   get isUnauthorized() {
     return this.#conditions.includes("unauthorized");
   }
@@ -86,10 +85,7 @@ export class PageRequest {
         stack: renderStack,
       });
 
-    if (notFound) {
-      stream.cancel();
-      return this.notFoundRscResponse();
-    } else if (redirect) {
+    if (redirect) {
       stream.cancel();
       return this.redirectResponse(redirect.status, redirect.url);
     }
@@ -101,14 +97,9 @@ export class PageRequest {
 
     const isUnauthorized =
       this.#conditions.includes("unauthorized") || unauthorized;
+    const isNotFound = this.#conditions.includes("not-found") || notFound;
 
-    let status = error
-      ? 500
-      : this.#conditions.includes("not-found")
-        ? 404
-        : isUnauthorized
-          ? 401
-          : 200;
+    let status = error ? 500 : isNotFound ? 404 : isUnauthorized ? 401 : 200;
 
     // give back the stream wrapped in a response
     return new Response(stream, {
@@ -128,15 +119,14 @@ export class PageRequest {
     let rscStream = rscResponse.body;
     let url = new URL(this.#request.url);
 
-    let { stream, notFound, redirect } =
+    let { stream, redirect } =
       await this.#runtime.renderHtmlStreamFromRSCStream(rscStream, "page", {
         urlString: url.toString(),
       });
 
-    if (notFound) {
-      stream.cancel();
-      return this.notFoundSsrResponse();
-    } else if (redirect) {
+    // TODO: i dont know if this is possible, i dont think ssring can
+    // issue a redirect
+    if (redirect) {
       stream.cancel();
       let { status, url } = redirect;
       return this.redirectResponse(status, url);
@@ -230,34 +220,16 @@ export class PageRequest {
   }
 
   private notFoundRscResponse() {
-    if (this.isNotFound) {
-      throw new Error("The not-found page cannot call notFound()");
-    }
-
     let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
     return notFoundRequest.rscResponse();
   }
 
   private unauthorizedRscResponse() {
-    // TODO: i dont think this is needed since its always calling our page
-    if (this.isUnauthorized) {
-      throw new Error("The unauthorized page cannot call unauthorized()");
-    }
-
     let unauthorizedRequest = this.#runtime.unauthorizedPageRequest(
       this.#request,
     );
 
     return unauthorizedRequest.rscResponse();
-  }
-
-  private notFoundSsrResponse() {
-    if (this.isNotFound) {
-      throw new Error("The not-found page cannot call notFound()");
-    }
-
-    let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
-    return notFoundRequest.ssrResponse();
   }
 
   private redirectResponse(status: number, url: string) {

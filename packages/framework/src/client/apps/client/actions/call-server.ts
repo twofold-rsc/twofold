@@ -58,17 +58,18 @@ export function callServer(id: string, args: any) {
         });
 
         stack = streams.stack;
+        let action = streams.action ?? { type: "undefined", result: undefined };
 
-        if (streams.action.type === "return") {
+        if (action.type === "return") {
           // normal return from action
-          result = streams.action.result;
-        } else if (streams.action.type === "throw") {
+          result = action.result;
+        } else if (action.type === "throw") {
           // action threw an error. put it into an rsc render stream
           // so it triggers an error boundary. it feels like there
           // should be a better way to do this. my mental model is
           // off here because i thought errors thrown in transitions trigger
           // boundaries
-          let error = deserializeError(streams.action.error);
+          let error = deserializeError(action.error);
           let stream = new ReadableStream({
             start(controller) {
               controller.error(error);

@@ -5,6 +5,7 @@ import { Context as RawRoutingContext } from "../../apps/client/contexts/routing
 
 type Props = {
   children?: ReactNode;
+  path: string;
   taggedErrorComponents: {
     tag: string;
     component: FunctionComponent<{
@@ -67,6 +68,7 @@ export default class CatchBoundary extends Component<Props, State> {
 
   static #digestToTag: Record<string, string> = {
     TwofoldUnauthorizedError: "unauthorized",
+    TwofoldNotFoundError: "not-found",
   };
 
   render() {

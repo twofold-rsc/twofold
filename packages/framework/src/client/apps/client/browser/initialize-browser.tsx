@@ -1,17 +1,25 @@
 import "../ext/react-refresh";
 import "../ext/webpack-loaders";
-import { hydrateRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { BrowserApp } from "./browser-app";
 import { startTransition, StrictMode } from "react";
 
+declare global {
+  interface Window {
+    SSRDidError?: boolean;
+  }
+}
+
 function main() {
-  startTransition(() => {
-    hydrateRoot(
-      document,
-      <StrictMode>
-        <BrowserApp />
-      </StrictMode>,
-      {
+  let tree = (
+    <StrictMode>
+      <BrowserApp />
+    </StrictMode>
+  );
+
+  if (!window.SSRDidError) {
+    startTransition(() => {
+      hydrateRoot(document, tree, {
         onCaughtError(error, errorInfo) {
           let isSafeError =
             isRedirectError(error) ||
@@ -35,9 +43,17 @@ function main() {
             );
           }
         },
-      },
-    );
-  });
+      });
+    });
+  } else {
+    // we have a bad ssr stream and we dont want to attempt to hydrate anything
+    // lets render what we have and let the client app use its error
+    // boundaries to catch
+    let root = createRoot(document);
+    startTransition(() => {
+      root.render(tree);
+    });
+  }
 }
 
 if (typeof window !== "undefined") {

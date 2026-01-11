@@ -17,6 +17,11 @@ export type LayoutProps = {
   children: ReactNode;
 };
 
+export type ErrorProps = {
+  error: Error & { digest?: string };
+  reset: () => void;
+};
+
 export type APIProps<T extends string | never = never> = {
   params: Record<T, string>;
   searchParams: URLSearchParams;

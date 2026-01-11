@@ -82,7 +82,7 @@ export class RSCBuilder extends Builder {
     let hasMiddleware = await this.hasMiddleware();
     let middlewareEntry = hasMiddleware ? [srcPaths.app.globalMiddleware] : [];
 
-    let notFoundEntry = await this.notFoundSrcPath();
+    let notFoundTemplateEntry = await this.notFoundTemplateSrcPath();
     let unauthorizedTemplateEntry =
       await this.unauthorizedErrorTemplateSrcPath();
 
@@ -115,9 +115,10 @@ export class RSCBuilder extends Builder {
           "./app/pages/**/*.api.tsx",
           ...middlewareEntry,
           ...serverActionEntries,
-          notFoundEntry,
+          notFoundTemplateEntry,
           unauthorizedTemplateEntry,
           srcPaths.framework.pages.unauthorized,
+          srcPaths.framework.pages.notFound,
           srcPaths.framework.outerRootWrapper,
           srcPaths.framework.routeStackPlaceholder,
           srcPaths.framework.catchBoundary,
@@ -301,11 +302,11 @@ export class RSCBuilder extends Builder {
     return this.compiledPathForEntry(srcPaths.app.globalMiddleware);
   }
 
-  private async notFoundSrcPath() {
+  private async notFoundTemplateSrcPath() {
     let hasCustomNotFound = await fileExists(srcPaths.app.notFound);
     return hasCustomNotFound
       ? srcPaths.app.notFound
-      : srcPaths.framework.pages.notFound;
+      : srcPaths.framework.errorTemplates.notFound;
   }
 
   private async unauthorizedErrorTemplateSrcPath() {
@@ -319,27 +320,42 @@ export class RSCBuilder extends Builder {
   // this basically just becomes a generic page that middleware or http routing
   // can use when needed. see unauthorized
   // TODO: this is out of date, copy from unauthorized
-  get notFoundPage() {
+  // get notFoundPage() {
+  //   let metafile = this.#metafile;
+  //
+  //   if (!metafile) {
+  //     throw new Error("Could not find not-found page");
+  //   }
+  //
+  //   let page = this.tree.tree.findPageForPath("/errors/not-found");
+  //
+  //   if (!page) {
+  //     let entryPoint = srcPaths.framework.pages.notFound;
+  //     let outputFile = getCompiledEntrypoint(entryPoint, metafile);
+  //     let rootLayout = this.layouts.find((layout) => layout.path === "/");
+  //
+  //     page = new Page({
+  //       path: "/errors/not-found",
+  //       fileUrl: pathToFileURL(outputFile),
+  //     });
+  //     // page.layout = rootLayout;
+  //     rootLayout?.addChild(page);
+  //   }
+  //
+  //   return page;
+  // }
+
+  private get notFoundPage() {
     let metafile = this.#metafile;
+    invariant(metafile, "Could not find metafile");
 
-    if (!metafile) {
-      throw new Error("Could not find not-found page");
-    }
+    let entryPoint = srcPaths.framework.pages.notFound;
+    let outputFile = getCompiledEntrypoint(entryPoint, metafile);
 
-    let page = this.tree.tree.findPageForPath("/errors/not-found");
-
-    if (!page) {
-      let entryPoint = srcPaths.framework.pages.notFound;
-      let outputFile = getCompiledEntrypoint(entryPoint, metafile);
-      let rootLayout = this.layouts.find((layout) => layout.path === "/");
-
-      page = new Page({
-        path: "/errors/not-found",
-        fileUrl: pathToFileURL(outputFile),
-      });
-      // page.layout = rootLayout;
-      rootLayout?.addChild(page);
-    }
+    let page = new Page({
+      path: "/__tf/errors/not-found",
+      fileUrl: pathToFileURL(outputFile),
+    });
 
     return page;
   }
@@ -471,6 +487,22 @@ export class RSCBuilder extends Builder {
           tag: "unauthorized",
           path: "/",
           fileUrl: pathToFileURL(defaultUnauthorizedPath),
+        }),
+      );
+    }
+
+    // if there is no root level not found template we will add the default
+    if (!templates.some((t) => t.tag === "not-found" && t.path === "/")) {
+      let defaultNotFoundPath = getCompiledEntrypoint(
+        srcPaths.framework.errorTemplates.notFound,
+        metafile,
+      );
+
+      templates.push(
+        new ErrorTemplate({
+          tag: "not-found",
+          path: "/",
+          fileUrl: pathToFileURL(defaultNotFoundPath),
         }),
       );
     }
@@ -673,9 +705,6 @@ export class RSCBuilder extends Builder {
       }
     }
 
-    // console.log("catchBoundaries");
-    // console.log(catchBoundaryMap.keys().toArray());
-
     return [...catchBoundaryMap.values()];
   }
 
@@ -708,6 +737,7 @@ export class RSCBuilder extends Builder {
     errorTemplates.forEach((errorTemplate) => root.addChild(errorTemplate));
 
     root.addChild(this.unauthorizedPage);
+    root.addChild(this.notFoundPage);
 
     root.addWrapper(outerRootWrapper);
 
@@ -776,85 +806,6 @@ class RscBuildOutput {
     this.#builder = builder;
     this.#metafile = metafile;
   }
-
-  private get routeStackPlaceholder() {
-    let placeholderPath = this.#builder.routeStackPlaceholderPath;
-    let placeholderUrl = pathToFileURL(placeholderPath);
-    let placeholder = new Generic({ fileUrl: placeholderUrl });
-    return placeholder;
-  }
-
-  get layouts() {
-    let metafile = this.#metafile;
-    let outputs = metafile.outputs;
-    let cwd = process.cwd();
-    let baseUrl = pathToFileURL(`${cwd}/`);
-    let prefix = "app/pages/";
-    let layoutSuffix = "/layout.tsx";
-
-    let cssUrl = new URL("./rsc/css/", appCompiledDir);
-    let cssPath = fileURLToPath(cssUrl);
-    let cssPrefix = cssPath.slice(process.cwd().length + 1);
-
-    let keys = Object.keys(outputs);
-
-    let routeStackPlaceholder = this.routeStackPlaceholder;
-
-    return keys
-      .filter((key) => {
-        let entryPoint = outputs[key]?.entryPoint;
-        return (
-          entryPoint &&
-          entryPoint.startsWith(prefix) &&
-          entryPoint.endsWith(layoutSuffix)
-        );
-      })
-      .map((key) => {
-        let output = outputs[key];
-        if (!output) {
-          throw new Error("No output found for key");
-        }
-
-        let entryPoint = output.entryPoint;
-        if (!entryPoint) {
-          throw new Error("No entry point");
-        }
-
-        let path = entryPoint
-          .slice(prefix.length)
-          .slice(0, -layoutSuffix.length);
-
-        return new Layout({
-          path: `/${path}`,
-          css: output.cssBundle
-            ? output.cssBundle.slice(cssPrefix.length)
-            : undefined,
-          fileUrl: new URL(key, baseUrl),
-          routeStackPlaceholder,
-        });
-      });
-  }
-
-  // #cachedTree: TreeNode<Layout>;
-
-  tree() {
-    // if (this.#cachedTree) {
-    //   return this.#cachedTree;
-    // }
-
-    let layouts = this.layouts;
-
-    let rootLayout = layouts.find((layout) => layout.path === "/");
-    let otherLayouts = layouts.filter((layout) => layout.path !== "/");
-
-    if (!rootLayout) {
-      throw new Error("No root layout");
-    }
-
-    otherLayouts.forEach((layout) => rootLayout.addChild(layout));
-
-    return rootLayout;
-  }
 }
 
 let appAppPath = fileURLToPath(appAppDir);
@@ -871,6 +822,13 @@ let srcPaths = {
       ),
     },
     errorTemplates: {
+      notFound: path.join(
+        frameworkSrcPath,
+        "client",
+        "components",
+        "error-templates",
+        "not-found.tsx",
+      ),
       unauthorized: path.join(
         frameworkSrcPath,
         "client",

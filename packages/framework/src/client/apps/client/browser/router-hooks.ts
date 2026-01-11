@@ -91,19 +91,13 @@ type UpdateAction = {
   updateId: string;
 };
 
-type NotFoundAction = {
-  type: "NOT_FOUND";
-  path: string;
-};
-
 type Action =
   | NavigateAction
   | PopAction
   | RefreshAction
   | PopulateAction
   | RenderAction
-  | UpdateAction
-  | NotFoundAction;
+  | UpdateAction;
 
 function reducer(state: Promise<State>, action: Action): Promise<State> {
   switch (action.type) {
@@ -240,28 +234,6 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           return {
             ...previous,
             action: "refresh",
-            cache: newCache,
-          };
-        },
-      });
-    case "NOT_FOUND":
-      return createRouterState({
-        cacheKey: `not-found-${action.path}`,
-        async reduce() {
-          let previous = await state;
-          let newCache = new Map(previous.cache);
-
-          let rsc = await fetchRSCPayload(action.path, {
-            resource: "not-found",
-          });
-          newCache.set(rsc.path, rsc.stack);
-
-          return {
-            ...previous,
-            version: previous.version + 1,
-            path: rsc.path,
-            action: "render",
-            history: "none",
             cache: newCache,
           };
         },

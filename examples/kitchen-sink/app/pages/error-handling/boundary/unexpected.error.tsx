@@ -1,15 +1,10 @@
 "use client";
 
+import { ErrorProps } from "@twofold/framework/types";
 import { useRouter } from "@twofold/framework/use-router";
 import { startTransition } from "react";
 
-export default function ErrorUI({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function ErrorUI({ error, reset }: ErrorProps) {
   let { navigate } = useRouter();
 
   function goBack() {

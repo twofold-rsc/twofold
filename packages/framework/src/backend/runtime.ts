@@ -68,23 +68,6 @@ export class Runtime {
     }
   }
 
-  // routing
-
-  // build output, i hate that this is here. need to fix.
-  // async catchBoundaryModule() {
-  //   let catchBoundaryPath = this.build.getBuilder("rsc").catchBoundaryPath;
-  //
-  //   let catchBoundaryUrl = pathToFileURL(catchBoundaryPath);
-  //   let mod = await import(catchBoundaryUrl.href);
-  //   if (!mod.default) {
-  //     throw new Error(
-  //       `Catch boundary module at ${catchBoundaryPath} has no default export.`,
-  //     );
-  //   }
-  //
-  //   return mod;
-  // }
-
   // pages
 
   pageRequest(request: Request) {
@@ -102,8 +85,15 @@ export class Runtime {
   }
 
   notFoundPageRequest(request: Request) {
+    // TODO: messy, clean up this api
+    let page = this.build
+      .getBuilder("rsc")
+      .tree.tree.findPageForPath("/__tf/errors/not-found");
+
+    invariant(page, "Could not find not-found page");
+
     return new PageRequest({
-      page: this.build.getBuilder("rsc").notFoundPage,
+      page,
       request,
       runtime: this,
       conditions: ["not-found"],
@@ -183,7 +173,8 @@ export class Runtime {
     });
 
     // await the first chunk
-    // todo: use transform stream to buffer
+    // this is not really needed, its debt
+    // maybe: use transform stream to buffer
     // the idea is we don't want to return the stream too early, in case it
     // errors. so we'll wait for the first chunk to see if it contains
     // an error before continuing. there's probably a better way to do this.
@@ -261,6 +252,10 @@ export class Runtime {
     if (message.status === "OK") {
       return { stream: readStream };
     } else if (message.status === "ERROR") {
+      // TODO:
+      // this is like worst case sencario, but errors should be handled by the
+      // worker. so if we get here something is really off.
+
       // TODO: review this
       let error = deserializeError(message.serializedError);
 
@@ -287,6 +282,9 @@ export class Runtime {
         };
       } else {
         // TODO:
+        // this is like worst case sencario, but errors should be handled by the
+        // worker. so if we get here something is really off.
+        //
         // outdated? worker always sends back html even if it errors...
         // recreate the stream in error mode  (if we arent already in error mode)
         // if we are in error mode and we error again then we should throw

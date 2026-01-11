@@ -1,5 +1,5 @@
 import "../ext/react-refresh";
-import { use, createElement, Fragment } from "react";
+import { use, createElement } from "react";
 import { renderToReadableStream } from "react-dom/server.edge";
 // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client.edge'.
 import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
@@ -28,10 +28,6 @@ export function SSRApp({
     throw new Error("Cannot call refresh during SSR");
   };
 
-  let notFound = () => {
-    throw new Error("Cannot call notFound during SSR");
-  };
-
   let routeStackPromise = getRouteStack();
   let routeStack = use(routeStackPromise);
 
@@ -48,7 +44,6 @@ export function SSRApp({
         navigate={navigate}
         replace={replace}
         refresh={refresh}
-        notFound={notFound}
       >
         <RouteStack stack={routeStack} />
       </RoutingContext>
@@ -145,7 +140,7 @@ export async function render({
     // at this point we can cancel the error stream since we don't need it
     rscStream6.cancel();
   } catch (e: unknown) {
-    // console.log("ssr stream crashed");
+    console.log("ssr stream crashed");
     // console.log(e);
     // if this fails we need to send a crash back
     htmlStream = await renderToReadableStream(
@@ -154,6 +149,8 @@ export async function render({
       }),
       {
         bootstrapModules: [bootstrapUrl],
+        bootstrapScriptContent:
+          "if (typeof window !== 'undefined') { window.SSRDidError = true; }",
       },
     );
     // TODO: if this render fails we should throw and let the caller trigger

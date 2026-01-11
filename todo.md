@@ -7,19 +7,13 @@
   - [x] clear error
     - [x] back / popstate
     - [x] reset helper?
-  - [ ] error types
+  - [x] error types
     - [x] unauthorized
-    - [ ] not found
-      - [ ] middleware not found after action
-      - [ ] custom not found
-    - [ ] redirect
-    - [ ] tagged errors
-      - [ ] user customizable errors
-    - [ ] error props type
-  - [ ] Debug component for errors in dev mode
-  - [ ] clean up ssr error renderer
-  - [ ] pages/layouts can use client
-    - [ ] route stack placeholder should be client component only
+    - [x] not found
+    - [x] redirect
+  - [x] error props type
+  - [ ] when theres an ssr error we shouldnt try to hydrate?
+        go to RSC throw error in ssr and see.
   - misc
     - [x] how do errors and layouts interact, who is the parent (layout is parent)
     - [x] errors in folders without layouts
@@ -28,11 +22,26 @@
       - [ ] the ssr error renderer should show something with js is offsite
             (right now it blank pages)
       - [ ] also have an example of throwing an uncaught error
-  - to test
-    - [ ] two catch errors where the inner doesn't have a template/tag, but the outer does
+      - [ ] mpa server action redirect
   - [ ] cleanup
+    - [ ] clean up ssr error renderer
+    - [ ] the todo comments
     - [ ] all the tree stuff
-    - [ ] rsc output
+  - [ ] run through
+    - [ ] dev
+    - [ ] prod
+
+- [ ] rsc output
+
+- [ ] pages/layouts can use client
+  - [ ] route stack placeholder should be client component only
+
+- errors documentation
+  - [ ] error template importable props type
+
+- errors v2
+  - [ ] tagged errors
+    - [ ] user customizable errors
 
 - build
   - css / assets cleanup

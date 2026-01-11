@@ -83,15 +83,15 @@ export class ActionRequest {
   async rscResponse() {
     let result = await this.getResult();
 
-    /// TODO: should be the same as unauthorized
-    if (isNotFoundError(result)) {
-      return this.notFoundRscResponse();
-    }
-
     if (result.type === "throw" && isRedirectError(result.error)) {
-      let { url } = redirectErrorInfo(result);
+      let { url } = redirectErrorInfo(result.error);
       return this.redirectResponse(url);
     }
+
+    // the result of this function duplicates page request rendering.
+    // ideally we find same place to do this instead of having it
+    // duplicated, but right now were going to prefer duplication
+    // to the wrong abstraction
 
     let requestToRender = this.requestToRender;
     let pageRequest = this.#runtime.pageRequest(requestToRender);
@@ -111,8 +111,7 @@ export class ActionRequest {
       if (isNotFoundError(err)) {
         return this.notFoundRscResponse();
       } else if (isUnauthorizedError(err)) {
-        //  TODO: handle middleware unauthorized
-        // return this.unauthorizedRscResponse();
+        return this.unauthorizedRscResponse();
       } else if (isRedirectError(err)) {
         let { url } = redirectErrorInfo(err);
         return this.redirectResponse(url);
@@ -127,10 +126,12 @@ export class ActionRequest {
     let data = {
       stack,
 
-      // if we try to give an error to react to serialize then it loses
+      // if we give an error to react to serialize then it loses
       // some properties like digest. i think digest is really only
-      // used when rendering. so we need to take ownership of doing
-      // the error serialization. maybe a react bug?
+      // used when rendering, but im not sure.
+      //
+      // we need to take ownership of doing the error serialization.
+      // maybe a react bug?
       action:
         result.type === "throw"
           ? {
@@ -147,20 +148,19 @@ export class ActionRequest {
         temporaryReferences: this.#temporaryReferences,
       });
 
-    // TODO: remove
-    if (notFound) {
-      stream.cancel();
-      return this.notFoundRscResponse();
-    } else if (redirect) {
+    if (redirect) {
       stream.cancel();
       return this.redirectResponse(redirect.url);
     }
 
-    const isUnauthorized =
+    let isUnauthorized =
       (result.type === "throw" && isUnauthorizedError(result.error)) ||
       unauthorized;
 
-    let status = isUnauthorized ? 401 : error ? 500 : 200;
+    let isNotFound =
+      (result.type === "throw" && isNotFoundError(result.error)) || notFound;
+
+    let status = isUnauthorized ? 401 : isNotFound ? 404 : error ? 500 : 200;
 
     let headers = new Headers({
       "Content-type": "text/x-component",
@@ -306,6 +306,13 @@ export class ActionRequest {
   private notFoundSsrResponse() {
     let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
     return notFoundRequest.ssrResponse();
+  }
+
+  private unauthorizedRscResponse() {
+    let pageRequest = this.#runtime.unauthorizedPageRequest(
+      this.requestToRender,
+    );
+    return pageRequest.rscResponse();
   }
 
   private unauthorizedSsrResponse() {

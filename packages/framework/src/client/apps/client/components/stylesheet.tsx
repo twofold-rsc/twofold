@@ -3,7 +3,7 @@
   <link> is un-rendered. This component takes care of loading and _unloading_
   stylesheets in a suspense-friendly way.
 */
-import { use, useEffect } from "react";
+import { use, useInsertionEffect } from "react";
 
 function load(href: string) {
   return new Promise<void>((resolve, reject) => {
@@ -41,7 +41,7 @@ export function Stylesheet({ href }: { href: string }) {
 
   use(promise);
 
-  useEffect(() => {
+  useInsertionEffect(() => {
     let head = document.getElementsByTagName("head")[0];
     let shouldAdd = true;
 
