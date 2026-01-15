@@ -12,17 +12,12 @@
     - [x] not found
     - [x] redirect
   - [x] error props type
-  - [ ] when theres an ssr error we shouldnt try to hydrate?
-        go to RSC throw error in ssr and see.
   - misc
     - [x] how do errors and layouts interact, who is the parent (layout is parent)
     - [x] errors in folders without layouts
-    - [ ] review client app bundling for error templates
-    - [ ] update mpa server action page to have examples of all errors
-      - [ ] the ssr error renderer should show something with js is offsite
-            (right now it blank pages)
-      - [ ] also have an example of throwing an uncaught error
-      - [ ] mpa server action redirect
+    - [x] review client app bundling for error templates
+    - [x] update mpa server action page to have examples of all errors
+    - [ ] server action throws error in prod
   - [ ] cleanup
     - [ ] clean up ssr error renderer
     - [ ] the todo comments
@@ -30,6 +25,7 @@
   - [ ] run through
     - [ ] dev
     - [ ] prod
+      - [ ] error pages, prod error page
 
 - [ ] rsc output
 

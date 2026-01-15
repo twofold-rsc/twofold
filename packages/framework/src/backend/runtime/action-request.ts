@@ -323,12 +323,13 @@ export class ActionRequest {
   }
 
   private redirectResponse(url: string) {
+    let isRSCFetch = this.#request.headers.get("accept") === "text/x-component";
     let requestUrl = new URL(this.requestToRender.url, this.#request.url);
     let redirectUrl = new URL(url, this.#request.url);
     let isRelative =
       redirectUrl.origin === requestUrl.origin && url.startsWith("/");
 
-    if (isRelative) {
+    if (isRelative && isRSCFetch) {
       let redirectRequest = new Request(redirectUrl, this.requestToRender);
       let redirectPageRequest = this.#runtime.pageRequest(redirectRequest);
 
@@ -340,6 +341,16 @@ export class ActionRequest {
         status: 303,
         headers: {
           location: newUrl,
+        },
+      });
+    }
+
+    if (!isRSCFetch) {
+      // this is a ssr request, we can redirect to the url
+      return new Response(null, {
+        status: 303,
+        headers: {
+          location: url,
         },
       });
     } else {

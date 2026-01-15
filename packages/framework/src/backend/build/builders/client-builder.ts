@@ -257,6 +257,15 @@ export class ClientBuilder extends Builder {
                 priority: 970,
                 minShareCount: 2,
               },
+              // this puts the catch boundary and default templates into their own bundle since these are always
+              // used together.
+              {
+                name: "twofold-error-pieces",
+                test: new RegExp(
+                  `^${fileURLToEscapedPath(new URL("./client/components/", frameworkSrcDir))}(boundaries|error-templates)[\\/]`,
+                ),
+                priority: 960,
+              },
               {
                 // vendor libs get their own chunk for now
                 // eventually move to hash bucket approach?
@@ -269,7 +278,7 @@ export class ClientBuilder extends Builder {
                   return `vendor-${pkg}`;
                 },
                 test: /[\\/]node_modules[\\/]/,
-                priority: 970,
+                priority: 950,
                 minSize: 15 * 1024,
                 minShareCount: 2,
                 // i want this, but it causes some circular dep/import issues rn
@@ -278,7 +287,7 @@ export class ClientBuilder extends Builder {
               {
                 name: "vendor-small",
                 test: /[\\/]node_modules[\\/]/,
-                priority: 960,
+                priority: 940,
                 minSize: 0,
                 maxSize: 220 * 1024,
                 minShareCount: 2,

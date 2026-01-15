@@ -1,6 +1,9 @@
+import { PageProps } from "@twofold/framework/types";
 import { logFromActionFile } from "./actions";
 import { FormWithClientState, State } from "./form-with-client-state";
 import { FormWithServerState } from "./form-with-server-state";
+import Link from "@twofold/framework/link";
+import { redirect } from "@twofold/framework/redirect";
 
 let state = { count: 0 };
 
@@ -30,7 +33,17 @@ async function clientFormAction(prev: State, formData: FormData) {
   };
 }
 
-export default function MPAPage() {
+async function redirectAction() {
+  "use server";
+  redirect("/server-actions/mpa?redirected=true");
+}
+
+async function errorAction() {
+  "use server";
+  throw new Error("This action threw an error");
+}
+
+export default function MPAPage({ searchParams }: PageProps) {
   return (
     <div>
       <h1 className="text-4xl font-black tracking-tighter">MPA + Form</h1>
@@ -68,6 +81,45 @@ export default function MPAPage() {
         <div className="border border-gray-200 p-4">
           <div>Imported action</div>
           <form action={logFromActionFile} className="pt-3">
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"
+            >
+              Run action
+            </button>
+          </form>
+        </div>
+
+        <div className="border border-gray-200 p-4">
+          <div>Action that redirects</div>
+          <form action={redirectAction} className="pt-3">
+            <div className="flex items-center space-x-2">
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"
+              >
+                Run action
+              </button>
+
+              {searchParams.get("redirected") && (
+                <>
+                  <div className="text-green-500">Redirected</div>
+
+                  <Link
+                    href="/server-actions/mpa"
+                    className="text-sm text-gray-500 underline"
+                  >
+                    Clear
+                  </Link>
+                </>
+              )}
+            </div>
+          </form>
+        </div>
+
+        <div className="border border-gray-200 p-4">
+          <div>Action that errors</div>
+          <form action={errorAction} className="pt-3">
             <button
               type="submit"
               className="inline-flex items-center justify-center rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"

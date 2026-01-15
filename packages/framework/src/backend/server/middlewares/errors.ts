@@ -104,8 +104,12 @@ export async function errorPage(error: Error) {
   let htmlFile = new URL("./server-files/error.html", appCompiledDir);
   let contents = await readFile(htmlFile, "utf-8");
 
-  let errorString = JSON.stringify(serializeError(error));
-  let message = error.message;
+  let isProd = process.env.NODE_ENV === "production";
+
+  let serializedError = isProd ? "" : JSON.stringify(serializeError(error));
+  let message = isProd ? "" : error.message;
+  let stack = isProd ? "" : (error.stack ?? "");
+
   let digest =
     error instanceof Error &&
     "digest" in error &&
@@ -114,8 +118,9 @@ export async function errorPage(error: Error) {
       : "";
 
   let html = contents
-    .replace("$error", errorString)
+    .replace("$error", serializedError)
     .replace("$message", message)
+    .replace("$stack", stack)
     .replace("$digest", digest);
 
   return html;
