@@ -119,18 +119,13 @@ export class PageRequest {
     let rscStream = rscResponse.body;
     let url = new URL(this.#request.url);
 
-    let { stream, redirect } =
-      await this.#runtime.renderHtmlStreamFromRSCStream(rscStream, "page", {
+    let { stream } = await this.#runtime.renderHtmlStreamFromRSCStream(
+      rscStream,
+      "page",
+      {
         urlString: url.toString(),
-      });
-
-    // TODO: i dont know if this is possible, i dont think ssring can
-    // issue a redirect
-    if (redirect) {
-      stream.cancel();
-      let { status, url } = redirect;
-      return this.redirectResponse(status, url);
-    }
+      },
+    );
 
     let status = rscResponse.status;
     let headers = new Headers(rscResponse.headers);
@@ -240,12 +235,8 @@ export class PageRequest {
       redirectUrl.origin === requestUrl.origin && url.startsWith("/");
 
     if (isRSCFetch && isRelative) {
-      let redirectRequest = new Request(redirectUrl, this.#request);
-      let redirectPageRequest = this.#runtime.pageRequest(redirectRequest);
-
       let encodedPath = encodeURIComponent(redirectUrl.pathname);
-      let resource = redirectPageRequest.isNotFound ? "not-found" : "page";
-      let newUrl = `/__rsc/${resource}?path=${encodedPath}`;
+      let newUrl = `/__rsc/page?path=${encodedPath}`;
 
       return new Response(null, {
         status,

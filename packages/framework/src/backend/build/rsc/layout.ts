@@ -1,11 +1,4 @@
-import {
-  pathMatches,
-  pathPartialMatches,
-} from "../../runtime/helpers/routing.js";
-import { partition } from "../../utils/partition.js";
-import { CatchBoundary } from "./catch-boundary.js";
 import { Generic } from "./generic.js";
-import { Page } from "./page.js";
 import { Node, TreeNode, Treeable } from "./tree-node.js";
 import { Wrapper } from "./wrapper.js";
 
@@ -94,7 +87,6 @@ export class Layout implements Treeable {
     return Promise.all(loadWrapperModules);
   }
 
-  // TODO: remove and inline
   async loadRouteStackPlaceholder() {
     let routeStackPlaceholder = this.#routeStackPlaceholder;
     let module = await routeStackPlaceholder.loadModule();
@@ -110,22 +102,6 @@ export class Layout implements Treeable {
       props: {},
     };
   }
-
-  // async loadCatchBoundary() {
-  //   let catchBoundary = this.#catchBoundary;
-  //   let module = await catchBoundary.loadModule();
-  //   if (!module.default) {
-  //     throw new Error(
-  //       `Route placeholder for ${this.#path} has no default export.`,
-  //     );
-  //   }
-  //
-  //   return {
-  //     func: module.default,
-  //     requirements: [],
-  //     props: {},
-  //   };
-  // }
 
   /**
    * Gets a list of component functions and their requirements and
@@ -195,21 +171,3 @@ export class Layout implements Treeable {
     await this.loadModule();
   }
 }
-
-// /**
-//  * Can child go under parent
-//  *
-//  * @param child
-//  * @param parent
-//  * @returns
-//  */
-// function canGoUnder(child: Layout, parent: Layout) {
-//   return false;
-//   // let alreadyHave = parent.tree.children.some(
-//   //   (current) => current.path === child.path,
-//   // );
-//   // let matchingPath =
-//   //   child.path.startsWith(parent.path) && child.path !== parent.path;
-//   //
-//   // return !alreadyHave && matchingPath;
-// }

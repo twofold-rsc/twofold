@@ -83,23 +83,6 @@ async function createHandler(server: Server) {
     return response;
   });
 
-  // TODO: i think we can remove this
-  app.get("/__rsc/not-found", async (ctx) => {
-    let url = new URL(ctx.request.url);
-    let path = url.searchParams.get("path");
-
-    if (typeof path !== "string") {
-      throw new Error("No path specified");
-    }
-
-    let requestUrl = new URL(path, url);
-    let request = new Request(requestUrl, ctx.request);
-    let pageRequest = runtime.notFoundPageRequest(request);
-    let response = await pageRequest.rscResponse();
-
-    return response;
-  });
-
   app.post("/__rsc/action/:id", async (ctx) => {
     let request = ctx.request;
 

@@ -66,14 +66,14 @@ export async function render({
   bootstrapUrl,
 }: RenderOptions): Promise<ReadableStream<Uint8Array>> {
   let [rscStream1, rscStream2] = rscStream.tee();
-  let [rscStream3, rscStream4] = rscStream1.tee(); // formState and route stack
-  let [rscStream5, rscStream6] = rscStream2.tee(); // ssr render and error free render
+  let [formStateStream, routeStackStream] = rscStream1.tee(); // formState and route stack
+  let [inlineRscStream, inlineRscErrorStream] = rscStream2.tee(); // ssr render and error free render
 
   // right now we cant hydrate a suspense above body tag, so if the rsc stream fails to
   // ssr we need to handle that error here (vs defering to the client). note to future
-  // self: once you can suspend+hydrate above body this code can be cleaned up.
+  // self: once you can suspend+hydrate above body i think this code can be cleaned up.
 
-  let { formState } = await createFromReadableStream(rscStream3, {
+  let { formState } = await createFromReadableStream(formStateStream, {
     serverConsumerManifest: {
       moduleMap: null,
       serverModuleMap: null,
@@ -84,7 +84,7 @@ export async function render({
   let routeStack: RouteStackEntry[];
   async function getRouteStack() {
     if (!routeStack) {
-      let payload = await createFromReadableStream(rscStream4, {
+      let payload = await createFromReadableStream(routeStackStream, {
         serverConsumerManifest: {
           // client references
           moduleMap: null,
@@ -104,7 +104,7 @@ export async function render({
     return routeStack;
   }
 
-  let rscStreamReader = rscStream5.getReader();
+  let inlineRscStreamReader = inlineRscStream.getReader();
 
   let url = new URL(urlString);
 
@@ -113,7 +113,7 @@ export async function render({
     htmlStream = await renderToReadableStream(
       createElement(SSRApp, {
         url,
-        rscStreamReader,
+        rscStreamReader: inlineRscStreamReader,
         getRouteStack,
       }),
       {
@@ -138,34 +138,38 @@ export async function render({
     );
 
     // at this point we can cancel the error stream since we don't need it
-    rscStream6.cancel();
+    inlineRscErrorStream.cancel();
   } catch (e: unknown) {
-    console.log("ssr stream crashed");
-    // console.log(e);
-    // if this fails we need to send a crash back
-    htmlStream = await renderToReadableStream(
-      createElement(InlineRSCStream, {
-        reader: rscStream6.getReader(),
-      }),
-      {
-        bootstrapModules: [bootstrapUrl],
-        bootstrapScriptContent:
-          "if (typeof window !== 'undefined') { window.SSRDidError = true; }",
-      },
-    );
-    // TODO: if this render fails we should throw and let the caller trigger
-    // a crash
+    // the ssr stream crashed before it started streaming. we'll create a
+    // new ssr stream that renders the client app with the rsc stream inline.
+    // the rsc stream most likely has a serialized error and the client app
+    // will handle that.
+    try {
+      htmlStream = await renderToReadableStream(
+        createElement(InlineRSCStream, {
+          reader: inlineRscErrorStream.getReader(),
+        }),
+        {
+          bootstrapModules: [bootstrapUrl],
+          bootstrapScriptContent:
+            "if (typeof window !== 'undefined') { window.SSRDidError = true; }",
+        },
+      );
+    } catch (e: unknown) {
+      // at this point we just cant we. we've had two streams crash.
+      // we'll throw and let the worker communicate an error back to
+      // the main process.
+      throw new Error("Unable to render", { cause: e });
+    }
   }
 
   return htmlStream;
 }
 
-// TODO: unsure if err.message is avilable in prod, safer to use digest
-
-function isSafeError(err: Error) {
+function isSafeError(err: Error & { digest?: string }) {
   return (
-    err.message === "TwofoldNotFoundError" ||
-    err.message === "TwofoldUnauthorizedError" ||
-    err.message.startsWith("TwofoldRedirectError")
+    err.digest === "TwofoldNotFoundError" ||
+    err.digest === "TwofoldUnauthorizedError" ||
+    err.digest?.startsWith("TwofoldRedirectError")
   );
 }

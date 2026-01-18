@@ -11,12 +11,11 @@ import { Page } from "./page.js";
 export type Node = Layout | CatchBoundary | Page | ErrorTemplate;
 
 export type Treeable = {
-  tree: TreeNode;
-  canAcceptAsChild(other: Node): boolean;
-
-  addChild: (node: Node) => void;
-
   path: string;
+  tree: TreeNode;
+
+  canAcceptAsChild(other: Node): boolean;
+  addChild: (node: Node) => void;
 
   children: Node[];
   parent: Node | undefined;
@@ -167,7 +166,7 @@ export class TreeNode {
     let page =
       staticPages.find((page) => pathMatches(page.path, realPath)) ??
       dynamicPagesInOrder.find((page) => pathMatches(page.path, realPath)) ??
-      // TODO: this should be DFS
+      // this should really be DFS
       childValues
         .filter((value) => {
           let holdsPages =

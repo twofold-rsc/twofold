@@ -18,6 +18,7 @@ import { CompiledAction } from "../build/builders/rsc-builder.js";
 import { pathToFileURL } from "url";
 import { getStore } from "../stores/rsc-store.js";
 import { serializeError } from "serialize-error";
+import { randomUUID } from "crypto";
 
 type ServerManifest = Record<
   string,
@@ -175,8 +176,6 @@ export class ActionRequest {
   async ssrResponse() {
     let result = await this.getResult();
 
-    // how do handle with js disabled? think maybe ignore for now
-
     if (result.type === "throw") {
       if (isUnauthorizedError(result.error)) {
         return this.unauthorizedSsrResponse();
@@ -199,25 +198,6 @@ export class ActionRequest {
 
     let rscStream = rscResponse.body;
     let url = new URL(this.#action.renderPath, this.#request.url);
-
-    // TODO: a test here would be an action take works, but the page
-    // it's rendered on now throws an error. we should deal with that
-    // correctly.
-
-    // TODO: remove
-    // let { stream, notFound, unauthorized, redirect } =
-    //   await this.#runtime.renderHtmlStreamFromRSCStream(rscStream, "page", {
-    //     urlString: url.toString(),
-    //   });
-    //
-    // if (notFound) {
-    //   stream.cancel();
-    //   return this.notFoundSsrResponse();
-    // } else if (redirect) {
-    //   stream.cancel();
-    //   let { url } = redirect;
-    //   return this.redirectResponse(url);
-    // }
 
     let { stream } = await this.#runtime.renderHtmlStreamFromRSCStream(
       rscStream,
@@ -258,12 +238,19 @@ export class ActionRequest {
         isUnauthorizedError(err) ||
         isRedirectError(err);
 
-      if (!isSafeError) {
-        console.error(err);
+      let errorObject: Error & { digest?: string } =
+        err instanceof Error
+          ? err
+          : new Error("Action threw non error", { cause: err });
+
+      if (process.env.NODE_ENV === "production" && !isSafeError) {
+        let digest = randomUUID();
+        errorObject.digest = digest;
       }
 
-      let errorObject =
-        err instanceof Error ? err : new Error("Action threw non error");
+      if (!isSafeError) {
+        console.error(errorObject);
+      }
 
       return {
         type: "throw",
@@ -329,13 +316,9 @@ export class ActionRequest {
     let isRelative =
       redirectUrl.origin === requestUrl.origin && url.startsWith("/");
 
-    if (isRelative && isRSCFetch) {
-      let redirectRequest = new Request(redirectUrl, this.requestToRender);
-      let redirectPageRequest = this.#runtime.pageRequest(redirectRequest);
-
+    if (isRSCFetch && isRelative) {
       let encodedPath = encodeURIComponent(redirectUrl.pathname);
-      let resource = redirectPageRequest.isNotFound ? "not-found" : "page";
-      let newUrl = `/__rsc/${resource}?path=${encodedPath}`;
+      let newUrl = `/__rsc/page?path=${encodedPath}`;
 
       return new Response(null, {
         status: 303,

@@ -254,6 +254,12 @@ export class RSCBuilder extends Builder {
     let loadNotFound = this.notFoundPage.preload();
     let loadOuterRootWrapper = this.outerRootWrapper.preload();
     let apiEndpoints = this.apiEndpoints.map((api) => api.preload());
+    let errorTemplates = this.errorTemplates.map((errorTemplate) =>
+      errorTemplate.preload(),
+    );
+    let catchBoundaries = this.catchBoundaries.map((catchBoundary) =>
+      catchBoundary.preload(),
+    );
 
     let loadServerActions = this.#serverActionMap
       .values()
@@ -271,14 +277,14 @@ export class RSCBuilder extends Builder {
     let promises = [
       ...loadLayouts,
       ...loadPages,
+      ...errorTemplates,
+      ...catchBoundaries,
       loadNotFound,
       loadOuterRootWrapper,
       ...apiEndpoints,
       ...loadServerActions,
       loadGlobalMiddleware,
       loadRouteStackPlaceholder,
-      // TODO: catch boundary
-      // TODO: error components
     ];
 
     await Promise.all(promises);
@@ -315,35 +321,6 @@ export class RSCBuilder extends Builder {
       ? srcPaths.app.unauthorized
       : srcPaths.framework.errorTemplates.unauthorized;
   }
-
-  // TODO: not found page is not user customizable, only the template is.
-  // this basically just becomes a generic page that middleware or http routing
-  // can use when needed. see unauthorized
-  // TODO: this is out of date, copy from unauthorized
-  // get notFoundPage() {
-  //   let metafile = this.#metafile;
-  //
-  //   if (!metafile) {
-  //     throw new Error("Could not find not-found page");
-  //   }
-  //
-  //   let page = this.tree.tree.findPageForPath("/errors/not-found");
-  //
-  //   if (!page) {
-  //     let entryPoint = srcPaths.framework.pages.notFound;
-  //     let outputFile = getCompiledEntrypoint(entryPoint, metafile);
-  //     let rootLayout = this.layouts.find((layout) => layout.path === "/");
-  //
-  //     page = new Page({
-  //       path: "/errors/not-found",
-  //       fileUrl: pathToFileURL(outputFile),
-  //     });
-  //     // page.layout = rootLayout;
-  //     rootLayout?.addChild(page);
-  //   }
-  //
-  //   return page;
-  // }
 
   private get notFoundPage() {
     let metafile = this.#metafile;
@@ -717,7 +694,7 @@ export class RSCBuilder extends Builder {
     return css;
   }
 
-  get tree() {
+  get root() {
     let pages = this.pages;
     let layouts = this.layouts;
     let errorTemplates = this.errorTemplates;
@@ -742,6 +719,10 @@ export class RSCBuilder extends Builder {
     root.addWrapper(outerRootWrapper);
 
     return root;
+  }
+
+  findPageForPath(path: string) {
+    return this.root.tree.findPageForPath(path);
   }
 
   get serverManifest() {

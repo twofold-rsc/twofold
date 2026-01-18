@@ -25,6 +25,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/error-handling/server-actions/action-causes-page-error"
+              className="text-blue-500 underline"
+            >
+              Server action causes page error
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/error-handling/server-actions/action-throw-client-catch"
               className="text-blue-500 underline"
             >

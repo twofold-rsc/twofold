@@ -68,7 +68,7 @@ export function callServer(id: string, args: any) {
           // so it triggers an error boundary. it feels like there
           // should be a better way to do this. my mental model is
           // off here because i thought errors thrown in transitions trigger
-          // boundaries
+          // boundaries, but that won't work unless we put it into a stream.
           let error = deserializeError(action.error);
           let stream = new ReadableStream({
             start(controller) {
@@ -78,10 +78,8 @@ export function callServer(id: string, args: any) {
           result = createFromReadableStream(stream, {
             callServer,
           });
-          // would it be better to reject?
         }
       } else if (contentType === "application/json") {
-        // TODO: maybe we can encode this in the stream
         let json = await response.json();
         if (json.type === "twofold-offsite-redirect") {
           window.location.href = json.url;

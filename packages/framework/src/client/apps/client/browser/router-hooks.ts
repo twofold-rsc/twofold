@@ -273,7 +273,7 @@ type RSCPayload = {
 
 type FetchOptions = {
   initiator?: string;
-  resource?: "page" | "not-found";
+  resource?: "page";
 };
 
 function fetchRSCPayload(path: string, options: FetchOptions = {}) {
@@ -312,7 +312,7 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
           },
         ];
       } else if (contentType === "application/json") {
-        // todo should get rid of this type of response
+        // should get rid of this type of response
         let json = await response.json();
         let error =
           json.type === "twofold-offsite-redirect"

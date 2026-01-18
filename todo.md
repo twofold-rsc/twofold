@@ -12,28 +12,29 @@
     - [x] not found
     - [x] redirect
   - [x] error props type
-  - misc
-    - [x] how do errors and layouts interact, who is the parent (layout is parent)
-    - [x] errors in folders without layouts
-    - [x] review client app bundling for error templates
-    - [x] update mpa server action page to have examples of all errors
-    - [ ] server action throws error in prod
-  - [ ] cleanup
-    - [ ] clean up ssr error renderer
-    - [ ] the todo comments
-    - [ ] all the tree stuff
+  - [x] cleanup
   - [ ] run through
     - [ ] dev
     - [ ] prod
-      - [ ] error pages, prod error page
+
+- errors documentation
+  - [ ] error template importable props type
+
+- [ ] error blog post
+  - [ ] environments
+  - [ ] rsc examples
+  - [ ] ssr examples
+  - [ ] outside of react errors
+  - [ ] hidden prod errors / digest
+  - [ ] redirect / control flow
+
+- [ ] can we serialize redirect
+- [ ] do we ever render json/error (check router hooks)
 
 - [ ] rsc output
 
 - [ ] pages/layouts can use client
   - [ ] route stack placeholder should be client component only
-
-- errors documentation
-  - [ ] error template importable props type
 
 - errors v2
   - [ ] tagged errors

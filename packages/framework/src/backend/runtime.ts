@@ -72,10 +72,7 @@ export class Runtime {
 
   pageRequest(request: Request) {
     let url = new URL(request.url);
-    // TODO: messy, clean up this api
-    let page = this.build
-      .getBuilder("rsc")
-      .tree.tree.findPageForPath(url.pathname);
+    let page = this.build.getBuilder("rsc").findPageForPath(url.pathname);
 
     let pageRequest = page
       ? new PageRequest({ page, request, runtime: this })
@@ -85,10 +82,9 @@ export class Runtime {
   }
 
   notFoundPageRequest(request: Request) {
-    // TODO: messy, clean up this api
     let page = this.build
       .getBuilder("rsc")
-      .tree.tree.findPageForPath("/__tf/errors/not-found");
+      .findPageForPath("/__tf/errors/not-found");
 
     invariant(page, "Could not find not-found page");
 
@@ -101,10 +97,9 @@ export class Runtime {
   }
 
   unauthorizedPageRequest(request: Request) {
-    // TODO: messy, clean up this api
     let page = this.build
       .getBuilder("rsc")
-      .tree.tree.findPageForPath("/__tf/errors/unauthorized");
+      .findPageForPath("/__tf/errors/unauthorized");
 
     invariant(page, "Could not find unauthorized page");
 
@@ -252,46 +247,15 @@ export class Runtime {
     if (message.status === "OK") {
       return { stream: readStream };
     } else if (message.status === "ERROR") {
-      // TODO:
-      // this is like worst case sencario, but errors should be handled by the
+      // this is likely a worst case scenario since errors should be handled by the
       // worker. so if we get here something is really off.
 
-      // TODO: review this
       let error = deserializeError(message.serializedError);
 
-      // TODO: i dont think these are possible, if they happen ssr should
-      // render shell
-      if (isNotFoundError(error)) {
-        return {
-          stream: readStream,
-          notFound: true,
-        };
-      } else if (isUnauthorizedError(error)) {
-        return {
-          stream: readStream,
-          unauthorized: true,
-        };
-      } else if (isRedirectError(error)) {
-        let { status, url } = redirectErrorInfo(error);
-        return {
-          stream: readStream,
-          redirect: {
-            status,
-            url,
-          },
-        };
-      } else {
-        // TODO:
-        // this is like worst case sencario, but errors should be handled by the
-        // worker. so if we get here something is really off.
-        //
-        // outdated? worker always sends back html even if it errors...
-        // recreate the stream in error mode  (if we arent already in error mode)
-        // if we are in error mode and we error again then we should throw
-        // we dont want to throw, we want to render the client app
-        throw error;
-      }
+      // bubble this out and let the http layer handle it
+      throw error;
     } else {
+      // unknown message type
       throw new Error("SSR worker failed to render");
     }
   }
