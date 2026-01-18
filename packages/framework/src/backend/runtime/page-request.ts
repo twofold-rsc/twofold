@@ -235,7 +235,9 @@ export class PageRequest {
       redirectUrl.origin === requestUrl.origin && url.startsWith("/");
 
     if (isRSCFetch && isRelative) {
-      let encodedPath = encodeURIComponent(redirectUrl.pathname);
+      let encodedPath = encodeURIComponent(
+        `${redirectUrl.pathname}${redirectUrl.search}`,
+      );
       let newUrl = `/__rsc/page?path=${encodedPath}`;
 
       return new Response(null, {
