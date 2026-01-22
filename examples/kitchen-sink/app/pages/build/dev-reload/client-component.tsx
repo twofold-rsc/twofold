@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 export default function ClientComponent() {
-  let [count, setCount] = useState(4);
+  let [count, setCount] = useState(0);
 
   return (
     <div>
