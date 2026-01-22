@@ -43,13 +43,17 @@
       p {
         line-height: 1.5em;
       }
+
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
     <div class="box">
       <h1>Application error</h1>
-      <p>This application errored.</p>
-      <p>Digest: $digest</p>
+      <p>Something went wrong. Try again later if the issue persists.</p>
+      <p class="$digest-class">Digest: $digest</p>
     </div>
   </body>
 </html>

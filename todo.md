@@ -1,32 +1,22 @@
 # TODO
 
-- errors
-  - [x] catch boundary & error template
-    - [x] unexpected error
-    - [x] error templates must be client components
-  - [x] clear error
-    - [x] back / popstate
-    - [x] reset helper?
-  - [x] error types
-    - [x] unauthorized
-    - [x] not found
-    - [x] redirect
-  - [x] error props type
-  - [x] cleanup
-  - [ ] run through
-    - [ ] dev
-    - [ ] prod
+- windows test
 
 - errors documentation
+  - [ ] unauthorized
   - [ ] error template importable props type
 
 - [ ] error blog post
   - [ ] environments
   - [ ] rsc examples
   - [ ] ssr examples
+  - [ ] client errors
+    - [ ] in transitions
   - [ ] outside of react errors
   - [ ] hidden prod errors / digest
-  - [ ] redirect / control flow
+  - [ ] control flow
+    - [ ] redirect / not found
+  - [ ] oncaught and onuncaught
 
 - [ ] can we serialize redirect
 - [ ] do we ever render json/error (check router hooks)

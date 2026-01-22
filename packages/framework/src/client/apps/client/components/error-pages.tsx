@@ -23,10 +23,9 @@ export function ProdErrorPage({ error }: { error: unknown }) {
       ? error.digest
       : "";
 
-  let html = `${process.env.TWOFOLD_PROD_ERROR_HTML}`.replace(
-    "$digest",
-    digest,
-  );
+  let html = `${process.env.TWOFOLD_PROD_ERROR_HTML}`
+    .replace("$digest-class", digest ? "" : "hidden")
+    .replace("$digest", digest);
 
   return <html dangerouslySetInnerHTML={{ __html: html }} />;
 }
