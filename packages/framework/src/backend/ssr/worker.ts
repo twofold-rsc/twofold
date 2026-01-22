@@ -11,22 +11,14 @@ if (!parentPort) {
 
 export type RenderRequest = {
   port: MessagePort;
-  rscStream: ReadableStream<Uint8Array>;
   writeStream: WritableStream<Uint8Array>;
-} & (
-  | {
-      method: "page";
-      data: {
-        urlString: string;
-      };
-    }
-  | {
-      method: "stream";
-    }
-  | {
-      method: "static";
-    }
-);
+} & {
+  mode: "page";
+  rscStream: ReadableStream<Uint8Array>;
+  data: {
+    urlString: string;
+  };
+};
 
 let clientComponentModuleMap = workerData.clientComponentModuleMap;
 
@@ -35,17 +27,13 @@ injectResolver((moduleId) => {
 });
 
 parentPort.on("message", async (request: RenderRequest) => {
+  // tee the stream, try to render it
+  // if it fails send the other side into an error app
   try {
     let htmlStream;
 
-    if (request.method === "page") {
+    if (request.mode === "page") {
       htmlStream = await pageSSR(request);
-    } else if (request.method === "stream") {
-      // htmlStream = await streamSSR(request);
-      throw new Error("Not implemented");
-    } else if (request.method === "static") {
-      // htmlStream = await staticSSR(request);
-      throw new Error("Not implemented");
     } else {
       throw new Error("Invalid ssr render request");
     }

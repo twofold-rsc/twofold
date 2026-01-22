@@ -31,7 +31,7 @@ export class CrashBoundary extends Component<
   }
 }
 
-export function CrashPage({ error }: { error: unknown }) {
+function CrashPage({ error }: { error: unknown }) {
   let message = error instanceof Error ? error.message : "Unknown error";
   let stack = error instanceof Error ? error.stack : "Unknown stack";
 

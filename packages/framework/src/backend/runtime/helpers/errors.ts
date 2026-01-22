@@ -16,6 +16,15 @@ export function isRedirectError(err: unknown) {
   );
 }
 
+export function isUnauthorizedError(err: unknown): err is Error {
+  return (
+    err instanceof Error &&
+    "digest" in err &&
+    typeof err.digest === "string" &&
+    err.digest.startsWith("TwofoldUnauthorizedError")
+  );
+}
+
 export function redirectErrorToResponse(err: Error & { digest: string }) {
   let [name, status, url] = err.digest.split(":");
 

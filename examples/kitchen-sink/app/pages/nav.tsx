@@ -355,6 +355,11 @@ export default function Nav() {
                         href="/routing/not-found"
                       />
                       <ExampleLink
+                        title="Unauthorized"
+                        description="Handle unauthorized errors."
+                        href="/routing/unauthorized"
+                      />
+                      <ExampleLink
                         title="Redirects"
                         description="Handle redirects from pages and actions."
                         href="/routing/redirects"

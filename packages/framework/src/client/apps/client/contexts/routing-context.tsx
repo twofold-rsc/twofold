@@ -6,6 +6,7 @@ type NavigateOptions = {
 };
 
 type ContextShape = {
+  version: number;
   path: string;
   mask: string | undefined;
   searchParams: URLSearchParams;
@@ -15,10 +16,10 @@ type ContextShape = {
   navigate: (path: string, options?: NavigateOptions) => void;
   replace: (path: string, options?: NavigateOptions) => void;
   refresh: () => void;
-  notFound: () => void;
 };
 
 export const Context = createContext<ContextShape>({
+  version: 0,
   path: "/",
   mask: undefined,
   searchParams: new URLSearchParams(),
@@ -28,10 +29,10 @@ export const Context = createContext<ContextShape>({
   navigate: () => {},
   replace: () => {},
   refresh: () => {},
-  notFound: () => {},
 });
 
 export function RoutingContext({
+  version,
   path,
   mask,
   searchParams,
@@ -41,9 +42,9 @@ export function RoutingContext({
   navigate,
   replace,
   refresh,
-  notFound,
   children,
 }: {
+  version: number;
   path: string;
   mask: string | undefined;
   searchParams: URLSearchParams;
@@ -53,19 +54,18 @@ export function RoutingContext({
   navigate: (path: string, options?: NavigateOptions) => void;
   replace: (path: string, options?: NavigateOptions) => void;
   refresh: () => void;
-  notFound: () => void;
   children: ReactNode;
 }) {
   return (
     <Context
       value={{
+        version,
         path,
         mask,
         searchParams,
         optimisticPath,
         optimisticSearchParams,
         isTransitioning,
-        notFound,
         navigate,
         replace,
         refresh,

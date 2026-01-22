@@ -104,12 +104,6 @@ function Router() {
     });
   }, [dispatch]);
 
-  let notFound = useCallback(() => {
-    startTransition(() => {
-      dispatch({ type: "NOT_FOUND", path: routerState.path });
-    });
-  }, [dispatch, routerState.path]);
-
   useEffect(() => {
     function onPopState(event: PopStateEvent) {
       let path = event.state?.path
@@ -250,6 +244,7 @@ function Router() {
   return (
     <ErrorBoundary>
       <RoutingContext
+        version={routerState.version}
         path={url.pathname}
         mask={routerState.mask}
         searchParams={url.searchParams}
@@ -259,12 +254,11 @@ function Router() {
         navigate={navigate}
         replace={replace}
         refresh={refresh}
-        notFound={notFound}
       >
         <RouteStack stack={stack} />
       </RoutingContext>
 
-      {/*
+      {/* 
         This doesnt do anything, but its needed to match the shape
         of the SSR app.
       */}

@@ -1,7 +1,48 @@
 # TODO
 
-- release
-- release create app (only built deps)
+- windows test
+
+- errors documentation
+  - [ ] unauthorized
+  - [ ] error template importable props type
+  - [ ] unexpected errors
+
+- [ ] error blog post
+  - [ ] environments
+  - [ ] rsc examples
+  - [ ] ssr examples
+  - [ ] client errors
+    - [ ] in transitions
+  - [ ] outside of react errors
+  - [ ] hidden prod errors / digest
+  - [ ] control flow
+    - [ ] redirect / not found
+  - [ ] oncaught and onuncaught
+
+- [ ] can we serialize redirect
+- [ ] do we ever render json/error (check router hooks)
+
+- [ ] rsc output
+
+- [ ] pages/layouts can use client
+  - [ ] route stack placeholder should be client component only
+
+- errors v2
+  - [ ] tagged errors
+    - [ ] user customizable errors
+
+- build
+  - css / assets cleanup
+- endpoints
+- tests
+- db
+
+- queue
+
+- pass a client component to a server action
+- pass a server action to a server action
+
+- windows test that index routes work, they should just had my doubts for a second
 
 - use node version of rsdw
 - how can we bundle rsdw?
@@ -12,10 +53,6 @@
 - idea would be to import/render link tag for assets, which i like
 
 - see if we can avoid rolldown facades. might need to open issue about finding a moduleId's exports in a chunk
-
-- Run through windows
-
-- find mem leak (script it)
 
 - cloudflare uses zstd compression on text/x-component, which causes buffering of the response
   one way to fix is using the cache control no transform header. maybe we enable that in dev

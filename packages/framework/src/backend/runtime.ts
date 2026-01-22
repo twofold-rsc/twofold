@@ -9,6 +9,7 @@ import {
 import {
   isNotFoundError,
   isRedirectError,
+  isUnauthorizedError,
   redirectErrorInfo,
 } from "./runtime/helpers/errors.js";
 import { randomUUID } from "node:crypto";
@@ -21,6 +22,7 @@ import { injectResolver } from "./monkey-patch.js";
 import { partition } from "./utils/partition.js";
 import { pathMatches } from "./runtime/helpers/routing.js";
 import { pathToFileURL } from "node:url";
+import { invariant } from "./utils/invariant.js";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -66,29 +68,11 @@ export class Runtime {
     }
   }
 
-  // routing
-
-  // this is really build output
-  async routeStackPlaceholder() {
-    let placeholderPath =
-      this.build.getBuilder("rsc").routeStackPlaceholderPath;
-
-    let placeholderUrl = pathToFileURL(placeholderPath)
-    let mod = await import(placeholderUrl.href);
-    if (!mod.default) {
-      throw new Error(
-        `Route stack placeholder module at ${placeholderPath} has no default export.`,
-      );
-    }
-
-    return mod.default;
-  }
-
   // pages
 
   pageRequest(request: Request) {
     let url = new URL(request.url);
-    let page = this.build.getBuilder("rsc").tree.findPageForPath(url.pathname);
+    let page = this.build.getBuilder("rsc").findPageForPath(url.pathname);
 
     let pageRequest = page
       ? new PageRequest({ page, request, runtime: this })
@@ -98,11 +82,32 @@ export class Runtime {
   }
 
   notFoundPageRequest(request: Request) {
+    let page = this.build
+      .getBuilder("rsc")
+      .findPageForPath("/__tf/errors/not-found");
+
+    invariant(page, "Could not find not-found page");
+
     return new PageRequest({
-      page: this.build.getBuilder("rsc").notFoundPage,
+      page,
       request,
       runtime: this,
       conditions: ["not-found"],
+    });
+  }
+
+  unauthorizedPageRequest(request: Request) {
+    let page = this.build
+      .getBuilder("rsc")
+      .findPageForPath("/__tf/errors/unauthorized");
+
+    invariant(page, "Could not find unauthorized page");
+
+    return new PageRequest({
+      page,
+      request,
+      runtime: this,
+      conditions: ["unauthorized"],
     });
   }
 
@@ -135,8 +140,14 @@ export class Runtime {
       temporaryReferences: options.temporaryReferences,
       onError(err: unknown) {
         streamError = err;
+
+        let isSafeError =
+          isNotFoundError(err) ||
+          isRedirectError(err) ||
+          isUnauthorizedError(err);
+
         if (
-          (isNotFoundError(err) || isRedirectError(err)) &&
+          isSafeError &&
           err instanceof Error &&
           "digest" in err &&
           typeof err.digest === "string"
@@ -157,7 +168,8 @@ export class Runtime {
     });
 
     // await the first chunk
-    // todo: use transform stream to buffer
+    // this is not really needed, its debt
+    // maybe: use transform stream to buffer
     // the idea is we don't want to return the stream too early, in case it
     // errors. so we'll wait for the first chunk to see if it contains
     // an error before continuing. there's probably a better way to do this.
@@ -171,6 +183,11 @@ export class Runtime {
       return {
         stream: t2,
         notFound: true,
+      };
+    } else if (isUnauthorizedError(streamError)) {
+      return {
+        stream: t2,
+        unauthorized: true,
       };
     } else if (isRedirectError(streamError)) {
       let { status, url } = redirectErrorInfo(streamError);
@@ -191,7 +208,7 @@ export class Runtime {
 
   async renderHtmlStreamFromRSCStream(
     rscStream: ReadableStream<Uint8Array>,
-    method: "stream" | "page" | "static",
+    mode: "page",
     data: Record<string, any> = {},
   ) {
     let { port1, port2 } = new MessageChannel();
@@ -215,7 +232,7 @@ export class Runtime {
 
     this.#ssrWorker.postMessage(
       {
-        method,
+        mode,
         data,
         port: port2,
         rscStream,
@@ -230,26 +247,15 @@ export class Runtime {
     if (message.status === "OK") {
       return { stream: readStream };
     } else if (message.status === "ERROR") {
+      // this is likely a worst case scenario since errors should be handled by the
+      // worker. so if we get here something is really off.
+
       let error = deserializeError(message.serializedError);
 
-      if (isNotFoundError(error)) {
-        return {
-          stream: readStream,
-          notFound: true,
-        };
-      } else if (isRedirectError(error)) {
-        let { status, url } = redirectErrorInfo(error);
-        return {
-          stream: readStream,
-          redirect: {
-            status,
-            url,
-          },
-        };
-      } else {
-        throw error;
-      }
+      // bubble this out and let the http layer handle it
+      throw error;
     } else {
+      // unknown message type
       throw new Error("SSR worker failed to render");
     }
   }

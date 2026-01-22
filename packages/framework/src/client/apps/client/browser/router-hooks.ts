@@ -9,6 +9,7 @@ import { RedirectError } from "../../../errors/redirect-error";
 import { RouteStackEntry } from "../contexts/route-stack-context";
 
 type State = {
+  version: number;
   path: string;
   mask: string | undefined;
   action: "seed" | "render" | "refresh" | "navigate" | "popstate";
@@ -41,6 +42,7 @@ export function useRouterReducer() {
   }, [finalizedState]);
 
   let returnedState = {
+    version: finalizedState.version,
     path: finalizedState.path,
     mask: finalizedState.mask,
     action: finalizedState.action,
@@ -89,19 +91,13 @@ type UpdateAction = {
   updateId: string;
 };
 
-type NotFoundAction = {
-  type: "NOT_FOUND";
-  path: string;
-};
-
 type Action =
   | NavigateAction
   | PopAction
   | RefreshAction
   | PopulateAction
   | RenderAction
-  | UpdateAction
-  | NotFoundAction;
+  | UpdateAction;
 
 function reducer(state: Promise<State>, action: Action): Promise<State> {
   switch (action.type) {
@@ -124,6 +120,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             path,
             mask: action.mask,
             action: "navigate",
@@ -141,6 +138,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             path: action.path,
             mask: action.mask,
             action: "popstate",
@@ -162,6 +160,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             action: "refresh",
             history: "none",
             cache: newCache,
@@ -196,6 +195,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             cache: newCache,
           };
         },
@@ -214,6 +214,7 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
 
           return {
             ...previous,
+            version: previous.version + 1,
             path: rsc.path,
             mask: action.mask,
             action: "render",
@@ -233,27 +234,6 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
           return {
             ...previous,
             action: "refresh",
-            cache: newCache,
-          };
-        },
-      });
-    case "NOT_FOUND":
-      return createRouterState({
-        cacheKey: `not-found-${action.path}`,
-        async reduce() {
-          let previous = await state;
-          let newCache = new Map(previous.cache);
-
-          let rsc = await fetchRSCPayload(action.path, {
-            resource: "not-found",
-          });
-          newCache.set(rsc.path, rsc.stack);
-
-          return {
-            ...previous,
-            path: rsc.path,
-            action: "render",
-            history: "none",
             cache: newCache,
           };
         },
@@ -293,7 +273,7 @@ type RSCPayload = {
 
 type FetchOptions = {
   initiator?: string;
-  resource?: "page" | "not-found";
+  resource?: "page";
 };
 
 function fetchRSCPayload(path: string, options: FetchOptions = {}) {
@@ -332,7 +312,7 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
           },
         ];
       } else if (contentType === "application/json") {
-        // todo should get rid of this type of response
+        // should get rid of this type of response
         let json = await response.json();
         let error =
           json.type === "twofold-offsite-redirect"
@@ -403,6 +383,7 @@ async function getInitialRouterState() {
   }
 
   let state: State = {
+    version: 1,
     path,
     mask: undefined,
     action: "seed",

@@ -1,60 +1,10 @@
 "use client";
 
+import { ErrorProps } from "@twofold/framework/types";
 import { useRouter } from "@twofold/framework/use-router";
-import { Component, ReactNode, startTransition } from "react";
+import { startTransition } from "react";
 
-type Props = {
-  children: ReactNode;
-};
-
-export class ErrorBoundary extends Component<
-  Props,
-  {
-    error: unknown;
-  }
-> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      error: null,
-    };
-  }
-
-  static getDerivedStateFromError(error: unknown) {
-    return {
-      error,
-    };
-  }
-
-  reset() {
-    this.setState({ error: null });
-  }
-
-  render() {
-    if (this.state.error) {
-      return (
-        <ErrorUI
-          error={
-            this.state.error instanceof Error
-              ? this.state.error
-              : new Error("Unknown")
-          }
-          reset={this.reset.bind(this)}
-        />
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-function ErrorUI({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function ErrorUI({ error, reset }: ErrorProps) {
   let { navigate } = useRouter();
 
   function goBack() {

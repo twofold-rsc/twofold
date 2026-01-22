@@ -17,7 +17,7 @@ async function addTodo(form: FormData) {
   if (typeof text === "string" && randomNumber > 0.5) {
     todos.push({ id: todos.length + 1, text });
   } else {
-    console.log("SKIPPING TODO:", text);
+    console.log("SKIPPING:", text);
   }
 }
 

@@ -4,6 +4,7 @@ import { getStore } from "../stores/rsc-store.js";
 import {
   isNotFoundError,
   isRedirectError,
+  isUnauthorizedError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
 import { ComponentType, createElement, ReactElement } from "react";
@@ -38,6 +39,10 @@ export class PageRequest {
     return this.#conditions.includes("not-found");
   }
 
+  get isUnauthorized() {
+    return this.#conditions.includes("unauthorized");
+  }
+
   get page() {
     return this.#page;
   }
@@ -63,6 +68,8 @@ export class PageRequest {
     } catch (error: unknown) {
       if (isNotFoundError(error)) {
         return this.notFoundRscResponse();
+      } else if (isUnauthorizedError(error)) {
+        return this.unauthorizedRscResponse();
       } else if (isRedirectError(error)) {
         let { status, url } = redirectErrorInfo(error);
         return this.redirectResponse(status, url);
@@ -73,15 +80,12 @@ export class PageRequest {
 
     let renderStack = await this.routeStack();
 
-    let { stream, error, redirect, notFound } =
+    let { stream, error, redirect, notFound, unauthorized } =
       await this.#runtime.renderRSCStream({
         stack: renderStack,
       });
 
-    if (notFound) {
-      stream.cancel();
-      return this.notFoundRscResponse();
-    } else if (redirect) {
+    if (redirect) {
       stream.cancel();
       return this.redirectResponse(redirect.status, redirect.url);
     }
@@ -91,11 +95,11 @@ export class PageRequest {
       "Content-type": "text/x-component",
     });
 
-    let status = error
-      ? 500
-      : this.#conditions.includes("not-found")
-        ? 404
-        : 200;
+    const isUnauthorized =
+      this.#conditions.includes("unauthorized") || unauthorized;
+    const isNotFound = this.#conditions.includes("not-found") || notFound;
+
+    let status = error ? 500 : isNotFound ? 404 : isUnauthorized ? 401 : 200;
 
     // give back the stream wrapped in a response
     return new Response(stream, {
@@ -115,17 +119,13 @@ export class PageRequest {
     let rscStream = rscResponse.body;
     let url = new URL(this.#request.url);
 
-    let { stream, notFound, redirect } =
-      await this.#runtime.renderHtmlStreamFromRSCStream(rscStream, "page", {
+    let { stream } = await this.#runtime.renderHtmlStreamFromRSCStream(
+      rscStream,
+      "page",
+      {
         urlString: url.toString(),
-      });
-
-    if (notFound) {
-      return this.notFoundSsrResponse();
-    } else if (redirect) {
-      let { status, url } = redirect;
-      return this.redirectResponse(status, url);
-    }
+      },
+    );
 
     let status = rscResponse.status;
     let headers = new Headers(rscResponse.headers);
@@ -149,8 +149,6 @@ export class PageRequest {
 
     let params = this.dynamicParams;
     let props = this.props;
-    let routeStackPlaceholderComponent =
-      await this.#runtime.routeStackPlaceholder();
 
     let stack = segments.map((segment) => {
       let segmentKey = `${segment.path}:${applyPathParams(
@@ -162,16 +160,12 @@ export class PageRequest {
       // certain bots will try to crawl them
       let key = hash(segmentKey);
 
-      let components =
-        segment.type === "layout"
-          ? [...segment.components, routeStackPlaceholderComponent]
-          : segment.components;
-
-      let componentsWithProps = components.map((component, index) => {
+      let componentsWithProps = segment.components.map((component, index) => {
         return {
-          component,
+          component: component.func,
           props: {
-            ...props,
+            ...component.props,
+            ...(component.requirements.includes("dynamicRequest") ? props : {}),
             ...(index === 0 ? { key } : {}),
           },
         };
@@ -221,21 +215,16 @@ export class PageRequest {
   }
 
   private notFoundRscResponse() {
-    if (this.isNotFound) {
-      throw new Error("The not-found page cannot call notFound()");
-    }
-
     let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
     return notFoundRequest.rscResponse();
   }
 
-  private notFoundSsrResponse() {
-    if (this.isNotFound) {
-      throw new Error("The not-found page cannot call notFound()");
-    }
+  private unauthorizedRscResponse() {
+    let unauthorizedRequest = this.#runtime.unauthorizedPageRequest(
+      this.#request,
+    );
 
-    let notFoundRequest = this.#runtime.notFoundPageRequest(this.#request);
-    return notFoundRequest.ssrResponse();
+    return unauthorizedRequest.rscResponse();
   }
 
   private redirectResponse(status: number, url: string) {
@@ -246,12 +235,10 @@ export class PageRequest {
       redirectUrl.origin === requestUrl.origin && url.startsWith("/");
 
     if (isRSCFetch && isRelative) {
-      let redirectRequest = new Request(redirectUrl, this.#request);
-      let redirectPageRequest = this.#runtime.pageRequest(redirectRequest);
-
-      let encodedPath = encodeURIComponent(redirectUrl.pathname);
-      let resource = redirectPageRequest.isNotFound ? "not-found" : "page";
-      let newUrl = `/__rsc/${resource}?path=${encodedPath}`;
+      let encodedPath = encodeURIComponent(
+        `${redirectUrl.pathname}${redirectUrl.search}`,
+      );
+      let newUrl = `/__rsc/page?path=${encodedPath}`;
 
       return new Response(null, {
         status,

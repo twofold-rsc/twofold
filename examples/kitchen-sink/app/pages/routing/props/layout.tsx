@@ -43,7 +43,7 @@ export default function Layout(props: LayoutProps) {
               <>none</>
             ) : (
               <ul className="list-disc pl-5">
-                {props.searchParams.entries().map(([key, value]) => (
+                {[...props.searchParams.entries()].map(([key, value]) => (
                   <li key={key}>
                     {key}: {value}
                   </li>

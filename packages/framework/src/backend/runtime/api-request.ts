@@ -3,6 +3,7 @@ import { Runtime } from "../runtime.js";
 import {
   isNotFoundError,
   isRedirectError,
+  isUnauthorizedError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
 
@@ -44,12 +45,14 @@ export class APIRequest {
     let method = request.method.toUpperCase();
     let response: Response;
 
-    if (module[method]) {
+    if (Object.hasOwn(module, method) && typeof module[method] === "function") {
       try {
         response = await module[method](this.props);
       } catch (error: unknown) {
         if (isNotFoundError(error)) {
           response = new Response("Not found", { status: 404 });
+        } else if (isUnauthorizedError(error)) {
+          response = new Response("Unauthorized", { status: 401 });
         } else if (isRedirectError(error)) {
           let { status, url } = redirectErrorInfo(error);
           response = new Response(null, {

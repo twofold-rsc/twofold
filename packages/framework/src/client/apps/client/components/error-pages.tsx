@@ -16,8 +16,6 @@ export function DevErrorPage({ error }: { error: unknown }) {
 }
 
 export function ProdErrorPage({ error }: { error: unknown }) {
-  let message =
-    error instanceof Error ? error.message : "Internal server error";
   let digest =
     error instanceof Error &&
     "digest" in error &&
@@ -26,7 +24,7 @@ export function ProdErrorPage({ error }: { error: unknown }) {
       : "";
 
   let html = `${process.env.TWOFOLD_PROD_ERROR_HTML}`
-    .replace("$message", message)
+    .replace("$digest-class", digest ? "" : "hidden")
     .replace("$digest", digest);
 
   return <html dangerouslySetInnerHTML={{ __html: html }} />;

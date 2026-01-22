@@ -28,7 +28,7 @@ export default function SlugPropsPage(props: PageProps<"slug">) {
               <>none</>
             ) : (
               <ul className="list-disc pl-5">
-                {props.searchParams.entries().map(([key, value]) => (
+                {[...props.searchParams.entries()].map(([key, value]) => (
                   <li key={key}>
                     {key}: {value}
                   </li>

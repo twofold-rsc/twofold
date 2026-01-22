@@ -64,6 +64,8 @@ async function createHandler(server: Server) {
 
     if (response.status === 404) {
       log("Not found", requestUrl.pathname, "red");
+    } else if (response.status === 401) {
+      log("Unauthorized", requestUrl.pathname, "red");
     } else if (response.status === 307) {
       let location = response.headers.get("location")?.split("?")[1];
       let params = new URLSearchParams(location ?? "");
@@ -77,22 +79,6 @@ async function createHandler(server: Server) {
     } else if (initiator === "client-side-navigation") {
       log("Render", requestUrl.pathname, "green");
     }
-
-    return response;
-  });
-
-  app.get("/__rsc/not-found", async (ctx) => {
-    let url = new URL(ctx.request.url);
-    let path = url.searchParams.get("path");
-
-    if (typeof path !== "string") {
-      throw new Error("No path specified");
-    }
-
-    let requestUrl = new URL(path, url);
-    let request = new Request(requestUrl, ctx.request);
-    let pageRequest = runtime.notFoundPageRequest(request);
-    let response = await pageRequest.rscResponse();
 
     return response;
   });
@@ -112,6 +98,8 @@ async function createHandler(server: Server) {
 
     if (response.status === 404) {
       log("Not found", `Action ${name}`, "red");
+    } else if (response.status === 401) {
+      log("Unauthorized", `Action ${name}`, "red");
     } else if (response.status === 303) {
       let locationHeader = response.headers.get("location");
       let location = locationHeader?.startsWith("/__rsc/page?path=")
@@ -153,6 +141,8 @@ async function createHandler(server: Server) {
 
         if (response.status === 404) {
           log("Not found", requestUrl.pathname, "red");
+        } else if (response.status === 401) {
+          log("Unauthorized", requestUrl.pathname, "red");
         } else if (response.status === 307 || response.status === 308) {
           let location = response.headers.get("location");
           log(
@@ -180,7 +170,9 @@ async function createHandler(server: Server) {
       let name = await actionRequest.name();
 
       if (response.status === 404) {
-        log("Not found", `Action ${name} rendered not found`, "red");
+        log("Not found", `Action ${name}`, "red");
+      } else if (response.status === 401) {
+        log("Unauthorized", `Action ${name}`, "red");
       } else if (response.status === 303) {
         let location = response.headers.get("location");
         log("Redirect", `Action ${name} redirected to ${location}`, "cyan");
@@ -216,6 +208,8 @@ async function createHandler(server: Server) {
 
     if (response.status === 404) {
       log("Not found", url.pathname, "red");
+    } else if (response.status === 401) {
+      log("Unauthorized", url.pathname, "red");
     } else if (response.status === 307 || response.status === 308) {
       let location = response.headers.get("location");
       log("Redirect", `${url.pathname} redirected to ${location}`, "cyan");

@@ -6,3 +6,14 @@ body,
   height: 100%;
   background-color: var(--color-red-50);
 }
+
+.noscript {
+  padding: 20px;
+}
+
+.noscript h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  padding-bottom: 20px;
+}

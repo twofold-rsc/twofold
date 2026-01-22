@@ -8,8 +8,8 @@ export default function Page() {
       </h1>
       <p className="mt-3 max-w-prose text-gray-700">
         Clicking the link below will render a page that throws an error. That
-        error will be caught by the error boundary that sits above in the shared
-        layout.
+        error will be caught by the error boundary that's attached to this
+        route.
       </p>
       <div className="mt-4">
         <Link

@@ -94,6 +94,14 @@ export default function Layout({ children }: { children: ReactNode }) {
             </Link>
           </li>
           <li>
+            <Link
+              href="/http/api/unauthorized"
+              className="text-blue-500 underline"
+            >
+              Unauthorized
+            </Link>
+          </li>
+          <li>
             <Link href="/http/api/image" className="text-blue-500 underline">
               Image
             </Link>
