@@ -773,22 +773,6 @@ export class RSCBuilder extends Builder {
   }
 }
 
-class RscBuildOutput {
-  #builder: RSCBuilder;
-  #metafile: Metafile;
-
-  constructor({
-    builder,
-    metafile,
-  }: {
-    builder: RSCBuilder;
-    metafile: Metafile;
-  }) {
-    this.#builder = builder;
-    this.#metafile = metafile;
-  }
-}
-
 let appAppPath = fileURLToPath(appAppDir);
 let frameworkSrcPath = fileURLToPath(frameworkSrcDir);
 let srcPaths = {

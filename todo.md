@@ -5,6 +5,7 @@
 - errors documentation
   - [ ] unauthorized
   - [ ] error template importable props type
+  - [ ] unexpected errors
 
 - [ ] error blog post
   - [ ] environments
