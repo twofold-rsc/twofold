@@ -19,7 +19,7 @@ export default function ProductsPage() {
 }
 ```
 
-While it's possible that you know this type of exception can happen, it is almost always unexpected. It's unlikely you'd want to wrap all of your database queries in try-catch statements to handle the database being offline.
+While it's possible that you know this type of exception can happen, it's almost always unexpected. It's unlikely you want to wrap all of your database queries in try-catch statements to handle the database being offline.
 
 These types of errors are unexpected because you either did not know they were possible or do not expect them to happen in a well functioning app.
 
@@ -59,7 +59,7 @@ app
    └─ unexpected.error.tsx
 ```
 
-This allows you to customize what is shown whenever your application throws an uncaught exception. If there are multiple `unexpected.error.tsx` components then the one closest to the page component is used.
+This allows you to customize what is shown whenever your application throws an exception. If there are multiple `unexpected.error.tsx` components then the one closest to the page component is used.
 
 ### Error component details
 
@@ -103,4 +103,4 @@ export default function ErrorComponent({ error, reset }: ErrorProps) {
 }
 ```
 
-Even if you are not using any client features this module must be marked with `"use client"`. This is because under the hood these components are controlled by React Error Boundaries, which only work as client components.
+Even if you are not using any client features this module must be marked with `"use client"`. This is because under the hood these components are controlled by React's Error Boundaries, which only work as client components.
