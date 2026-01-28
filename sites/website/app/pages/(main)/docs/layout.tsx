@@ -25,6 +25,9 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             <DocLink href="/docs/guides/mutations">Mutations</DocLink>
           </li>
           <li>
+            <DocLink href="/docs/guides/error-handling">Error handling</DocLink>
+          </li>
+          <li>
             <DocLink href="/docs/guides/interactivity">Interactivity</DocLink>
           </li>
           <li>

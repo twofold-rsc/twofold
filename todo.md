@@ -3,9 +3,7 @@
 - windows test
 
 - errors documentation
-  - [ ] unauthorized
-  - [ ] error template importable props type
-  - [ ] unexpected errors
+  - [x] unexpected errors
 
 - [ ] error blog post
   - [ ] environments
@@ -28,8 +26,10 @@
   - [ ] route stack placeholder should be client component only
 
 - errors v2
+  - [ ] call notFound and unauthorized from client components
   - [ ] tagged errors
     - [ ] user customizable errors
+  - [ ] unauthorized docs
 
 - build
   - css / assets cleanup

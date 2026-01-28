@@ -8,7 +8,7 @@ Twofold is a framework for building RSC applications. Every Twofold app comes wi
 
 - An **RSC Router** built on top of React's Suspense and Transition APIs.
 - Bundling and splitting support for **Server Components** and **Client Components**.
-- Secure **Server Functions** that automatically handle encryption and decryption of sensitive data.
+- Secure **Server Functions** that automatically handle encryption and decryption of bound data.
 - Automatic configuration and setup for React Compiler, Tailwind, TypeScript, Prettier, HMR, and linting rules.
 
 Before continuing it's recommended you read [Don't use Twofold](/docs/philosophy/dont-use-twofold).
