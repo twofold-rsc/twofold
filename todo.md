@@ -16,6 +16,7 @@
   - [ ] control flow
     - [ ] redirect / not found
   - [ ] oncaught and onuncaught
+  - [ ] update dont use
 
 - [ ] can we serialize redirect
 - [ ] do we ever render json/error (check router hooks)
