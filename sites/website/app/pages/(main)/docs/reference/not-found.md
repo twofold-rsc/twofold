@@ -24,7 +24,7 @@ export default function PostPage({ slug }: PageProps<"slug">) {
 }
 ```
 
-In addition to pages that invoke `notFound()`, any page that is missing from the filesystem will automatically render the not found page. For example, if a user navigates to `/missing-page` and no such page exists, then the not found page will be rendered.
+In addition to pages that invoke `notFound()`, any page that is missing from the file system will automatically render the not found page. For example, the not found page will render if a user navigates to `/missing-page` and no such page exists.
 
 ## Actions
 
@@ -74,10 +74,12 @@ export default function PostPage({ slug }: PageProps<"slug">) {
 
 ## Customizing the not found page
 
-To customize the default not found page create a new file at `app/pages/errors/not-found.page.tsx`:
+To customize the default not found page create a new file at `app/pages/not-found.error.tsx`:
 
 ```tsx
-// app/pages/errors/not-found.page.tsx
+// app/pages/not-found.error.tsx
+
+"use client";
 
 export default function NotFoundPage() {
   return (
@@ -89,8 +91,4 @@ export default function NotFoundPage() {
 }
 ```
 
-The not found page always renders within the root layout. It is a page component that receives the same props as normal [Pages](http://localhost:3000/docs/guides/pages#additional-props).
-
-## Client components
-
-Client components cannot render the not found page.
+The not found page must be a client component.

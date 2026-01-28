@@ -3,9 +3,7 @@
 - windows test
 
 - errors documentation
-  - [ ] unauthorized
-  - [ ] error template importable props type
-  - [ ] unexpected errors
+  - [x] unexpected errors
 
 - [ ] error blog post
   - [ ] environments
@@ -18,6 +16,7 @@
   - [ ] control flow
     - [ ] redirect / not found
   - [ ] oncaught and onuncaught
+  - [ ] update dont use
 
 - [ ] can we serialize redirect
 - [ ] do we ever render json/error (check router hooks)
@@ -28,8 +27,10 @@
   - [ ] route stack placeholder should be client component only
 
 - errors v2
+  - [ ] call notFound and unauthorized from client components
   - [ ] tagged errors
     - [ ] user customizable errors
+  - [ ] unauthorized docs
 
 - build
   - css / assets cleanup
