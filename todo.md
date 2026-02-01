@@ -8,6 +8,7 @@
 - [ ] error blog post
   - [ ] environments
   - [ ] rsc examples
+    - [ ] verify rsc rendering w/ suspense
   - [ ] ssr examples
   - [ ] client errors
     - [ ] in transitions
@@ -16,7 +17,7 @@
   - [ ] control flow
     - [ ] redirect / not found
   - [ ] oncaught and onuncaught
-  - [ ] update dont use
+  - [ ] update dont use section of website
 
 - [ ] can we serialize redirect
 - [ ] do we ever render json/error (check router hooks)
