@@ -7,11 +7,10 @@
 
 - [ ] error blog post
   - [ ] environments
-  - [ ] rsc examples
-    - [ ] verify rsc rendering w/ suspense
-  - [ ] ssr examples
-  - [ ] client errors
-    - [ ] in transitions
+    - [x] rsc examples
+    - [x] ssr examples
+    - [x] client errors
+      - [ ] in transitions
   - [ ] outside of react errors
   - [ ] hidden prod errors / digest
   - [ ] control flow
