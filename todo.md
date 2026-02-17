@@ -1,27 +1,18 @@
 # TODO
 
-- windows test
-
-- errors documentation
-  - [x] unexpected errors
-
 - [ ] error blog post
-  - [ ] environments
-    - [x] rsc examples
-    - [x] ssr examples
-    - [x] client errors
-      - [ ] in transitions
-  - [ ] outside of react errors
-  - [ ] hidden prod errors / digest
-  - [ ] control flow
-    - [ ] redirect / not found
-  - [ ] oncaught and onuncaught
+  - [x] rsc examples
+  - [x] ssr examples
+  - [x] client errors
+  - [ ] intro cards
+  - [ ] error boundary demo
   - [ ] update dont use section of website
+  - [ ] windows test
 
 - [ ] can we serialize redirect
 - [ ] do we ever render json/error (check router hooks)
 
-- [ ] rsc output
+- [ ] rsc build output class
 
 - [ ] pages/layouts can use client
   - [ ] route stack placeholder should be client component only
@@ -37,8 +28,6 @@
 - endpoints
 - tests
 - db
-
-- queue
 
 - pass a client component to a server action
 - pass a server action to a server action
