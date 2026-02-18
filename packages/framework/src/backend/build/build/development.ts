@@ -30,12 +30,10 @@ export class DevelopmentBuild extends Build {
     let errorPageBuilder = new DevErrorPageBuilder();
     let rscBuilder = new RSCBuilder({
       build: this,
-      entriesBuilder,
     });
 
     let clientBuilder = new ClientBuilder({
       build: this,
-      entriesBuilder,
     });
     let serverFilesBuilder = new ServerFilesBuilder({
       build: this,
