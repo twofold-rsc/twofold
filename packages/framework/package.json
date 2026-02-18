@@ -34,6 +34,11 @@
     "./redirect": "./src/client/http/redirect.ts",
     "./encryption": "./dist/backend/encryption.js",
     "./context/page": "./src/client/server-context/page.ts",
+    "./run/dev": "./dist/backend/tasks/dev.js",
+    "./run/serve": "./dist/backend/tasks/serve.js",
+    "./build/dev": "./dist/backend/build/build/development.js",
+    "./build/production": "./dist/backend/build/build/production.js",
+    "./builders/*": "./dist/backend/build/builders/*.js",
     "./flash": {
       "react-server": "./src/client/actions/flash.ts",
       "default": "./src/client/actions/flash-client.ts"
