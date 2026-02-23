@@ -4,8 +4,11 @@
   - [x] rsc examples
   - [x] ssr examples
   - [x] client errors
-  - [ ] intro cards
-  - [ ] error boundary demo
+  - [x] intro cards
+  - [x] error boundary demo
+  - [x] test error boundary demo in prod build
+  - [ ] demo and section for browser + suspense
+  - [ ] mobile styling
   - [ ] update dont use section of website
   - [ ] windows test
 

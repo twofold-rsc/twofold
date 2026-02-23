@@ -7,7 +7,7 @@ description: "How errors thrown in React Server Components flow through an appli
 
 Today we're going to take a look at what happens when a React Server Component throws an error during render. Although this post is mostly look under the hood at how an RSC framework handles errors, it will shed some light on React's error handling when it comes to RSC applications.
 
-In this post we'll look at:
+In this post we'll cover:
 
 - How React's different rendering environments respond to errors.
 - How thrown exceptions make their way from RSCs to error messages displayed on the user's screen.
@@ -21,15 +21,7 @@ Typically RSC applications are going to consist of three environments in which t
 
 {% rendering-environments /%}
 
-- **The RSC render**: This is the process responsible for rendering and executing React Server Components. When an error is thrown during the RSC render then the component tree is replaced by that error. The error does not causing rendering to crash, but instead it gets turned into data and is serialized right into the RSC stream.
-
-- **The SSR render**: This is the server process responsible for turning an RSC stream and its client components into HTML. When an error is thrown during SSR one of two things happens:
-  - If streaming and the error is inside a `<Suspense>` boundary, then the SSR process cancels rendering everything inside the boundary and allows the client (browser) to reattempt the render.
-  - Otherwise the SSR process throws and exits.
-
-- **The Browser render**: This is client-side React render that is most familiar for front-end developers. If an error is thrown here then React will allow the closest `ErrorBoundary` to catch the error and display a friendly fallback. This is the only environment where React's Error Boundaries work, and is the best place for the error to be caught and displayed to the user.
-
-To break it down, let's take a deeper look at each of these environments, and understand how errors make their way from the RSC render all the way to an error message that shows up on the users screen.
+Now let's take a deeper look at each of these environments and understand how errors make their way from the RSC render all the way to an error message displayed on the user's screen.
 
 ### Errors in the RSC Render
 
@@ -82,8 +74,11 @@ const rscStream = await renderToReadableStream(<MyComponent />, {});
 
 import { createFromReadableStream } from "react-server-dom-webpack/client";
 import { renderToReadableStream } from "react-dom/server";
+import { use } from "react";
 
-function App({ tree }) {
+function App({ usableTree }) {
+  const tree = use(usableTree);
+
   return (
     <html>
       <body>
@@ -94,10 +89,12 @@ function App({ tree }) {
   );
 }
 
-const tree = await createFromReadableStream(rscStream);
+const usableTree = createFromReadableStream(rscStream);
 
 try {
-  const htmlStream = await renderToReadableStream(<App tree={tree} />);
+  const htmlStream = await renderToReadableStream(
+    <App usableTree={usableTree} />,
+  );
   return new Response(htmlStream);
 } catch (e) {
   console.log("Unable to render HTML...");
@@ -120,17 +117,20 @@ Error: Whoops!
 
 React is unable to turn the `rscStream` into HTML. The `renderToReadableStream` function from `react-dom/server` throws and we're left with a rejected promise that contains the original _Whoops_ error from the RSC stream.
 
-This is the point where the RSC error materializes into an actual error that our code has to handle. Conceptually, when React DOM's `renderToReadableStream` encounters an RSC stream with an error it's the same as rendering a component that throws an error.
+This is the point where React materializes the RSC error into an actual exception that our code has to handle. Conceptually, when React DOM's `renderToReadableStream` encounters an RSC stream with an error it's the same as rendering a component that throws an error.
 
 Normally, we would use a React Error Boundary to handle components that throw errors during render. However, since error boundaries do not work in the SSR environment the only option for our code here is to crash.
 
-So in this case, we'll need to have the `try-catch` statement respond with something when handle this error.
+So in this case, we'll need to have the try-catch statement respond with something when it encounters this error.
 
 ```jsx
 import { createFromReadableStream } from "react-server-dom-webpack/client";
 import { renderToReadableStream } from "react-dom/server";
+import { use } from "react";
 
-function App({ tree }) {
+function App({ usableTree }) {
+  const tree = use(usableTree);
+
   return (
     <html>
       <body>
@@ -141,10 +141,12 @@ function App({ tree }) {
   );
 }
 
-const tree = await createFromReadableStream(rscStream);
+const usableTree = createFromReadableStream(rscStream);
 
 try {
-  const htmlStream = await renderToReadableStream(<App tree={tree} />);
+  const htmlStream = await renderToReadableStream(
+    <App usableTree={usableTree} />,
+  );
   return new Response(htmlSream);
 } catch (err) {
   return new Response(`Unable to generate SSR response`, {
@@ -161,9 +163,9 @@ I've found that the best thing to do in this situation is to let the RSC stream 
 
 The browser render is similar to the SSR render in that it takes an RSC stream that was created on the server and attempts to render it. However, since React supports Error Boundaries in the browser environment we have a way to handle RSC streams that contain errors.
 
-TODO: Add tabs with an error boundary
+{% code-tabs %}
 
-```jsx
+```jsx {% file="app.jsx" %}
 // The RSC environment creates a stream with an error
 
 import { renderToReadableStream } from "react-server-dom-webpack/server";
@@ -183,17 +185,18 @@ app.get("/rsc-stream", async () => {
 
 import { createFromFetch } from "react-server-dom-webpack/client";
 import { createRoot } from "react-dom/client";
-import { RSCStreamCrashBoundary } from "./rsc-stream-crash-boundary";
+import { use } from "react";
+import { RSCStreamErrorBoundary } from "./rsc-stream-error-boundary";
 
-function App({ tree }) {
+function App({ usableTree }) {
+  const tree = use(usableTree);
+
   return (
     <html>
       <body>
         <p>Here is the React Server Component render turned into HTML:</p>
 
-        <RSCStreamErrorBoundary>
-          <div>{tree}</div>
-        </RSCStreamErrorBoundary>
+        <div>{tree}</div>
       </body>
     </html>
   );
@@ -201,23 +204,51 @@ function App({ tree }) {
 
 const root = createRoot(document);
 
-const response = fetch("/rsc-stream");
-const tree = await createFromFetch(response);
+const usableTree = createFromFetch(fetch("/rsc-stream"));
 
-root.render(<App tree={tree} />);
+root.render(
+  <RSCStreamErrorBoundary>
+    <App usableTree={usableTree} />
+  </RSCStreamErrorBoundary>,
+);
 ```
 
-In the above example we fetch the RSC stream from an HTTP endpoint on our server and then attempt to render it using React's browser APIs. Since the stream contains an error React will throw during render and the `<RSCStreamCrashBoundary>` component will catch the error and display a friendly message.
+```jsx {% file="rsc-stream-error-boundary.jsx" %}
+import { Component } from "react";
 
-```text
-TODO: Demo to try it out
+class ErrorBoundary extends Component {
+  state = { error: null };
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <p>
+          The RSC stream contains an error and cannot be rendered by your
+          browser.
+        </p>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 ```
+
+{% /code-tabs %}
+
+In the above example we fetch the RSC stream from an HTTP endpoint on our server and then attempt to render it using React's browser APIs. Since the stream contains an error React will throw during render and the `<RSCStreamErrorBoundary>` component will catch the error and display a friendly message.
+
+{% demo1 /%}
 
 The browser environment is the only rendering environment that supports Error Boundaries. This mean that whenever an Error happens during an RSC render our job is to get it over the browser as quickly as possible so that a message can be displayed to the user.
 
 ## How Suspense changes errors
 
-So far in this post we've only looked at a single server component that does nothing but throw an error. Real-world RSC applications are much more complicated and are often filled with streaming Suspense boundaries.
+So far in this post we've only looked at a single Server Component that does nothing but throw an error. Real-world RSC applications are much more complicated and are often filled with streaming Suspense boundaries.
 
 Let's take a look at what happens when we render an RSC stream that doesn't error until after a second.
 
@@ -295,8 +326,11 @@ const rscStream = await renderToReadableStream(<MyTree />, {});
 
 import { createFromReadableStream } from "react-server-dom-webpack/client";
 import { renderToReadableStream } from "react-dom/server";
+import { use } from "react";
 
-function App({ tree }) {
+function App({ usableTree }) {
+  const tree = use(usableTree);
+
   return (
     <html>
       <body>
@@ -307,10 +341,12 @@ function App({ tree }) {
   );
 }
 
-const tree = await createFromReadableStream(rscStream);
+const usableTree = createFromReadableStream(rscStream);
 
 try {
-  const htmlStream = await renderToReadableStream(<App tree={tree} />);
+  const htmlStream = await renderToReadableStream(
+    <App usableTree={usableTree} />,
+  );
   return new Response(htmlStream);
 } catch (e) {
   console.log("Unable to render HTML...");
