@@ -242,7 +242,7 @@ class ErrorBoundary extends Component {
 
 In the above example we fetch the RSC stream from an HTTP endpoint on our server and then attempt to render it using React's browser APIs. Since the stream contains an error React will throw during render and the `<RSCStreamErrorBoundary>` component will catch the error and display a friendly message.
 
-{% demo1 /%}
+{% render-rsc-error /%}
 
 The browser environment is the only rendering environment that supports Error Boundaries. This mean that whenever an Error happens during an RSC render our job is to get it over the browser as quickly as possible so that a message can be displayed to the user.
 
@@ -415,7 +415,13 @@ And this is how Suspense boundaries affect errors in the SSR environment. Once t
 
 React cannot throw an error, because it's already produced HTML output from the non-suspended parts of the tree, but it also cannot render a component that's errors. So the next best thing for React to do here is to leave this tree untouched and let the browser attempt to render it.
 
-When the browser attempts to render the RSC stream it will produce the Suspense boundary with a _Loading..._ just like the server. However, when the error from the `<Throws />` component renders in the browser, React is able to let the closest Error Boundary catch and handle the error. If there are no Error Boundaries to handle the error then the application crashes and unrenders itself.
+Let's see what happens when the browser renders the error inside a `<Suspense>` boundary.
+
+{% render-rsc-suspense-error /%}
+
+When the browser attempts to render the RSC stream it will produce the Suspense boundary with a _Loading..._ just like the server. However, when the error from the `<Throws />` component renders in the browser, React is able to let the closest Error Boundary catch and handle the error.
+
+If there are no Error Boundaries to handle the error then the application crashes and unrenders itself.
 
 ## Errors across the environments
 

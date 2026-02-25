@@ -1,9 +1,11 @@
 import { RenderingEnvironments } from "./rendering-environments";
-import { Demo1 } from "./demo1";
+import { RenderRSCError } from "./render-rsc-error";
+import { RenderRSCSuspenseError } from "./render-rsc-suspense-error";
 
 export const components = {
   RenderingEnvironments,
-  Demo1,
+  RenderRSCError,
+  RenderRSCSuspenseError,
 };
 
 export const tags = {
@@ -11,8 +13,12 @@ export const tags = {
     render: "RenderingEnvironments",
     attributes: {},
   },
-  demo1: {
-    render: "Demo1",
+  "render-rsc-error": {
+    render: "RenderRSCError",
+    attributes: {},
+  },
+  "render-rsc-suspense-error": {
+    render: "RenderRSCSuspenseError",
     attributes: {},
   },
 };

@@ -9,7 +9,7 @@ const chunks = [
   `0:E{"digest":"","name":"Error","message":"Whoops!","stack":[["MyComponent","/rsc.js",9131,9,0,0,false]],"env":"Server","owner":null}`,
 ];
 
-export function Demo1() {
+export function RenderRSCSuspenseError() {
   return (
     <div className="not-prose my-6">
       <div className="-mx-2 flex min-h-96 items-center justify-center rounded-md border-2 border-gray-200 p-8 sm:mx-0">
@@ -50,7 +50,7 @@ function Renderer() {
             className="rounded bg-black px-3 py-1.5 text-sm font-medium text-white shadow"
             onClick={create}
           >
-            Render error stream
+            Render suspensed error
           </button>
         </div>
       ) : (
