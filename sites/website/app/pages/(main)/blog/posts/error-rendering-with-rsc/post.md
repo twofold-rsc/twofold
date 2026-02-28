@@ -526,7 +526,7 @@ Go ahead and try to render the suspended error in your browser:
 
 {% render-rsc-suspense-error /%}
 
-When the browser attempts to render the RSC stream it will produce the Suspense Boundary with a _"Waiting for the error..."_ fallback. Everything looks fine until the `<Throws />` component unsuspends and throws its error.
+When the browser attempts to render the RSC stream it will produce a Suspense Boundary with a _"Waiting for the error..."_ fallback. Everything looks fine until the `<Throws />` component unsuspends and throws its error.
 
 At this point the error materializes in the browser and we have to deal with. Since we're in the browser React is able to let the closest Error Boundary catch and handle the error.
 
