@@ -1,27 +1,27 @@
 ---
-publishedAt: "2026-02-17T08:00:00Z"
+publishedAt: "2026-02-28T08:00:00Z"
 description: "How errors thrown in React Server Components flow through an application."
 ---
 
 # Error rendering with RSC
 
-Today we're going to take a look at what happens when a React Server Component throws an error during render. Although this post is mostly look under the hood at how an RSC framework handles errors, it will shed some light on React's error handling when it comes to RSC applications.
+Today we're going to take a look at what happens when a React Server Component throws an error during render. Although this post is mostly a look under the hood at how an RSC framework handles errors, it will shed some light on what happens when React's rendering functions encounter errors.
 
 In this post we'll cover:
 
 - How React's different rendering environments respond to errors.
-- How exceptions thrown in RSCs make their way to error messages displayed in the browsers.
-- How Suspense and streaming affect errors.
+- How exceptions thrown in RSCs make their way to error messages displayed on the user's screen.
+- How error rendering changes with Suspense and streaming.
 
-To get started, let's dive into how each of React's rendering environments handle errors.
+To get started, let's dive into React's different rendering environments and see how they each respond to errors.
 
 ## The three environments
 
-Typically RSC applications are going to consist of three environments in which they render. Each of these environments has it's own rules and handles errors differently from the others.
+Typically RSC applications are going to consist of three environments in which they render. Each of these environments has its own rules and handles errors differently from the others.
 
 {% rendering-environments /%}
 
-Now let's take a deeper look at each of these environments and understand how errors make their way from the RSC render all the way to an error message displayed on the user's screen.
+Now let's take a deeper look at each of these environments and follow an error thrown in the RSC render on its journey to becoming a warning message displayed by the browser.
 
 ### Errors in the RSC Render
 
@@ -47,7 +47,7 @@ In fact, if we peek inside the stream we'll see the thrown error:
 
 This is why throwing an error in an RSC environment doesn't cause `renderToRedableStream` to fail. React is able to catch the error and serialize it right into the RSC stream.
 
-Although we have successfully created an stream, we don't know what will happen when the stream is handed off to a client for rendering.
+Although we have successfully created a stream, we don't know what will happen when the stream is handed off to a client for rendering.
 
 ### Errors during the SSR Render
 
@@ -115,13 +115,13 @@ Error: Whoops!
 }
 ```
 
-React is unable to turn the `rscStream` into HTML. The `renderToReadableStream` function from `react-dom/server` throws and we're left with a rejected promise that contains the original _Whoops_ error from the RSC stream.
+React is unable to turn the `rscStream` into HTML due to the error inside the stream. The `renderToReadableStream` function from `react-dom/server` throws and we're left with a rejected promise that contains the original _"Whoops!"_ error from the RSC stream.
 
-This is the point where React materializes the RSC error into an actual exception that our code has to handle. Conceptually, when React DOM's `renderToReadableStream` encounters an RSC stream with an error it's the same as rendering a component that throws an error. What's so interesting about this is that it's not the RSC render that causes the exception, it's the SSR render attempting to turn the RSC stream into HTML that forces the error to be dealt with.
+This is the point where React materializes the RSC error into an actual exception that our code has to handle. Conceptually, when React DOM's `renderToReadableStream` encounters an RSC stream with an error it's the same as rendering a component that throws an error. What's so interesting about this is it's not the RSC render that causes the exception, it's the SSR render attempting to turn the RSC stream into HTML that forces the error to be dealt with.
 
 So how do we deal with this error now that it has come to life?
 
-Normally we would use a React Error Boundary to handle components that throw errors during render. However, since error boundaries do not work in the SSR environment the only option for our code here is to crash.
+Normally we would use a React Error Boundary to handle components that throw errors during render. However, since Error Boundaries do not work in the SSR environment the only option for our code here is to crash.
 
 In this case, we'll need to update the try-catch statement to respond with something when it encounters an error.
 
@@ -157,11 +157,11 @@ try {
 }
 ```
 
-Now responding with an _Unable to generate SSR response_ isn't the most helpful message in the world, but since we cannot render the RSC stream there is not much left for the SSR environment to do in this situation.
+Now responding with an _"Unable to generate SSR response"_ isn't the most helpful message in the world, but since we cannot render the RSC stream there is not much left for the SSR environment to do in this situation.
 
 I've found that the best thing to do here is to let the RSC stream attempt to render one more time, but this time in the browser instead of in the SSR environment. The reason being that the browser's rendering environment has better options for handling errors.
 
-### Errors during the Browser render
+### Errors during the Browser Render
 
 The browser render is similar to the SSR render in that it takes an RSC stream that was created on the server and attempts to render it. However, since React supports Error Boundaries in the browser environment we have a blessed way to deal with RSC streams that contain errors.
 
@@ -246,11 +246,11 @@ In the above example we fetch the RSC stream from an HTTP endpoint on our server
 
 {% render-rsc-error /%}
 
-The browser environment is the only rendering environment that supports Error Boundaries. This mean that whenever an Error happens during an RSC render our job is to get it over the browser as quickly as possible so that a message can be displayed to the user. {% footnote id=1 %}One optimization RSC frameworks can do is serialize the RSC stream contents during SSR directly into the HTML payload. That way, if the stream contains an error the browser does not have to round-trip back to the server and re-fetch it. That's beyond the scope of this blog post though.{% /footnote %}
+The browser environment is the only rendering environment that supports Error Boundaries. This means that whenever an Error happens during an RSC render our job is to get it over the browser as quickly as possible so that a message can be displayed to the user. {% footnote id=1 %}One optimization RSC frameworks can do is serialize the RSC stream contents during SSR directly into the HTML payload. That way, if the stream contains an error the browser does not have to round-trip back to the server and re-fetch it. That's beyond the scope of this blog post though.{% /footnote %}
 
 ## How Suspense changes errors
 
-So far in this post we've only looked at a single Server Component that does nothing but throw an error. Real-world RSC applications are much more complicated and are often filled with streaming Suspense boundaries.
+So far in this post we've only looked at a single Server Component that does nothing but throw an error. Real-world RSC applications are much more complicated and are often filled with streaming Suspense Boundaries.
 
 Let's take a look at what happens when we render an RSC stream that doesn't error until after a second.
 
@@ -278,7 +278,7 @@ async function Throws() {
 const rscStream = await renderToReadableStream(<MyTree />, {});
 ```
 
-For the first second the stream output looks normal, we see the serialized component tree and Suspense boundary:
+For the first second the stream output looks normal, we see the serialized component tree and Suspense Boundary:
 
 ```json
 1:"$Sreact.suspense"
@@ -301,9 +301,9 @@ From our streams point of view there's no crash, it's just a stream of JSX follo
 
 So we're left with a stream that works for the first second and then fills with an error. What happens when we try to render this stream in an SSR environment?
 
-### Suspense, SSR, and Errors
+### Suspended errors in SSR
 
-In the SSR environment React will start producing HTML as soon as it has anything it can render. Since the tree now contains a Suspense boundary with text that says _Waiting for the error..._, React can turn that into HTML before the `<Throws />` component finishes running.
+In the SSR environment React will start producing HTML as soon as it has anything it can render. Since the tree now contains a Suspense Boundary with text that says _"Waiting for the error..."_, React can turn that into HTML before the `<Throws />` component finishes running.
 
 ```jsx
 // The RSC environment creates a stream with an error
@@ -417,17 +417,17 @@ When the code above is rendered something interesting happens:
 </html>
 ```
 
-We can see that React is able to successfully produce HTML for this RSC stream! In fact we see a Suspense boundary, with ID `B:0`, that renders its _Waiting for the error..._ fallback message.
+We can see that React is able to successfully produce HTML for this RSC stream! In fact we see a Suspense Boundary, with ID `B:0`, that renders the _"Waiting for the error..."_ fallback message.
 
-Then after one second the interesting part happens. The `<Throws />` component throws its error and now there is nothing for React to fill in the `B:0` Suspense boundary with. So instead React leaves the fallback rendered and displays a message that says: _Switched to client rendering because the server rendering errored_.
+Then after one second the interesting part happens. The `<Throws />` component throws its error and now there is nothing for React to fill in the `B:0` Suspense Boundary with. So instead React leaves the fallback rendered and displays a message that says: _"Switched to client rendering because the server rendering errored"_.
 
-And this is how Suspense boundaries affect errors in the SSR environment. Once the SSR server has started generating HTML then any errors that happen inside of Suspense will cause those boundaries to remain in their fallback state. In a way, React has given up on rendering this part of the tree on the server.
+And this is how Suspense Boundaries affect errors in the SSR environment. Once the SSR process has started generating HTML then any errors that happen inside of Suspense will cause those boundaries to remain in their fallback state. In a way, React has given up on rendering this part of the tree on the server.
 
 Why give up? Well, React cannot throw an exception because it's already produced HTML output from the non-suspended parts of the tree, but it also cannot render a component that errors. So the next best thing for React to do here is to leave this tree untouched and let the browser attempt to render it.
 
-Let's see what happens when the browser renders the error inside a `<Suspense>` boundary.
+Let's see what happens when the browser renders the error inside a `<Suspense>` Boundary.
 
-### Suspense, The Browser, and Errors
+### Suspended errors in the browser
 
 We'll use another browser based React app to fetch a suspended RSC error and attempt to render it.
 
@@ -526,7 +526,7 @@ Go ahead and try to render the suspended error in your browser:
 
 {% render-rsc-suspense-error /%}
 
-When the browser attempts to render the RSC stream it will produce the Suspense boundary with a _Waiting for the error..._. Everything looks fine until the `<Throws />` component unsuspends and throws its error.
+When the browser attempts to render the RSC stream it will produce the Suspense Boundary with a _"Waiting for the error..."_ fallback. Everything looks fine until the `<Throws />` component unsuspends and throws its error.
 
 At this point the error materializes in the browser and we have to deal with. Since we're in the browser React is able to let the closest Error Boundary catch and handle the error.
 
@@ -535,7 +535,7 @@ At this point the error materializes in the browser and we have to deal with. Si
 Handling RSC errors during render is tricky because each environment treats errors differently from the others.
 
 - In the RSC environment errors are treated as data and serialized into the RSC stream. They do not cause the RSC render to crash.
-- In the SSR environment errors will crash the render if they happen outside of a Suspense boundary. Inside of a Suspense boundary, errors cause the fallback to remain rendered and React stops rendering the suspended part of the tree.
+- In the SSR environment errors will crash the render if they happen outside of a Suspense Boundary. Inside a Suspense Boundary, errors cause the fallback to remain rendered and React stops rendering the suspended part of the tree.
 - In the Browser environment errors will trigger the nearest Error Boundary. This allows applications to show helpful error messages to users.
 
 My biggest take away from implementing errors inside an RSC framework is that an error needs to make it's way to the browser as quickly as possible, since that's the only environment that can realistically use React to show an error message to the user. When errors happen in RSC or SSR there needs to be a clear path for rendering them in the browser.

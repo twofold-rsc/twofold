@@ -9,8 +9,9 @@
   - [x] test error boundary demo in prod build
   - [x] fix loading / waiting for the error
   - [x] demo and section for browser + suspense
-  - [ ] prod build
-  - [ ] mobile styling
+  - [x] prod build
+  - [x] mobile styling
+  - [ ] test on iphone
   - [ ] update dont use section of website
   - [ ] windows test
 

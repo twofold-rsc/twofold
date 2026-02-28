@@ -51,12 +51,12 @@ export function RenderingEnvironments() {
           </div>
           <div className="grow space-y-3 rounded-b px-4 py-4 font-serif ring ring-violet-950/10 md:px-6">
             <p>
-              This is client-side React render that is most familiar for
-              front-end developers. If an error is thrown here then React will
+              This is the client-side React render that is most familiar to
+              frontend developers. If an error is thrown here then React will
               allow the closest Error Boundary to catch the error and display a
-              friendly fallback. This is the only environment where React
-              supports Error Boundaries, and is the best place for errors to be
-              caught and displayed to the user.
+              fallback. This is the only environment where React supports Error
+              Boundaries, and is the best place for errors to be caught and
+              displayed to the user.
             </p>
           </div>
         </div>
