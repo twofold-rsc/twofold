@@ -10,6 +10,7 @@ import * as PromisePost from "../posts/you-can-serialize-a-promise-in-react/comp
 import * as StreamingPost from "../posts/composable-streaming-with-suspense/components";
 import * as CachePost from "../posts/react-cache-its-about-consistency/components";
 import * as RouteRenderingPost from "../posts/parallel-and-recursive-route-rendering-with-rsc/components";
+import * as ErrorRenderingPost from "../posts/error-rendering-with-rsc/components";
 import { getTitle } from "../../../../markdoc/utils";
 import { CLIMarkdocTags } from "../../../../components/cli/markdoc-tags";
 import { smartQuotesPlugin } from "@/lib/markdoc-smart-quotes";
@@ -98,6 +99,7 @@ export const loadComponents = cache(async (slug: string) => {
     "react-cache-its-about-consistency": CachePost.components,
     "parallel-and-recursive-route-rendering-with-rsc":
       RouteRenderingPost.components,
+    "error-rendering-with-rsc": ErrorRenderingPost.components,
   };
 
   let components = map[slug] ?? {};
@@ -126,6 +128,7 @@ export const loadTags = cache(async (slug: string) => {
     "composable-streaming-with-suspense": StreamingPost.tags,
     "react-cache-its-about-consistency": CachePost.tags,
     "parallel-and-recursive-route-rendering-with-rsc": RouteRenderingPost.tags,
+    "error-rendering-with-rsc": ErrorRenderingPost.tags,
   };
 
   let tags = map[slug] ?? {};

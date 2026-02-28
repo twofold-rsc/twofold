@@ -1,27 +1,9 @@
 # TODO
 
-- windows test
-
-- errors documentation
-  - [x] unexpected errors
-
-- [ ] error blog post
-  - [ ] environments
-  - [ ] rsc examples
-  - [ ] ssr examples
-  - [ ] client errors
-    - [ ] in transitions
-  - [ ] outside of react errors
-  - [ ] hidden prod errors / digest
-  - [ ] control flow
-    - [ ] redirect / not found
-  - [ ] oncaught and onuncaught
-  - [ ] update dont use
-
 - [ ] can we serialize redirect
 - [ ] do we ever render json/error (check router hooks)
 
-- [ ] rsc output
+- [ ] rsc build output class
 
 - [ ] pages/layouts can use client
   - [ ] route stack placeholder should be client component only
@@ -37,8 +19,6 @@
 - endpoints
 - tests
 - db
-
-- queue
 
 - pass a client component to a server action
 - pass a server action to a server action
@@ -64,10 +44,6 @@
   in prod we should gzip/compress action responses since they are x-component streams
   use cache control no transform in dev though
 
-- multiline footnote
-
-- error handling
-- error boundaries
 - simplify return types (get rid of serialized error and offsite redirect)
 - a good test for this is that mpa mode works with actions that throw errors
 
@@ -113,12 +89,7 @@
 - rename api handlers
 - only allow async function exports from server modules. you dont want to import a non function call server on the client
 
-- website for server-function-transforms
-
 website
-
-- Loading screens
-- Error handling
 
 - One app
 - Server, client, server
@@ -133,18 +104,10 @@ framework
 
 - not found and redirect should be server only
 - put all error boundaries in same client component
-- monkey patch console.error for not found/redirect boundaries
-
-- reload on file changes under pages? (ex editing an md file)
 
 - bug: visit route, rename file, build error
 
-- bug: back cache not working when error thrown
-  go to server action throws error, trigger, then click back
-
 - custom error page for prod (errors/500.html)
-
-- RSC toast: save RSC in db, and set a cookie with the row id. then clients cant read from it during SSR
 
 create twofold app
 
@@ -152,19 +115,10 @@ create twofold app
 
 kitchen sink
 
-- loading screens
-- dynamic segments as folders
-
-- restart client builder if entries change
-- restart rsc builder if entries change
 - taint examples
 
 - Playwright
 - Form
-
-- it looks like you can render the app and get the action result like this:
-  1. <https://github.com/facebook/react/blob/850fac4915864a487e7cb9ecae8a75dbac144174/fixtures/flight/server/region.js#L154>
-  2. <https://github.com/facebook/react/blob/850fac4915864a487e7cb9ecae8a75dbac144174/fixtures/flight/src/index.js#L19>
 
 ## Client Components
 
@@ -179,14 +133,12 @@ kitchen sink
 - Adding many files (unzip something)
 - create runnable bundles for RSC/SSR
 - check if middleware export default is a function
-- image imports (rsc, client)
 
 ## Static files
 
 - Redirect to static file
 - Static files should come first in routing checks
 - Rebuild static files when dir changes
-- Prod static files should move into build dir?
 
 ## Global middleware
 
@@ -211,15 +163,14 @@ kitchen sink
 
 ## Goals
 
-- <https://twitter.com/igarcido/status/1711450565396332800>
 - Trello
 - Draw
 - Photo gallery nested layouts
 
 ## Design
 
-- <https://twitter.com/jh3yy/status/1712881626969997355>
-- <https://craftofui.substack.com/p/muddling-your-words?triedRedirect=true>
+tofui.substack.com/p/muddling-your-words?triedRedirect=true>
+
 - <https://news.ycombinator.com/item?id=42537567>
 
 ```tsx
