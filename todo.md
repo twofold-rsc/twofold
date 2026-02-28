@@ -7,8 +7,9 @@
   - [x] intro cards
   - [x] error boundary demo
   - [x] test error boundary demo in prod build
-  - [ ] fix loading / waiting for the error
-  - [ ] demo and section for browser + suspense
+  - [x] fix loading / waiting for the error
+  - [x] demo and section for browser + suspense
+  - [ ] prod build
   - [ ] mobile styling
   - [ ] update dont use section of website
   - [ ] windows test

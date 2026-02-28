@@ -297,7 +297,7 @@ But then after a second the `<Throws>` component renders and our stream captures
 2:E{"digest":"","name":"Error","message":"Whoops (after 1 second)!","stack":[["Throws","/index.js",9138,9,0,0,false]]}
 ```
 
-From our streams point of view there's no crash, it's just a stream of JSX followed by a thrown error.
+From our streams point of view there's no crash, it's just a stream of JSX followed by a serialized error.
 
 So we're left with a stream that works for the first second and then fills with an error. What happens when we try to render this stream in an SSR environment?
 
@@ -421,15 +421,15 @@ We can see that React is able to successfully produce HTML for this RSC stream! 
 
 Then after one second the interesting part happens. The `<Throws />` component throws its error and now there is nothing for React to fill in the `B:0` Suspense boundary with. So instead React leaves the fallback rendered and displays a message that says: _Switched to client rendering because the server rendering errored_.
 
-And this is how Suspense boundaries affect errors in the SSR environment. Once the SSR server has started generating HTML any errors that happen inside of Suspense will cause those boundaries to remain in their fallback state. In a way, React has given up on rendering this part of the tree on the server.
+And this is how Suspense boundaries affect errors in the SSR environment. Once the SSR server has started generating HTML then any errors that happen inside of Suspense will cause those boundaries to remain in their fallback state. In a way, React has given up on rendering this part of the tree on the server.
 
-Why give up? Well, React cannot throw an error because it's already produced HTML output from the non-suspended parts of the tree, but it also cannot render a component that errors. So the next best thing for React to do here is to leave this tree untouched and let the browser attempt to render it.
+Why give up? Well, React cannot throw an exception because it's already produced HTML output from the non-suspended parts of the tree, but it also cannot render a component that errors. So the next best thing for React to do here is to leave this tree untouched and let the browser attempt to render it.
 
 Let's see what happens when the browser renders the error inside a `<Suspense>` boundary.
 
 ### Suspense, The Browser, and Errors
 
-We'll use a browser based React app to fetch a suspended RSC error and attempt to render it.
+We'll use another browser based React app to fetch a suspended RSC error and attempt to render it.
 
 {% code-tabs %}
 

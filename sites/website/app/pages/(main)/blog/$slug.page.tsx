@@ -83,7 +83,7 @@ export default async function PostPage({ params, request }: PageProps<"slug">) {
           </div>
 
           <div className="mt-12 flex items-center justify-between">
-            <div className="flex items-center space-x-2 font-serif">
+            <div className="flex items-center space-x-2.5 font-serif">
               <div className="relative">
                 <img
                   src={ryanPicture}

@@ -13,7 +13,7 @@ const chunks = [
 export function RenderRSCError() {
   return (
     <div className="not-prose my-6">
-      <div className="-mx-2 flex min-h-96 items-center justify-center rounded-md border-2 border-gray-200 p-8 sm:mx-0">
+      <div className="-mx-2 flex min-h-[424px] items-center justify-center rounded-md border-2 border-gray-200 p-8 sm:mx-0 md:min-h-96">
         <Renderer />
       </div>
     </div>
@@ -65,7 +65,7 @@ function Renderer() {
 
           <div className="my-2 flex items-center justify-center">&#8595;</div>
 
-          <div className="min-h-[152px] rounded border border-slate-200 bg-slate-50 p-4">
+          <div className="min-h-[176px] rounded border border-slate-200 bg-slate-50 p-4 md:min-h-[152px]">
             <div className="font-mono text-sm font-bold">Browser render</div>
             <div className="mt-1">
               <Suspense fallback={<Loading />}>
