@@ -41,7 +41,7 @@ Although `<MyComponent>` can never successfully render, the above code works per
 
 In fact, if we peek inside the stream we'll see the thrown error:
 
-```json
+```text
 0:E{"digest":"","name":"Error","message":"Whoops!","stack":[["MyComponent","/index.js",9130,9,0,0,false]],"env":"Server","owner":null}
 ```
 
@@ -218,7 +218,7 @@ root.render(
 ```jsx {% file="rsc-stream-error-boundary.jsx" %}
 import { Component } from "react";
 
-class ErrorBoundary extends Component {
+export class RSCStreamErrorBoundary extends Component {
   state = { error: null };
 
   static getDerivedStateFromError(error) {
@@ -280,14 +280,14 @@ const rscStream = await renderToReadableStream(<MyTree />, {});
 
 For the first second the stream output looks normal, we see the serialized component tree and Suspense Boundary:
 
-```json
+```text
 1:"$Sreact.suspense"
 0:["$","div",null,{"children":[["$","p",null,{"children":"Hello from RSC!"}],["$","$1",null,{"fallback":["$","p",null,{"children":"Waiting for the error..."}],"children":"$L2"}]]}]
 ```
 
 But then after a second the `<Throws>` component renders and our stream captures its error.
 
-```json
+```text
 1:"$Sreact.suspense"
 0:["$","div",null,{"children":[["$","p",null,{"children":"Hello from RSC!"}],["$","$1",null,{"fallback":["$","p",null,{"children":"Waiting for the error..."}],"children":"$L2"}]]}]
 
@@ -498,7 +498,7 @@ root.render(
 ```jsx {% file="rsc-stream-error-boundary.jsx" %}
 import { Component } from "react";
 
-class ErrorBoundary extends Component {
+export class RSCStreamErrorBoundary extends Component {
   state = { error: null };
 
   static getDerivedStateFromError(error) {
