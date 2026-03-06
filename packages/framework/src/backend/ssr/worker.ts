@@ -11,10 +11,8 @@ if (!parentPort) {
 
 export type RenderRequest = {
   port: MessagePort;
-  writeStream: WritableStream<Uint8Array>;
 } & {
   mode: "page";
-  rscStream: ReadableStream<Uint8Array>;
   data: {
     urlString: string;
   };
@@ -27,19 +25,45 @@ injectResolver((moduleId) => {
 });
 
 parentPort.on("message", async (request: RenderRequest) => {
-  // tee the stream, try to render it
-  // if it fails send the other side into an error app
   try {
     let htmlStream;
 
+    let rscController: ReadableStreamDefaultController<Uint8Array>;
+    let rscStream = new ReadableStream<Uint8Array>({
+      start(streamController) {
+        rscController = streamController;
+      },
+    });
+
+    function handler(data: unknown) {
+      if (data instanceof Uint8Array) {
+        rscController.enqueue(data);
+      } else if (data && typeof data === "object" && "status" in data) {
+        if (data.status === "DONE") {
+          rscController.close();
+          request.port.off("message", handler);
+        }
+      }
+    }
+
+    request.port.on("message", handler);
+
     if (request.mode === "page") {
-      htmlStream = await pageSSR(request);
+      htmlStream = await pageSSR({
+        ...request,
+        rscStream,
+      });
     } else {
-      throw new Error("Invalid ssr render request");
+      throw new Error("Invalid mode");
     }
 
     request.port.postMessage({ status: "OK" });
-    await htmlStream.pipeTo(request.writeStream);
+
+    for await (let chunk of htmlStream) {
+      request.port.postMessage(chunk, [chunk.buffer]);
+    }
+
+    request.port.postMessage({ status: "DONE" });
   } catch (e: unknown) {
     let error = e instanceof Error ? e : new Error("Unknown error");
     let serializedError = serializeError(error);

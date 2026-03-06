@@ -1,5 +1,7 @@
 # TODO
 
+- [ ] rsc stream renderer shouldnt check the stream for errors, remove buffer
+      take a look at runtime rsc render to see
 - [ ] can we serialize redirect
 - [ ] do we ever render json/error (check router hooks)
 

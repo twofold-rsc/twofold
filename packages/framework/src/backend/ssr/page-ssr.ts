@@ -5,6 +5,7 @@
 import { parentPort, workerData } from "node:worker_threads";
 import { pathToFileURL } from "node:url";
 import { RenderRequest } from "./worker.js";
+import type { ReadableStream } from "node:stream/web";
 
 if (!parentPort) {
   throw new Error("Must be run as a worker");
@@ -17,7 +18,9 @@ let ssrManifestModuleMap = workerData.ssrManifestModuleMap;
 let appModule = await import(pathToFileURL(appPath).href);
 let render = appModule.render;
 
-type PageRenderRequest = Extract<RenderRequest, { mode: "page" }>;
+type PageRenderRequest = Extract<RenderRequest, { mode: "page" }> & {
+  rscStream: ReadableStream<Uint8Array>;
+};
 
 export async function pageSSR(request: PageRenderRequest) {
   return await render({

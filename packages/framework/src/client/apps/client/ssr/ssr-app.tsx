@@ -6,6 +6,7 @@ import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
 import { RoutingContext } from "../contexts/routing-context";
 import { InlineRSCStream } from "../components/inline-rsc-stream";
 import { RouteStackEntry, RouteStack } from "../contexts/route-stack-context";
+import { ReactDOMServerReadableStream } from "react-dom/server";
 
 export function SSRApp({
   url,
@@ -108,7 +109,7 @@ export async function render({
 
   let url = new URL(urlString);
 
-  let htmlStream: ReadableStream;
+  let htmlStream: ReactDOMServerReadableStream;
   try {
     htmlStream = await renderToReadableStream(
       createElement(SSRApp, {
@@ -156,7 +157,7 @@ export async function render({
         },
       );
     } catch (e: unknown) {
-      // at this point we just cant we. we've had two streams crash.
+      // at this point we just cant render. we've had two streams crash.
       // we'll throw and let the worker communicate an error back to
       // the main process.
       throw new Error("Unable to render", { cause: e });

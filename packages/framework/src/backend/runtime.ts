@@ -14,15 +14,15 @@ import {
 } from "./runtime/helpers/errors.js";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
-import { deserializeError } from "serialize-error";
+import { deserializeError, ErrorObject } from "serialize-error";
 import { ProductionBuild } from "./build/build/production.js";
 import { DevelopmentBuild } from "./build/build/development.js";
 import { ActionRequest } from "./runtime/action-request.js";
 import { injectResolver } from "./monkey-patch.js";
 import { partition } from "./utils/partition.js";
 import { pathMatches } from "./runtime/helpers/routing.js";
-import { pathToFileURL } from "node:url";
 import { invariant } from "./utils/invariant.js";
+import { readStream } from "./steams/process-stream.js";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -169,10 +169,11 @@ export class Runtime {
 
     // await the first chunk
     // this is not really needed, its debt
-    // maybe: use transform stream to buffer
-    // the idea is we don't want to return the stream too early, in case it
-    // errors. so we'll wait for the first chunk to see if it contains
-    // an error before continuing. there's probably a better way to do this.
+    //
+    // instead we should return the rsc stream and handle the
+    // errors via the ssr layer.
+    //
+    // ill clean this up one day
     let [t1, t2] = rscStream.tee();
     let reader = t1.getReader();
     await reader.read();
@@ -211,59 +212,86 @@ export class Runtime {
     mode: "page",
     data: Record<string, any> = {},
   ) {
-    let { port1, port2 } = new MessageChannel();
-
     if (!this.#ssrWorker) {
       throw new Error("Worker not available");
     }
 
-    let transformStream = new TransformStream<Uint8Array, Uint8Array>();
-    let writeStream = transformStream.writable;
-    let readStream = transformStream.readable;
+    let { port1, port2 } = new MessageChannel();
 
-    let getMessage = new Promise<Record<string, any>>((resolve) => {
-      let handle = function (msg: Record<string, any>) {
-        resolve(msg);
-        port1.off("message", handle);
-        port1.close();
-      };
-      port1.on("message", handle);
+    let controller: ReadableStreamDefaultController<Uint8Array>;
+    let htmlStream = new ReadableStream<Uint8Array>({
+      start(streamController) {
+        controller = streamController;
+      },
     });
+
+    let waitForStatus = Promise.withResolvers<void>();
+
+    function handler(data: unknown) {
+      if (
+        data &&
+        typeof data === "object" &&
+        "status" in data &&
+        typeof data.status === "string"
+      ) {
+        if (data.status === "OK") {
+          waitForStatus.resolve();
+        } else if (data.status === "ERROR" && "serializedError" in data) {
+          waitForStatus.reject(data.serializedError);
+        } else if (data.status === "DONE") {
+          controller.close();
+          port1.off("message", handler);
+          port1.close();
+        } else {
+          throw new Error("Invalid message from worker");
+        }
+      } else if (data instanceof Uint8Array) {
+        controller.enqueue(data);
+      } else {
+        throw new Error("Invalid message from ssr worker");
+      }
+    }
+
+    port1.on("message", handler);
 
     this.#ssrWorker.postMessage(
       {
         mode,
         data,
         port: port2,
-        rscStream,
-        writeStream,
       },
-      // @ts-expect-error: Type 'ReadableStream<Uint8Array>' is not assignable to type 'TransferListItem'.
-      [port2, rscStream, writeStream],
+      [port2],
     );
 
-    let message = await getMessage;
+    readStream(rscStream, {
+      onRead(value) {
+        // @ts-expect-error need to debug this
+        port1.postMessage(value, [value.buffer]);
+      },
+      onDone() {
+        port1.postMessage({ status: "DONE" });
+      },
+    });
 
-    if (message.status === "OK") {
-      return { stream: readStream };
-    } else if (message.status === "ERROR") {
+    try {
+      await waitForStatus.promise;
+    } catch (e: unknown) {
       // this is likely a worst case scenario since errors should be handled by the
       // worker. so if we get here something is really off.
+      let error = deserializeError(e);
 
-      let error = deserializeError(message.serializedError);
-
-      // bubble this out and let the http layer handle it
+      // bubble this out and let the caller handle it
       throw error;
-    } else {
-      // unknown message type
-      throw new Error("SSR worker failed to render");
     }
+
+    return { stream: htmlStream };
   }
 
   // workers
 
   async start() {
     // actions might try to load modules
+    // there really needs to be an rsc worker
     injectResolver((moduleId) => {
       let module =
         this.#build.getBuilder("rsc").serverActionModuleMap[moduleId];
