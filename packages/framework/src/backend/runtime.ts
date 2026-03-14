@@ -1,5 +1,5 @@
 import "./monkey-patch.js";
-import { MessageChannel, Worker } from "node:worker_threads";
+import { MessageChannel, TransferListItem, Worker } from "node:worker_threads";
 import { PageRequest } from "./runtime/page-request.js";
 import { APIRequest } from "./runtime/api-request.js";
 import {
@@ -14,7 +14,7 @@ import {
 } from "./runtime/helpers/errors.js";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
-import { deserializeError, ErrorObject } from "serialize-error";
+import { deserializeError } from "serialize-error";
 import { ProductionBuild } from "./build/build/production.js";
 import { DevelopmentBuild } from "./build/build/development.js";
 import { ActionRequest } from "./runtime/action-request.js";
@@ -22,7 +22,8 @@ import { injectResolver } from "./monkey-patch.js";
 import { partition } from "./utils/partition.js";
 import { pathMatches } from "./runtime/helpers/routing.js";
 import { invariant } from "./utils/invariant.js";
-import { readStream } from "./steams/process-stream.js";
+import { readStream } from "./steams/read-stream.js";
+import { combineBatch, createBatchStream } from "./steams/batch-stream.js";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -218,11 +219,76 @@ export class Runtime {
 
     let { port1, port2 } = new MessageChannel();
 
-    let controller: ReadableStreamDefaultController<Uint8Array>;
+    let htmlController: ReadableStreamDefaultController<Uint8Array> | undefined;
+    let isHtmlStreamActive = true;
+
+    let isRequestActive = true;
+    let rscReader: ReturnType<typeof readStream<Uint8Array>> | undefined;
+
+    function post(message: unknown, transfer?: TransferListItem[]) {
+      if (!isRequestActive) return false;
+
+      try {
+        port1.postMessage(message, transfer);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function closeOutput() {
+      if (isHtmlStreamActive && htmlController) {
+        isHtmlStreamActive = false;
+
+        try {
+          htmlController.close();
+        } catch {
+          // in some bizaro land this could error so just ignore it
+        }
+      }
+    }
+
+    function cancelInput() {
+      // this can happen async, we just want to signal that we no longer
+      // are interested
+      if (rscReader) {
+        rscReader.cancel();
+      }
+    }
+
+    function finish() {
+      if (!isRequestActive) return;
+
+      isRequestActive = false;
+
+      port1.off("message", handler);
+
+      closeOutput();
+
+      try {
+        port1.close();
+      } catch {
+        // ignore
+      }
+    }
+
+    async function cancel() {
+      if (!isRequestActive) return;
+
+      if (isHtmlStreamActive) {
+        post({ status: "CANCEL" });
+      }
+
+      cancelInput();
+      finish();
+    }
+
     let htmlStream = new ReadableStream<Uint8Array>({
-      start(streamController) {
-        controller = streamController;
+      start(controller) {
+        htmlController = controller;
       },
+
+      cancel,
     });
 
     let waitForStatus = Promise.withResolvers<void>();
@@ -239,16 +305,20 @@ export class Runtime {
         } else if (data.status === "ERROR" && "serializedError" in data) {
           waitForStatus.reject(data.serializedError);
         } else if (data.status === "DONE") {
-          controller.close();
-          port1.off("message", handler);
-          port1.close();
+          finish();
         } else {
-          throw new Error("Invalid message from worker");
+          cancel();
         }
       } else if (data instanceof Uint8Array) {
-        controller.enqueue(data);
+        if (isHtmlStreamActive && htmlController) {
+          try {
+            htmlController.enqueue(data);
+          } catch {
+            // can ignore, strange situation
+          }
+        }
       } else {
-        throw new Error("Invalid message from ssr worker");
+        cancel();
       }
     }
 
@@ -263,19 +333,27 @@ export class Runtime {
       [port2],
     );
 
-    readStream(rscStream, {
-      onRead(value) {
-        // @ts-expect-error need to debug this
-        port1.postMessage(value, [value.buffer]);
+    rscReader = readStream(rscStream.pipeThrough(createBatchStream()), {
+      onRead(batch) {
+        let chunk = combineBatch(batch);
+        post(chunk, [chunk.buffer]);
       },
+
       onDone() {
-        port1.postMessage({ status: "DONE" });
+        post({ status: "DONE" });
+      },
+
+      onError() {
+        post({ status: "DONE" });
       },
     });
 
     try {
       await waitForStatus.promise;
     } catch (e: unknown) {
+      cancelInput();
+      finish();
+
       // this is likely a worst case scenario since errors should be handled by the
       // worker. so if we get here something is really off.
       let error = deserializeError(e);

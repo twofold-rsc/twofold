@@ -20,6 +20,7 @@ let render = appModule.render;
 
 type PageRenderRequest = Extract<RenderRequest, { mode: "page" }> & {
   rscStream: ReadableStream<Uint8Array>;
+  signal: AbortSignal;
 };
 
 export async function pageSSR(request: PageRenderRequest) {
@@ -28,5 +29,6 @@ export async function pageSSR(request: PageRenderRequest) {
     ssrManifestModuleMap,
     urlString: request.data.urlString,
     bootstrapUrl,
+    signal: request.signal,
   });
 }

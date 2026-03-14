@@ -59,12 +59,14 @@ type RenderOptions = {
   // ssrManifestModuleMap: Record<string, any>;
   urlString: string;
   bootstrapUrl: string;
+  signal: AbortSignal;
 };
 
 export async function render({
   rscStream,
   urlString,
   bootstrapUrl,
+  signal,
 }: RenderOptions): Promise<ReadableStream<Uint8Array>> {
   let [rscStream1, rscStream2] = rscStream.tee();
   let [formStateStream, routeStackStream] = rscStream1.tee(); // formState and route stack
@@ -121,7 +123,9 @@ export async function render({
         bootstrapModules: [bootstrapUrl],
         formState,
         onError(err: unknown) {
-          if (err instanceof Error && isSafeError(err)) {
+          if (signal.aborted) {
+            // dont care about errors if we're aborted
+          } else if (err instanceof Error && isSafeError(err)) {
             // certain errors we know are safe for client handling
           } else if (err instanceof Error) {
             // do something useful here
@@ -135,6 +139,7 @@ export async function render({
             );
           }
         },
+        signal,
       },
     );
 
@@ -154,6 +159,16 @@ export async function render({
           bootstrapModules: [bootstrapUrl],
           bootstrapScriptContent:
             "if (typeof window !== 'undefined') { window.SSRDidError = true; }",
+          onError() {
+            if (signal.aborted) {
+              // dont care about errors if we're aborted
+            } else {
+              console.error(
+                `An unknown error occurred while SSR error rendering: ${url.pathname}`,
+              );
+            }
+          },
+          signal,
         },
       );
     } catch (e: unknown) {
