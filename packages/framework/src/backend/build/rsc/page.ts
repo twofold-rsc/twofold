@@ -2,6 +2,7 @@ import { Layout } from "./layout.js";
 import "urlpattern-polyfill";
 import { Treeable, TreeNode } from "./tree-node.js";
 import { CatchBoundary } from "./catch-boundary.js";
+import { AuthPolicyArray } from "../../auth/auth.js";
 
 export class Page implements Treeable {
   #path: string;
@@ -141,6 +142,15 @@ export class Page implements Treeable {
         props: {},
       },
     ];
+  }
+
+  async getAuthPolicy(): Promise<AuthPolicyArray> {
+    let module = await this.loadModule();
+    if (module.auth) {
+      return module.auth;
+    } else {
+      return [];
+    }
   }
 
   async runMiddleware(props: {

@@ -14,38 +14,40 @@ import {
   NotFoundError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
-import { CompiledAction } from "../build/builders/rsc-builder.js";
 import { pathToFileURL } from "url";
 import { getStore } from "../stores/rsc-store.js";
 import { serializeError } from "serialize-error";
 import { randomUUID } from "crypto";
+import { evaluatePolicyArray } from "./helpers/auth.js";
+import { CompiledServerAction } from "../build/rsc/compiled-server-action.js";
 
 type ServerManifest = Record<
   string,
   | {
-      id: string;
-      name: string;
-      chunks: string[];
-    }
+    id: string;
+    name: string;
+    chunks: string[];
+  }
   | undefined
 >;
 
-type ServerActionMap = Map<string, CompiledAction>;
+type ServerActionMap = Map<string, CompiledServerAction>;
 
 type Result =
   | {
-      type: "return";
-      result: unknown;
-    }
+    type: "return";
+    result: unknown;
+  }
   | {
-      type: "throw";
-      error: Error;
-    };
+    type: "throw";
+    error: Error;
+  };
 
 export class ActionRequest {
   #action: SPAAction | MPAAction;
   #request: Request;
   #runtime: Runtime;
+  #serverActionMap: ServerActionMap;
   #temporaryReferences: unknown = createTemporaryReferenceSet();
 
   #result: Result | undefined = undefined;
@@ -63,6 +65,7 @@ export class ActionRequest {
   }) {
     this.#request = request;
     this.#runtime = runtime;
+    this.#serverActionMap = serverActionMap;
 
     if (SPAAction.matches(request)) {
       this.#action = new SPAAction({
@@ -97,6 +100,11 @@ export class ActionRequest {
     let requestToRender = this.requestToRender;
     let pageRequest = this.#runtime.pageRequest(requestToRender);
 
+    const authResponse = await pageRequest.evaluateAuth();
+    if (authResponse) {
+      return authResponse;
+    }
+
     let store = getStore();
     store.assets = pageRequest.assets;
     // see comment in page request file for this mutation
@@ -112,7 +120,7 @@ export class ActionRequest {
       if (isNotFoundError(err)) {
         return this.notFoundRscResponse();
       } else if (isUnauthorizedError(err)) {
-        return this.unauthorizedRscResponse();
+        return this.unauthorizedRscResponse(undefined);
       } else if (isRedirectError(err)) {
         let { url } = redirectErrorInfo(err);
         return this.redirectResponse(url);
@@ -136,9 +144,9 @@ export class ActionRequest {
       action:
         result.type === "throw"
           ? {
-              ...result,
-              error: serializeError(result.error),
-            }
+            ...result,
+            error: serializeError(result.error),
+          }
           : result,
 
       formState,
@@ -226,6 +234,29 @@ export class ActionRequest {
   }
 
   async runAction(): Promise<Result> {
+    const authResponse = await evaluatePolicyArray(
+      this.#runtime,
+      this.#serverActionMap.get(await this.#action.id())!, 
+      {
+        type: "action",
+        request: this.#request,
+      });
+    if (!authResponse.__allow) {
+      if (authResponse.__error) {
+        console.error(authResponse.__error);
+        return {
+          type: "throw",
+          error: authResponse.__error
+        };
+      } else {
+        // @todo: figure out a way to pass the message
+        return {
+          type: "throw",
+          error: new Error("TwofoldUnauthorizedError")
+        }
+      }
+    }
+
     try {
       let result = await this.#action.runAction();
       return {
@@ -295,9 +326,10 @@ export class ActionRequest {
     return notFoundRequest.ssrResponse();
   }
 
-  private unauthorizedRscResponse() {
+  private unauthorizedRscResponse(message: string | undefined) {
     let pageRequest = this.#runtime.unauthorizedPageRequest(
       this.requestToRender,
+      message,
     );
     return pageRequest.rscResponse();
   }
@@ -305,6 +337,7 @@ export class ActionRequest {
   private unauthorizedSsrResponse() {
     let unauthorizedRequest = this.#runtime.unauthorizedPageRequest(
       this.#request,
+      undefined,
     );
     return unauthorizedRequest.ssrResponse();
   }
@@ -457,7 +490,7 @@ class SPAAction implements Action {
 
   async getAction() {
     let compiledAction = this.compiledAction;
-    let actionUrl = pathToFileURL(compiledAction.path);
+    let actionUrl = pathToFileURL(compiledAction.filePath);
     let module = await import(actionUrl.href);
     let fn = module[compiledAction.export];
 

@@ -25,6 +25,10 @@ type State = {
   getUniqueFunctionName: (name: string) => string;
 };
 
+function shouldIgnoreExport(name: string) {
+  return (name === 'auth');
+}
+
 export function ServerTransformPlugin(
   babel: any,
   options: Options,
@@ -220,6 +224,10 @@ export function ServerTransformPlugin(
             ) {
               let exportName = specifier.exported.name;
               let localName = specifier.local.name;
+
+              if (shouldIgnoreExport(exportName)) {
+                continue;
+              }
 
               insertRegisterServerReference({
                 path,
@@ -448,6 +456,10 @@ function registerServerFunction({
 
   if (!name) {
     name = functionName;
+  }
+
+  if (shouldIgnoreExport(name)) {
+    return;
   }
 
   insertRegisterServerReference({

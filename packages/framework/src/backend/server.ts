@@ -18,6 +18,7 @@ import { filterRequests } from "./server/middlewares/filter-requests.js";
 import { gzip } from "./server/middlewares/gzip.js";
 import kleur from "kleur";
 import { Socket } from "net";
+import { ProxyingRequest } from "./proxying-request.js";
 
 async function createHandler(server: Server) {
   let runtime = server.runtime;
@@ -48,7 +49,9 @@ async function createHandler(server: Server) {
   app.use(requestStore(runtime));
 
   app.get("/__rsc/page", async (ctx) => {
-    let url = new URL(ctx.request.url);
+    let proxiedRequest = new ProxyingRequest(ctx.request);
+
+    let url = new URL(proxiedRequest.url);
     let path = url.searchParams.get("path");
 
     if (typeof path !== "string") {
@@ -56,16 +59,18 @@ async function createHandler(server: Server) {
     }
 
     let requestUrl = new URL(path, url);
-    let request = new Request(requestUrl, ctx.request);
+    let request = new Request(requestUrl, proxiedRequest);
     let pageRequest = runtime.pageRequest(request);
     let response = await pageRequest.rscResponse();
 
-    let initiator = ctx.request.headers.get("x-twofold-initiator");
+    let initiator = proxiedRequest.headers.get("x-twofold-initiator");
 
     if (response.status === 404) {
       log("Not found", requestUrl.pathname, "red");
     } else if (response.status === 401) {
       log("Unauthorized", requestUrl.pathname, "red");
+    } else if (response.status === 500) {
+      log("Internal Server Error", requestUrl.pathname, "red");
     } else if (response.status === 307) {
       let location = response.headers.get("location")?.split("?")[1];
       let params = new URLSearchParams(location ?? "");
@@ -84,7 +89,7 @@ async function createHandler(server: Server) {
   });
 
   app.post("/__rsc/action/:id", async (ctx) => {
-    let request = ctx.request;
+    let request = new ProxyingRequest(ctx.request);
 
     let actionRequest = runtime.actionRequest(request);
 
@@ -100,6 +105,8 @@ async function createHandler(server: Server) {
       log("Not found", `Action ${name}`, "red");
     } else if (response.status === 401) {
       log("Unauthorized", `Action ${name}`, "red");
+    } else if (response.status === 500) {
+      log("Internal Server Error", `Action ${name}`, "red");
     } else if (response.status === 303) {
       let locationHeader = response.headers.get("location");
       let location = locationHeader?.startsWith("/__rsc/page?path=")
@@ -119,7 +126,7 @@ async function createHandler(server: Server) {
   app.use(waitForSSR(runtime));
 
   app.use("/**/*", async (ctx) => {
-    let request = ctx.request;
+    let request = new ProxyingRequest(ctx.request);
     let requestUrl = new URL(request.url);
 
     let apiRequest = runtime.apiRequest(request);
@@ -143,6 +150,8 @@ async function createHandler(server: Server) {
           log("Not found", requestUrl.pathname, "red");
         } else if (response.status === 401) {
           log("Unauthorized", requestUrl.pathname, "red");
+        } else if (response.status === 500) {
+          log("Internal Server Error", requestUrl.pathname, "red");
         } else if (response.status === 307 || response.status === 308) {
           let location = response.headers.get("location");
           log(
@@ -162,7 +171,7 @@ async function createHandler(server: Server) {
 
   // mpa actions
   app.post("/**/*", async (ctx) => {
-    let request = ctx.request;
+    let request = new ProxyingRequest(ctx.request);
 
     let actionRequest = runtime.actionRequest(request);
     if (actionRequest) {
@@ -173,6 +182,8 @@ async function createHandler(server: Server) {
         log("Not found", `Action ${name}`, "red");
       } else if (response.status === 401) {
         log("Unauthorized", `Action ${name}`, "red");
+      } else if (response.status === 500) {
+        log("Internal Server Error", `Action ${name}`, "red");
       } else if (response.status === 303) {
         let location = response.headers.get("location");
         log("Redirect", `Action ${name} redirected to ${location}`, "cyan");
@@ -185,7 +196,7 @@ async function createHandler(server: Server) {
   });
 
   app.head("/**/*", async (ctx) => {
-    let request = ctx.request;
+    let request = new ProxyingRequest(ctx.request);
     let pageRequest = runtime.pageRequest(request);
     let response = await pageRequest.rscResponse();
 
@@ -201,7 +212,7 @@ async function createHandler(server: Server) {
 
   app.get("/**/*", async (ctx) => {
     let url = new URL(ctx.request.url);
-    let request = ctx.request;
+    let request = new ProxyingRequest(ctx.request);
 
     let pageRequest = runtime.pageRequest(request);
     let response = await pageRequest.ssrResponse();
@@ -210,6 +221,8 @@ async function createHandler(server: Server) {
       log("Not found", url.pathname, "red");
     } else if (response.status === 401) {
       log("Unauthorized", url.pathname, "red");
+    } else if (response.status === 500) {
+      log("Internal Server Error", url.pathname, "red");
     } else if (response.status === 307 || response.status === 308) {
       let location = response.headers.get("location");
       log("Redirect", `${url.pathname} redirected to ${location}`, "cyan");
