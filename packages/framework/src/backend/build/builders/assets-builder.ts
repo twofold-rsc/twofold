@@ -169,7 +169,7 @@ export class AssetsBuilder extends Builder {
     this.#assetMap = assetMap;
   }
 
-  async stop() { }
+  async stop() {}
 
   serialize() {
     return {
@@ -183,5 +183,5 @@ export class AssetsBuilder extends Builder {
     }
   }
 
-  warm() { }
+  warm() {}
 }

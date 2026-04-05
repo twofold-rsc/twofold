@@ -15,7 +15,7 @@ export default function ClientComponent() {
       >
         -
       </button>
-      <span className="text-lg font-bold tabular-nums tracking-wide text-gray-700">
+      <span className="text-lg font-bold tracking-wide text-gray-700 tabular-nums">
         {count}
       </span>
       <button

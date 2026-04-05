@@ -1,6 +1,9 @@
 import { API } from "../build/rsc/api.js";
 import { Runtime } from "../runtime.js";
-import { evaluatePolicyArray, evaluatePolicyArrayToResponse } from "./helpers/auth.js";
+import {
+  evaluatePolicyArray,
+  evaluatePolicyArrayToResponse,
+} from "./helpers/auth.js";
 import {
   isNotFoundError,
   isRedirectError,
@@ -44,7 +47,7 @@ export class APIRequest {
       this.#api,
       {
         type: "api",
-        request: this.#request
+        request: this.#request,
       },
       async (error) => {
         if (isNotFoundError(error)) {
@@ -61,14 +64,16 @@ export class APIRequest {
           });
         } else {
           console.error(error);
-          return new Response("Internal Server Error", { status: 500 })
+          return new Response("Internal Server Error", { status: 500 });
         }
       },
-      async (message) => new Response(message ?? "Unauthorized", { status: 401 }));
+      async (message) =>
+        new Response(message ?? "Unauthorized", { status: 401 }),
+    );
     if (authResponse) {
       return authResponse;
     }
-    
+
     if (module.before) {
       await module.before(this.props);
     }

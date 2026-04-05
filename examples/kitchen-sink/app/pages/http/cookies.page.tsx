@@ -40,7 +40,7 @@ export default function Page() {
             {cookie ? (
               <p className="text-4xl font-medium">{cookie}</p>
             ) : (
-              <p className="text-sm italic text-gray-500">Cookie not set</p>
+              <p className="text-sm text-gray-500 italic">Cookie not set</p>
             )}
           </div>
         </div>

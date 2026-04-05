@@ -24,10 +24,10 @@ import { CompiledServerAction } from "../build/rsc/compiled-server-action.js";
 type ServerManifest = Record<
   string,
   | {
-    id: string;
-    name: string;
-    chunks: string[];
-  }
+      id: string;
+      name: string;
+      chunks: string[];
+    }
   | undefined
 >;
 
@@ -35,13 +35,13 @@ type ServerActionMap = Map<string, CompiledServerAction>;
 
 type Result =
   | {
-    type: "return";
-    result: unknown;
-  }
+      type: "return";
+      result: unknown;
+    }
   | {
-    type: "throw";
-    error: Error;
-  };
+      type: "throw";
+      error: Error;
+    };
 
 export class ActionRequest {
   #action: SPAAction | MPAAction;
@@ -144,9 +144,9 @@ export class ActionRequest {
       action:
         result.type === "throw"
           ? {
-            ...result,
-            error: serializeError(result.error),
-          }
+              ...result,
+              error: serializeError(result.error),
+            }
           : result,
 
       formState,
@@ -236,24 +236,25 @@ export class ActionRequest {
   async runAction(): Promise<Result> {
     const authResponse = await evaluatePolicyArray(
       this.#runtime,
-      this.#serverActionMap.get(await this.#action.id())!, 
+      this.#serverActionMap.get(await this.#action.id())!,
       {
         type: "action",
         request: this.#request,
-      });
+      },
+    );
     if (!authResponse.__allow) {
       if (authResponse.__error) {
         console.error(authResponse.__error);
         return {
           type: "throw",
-          error: authResponse.__error
+          error: authResponse.__error,
         };
       } else {
         // @todo: figure out a way to pass the message
         return {
           type: "throw",
-          error: new Error("TwofoldUnauthorizedError")
-        }
+          error: new Error("TwofoldUnauthorizedError"),
+        };
       }
     }
 

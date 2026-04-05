@@ -18,7 +18,7 @@ export class CompiledServerAction implements Treeable {
   #virtualPath: string;
   #hash: string;
   #export: string;
-  
+
   tree: TreeNode;
 
   constructor(action: SerializedServerAction) {
@@ -31,11 +31,11 @@ export class CompiledServerAction implements Treeable {
 
     this.tree = new TreeNode(this);
   }
-  
+
   get path() {
-    return this.#virtualPath + '#' + this.export;
+    return this.#virtualPath + "#" + this.export;
   }
-  
+
   canAcceptAsChild(): boolean {
     return false;
   }
@@ -59,7 +59,7 @@ export class CompiledServerAction implements Treeable {
       path: this.#path,
       virtualPath: this.#virtualPath,
       hash: this.#hash,
-      export: this.#export
+      export: this.#export,
     };
   }
 
@@ -76,9 +76,9 @@ export class CompiledServerAction implements Treeable {
   }
 
   get serverManifestEntry(): {
-    id: string,
-    name: string,
-    chunks: string[]
+    id: string;
+    name: string;
+    chunks: string[];
   } {
     return {
       id: this.#id,

@@ -11,7 +11,13 @@ import { ErrorTemplate } from "./error-template.js";
 import { Layout } from "./layout.js";
 import { Page } from "./page.js";
 
-export type Node = Layout | CatchBoundary | Page | ErrorTemplate | API | CompiledServerAction;
+export type Node =
+  | Layout
+  | CatchBoundary
+  | Page
+  | ErrorTemplate
+  | API
+  | CompiledServerAction;
 
 export type Treeable = {
   path: string;
@@ -107,7 +113,9 @@ export class TreeNode {
       this.#children.push(node);
       this.#rebalanceChildrenAgainst(node);
     } else {
-      throw new Error(`Could not add child '${node.#value.path}' to this node '${this.#value.path}'`);
+      throw new Error(
+        `Could not add child '${node.#value.path}' to this node '${this.#value.path}'`,
+      );
     }
   }
 

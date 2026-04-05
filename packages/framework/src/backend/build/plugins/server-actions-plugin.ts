@@ -43,7 +43,7 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
           return null;
         }
 
-        const prefix = process.cwd() + '/app/pages';
+        const prefix = process.cwd() + "/app/pages";
         if (!path.startsWith(prefix)) {
           return null;
         }
@@ -123,14 +123,17 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
           actions.forEach((action) => {
             let outputPath = path.join(fileURLToPath(cwdUrl), outputFile);
             let hash = getHash(outputFile);
-            builder.serverActionMap.set(action.id, new CompiledServerAction({
-              id: action.id,
-              moduleId: action.moduleId,
-              hash: hash,
-              path: outputPath,
-              virtualPath: action.virtualPath,
-              "export": action.export,
-            }));
+            builder.serverActionMap.set(
+              action.id,
+              new CompiledServerAction({
+                id: action.id,
+                moduleId: action.moduleId,
+                hash: hash,
+                path: outputPath,
+                virtualPath: action.virtualPath,
+                export: action.export,
+              }),
+            );
           });
         }
       });

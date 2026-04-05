@@ -30,7 +30,7 @@ export class API implements Treeable {
     return this.tree.parent?.value;
   }
 
-  // 
+  //
 
   get path() {
     return this.#path;
@@ -73,7 +73,7 @@ export class API implements Treeable {
   async preload() {
     await this.loadModule();
   }
-  
+
   async getAuthPolicy(): Promise<AuthPolicyArray> {
     let module = await this.loadModule();
     if (module.auth) {

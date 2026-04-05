@@ -11,7 +11,10 @@ import { ComponentType, createElement, ReactElement } from "react";
 import { applyPathParams } from "./helpers/routing.js";
 import xxhash from "xxhash-wasm";
 import { invariant } from "../utils/invariant.js";
-import { evaluatePolicyArray, evaluatePolicyArrayToResponse } from "./helpers/auth.js";
+import {
+  evaluatePolicyArray,
+  evaluatePolicyArrayToResponse,
+} from "./helpers/auth.js";
 
 export class PageRequest {
   #page: Page;
@@ -51,8 +54,8 @@ export class PageRequest {
   async evaluateAuth(): Promise<Response | undefined> {
     if (!this.#conditions.includes("unauthorized")) {
       const authResponse = await evaluatePolicyArrayToResponse(
-        this.#runtime, 
-        this.#page, 
+        this.#runtime,
+        this.#page,
         {
           type: "page",
           request: this.#request,
@@ -68,10 +71,11 @@ export class PageRequest {
             return this.redirectResponse(status, url);
           } else {
             console.error(error);
-            return new Response("Internal Server Error", { status: 500 })
+            return new Response("Internal Server Error", { status: 500 });
           }
         },
-        async (message) => await this.unauthorizedRscResponse(message));
+        async (message) => await this.unauthorizedRscResponse(message),
+      );
       if (authResponse) {
         return authResponse;
       }
@@ -149,7 +153,10 @@ export class PageRequest {
     let rscResponse = await this.rscResponse();
 
     // response is not SSRable
-    if (!rscResponse.body || rscResponse.headers.get("Content-type") !== 'text/x-component') {
+    if (
+      !rscResponse.body ||
+      rscResponse.headers.get("Content-type") !== "text/x-component"
+    ) {
       return rscResponse;
     }
 

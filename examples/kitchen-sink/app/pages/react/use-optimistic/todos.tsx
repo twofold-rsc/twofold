@@ -51,7 +51,7 @@ export default function Form({
           >
             {optimisticTodo.text}{" "}
             {optimisticTodo.id === 0 ? (
-              <span className="text-sm italic text-gray-500">(pending)</span>
+              <span className="text-sm text-gray-500 italic">(pending)</span>
             ) : null}
           </li>
         ))}

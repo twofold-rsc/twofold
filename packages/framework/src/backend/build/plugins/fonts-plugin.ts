@@ -54,7 +54,7 @@ export function fontsPlugin({
           if (args.path.startsWith("/")) {
             let potentialPublicFontUrl = new URL(
               `.${args.path}`,
-              publicFolderUrl
+              publicFolderUrl,
             );
 
             let existsInPublic = await fileExists(potentialPublicFontUrl);
@@ -76,7 +76,7 @@ export function fontsPlugin({
             };
           } else {
             throw new Error(
-              `Unexpected font import path: ${args.path} in ${args.importer}`
+              `Unexpected font import path: ${args.path} in ${args.importer}`,
             );
           }
         }

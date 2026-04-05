@@ -27,7 +27,7 @@ import { ErrorTemplate } from "../rsc/error-template.js";
 import { Generic } from "../rsc/generic.js";
 import { CatchBoundary } from "../rsc/catch-boundary.js";
 import { invariant } from "../../utils/invariant.js";
-import { Node } from "../rsc/tree-node.js"
+import { Node } from "../rsc/tree-node.js";
 import { CompiledServerAction } from "../rsc/compiled-server-action.js";
 
 interface ApplicationTreeProps {
@@ -41,7 +41,7 @@ interface ApplicationTreeProps {
  * We need to ensure that all of the constructed values used by the application
  * are the values that exist in the root tree, otherwise objects that would be
  * constructed dynamically would not have access to 'parent'.
- * 
+ *
  * This did not matter in the past for API routes, but now that we use the tree
  * to lookup authentication policies, we want to make sure nothing ever constructs
  * something for routing without the appropriate parent context set.
@@ -60,17 +60,31 @@ class ApplicationTree {
 
   constructor(props: ApplicationTreeProps) {
     this.#pages = ApplicationTree.#constructPages(props.metafile);
-    this.#layouts = ApplicationTree.#constructLayouts(props.metafile, props.routeStackPlaceholder);
+    this.#layouts = ApplicationTree.#constructLayouts(
+      props.metafile,
+      props.routeStackPlaceholder,
+    );
     this.#apiEndpoints = ApplicationTree.#constructApiEndpoints(props.metafile);
-    this.#errorTemplates = ApplicationTree.#constructErrorTemplates(props.metafile);
-    this.#catchBoundaries = ApplicationTree.#constructCatchBoundaries(props.metafile, props.routeStackPlaceholder, props.compiledPathForEntry, this.#errorTemplates)
-    this.#outerRootWrapper = ApplicationTree.#constructOuterRootWrapper(props.compiledPathForEntry);
+    this.#errorTemplates = ApplicationTree.#constructErrorTemplates(
+      props.metafile,
+    );
+    this.#catchBoundaries = ApplicationTree.#constructCatchBoundaries(
+      props.metafile,
+      props.routeStackPlaceholder,
+      props.compiledPathForEntry,
+      this.#errorTemplates,
+    );
+    this.#outerRootWrapper = ApplicationTree.#constructOuterRootWrapper(
+      props.compiledPathForEntry,
+    );
     this.#serverActionMap = props.serverActionMap;
-    this.#unauthorizedPage = ApplicationTree.#constructUnauthorizedPage(props.metafile);
+    this.#unauthorizedPage = ApplicationTree.#constructUnauthorizedPage(
+      props.metafile,
+    );
     this.#notFoundPage = ApplicationTree.#constructNotFoundPage(props.metafile);
     this.#root = this.#constructRoot();
   }
-  
+
   findPageForPath(path: string) {
     return this.#root.tree.findPageForPath(path);
   }
@@ -159,7 +173,10 @@ class ApplicationTree {
       });
   }
 
-  static #constructLayouts(metafile: Metafile | undefined, routeStackPlaceholder: Generic) {
+  static #constructLayouts(
+    metafile: Metafile | undefined,
+    routeStackPlaceholder: Generic,
+  ) {
     if (!metafile) {
       return [];
     }
@@ -344,7 +361,12 @@ class ApplicationTree {
     return templates;
   }
 
-  static #constructCatchBoundaries(metafile: Metafile | undefined, routeStackPlaceholder: Generic, compiledPathForEntry: (entryPath: string) => string, errorTemplates: ErrorTemplate[]) {
+  static #constructCatchBoundaries(
+    metafile: Metafile | undefined,
+    routeStackPlaceholder: Generic,
+    compiledPathForEntry: (entryPath: string) => string,
+    errorTemplates: ErrorTemplate[],
+  ) {
     let catchBoundaryPath = compiledPathForEntry(
       srcPaths.framework.catchBoundary,
     );
@@ -389,7 +411,9 @@ class ApplicationTree {
     return [...catchBoundaryMap.values()];
   }
 
-  static #constructOuterRootWrapper(compiledPathForEntry: (entryPath: string) => string) {
+  static #constructOuterRootWrapper(
+    compiledPathForEntry: (entryPath: string) => string,
+  ) {
     let outputFilePath = compiledPathForEntry(
       srcPaths.framework.outerRootWrapper,
     );
@@ -680,7 +704,9 @@ export class RSCBuilder extends Builder {
   serialize() {
     return {
       metafile: this.#metafile,
-      serverActionMap: Object.fromEntries(this.#serverActionMap.entries().map(kv => [kv[0], kv[1].serialize()])),
+      serverActionMap: Object.fromEntries(
+        this.#serverActionMap.entries().map((kv) => [kv[0], kv[1].serialize()]),
+      ),
       imagesMap: Object.fromEntries(this.#imagesMap.entries()),
       fontsMap: Object.fromEntries(this.#fontsMap.entries()),
     };
@@ -688,7 +714,12 @@ export class RSCBuilder extends Builder {
 
   load(data: any) {
     this.#metafile = data.metafile;
-    this.#serverActionMap = new Map(Object.entries(data.serverActionMap).map(kv => [kv[0], new CompiledServerAction(kv[1] as any)]));
+    this.#serverActionMap = new Map(
+      Object.entries(data.serverActionMap).map((kv) => [
+        kv[0],
+        new CompiledServerAction(kv[1] as any),
+      ]),
+    );
     this.#imagesMap = new Map(Object.entries(data.imagesMap));
     this.#fontsMap = new Map(Object.entries(data.fontsMap));
     this.#cachedApplicationTree = undefined;
@@ -699,12 +730,14 @@ export class RSCBuilder extends Builder {
     let loadPages = this.#applicationTree.pages.map((p) => p.preload());
     let loadNotFound = this.#applicationTree.notFoundPage.preload();
     let loadOuterRootWrapper = this.#applicationTree.outerRootWrapper.preload();
-    let apiEndpoints = this.#applicationTree.apiEndpoints.map((api) => api.preload());
-    let errorTemplates = this.#applicationTree.errorTemplates.map((errorTemplate) =>
-      errorTemplate.preload(),
+    let apiEndpoints = this.#applicationTree.apiEndpoints.map((api) =>
+      api.preload(),
     );
-    let catchBoundaries = this.#applicationTree.catchBoundaries.map((catchBoundary) =>
-      catchBoundary.preload(),
+    let errorTemplates = this.#applicationTree.errorTemplates.map(
+      (errorTemplate) => errorTemplate.preload(),
+    );
+    let catchBoundaries = this.#applicationTree.catchBoundaries.map(
+      (catchBoundary) => catchBoundary.preload(),
     );
 
     let loadServerActions = this.#serverActionMap
@@ -832,7 +865,7 @@ export class RSCBuilder extends Builder {
   get root() {
     return this.#applicationTree.root;
   }
-  
+
   #dumpNode(node: Node, indent: string = "") {
     console.log(indent + node.path);
     for (const child of node.children) {

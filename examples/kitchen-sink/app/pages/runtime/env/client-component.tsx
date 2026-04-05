@@ -22,7 +22,7 @@ export default function ClientComponent() {
             process.env.KITCHEN_SINK_TEST_ENV ? (
               process.env.KITCHEN_SINK_TEST_ENV
             ) : (
-              <span className="italic text-gray-500">Not set</span>
+              <span className="text-gray-500 italic">Not set</span>
             )}
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { Generic } from "./generic.js";
 import { Node, TreeNode, Treeable } from "./tree-node.js";
 import { Wrapper } from "./wrapper.js";
-import { AuthPolicyArray } from "../../auth/auth.js"
+import { AuthPolicyArray } from "../../auth/auth.js";
 import { ReactNode } from "react";
 
 export class Layout implements Treeable {
@@ -50,7 +50,7 @@ export class Layout implements Treeable {
 
     let isSame = child.path === this.path && child.constructor === Layout;
     let hasMatchingPath = child.path.startsWith(this.path);
-    
+
     return !alreadyHave && !isSame && hasMatchingPath;
   }
 
@@ -140,7 +140,11 @@ export class Layout implements Treeable {
 
     let layout = {
       // this allows for "auth only" layouts; layouts which only define new auth policies but don't actually provide a layout component.
-      func: module.default ?? (({ children }: { children: ReactNode }) => { return children }),
+      func:
+        module.default ??
+        (({ children }: { children: ReactNode }) => {
+          return children;
+        }),
       requirements: ["dynamicRequest"],
       props: {},
     };

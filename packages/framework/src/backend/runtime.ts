@@ -97,7 +97,10 @@ export class Runtime {
     });
   }
 
-  unauthorizedPageRequest(request: Request, optionalMessage: string | undefined) {
+  unauthorizedPageRequest(
+    request: Request,
+    optionalMessage: string | undefined,
+  ) {
     let page = this.build
       .getBuilder("rsc")
       .findPageForPath("/__tf/errors/unauthorized");

@@ -26,7 +26,7 @@ type State = {
 };
 
 function shouldIgnoreExport(name: string) {
-  return (name === 'auth');
+  return name === "auth";
 }
 
 export function ServerTransformPlugin(

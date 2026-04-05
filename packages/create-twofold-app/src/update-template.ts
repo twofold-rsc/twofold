@@ -36,10 +36,10 @@ async function copy(source: string, destination: string) {
           } else {
             await copyFile(sourcePath, destinationPath);
             console.log(
-              `*** ${source.slice(fileURLToPath(examplesDir).length)}/${file}`
+              `*** ${source.slice(fileURLToPath(examplesDir).length)}/${file}`,
             );
           }
-        })
+        }),
     );
   } catch (err) {
     console.error("Error copying directory:", err);
