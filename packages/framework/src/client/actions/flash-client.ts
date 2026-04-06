@@ -6,11 +6,7 @@ import * as z from "zod";
 
 type ZodTypeAny = z.ZodType<any, any, any>;
 
-type Result<T = JSONValue> = {
-  messagesWithId: Message<T>[];
-  messages: T[];
-  removeMessageById: (id: string) => void;
-};
+type Result<T = JSONValue> = { messagesWithId: Message<T>[]; messages: T[]; removeMessageById: (id: string) => void; };
 
 type Options = {
   clearAfter?: number;
