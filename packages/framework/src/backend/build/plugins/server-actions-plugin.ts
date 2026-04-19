@@ -12,6 +12,7 @@ import { getModuleId } from "../helpers/module.js";
 import { pathToLanguage } from "../helpers/languages.js";
 import { shouldIgnoreUseServer } from "../helpers/excluded.js";
 import { CompiledServerAction } from "../rsc/compiled-server-action.js";
+import { join, sep } from "path";
 
 type ServerAction = {
   id: string;
@@ -43,12 +44,12 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
           return null;
         }
 
-        const prefix = process.cwd() + '/app/pages';
+        const prefix = join(process.cwd(), 'app', 'pages');
         if (!path.startsWith(prefix)) {
           return null;
         }
 
-        let virtualPath = path.substring(prefix.length);
+        let virtualPath = path.substring(prefix.length).replaceAll(sep, '/');
 
         let contents = await readFile(path, "utf-8");
         let hasUseServer = contents.includes("use server");
