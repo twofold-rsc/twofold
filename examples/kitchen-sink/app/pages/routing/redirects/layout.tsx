@@ -111,6 +111,14 @@ export default function Layout({ children }: { children: ReactNode }) {
               Action redirect not found
             </Link>
           </li>
+          <li>
+            <Link
+              href="/routing/redirects/server-action-redirect"
+              className="text-blue-500 underline"
+            >
+              Server action redirect
+            </Link>
+          </li>
         </ul>
       </div>
       <div>{children}</div>

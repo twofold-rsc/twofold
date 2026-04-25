@@ -6,6 +6,7 @@ import {
   // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client'.
 } from "react-server-dom-webpack/client";
 import { deserializeError } from "serialize-error";
+import { RedirectError } from "../../../errors/redirect-error";
 
 declare global {
   interface Window {
@@ -107,7 +108,9 @@ export function callServer(id: string, args: any) {
         }
 
         if (response.redirected && window.__twofold?.navigate) {
-          window.__twofold.navigate(pathToUpdate);
+          // @note: We must reject with RedirectError here so that useActionState does not attempt to use the result and cause further code to fail (because the state would become 'undefined' otherwise). By rejecting with this error, the rendering of the component using useActionState will stop and the redirection will be handled by the RedirectBoundary component.
+          reject(new RedirectError(response.status, pathToUpdate));
+          return;
         }
       }
 
