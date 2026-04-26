@@ -29,6 +29,8 @@
     "./use-router": "./src/client/hooks/use-router.ts",
     "./use-optimistic-route": "./src/client/hooks/use-optimistic-route.ts",
     "./cookies": "./src/client/http/cookies.ts",
+    "./auth": "./src/client/http/auth.ts",
+    "./auth-server": "./src/client/http/auth-server.ts",
     "./not-found": "./src/client/http/not-found.ts",
     "./unauthorized": "./src/client/http/unauthorized.ts",
     "./redirect": "./src/client/http/redirect.ts",

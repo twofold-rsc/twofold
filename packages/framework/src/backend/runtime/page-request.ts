@@ -11,6 +11,7 @@ import { ComponentType, createElement, ReactElement } from "react";
 import { applyPathParams } from "./helpers/routing.js";
 import xxhash from "xxhash-wasm";
 import { invariant } from "../utils/invariant.js";
+import { evaluatePolicyArray, evaluatePolicyArrayToResponse } from "./helpers/auth.js";
 
 export class PageRequest {
   #page: Page;
@@ -47,7 +48,44 @@ export class PageRequest {
     return this.#page;
   }
 
+  async evaluateAuth(): Promise<Response | undefined> {
+    if (!this.#conditions.includes("unauthorized")) {
+      const authResponse = await evaluatePolicyArrayToResponse(
+        this.#runtime, 
+        this.#page, 
+        {
+          type: "page",
+          request: this.#request,
+          routeParams: this.dynamicParams,
+          authCache: getStore().authCache,
+        },
+        async (error) => {
+          if (isNotFoundError(error)) {
+            return this.notFoundRscResponse();
+          } else if (isUnauthorizedError(error)) {
+            return this.unauthorizedRscResponse(undefined);
+          } else if (isRedirectError(error)) {
+            let { status, url } = redirectErrorInfo(error);
+            return this.redirectResponse(status, url);
+          } else {
+            console.error(error);
+            return new Response("Internal Server Error", { status: 500 })
+          }
+        },
+        async (message) => await this.unauthorizedRscResponse(message));
+      if (authResponse) {
+        return authResponse;
+      }
+    }
+    return undefined;
+  }
+
   async rscResponse(): Promise<Response> {
+    const authResponse = await this.evaluateAuth();
+    if (authResponse) {
+      return authResponse;
+    }
+
     // setup store
     let store = getStore();
     if (store) {
@@ -69,7 +107,7 @@ export class PageRequest {
       if (isNotFoundError(error)) {
         return this.notFoundRscResponse();
       } else if (isUnauthorizedError(error)) {
-        return this.unauthorizedRscResponse();
+        return this.unauthorizedRscResponse(undefined);
       } else if (isRedirectError(error)) {
         let { status, url } = redirectErrorInfo(error);
         return this.redirectResponse(status, url);
@@ -112,7 +150,7 @@ export class PageRequest {
     let rscResponse = await this.rscResponse();
 
     // response is not SSRable
-    if (!rscResponse.body) {
+    if (!rscResponse.body || rscResponse.headers.get("Content-type") !== 'text/x-component') {
       return rscResponse;
     }
 
@@ -219,9 +257,10 @@ export class PageRequest {
     return notFoundRequest.rscResponse();
   }
 
-  private unauthorizedRscResponse() {
+  private unauthorizedRscResponse(message: string | undefined) {
     let unauthorizedRequest = this.#runtime.unauthorizedPageRequest(
       this.#request,
+      message,
     );
 
     return unauthorizedRequest.rscResponse();

@@ -1,14 +1,17 @@
+import { AuthPolicyArray } from "../../auth/auth.js";
 import {
   pathMatches,
   pathPartialMatches,
 } from "../../runtime/helpers/routing.js";
 import { partition } from "../../utils/partition.js";
+import { API } from "./api.js";
 import { CatchBoundary } from "./catch-boundary.js";
+import { CompiledServerAction } from "./compiled-server-action.js";
 import { ErrorTemplate } from "./error-template.js";
 import { Layout } from "./layout.js";
 import { Page } from "./page.js";
 
-export type Node = Layout | CatchBoundary | Page | ErrorTemplate;
+export type Node = Layout | CatchBoundary | Page | ErrorTemplate | API | CompiledServerAction;
 
 export type Treeable = {
   path: string;
@@ -104,7 +107,7 @@ export class TreeNode {
       this.#children.push(node);
       this.#rebalanceChildrenAgainst(node);
     } else {
-      throw new Error("Could not add child to this node");
+      throw new Error(`Could not add child '${node.#value.path}' to this node '${this.#value.path}'`);
     }
   }
 
