@@ -1,10 +1,10 @@
-import { createContext, ReactNode } from "react";
+import { createContext, ReactElement, ReactNode } from "react";
 import { Reader } from "../../../components/route-stack/reader";
 
 type TreeEntry = {
   type: "tree";
   key: string;
-  tree: any;
+  tree: ReactElement;
 };
 
 type ErrorEntry = {
@@ -34,13 +34,15 @@ export function RouteStack({
   depth?: number;
 }) {
   return (
-    <Context
-      value={{
-        stack,
-        depth,
-      }}
-    >
-      {children ? children : <Reader />}
-    </Context>
+    <>
+      <Context
+        value={{
+          stack,
+          depth,
+        }}
+      >
+        {children ? children : <Reader />}
+      </Context>
+    </>
   );
 }

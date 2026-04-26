@@ -1,5 +1,3 @@
-"use server";
-
 export const database = { count: 0 };
 
 export function createIncrementAction(amount: number) {

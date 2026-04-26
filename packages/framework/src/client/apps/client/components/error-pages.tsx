@@ -1,12 +1,11 @@
-import { Stylesheet } from "./stylesheet";
 import { ErrorViewer } from "../../errors/error-viewer";
+import classes from "./error-pages.module.css";
 
 export function DevErrorPage({ error }: { error: unknown }) {
   return (
-    <html>
+    <html className={classes.twofoldErrorPage}>
       <head>
         <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
-        <Stylesheet href="/_twofold/errors/app.css" />
       </head>
       <body>
         <ErrorViewer error={error} />

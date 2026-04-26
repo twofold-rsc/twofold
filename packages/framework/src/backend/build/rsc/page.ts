@@ -2,26 +2,27 @@ import { Layout } from "./layout.js";
 import "urlpattern-polyfill";
 import { Treeable, TreeNode } from "./tree-node.js";
 import { CatchBoundary } from "./catch-boundary.js";
+import { type ModuleSurface } from "../../vite/router.js";
 
 export class Page implements Treeable {
   #path: string;
   #css?: string | undefined;
-  #fileUrl: URL;
+  #loadModule: () => Promise<ModuleSurface>;
 
   tree: TreeNode;
 
   constructor({
     path,
     css,
-    fileUrl,
+    loadModule,
   }: {
     path: string;
     css?: string | undefined;
-    fileUrl: URL;
+    loadModule: () => Promise<ModuleSurface>;
   }) {
     this.#path = path;
     this.#css = css;
-    this.#fileUrl = fileUrl;
+    this.#loadModule = loadModule;
 
     this.tree = new TreeNode(this);
   }
@@ -113,6 +114,12 @@ export class Page implements Treeable {
         let components = await parent.components();
         return {
           path: parent.path,
+          type:
+            parent instanceof Layout
+              ? "layout"
+              : parent instanceof CatchBoundary
+                ? "catch-boundary"
+                : "unknown",
           components,
         };
       });
@@ -122,6 +129,7 @@ export class Page implements Treeable {
     let components = await this.components();
     let pageSegment = {
       path: this.#path,
+      type: "page",
       components,
     };
 
@@ -155,8 +163,7 @@ export class Page implements Treeable {
   }
 
   private async loadModule() {
-    let module = await import(this.#fileUrl.href);
-    return module;
+    return await this.#loadModule();
   }
 
   async preload() {

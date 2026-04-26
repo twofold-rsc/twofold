@@ -2,8 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "exactOptionalPropertyTypes": false,
     "module": "NodeNext",
-    "moduleResolution": "nodenext"
+    "moduleResolution": "nodenext",
+    "types": ["vite/client", "@vitejs/plugin-rsc/types"]
   },
   "include": ["**/*"]
 }

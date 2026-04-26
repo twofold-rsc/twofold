@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 export function ErrorViewer({ error }: { error: unknown }) {
   return (
     <div className="bg-red-50 h-full">
@@ -22,27 +20,6 @@ export function ErrorViewer({ error }: { error: unknown }) {
           </div>
         </div>
       </div>
-
-      <Reload />
     </div>
   );
-}
-
-function Reload() {
-  useEffect(() => {
-    let eventSource = new EventSource("/__dev/reload");
-
-    eventSource.onmessage = (e) => {
-      let data = JSON.parse(e.data);
-      if (data.type === "changes") {
-        window.location.reload();
-      }
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
-
-  return null;
 }

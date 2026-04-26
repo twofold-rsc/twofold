@@ -5,22 +5,22 @@ import { Node, Treeable, TreeNode } from "./tree-node.js";
 
 export class CatchBoundary implements Treeable {
   #path;
-  #fileUrl: URL;
+  #loadModule: () => Promise<any>;
   #routeStackPlaceholder: Generic;
 
   tree: TreeNode;
 
   constructor({
     path,
-    fileUrl,
+    loadModule,
     routeStackPlaceholder,
   }: {
     path: string;
-    fileUrl: URL;
+    loadModule: () => Promise<any>;
     routeStackPlaceholder: Generic;
   }) {
     this.#path = path;
-    this.#fileUrl = fileUrl;
+    this.#loadModule = loadModule;
     this.#routeStackPlaceholder = routeStackPlaceholder;
 
     this.tree = new TreeNode(this);
@@ -154,8 +154,7 @@ export class CatchBoundary implements Treeable {
   }
 
   async loadModule() {
-    let module = await import(this.#fileUrl.href);
-    return module;
+    return await this.#loadModule();
   }
 
   async preload() {
