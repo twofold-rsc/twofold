@@ -97,6 +97,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/routing/redirects/uas-typed-redirect"
+              className="text-blue-500 underline"
+            >
+              Action typed uAS redirect
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/redirects/action-redirect-to-another-domain"
               className="text-blue-500 underline"
             >
@@ -109,14 +117,6 @@ export default function Layout({ children }: { children: ReactNode }) {
               className="text-blue-500 underline"
             >
               Action redirect not found
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/routing/redirects/server-action-redirect"
-              className="text-blue-500 underline"
-            >
-              Server action redirect
             </Link>
           </li>
         </ul>

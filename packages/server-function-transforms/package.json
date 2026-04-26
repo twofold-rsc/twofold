@@ -22,16 +22,16 @@
     "@types/babel__core": "^7.20.5",
     "@types/babel__generator": "^7.27.0",
     "@types/node": "catalog:",
-    "dedent": "^1.7.0",
-    "prettier": "^3.6.2",
+    "dedent": "^1.7.2",
+    "prettier": "^3.8.3",
     "react-server-dom-webpack": "catalog:",
     "typescript": "catalog:",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.5"
   },
   "dependencies": {
-    "@babel/core": "^7.28.4",
-    "@babel/generator": "^7.28.3",
-    "@babel/types": "^7.28.4",
+    "@babel/core": "^7.29.0",
+    "@babel/generator": "^7.29.1",
+    "@babel/types": "^7.29.0",
     "esbuild": "catalog:"
   },
   "peerDependencies": {

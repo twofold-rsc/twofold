@@ -1,5 +1,11 @@
 # TODO
 
+- release
+  - upgrade sub package deps
+  - upgrade framework deps
+  - upgrade kitchen deps
+  - run through tests
+
 - [ ] rsc stream renderer shouldnt check the stream for errors, remove buffer
       take a look at runtime rsc render to see
 - [ ] can we serialize redirect

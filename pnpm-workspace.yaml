@@ -5,12 +5,12 @@ packages:
 
 catalog:
   "@types/node": ^22.16.5
-  "@types/react": ^19.2.10
+  "@types/react": ^19.2.14
   "@types/react-dom": ^19.2.3
-  esbuild: 0.27.2
-  react: 19.2.4
-  react-dom: 19.2.4
-  react-server-dom-webpack: 19.2.4
+  esbuild: 0.28.0
+  react: 19.2.5
+  react-dom: 19.2.5
+  react-server-dom-webpack: 19.2.5
   typescript: ^5.9.3
 
 onlyBuiltDependencies:
