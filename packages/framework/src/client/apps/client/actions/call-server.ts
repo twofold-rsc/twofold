@@ -97,24 +97,27 @@ export function callServer(id: string, args: any) {
         });
       }
 
-      if (stack) {
-        let url = new URL(response.url);
-        let receivedPath = url.searchParams.get("path");
-        let pathToUpdate =
-          response.redirected && receivedPath ? receivedPath : path;
+      let url = new URL(response.url);
+      let receivedPath = url.searchParams.get("path");
+      let pathToUpdate =
+        response.redirected && receivedPath ? receivedPath : path;
 
-        if (window.__twofold?.updateStack) {
-          window.__twofold.updateStack(pathToUpdate, stack);
-        }
-
-        if (response.redirected && window.__twofold?.navigate) {
-          // @note: We must reject with RedirectError here so that useActionState does not attempt to use the result and cause further code to fail (because the state would become 'undefined' otherwise). By rejecting with this error, the rendering of the component using useActionState will stop and the redirection will be handled by the RedirectBoundary component.
-          reject(new RedirectError(response.status, pathToUpdate));
-          return;
-        }
+      if (stack && window.__twofold?.updateStack) {
+        window.__twofold.updateStack(pathToUpdate, stack);
       }
 
-      resolve(result);
+      if (response.redirected) {
+        if (window.__twofold?.navigate) {
+          window.__twofold.navigate(pathToUpdate);
+        }
+
+        // we need to reject here because if this call server was
+        // invoked by a action expecting a typed value we don't
+        // want to return undefined.
+        reject(new RedirectError(response.status, pathToUpdate));
+      } else {
+        resolve(result);
+      }
     });
   });
 }
