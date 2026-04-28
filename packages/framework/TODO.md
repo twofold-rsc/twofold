@@ -1,7 +1,7 @@
 # Things that don't work correctly in Vite yet
 
 - [x] Encrypted cookies
-- [ ] Global middleware
+- [x] Global middleware
 - [ ] API routes
 - [ ] Navigation external link (sometimes errors on nav, but nav still succeeds)
 - [ ] Search params (a render happened where client and server search params do not match)

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import classes from "./error-page.module.css";
+import errorPageStyles from "./error-page.css?inline";
 
 interface ErrorPageProps {
   error: unknown;
@@ -49,13 +49,12 @@ export default function ErrorPage(props: ErrorPageProps) {
   return (
     <html
       className={
-        process.env.NODE_ENV === "development"
-          ? classes.development
-          : classes.production
+        process.env.NODE_ENV === "development" ? "development" : "production"
       }
     >
       <head>
         <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+        <style>{errorPageStyles}</style>
       </head>
       <body>
         <div className="bg-red-50 h-full">
@@ -68,7 +67,7 @@ export default function ErrorPage(props: ErrorPageProps) {
                 <p className="pt-3">
                   Something went wrong. Try again later if the issue persists.
                 </p>
-                <p className={`pt-3 ${digest ? "" : classes.hidden}`}>
+                <p className={`pt-3 ${digest ? "" : "hidden"}`}>
                   Digest: {digest}
                 </p>
                 <div className="pt-4">
@@ -78,6 +77,13 @@ export default function ErrorPage(props: ErrorPageProps) {
                     disabled={refreshing}
                   >
                     Reload page
+                  </button>
+                  <button
+                    className="rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow ml-2"
+                    style={{ display: "none" }}
+                    id="ssr-request-hydrate"
+                  >
+                    Hydrate
                   </button>
                 </div>
               </div>

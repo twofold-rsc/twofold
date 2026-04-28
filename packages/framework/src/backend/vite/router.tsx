@@ -59,9 +59,17 @@ import globalMiddleware from "virtual:twofold/server-global-middleware";
 
 const tfPathsUnauthorized = "/__tf/errors/unauthorized";
 const tfPathsNotFound = "/__tf/errors/not-found";
+const tfPathsInternalServerError = "/__tf/errors/internal-server-error";
+
+enum MiddlewareMode {
+  Run,
+  Skip,
+}
 
 export interface ModuleSurface {
-  default?: FunctionComponent<LayoutProps | PageProps<any>>;
+  default?: FunctionComponent<
+    LayoutProps | PageProps<any> | { error: unknown }
+  >;
   before?: (props: any) => Promise<void>;
   GET?: (req: Request) => Promise<Response>;
   POST?: (req: Request) => Promise<Response>;
@@ -128,7 +136,7 @@ export class ApplicationRuntime {
     });
 
     // silence not found for external requests
-    app.get("/**/installHook.js.map", async (ctx) => {
+    app.get("/**/*.js.map", async (ctx) => {
       return new Response(null, { status: 404 });
     });
     app.get(
@@ -545,7 +553,13 @@ export class ApplicationRuntime {
     const url = new URL(request.url);
     let page = this.#root.tree.findPageForPath(url.pathname);
     if (page) {
-      return this.runPageForInstance(url, page, actionResult, request);
+      return this.runPageForInstance(
+        url,
+        page,
+        actionResult,
+        request,
+        MiddlewareMode.Run,
+      );
     } else {
       return this.createNotFoundResponse(request);
     }
@@ -556,6 +570,8 @@ export class ApplicationRuntime {
     page: Page,
     actionResult: ActionResultData | undefined,
     request: Request,
+    middleware: MiddlewareMode,
+    overridePageProps?: { error: unknown },
   ): Promise<ReadableStream<Uint8Array> | Response> {
     const segments = await page.segments();
 
@@ -568,22 +584,24 @@ export class ApplicationRuntime {
       request,
     };
 
-    try {
-      const layouts = page.layouts;
-      const promises = [
-        page.runMiddleware(props),
-        ...layouts.map((layout) => layout.runMiddleware(props)),
-      ];
-      await Promise.all(promises);
-    } catch (error: unknown) {
-      return onServerSidePageMiddlewareError({
-        applicationRuntime: this,
-        url: url,
-        request,
-        error: error,
-        willRecover: false,
-        location: "page-middleware",
-      });
+    if (middleware === MiddlewareMode.Run) {
+      try {
+        const layouts = page.layouts;
+        const promises = [
+          page.runMiddleware(props),
+          ...layouts.map((layout) => layout.runMiddleware(props)),
+        ];
+        await Promise.all(promises);
+      } catch (error: unknown) {
+        return onServerSidePageMiddlewareError({
+          applicationRuntime: this,
+          url: url,
+          request,
+          error: error,
+          willRecover: false,
+          location: "page-middleware",
+        });
+      }
     }
 
     const routeStack = segments.map((segment): RouteStackEntry => {
@@ -601,7 +619,9 @@ export class ApplicationRuntime {
         return {
           component: component.func,
           props: {
-            ...component.props,
+            ...((segment.path === tfPathsInternalServerError
+              ? overridePageProps
+              : undefined) ?? component.props),
             ...(component.requirements.includes("dynamicRequest") ? props : {}),
             ...(index === 0 ? { key } : {}),
           },
@@ -624,6 +644,23 @@ export class ApplicationRuntime {
     const rscOptions = {
       temporaryReferences: actionResult?.temporaryReferences,
       onError: (error: unknown) => {
+        // If overridePageProps is set, we'll have an error that originated somewhere else and has already been reported.
+        if (overridePageProps && overridePageProps.error === error) {
+          if (
+            typeof error === "object" &&
+            error !== null &&
+            "digest" in error &&
+            typeof error.digest === "string"
+          ) {
+            // Pass digest from server to client unmodified. This is what allows the client to recognise special errors such as "not found".
+            return error.digest;
+          } else {
+            // No digest for this error.
+            return undefined;
+          }
+        }
+
+        // Otherwise forward error to error handling.
         onServerSidePageRenderError({
           applicationRuntime: this,
           url: url,
@@ -647,6 +684,7 @@ export class ApplicationRuntime {
       page,
       undefined,
       request,
+      MiddlewareMode.Skip,
     );
   }
 
@@ -660,6 +698,7 @@ export class ApplicationRuntime {
       page,
       undefined,
       request,
+      MiddlewareMode.Skip,
     );
   }
 
@@ -706,6 +745,24 @@ export class ApplicationRuntime {
     }
   }
 
+  createInternalServerErrorResponse(
+    request: Request,
+    error: unknown,
+  ): Promise<ReadableStream<Uint8Array> | Response> {
+    let page = this.#root.tree.findPageForPath(tfPathsInternalServerError);
+    invariant(page, "Could not find internal-server-error page");
+    return this.runPageForInstance(
+      new URL(request.url),
+      page,
+      undefined,
+      request,
+      MiddlewareMode.Skip,
+      {
+        error,
+      },
+    );
+  }
+
   private static loadRoot(modules: ModuleMap): Layout {
     let pages = ApplicationRuntime.loadPages(modules);
     let layouts = ApplicationRuntime.loadLayouts(modules);
@@ -730,6 +787,7 @@ export class ApplicationRuntime {
 
     root.addChild(ApplicationRuntime.loadUnauthorizedPage(modules));
     root.addChild(ApplicationRuntime.loadNotFoundPage(modules));
+    root.addChild(ApplicationRuntime.loadInternalServerErrorPage(modules));
 
     root.addWrapper(outerRootWrapper);
 
@@ -890,6 +948,14 @@ export class ApplicationRuntime {
       path: tfPathsNotFound,
       loadModule: async () =>
         (await import("../../client/pages/not-found.js")) as ModuleSurface,
+    });
+  }
+
+  private static loadInternalServerErrorPage(modules: ModuleMap): Page {
+    return new Page({
+      path: tfPathsInternalServerError,
+      loadModule: async () =>
+        (await import("../../client/pages/internal-server-error.js")) as ModuleSurface,
     });
   }
 }

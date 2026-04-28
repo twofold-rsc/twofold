@@ -17,7 +17,7 @@ import {
   RouteStack,
   RouteStackEntry,
 } from "../../../client/apps/client/contexts/route-stack-context.js";
-import { hydrateRoot } from "react-dom/client";
+import { createRoot, hydrateRoot, RootOptions } from "react-dom/client";
 import { setServerCallback } from "@vitejs/plugin-rsc/browser";
 import { callServer } from "./browser/call-server.js";
 import { getInitialPayload } from "./browser/initial-payload.js";
@@ -279,6 +279,14 @@ function useURLFromPath(path: string) {
 }
 
 async function main() {
+  if (
+    "__NO_HYDRATE" in globalThis &&
+    (globalThis as any).__NO_HYDRATE === "2"
+  ) {
+    // In development, skip createRoot at all so we can see the SSR error directly.
+    return;
+  }
+
   let tree = (
     <StrictMode>
       <BrowserApp />
@@ -287,39 +295,47 @@ async function main() {
 
   setServerCallback(callServer);
 
-  const initialPayload = await getInitialPayload();
-  startTransition(() => {
-    hydrateRoot(document, tree, {
-      onRecoverableError: (error, errorInfo) => {
-        onClientSideRenderError({
-          isSsr: false,
-          url: new URL(window.location.href),
-          error,
-          errorInfo,
-          type: "recoverable",
-        });
-      },
-      onUncaughtError: (error, errorInfo) => {
-        onClientSideRenderError({
-          isSsr: false,
-          url: new URL(window.location.href),
-          error,
-          errorInfo,
-          type: "uncaught",
-        });
-      },
-      onCaughtError: (error, errorInfo) => {
-        onClientSideRenderError({
-          isSsr: false,
-          url: new URL(window.location.href),
-          error,
-          errorInfo,
-          type: "caught",
-        });
-      },
-      formState: initialPayload.formState,
+  const errorOptions: RootOptions = {
+    onRecoverableError: (error, errorInfo) => {
+      onClientSideRenderError({
+        isSsr: false,
+        url: new URL(window.location.href),
+        error,
+        errorInfo,
+        type: "recoverable",
+      });
+    },
+    onUncaughtError: (error, errorInfo) => {
+      onClientSideRenderError({
+        isSsr: false,
+        url: new URL(window.location.href),
+        error,
+        errorInfo,
+        type: "uncaught",
+      });
+    },
+    onCaughtError: (error, errorInfo) => {
+      onClientSideRenderError({
+        isSsr: false,
+        url: new URL(window.location.href),
+        error,
+        errorInfo,
+        type: "caught",
+      });
+    },
+  };
+
+  if ("__NO_HYDRATE" in globalThis) {
+    createRoot(document, errorOptions).render(tree);
+  } else {
+    const initialPayload = await getInitialPayload();
+    startTransition(() => {
+      hydrateRoot(document, tree, {
+        ...errorOptions,
+        formState: initialPayload.formState,
+      });
     });
-  });
+  }
 }
 
 main();

@@ -105,6 +105,7 @@ export function onServerSideApiMiddlewareError(
   context: ServerErrorContext,
 ): Response {
   logError(context);
+
   if (isNotFoundError(context.error)) {
     return new Response("Not found", { status: 404 });
   } else if (isUnauthorizedError(context.error)) {
@@ -128,6 +129,7 @@ export async function onServerSidePageMiddlewareError(
   context: ServerErrorContext,
 ): Promise<Response | ReadableStream<Uint8Array>> {
   logError(context);
+
   if (isNotFoundError(context.error)) {
     return context.applicationRuntime.createNotFoundResponse(context.request);
   } else if (isUnauthorizedError(context.error)) {
@@ -143,7 +145,10 @@ export async function onServerSidePageMiddlewareError(
       errorInfo.status,
     );
   } else {
-    throw context.error;
+    return context.applicationRuntime.createInternalServerErrorResponse(
+      context.request,
+      context.error,
+    );
   }
 }
 

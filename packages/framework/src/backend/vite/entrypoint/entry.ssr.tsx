@@ -11,6 +11,7 @@ import {
 import { RoutingContext } from "../../../client/apps/client/contexts/routing-context.js";
 import { GlobalErrorBoundary } from "../../../client/components/error-handling/global-error-boundary.js";
 import { onClientSideRenderError } from "../error-handling.client.js";
+import ErrorPage from "../../../client/components/error-handling/error-page.js";
 
 function SsrApp(props: { url: URL; routeStack: RouteStackEntry[] }) {
   let navigate = () => {
@@ -88,19 +89,20 @@ export async function renderHTML(
     );
   } catch (e) {
     status = 500;
-    htmlStream = await renderToReadableStream(
-      <html>
-        <body>
-          <noscript>Internal Server Error: SSR failed</noscript>
-        </body>
-      </html>,
-      {
-        bootstrapScriptContent:
-          `self.__NO_HYDRATE=1;` +
-          (options?.debugNojs ? "" : bootstrapScriptContent),
-        nonce: options?.nonce,
-      },
-    );
+    htmlStream = await renderToReadableStream(<ErrorPage error={e} />, {
+      bootstrapScriptContent:
+        process.env.NODE_ENV === "production"
+          ? `self.__NO_HYDRATE=1;` +
+            (options?.debugNojs ? "" : bootstrapScriptContent)
+          : `self.__NO_HYDRATE=2;` +
+            (options?.debugNojs
+              ? ""
+              : `
+document.getElementById('ssr-request-hydrate').style.display = '';
+document.getElementById('ssr-request-hydrate').addEventListener('click', function() { document.getElementById('ssr-request-hydrate').style.display = 'none'; ${bootstrapScriptContent} });
+`),
+      nonce: options?.nonce,
+    });
   }
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream;
