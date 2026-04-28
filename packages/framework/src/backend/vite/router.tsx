@@ -12,7 +12,9 @@ import { parseRenderRequest, URL_POSTFIX } from "./entrypoint/request.js";
 import { API } from "../build/rsc/api.js";
 import { applyPathParams, pathMatches } from "../runtime/helpers/routing.js";
 import {
+  isNotFoundError,
   isRedirectError,
+  isUnauthorizedError,
   redirectErrorInfo,
 } from "../runtime/helpers/errors.js";
 import { ReactFormState } from "react-dom/client";
@@ -44,6 +46,7 @@ import {
   contentType,
   headerAccept,
   headerContentType,
+  headerLocation,
   isContentType,
 } from "./content-types.js";
 import {
@@ -52,14 +55,12 @@ import {
   onServerSideCatastrophicError,
   onServerSidePageMiddlewareError,
   onServerSidePageRenderError,
+  onServerSideReceivedSsrError,
 } from "./error-handling.server.js";
 import fallbackErrorHtml from "./internal-error.html?inline";
 import { NodePlatformInfo } from "@hattip/adapter-node/native-fetch";
 import globalMiddleware from "virtual:twofold/server-global-middleware";
-
-const tfPathsUnauthorized = "/__tf/errors/unauthorized";
-const tfPathsNotFound = "/__tf/errors/not-found";
-const tfPathsInternalServerError = "/__tf/errors/internal-server-error";
+import { tfPaths } from "./special-pages.js";
 
 enum MiddlewareMode {
   Run,
@@ -129,7 +130,7 @@ export class ApplicationRuntime {
         return new Response(null, {
           status: 307,
           headers: {
-            Location: url.pathname.slice(0, -1),
+            [headerLocation]: url.pathname.slice(0, -1),
           },
         });
       }
@@ -350,16 +351,74 @@ export class ApplicationRuntime {
       }
 
       // Use SSR module to render RSC stream to HTML.
+      const [rscStreamForSsr, rscStreamForRecovery] = rscStreamOrResponse.tee();
       const ssrEntryModule = await import.meta.viteRsc.loadModule<
         typeof import("./entrypoint/entry.ssr.js")
       >("ssr", "index");
-      const ssrResult = await ssrEntryModule.renderHTML(rscStreamOrResponse, {
+      let ssrResult = await ssrEntryModule.renderHtmlOrError(rscStreamForSsr, {
         url: url,
         formState: actionResult?.formState,
         debugNojs: url.searchParams.has("__nojs"),
       });
-      return new Response(ssrResult.stream, {
-        status: ssrResult.status,
+      if (ssrResult.type === "stream") {
+        return new Response(ssrResult.stream, {
+          headers: {
+            [headerContentType]: contentType.html,
+          },
+        });
+      }
+
+      // Handle known errors from SSR failure.
+      let replacement:
+        | Response
+        | ReadableStream<Uint8Array<ArrayBufferLike>>
+        | undefined = await onServerSideReceivedSsrError({
+        applicationRuntime: this,
+        url: url,
+        request: request,
+        error: ssrResult.error,
+        willRecover: true,
+        location: "ssr",
+      });
+      if (replacement) {
+        if (replacement instanceof Response) {
+          return replacement;
+        } else {
+          const ssrReplacementResult = await ssrEntryModule.renderHtmlOrError(
+            replacement,
+            {
+              url: url,
+              formState: actionResult?.formState,
+              debugNojs: url.searchParams.has("__nojs"),
+            },
+          );
+          if (ssrReplacementResult.type === "stream") {
+            return new Response(ssrReplacementResult.stream, {
+              headers: {
+                [headerContentType]: contentType.html,
+              },
+            });
+          } else {
+            // Replacement result failed during SSR; proceed with the new error.
+            console.error("SSR of replacement response also failed.");
+            console.error(ssrReplacementResult.error);
+            ssrResult = ssrReplacementResult;
+          }
+        }
+      }
+
+      // Use SSR module to render just the bootstrap and stream, with no hydration. This allows the error boundary on the client to handle the error.
+      const ssrRecoveryStream = await ssrEntryModule.renderRecoveryHtml(
+        rscStreamForRecovery,
+        ssrResult.error,
+        {
+          url: url,
+          formState: actionResult?.formState,
+          debugNojs: url.searchParams.has("__nojs"),
+        },
+      );
+      return new Response(ssrRecoveryStream, {
+        status: 500,
         headers: {
           [headerContentType]: contentType.html,
         },
@@ -561,7 +620,7 @@ export class ApplicationRuntime {
         MiddlewareMode.Run,
       );
     } else {
-      return this.createNotFoundResponse(request);
+      return this.runSpecialPage(request, tfPaths.throwing.notFound);
     }
   }
 
@@ -619,7 +678,7 @@ export class ApplicationRuntime {
         return {
           component: component.func,
           props: {
-            ...((segment.path === tfPathsInternalServerError
+            ...((segment.path === tfPaths.throwing.internalServerError
               ? overridePageProps
               : undefined) ?? component.props),
             ...(component.requirements.includes("dynamicRequest") ? props : {}),
@@ -661,7 +720,7 @@ export class ApplicationRuntime {
         }
 
         // Otherwise forward error to error handling.
-        onServerSidePageRenderError({
+        return onServerSidePageRenderError({
           applicationRuntime: this,
           url: url,
           request,
@@ -674,31 +733,24 @@ export class ApplicationRuntime {
     return renderToReadableStream<RscPayload>(rscPayload, rscOptions);
   }
 
-  createNotFoundResponse(
+  runSpecialPage(
     request: Request,
+    specialPage: string,
+    error?: unknown,
   ): Promise<ReadableStream<Uint8Array> | Response> {
-    let page = this.#root.tree.findPageForPath(tfPathsNotFound);
-    invariant(page, "Could not find not-found page");
+    let page = this.#root.tree.findPageForPath(specialPage);
+    invariant(page, `Could not find special page '${specialPage}'`);
     return this.runPageForInstance(
       new URL(request.url),
       page,
       undefined,
       request,
       MiddlewareMode.Skip,
-    );
-  }
-
-  createUnauthorizedResponse(
-    request: Request,
-  ): Promise<ReadableStream<Uint8Array> | Response> {
-    let page = this.#root.tree.findPageForPath(tfPathsUnauthorized);
-    invariant(page, "Could not find unauthorized page");
-    return this.runPageForInstance(
-      new URL(request.url),
-      page,
-      undefined,
-      request,
-      MiddlewareMode.Skip,
+      error
+        ? {
+            error,
+          }
+        : undefined,
     );
   }
 
@@ -716,7 +768,7 @@ export class ApplicationRuntime {
       return new Response(null, {
         status: status ?? 303,
         headers: {
-          location: `${redirectUrl.pathname}${URL_POSTFIX}${redirectUrl.search}`,
+          [headerLocation]: `${redirectUrl.pathname}${URL_POSTFIX}${redirectUrl.search}`,
         },
       });
     }
@@ -725,15 +777,15 @@ export class ApplicationRuntime {
       return new Response(null, {
         status: status ?? 303,
         headers: {
-          location: targetUrl,
+          [headerLocation]: targetUrl,
         },
       });
     } else {
       return new Response(
         JSON.stringify({
           type: "twofold-offsite-redirect",
-          targetUrl,
-          status,
+          url: targetUrl,
+          status: status,
         }),
         {
           status: 200,
@@ -745,24 +797,6 @@ export class ApplicationRuntime {
     }
   }
 
-  createInternalServerErrorResponse(
-    request: Request,
-    error: unknown,
-  ): Promise<ReadableStream<Uint8Array> | Response> {
-    let page = this.#root.tree.findPageForPath(tfPathsInternalServerError);
-    invariant(page, "Could not find internal-server-error page");
-    return this.runPageForInstance(
-      new URL(request.url),
-      page,
-      undefined,
-      request,
-      MiddlewareMode.Skip,
-      {
-        error,
-      },
-    );
-  }
-
   private static loadRoot(modules: ModuleMap): Layout {
     let pages = ApplicationRuntime.loadPages(modules);
     let layouts = ApplicationRuntime.loadLayouts(modules);
@@ -772,6 +806,7 @@ export class ApplicationRuntime {
       errorTemplates,
     );
     let outerRootWrapper = ApplicationRuntime.loadOuterRootWrapper();
+    let specialPages = ApplicationRuntime.loadSpecialPages(modules);
     let [rootLayout, otherLayouts] = partition(layouts, (x) => x.path === "/");
 
     if (rootLayout.length === 0) {
@@ -784,10 +819,7 @@ export class ApplicationRuntime {
     catchBoundaries.forEach((catchBoundary) => root.addChild(catchBoundary));
     pages.forEach((page) => root.addChild(page));
     errorTemplates.forEach((errorTemplate) => root.addChild(errorTemplate));
-
-    root.addChild(ApplicationRuntime.loadUnauthorizedPage(modules));
-    root.addChild(ApplicationRuntime.loadNotFoundPage(modules));
-    root.addChild(ApplicationRuntime.loadInternalServerErrorPage(modules));
+    specialPages.forEach((page) => root.addChild(page));
 
     root.addWrapper(outerRootWrapper);
 
@@ -935,27 +967,28 @@ export class ApplicationRuntime {
     });
   }
 
-  private static loadUnauthorizedPage(modules: ModuleMap): Page {
-    return new Page({
-      path: tfPathsUnauthorized,
-      loadModule: async () =>
-        (await import("../../client/pages/unauthorized.js")) as ModuleSurface,
-    });
-  }
-
-  private static loadNotFoundPage(modules: ModuleMap): Page {
-    return new Page({
-      path: tfPathsNotFound,
-      loadModule: async () =>
-        (await import("../../client/pages/not-found.js")) as ModuleSurface,
-    });
-  }
-
-  private static loadInternalServerErrorPage(modules: ModuleMap): Page {
-    return new Page({
-      path: tfPathsInternalServerError,
-      loadModule: async () =>
-        (await import("../../client/pages/internal-server-error.js")) as ModuleSurface,
-    });
+  private static loadSpecialPages(modules: ModuleMap): Page[] {
+    const specialPages = {
+      [tfPaths.throwing.notFound]: () =>
+        import("../../client/pages/throwing/not-found.js"),
+      [tfPaths.throwing.unauthorized]: () =>
+        import("../../client/pages/throwing/unauthorized.js"),
+      [tfPaths.throwing.internalServerError]: () =>
+        import("../../client/pages/throwing/internal-server-error.js"),
+      [tfPaths.rendered.notFound]: () =>
+        import("../../client/pages/rendered/not-found.js"),
+      [tfPaths.rendered.unauthorized]: () =>
+        import("../../client/pages/rendered/unauthorized.js"),
+    };
+    const pages = [];
+    for (const key of Object.getOwnPropertyNames(specialPages)) {
+      pages.push(
+        new Page({
+          path: key,
+          loadModule: specialPages[key] as () => Promise<ModuleSurface>,
+        }),
+      );
+    }
+    return pages;
   }
 }

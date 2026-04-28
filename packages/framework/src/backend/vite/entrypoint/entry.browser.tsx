@@ -19,7 +19,7 @@ import {
 } from "../../../client/apps/client/contexts/route-stack-context.js";
 import { createRoot, hydrateRoot, RootOptions } from "react-dom/client";
 import { setServerCallback } from "@vitejs/plugin-rsc/browser";
-import { callServer } from "./browser/call-server.js";
+import { callServerAction } from "./browser/call-server.js";
 import { getInitialPayload } from "./browser/initial-payload.js";
 import { onClientSideRenderError } from "../error-handling.client.js";
 
@@ -293,7 +293,7 @@ async function main() {
     </StrictMode>
   );
 
-  setServerCallback(callServer);
+  setServerCallback(callServerAction);
 
   const errorOptions: RootOptions = {
     onRecoverableError: (error, errorInfo) => {

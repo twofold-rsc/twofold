@@ -171,15 +171,17 @@ function StackTrace(props: { stack: string; hideInternal: boolean }) {
 
   return (
     <table className="stack mt-4">
-      <tr>
-        <th colSpan={3}>Method and Arguments</th>
-      </tr>
-      <tr>
-        <th>File</th>
-        <th>Line Number</th>
-        <th>Column</th>
-      </tr>
-      {rows}
+      <thead>
+        <tr>
+          <th colSpan={3}>Method and Arguments</th>
+        </tr>
+        <tr>
+          <th>File</th>
+          <th>Line Number</th>
+          <th>Column</th>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
     </table>
   );
 }

@@ -31,7 +31,8 @@ export type ClientErrorContext = {
 export function onClientSideRenderError(context: ClientErrorContext) {
   if (isNotFoundError(context.error) || isUnauthorizedError(context.error)) {
     // These should already have been reported by the server.
-  } else {
+  } else if (!import.meta.env.SSR) {
+    // No need to report in SSR, because they will be reported to onServerSideReceivedSsrError.
     console.error(context.error);
   }
 }

@@ -6,6 +6,7 @@ import {
   redirectErrorInfo,
 } from "../runtime/helpers/errors.js";
 import { ApplicationRuntime } from "./router.js";
+import { tfPaths } from "./special-pages.js";
 
 export interface ServerErrorContext {
   applicationRuntime: ApplicationRuntime;
@@ -20,6 +21,7 @@ export interface ServerErrorContext {
     | "page"
     | "action-request"
     | "action-form"
+    | "ssr"
     | undefined;
 }
 
@@ -46,6 +48,9 @@ function logError(context: ServerErrorContext, isCatastrophic?: boolean) {
       break;
     case "action-form":
       location = " [Action via Form]";
+      break;
+    case "ssr":
+      location = " [SSR]";
       break;
     default:
       location = "";
@@ -131,22 +136,27 @@ export async function onServerSidePageMiddlewareError(
   logError(context);
 
   if (isNotFoundError(context.error)) {
-    return context.applicationRuntime.createNotFoundResponse(context.request);
-  } else if (isUnauthorizedError(context.error)) {
-    return context.applicationRuntime.createUnauthorizedResponse(
+    return context.applicationRuntime.runSpecialPage(
       context.request,
+      tfPaths.throwing.notFound,
+    );
+  } else if (isUnauthorizedError(context.error)) {
+    return context.applicationRuntime.runSpecialPage(
+      context.request,
+      tfPaths.throwing.unauthorized,
     );
   } else if (isRedirectError(context.error)) {
     const errorInfo = redirectErrorInfo(context.error);
     return context.applicationRuntime.createRedirectResponse(
       context.url,
       errorInfo.url,
-      false,
+      true,
       errorInfo.status,
     );
   } else {
-    return context.applicationRuntime.createInternalServerErrorResponse(
+    return context.applicationRuntime.runSpecialPage(
       context.request,
+      tfPaths.throwing.internalServerError,
       context.error,
     );
   }
@@ -168,6 +178,33 @@ export function onServerSidePageRenderError(context: ServerErrorContext) {
   } else {
     // No digest for this error.
     return undefined;
+  }
+}
+
+// Recoverable error received from SSR; the server will render a recovery HTML
+// where the client will re-render from the stream to allow error
+// boundaries to catch.
+export async function onServerSideReceivedSsrError(
+  context: ServerErrorContext,
+) {
+  if (isNotFoundError(context.error)) {
+    return await context.applicationRuntime.runSpecialPage(
+      context.request,
+      tfPaths.rendered.notFound,
+    );
+  } else if (isUnauthorizedError(context.error)) {
+    return await context.applicationRuntime.runSpecialPage(
+      context.request,
+      tfPaths.rendered.unauthorized,
+    );
+  } else if (isRedirectError(context.error)) {
+    const redirectInfo = redirectErrorInfo(context.error);
+    return context.applicationRuntime.createRedirectResponse(
+      context.url,
+      redirectInfo.url,
+      false,
+      redirectInfo.status,
+    );
   }
 }
 

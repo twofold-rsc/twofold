@@ -1,19 +1,15 @@
 import { createFromReadableStream } from "@vitejs/plugin-rsc/ssr";
-import React, { use } from "react";
+import React from "react";
 import type { ErrorInfo, ReactFormState } from "react-dom/client";
 import { renderToReadableStream } from "react-dom/server.edge";
 import { injectRSCPayload } from "rsc-html-stream/server";
 import type { RscPayload } from "./payload.js";
-import {
-  RouteStack,
-  RouteStackEntry,
-} from "../../../client/apps/client/contexts/route-stack-context.js";
+import { RouteStack } from "../../../client/apps/client/contexts/route-stack-context.js";
 import { RoutingContext } from "../../../client/apps/client/contexts/routing-context.js";
-import { GlobalErrorBoundary } from "../../../client/components/error-handling/global-error-boundary.js";
 import { onClientSideRenderError } from "../error-handling.client.js";
 import ErrorPage from "../../../client/components/error-handling/error-page.js";
 
-function SsrApp(props: { url: URL; routeStack: RouteStackEntry[] }) {
+function SsrApp(props: { url: URL; payload: Promise<RscPayload> }) {
   let navigate = () => {
     throw new Error("Cannot call navigate during SSR");
   };
@@ -25,6 +21,8 @@ function SsrApp(props: { url: URL; routeStack: RouteStackEntry[] }) {
   let refresh = () => {
     throw new Error("Cannot call refresh during SSR");
   };
+
+  let routeStack = React.use(props.payload).stack;
 
   return (
     <RoutingContext
@@ -39,12 +37,22 @@ function SsrApp(props: { url: URL; routeStack: RouteStackEntry[] }) {
       replace={replace}
       refresh={refresh}
     >
-      <RouteStack stack={props.routeStack} />
+      <RouteStack stack={routeStack} />
     </RoutingContext>
   );
 }
 
-export async function renderHTML(
+type SsrResponse =
+  | {
+      type: "stream";
+      stream: ReadableStream<Uint8Array>;
+    }
+  | {
+      type: "error";
+      error: unknown;
+    };
+
+export async function renderHtmlOrError(
   rscStream: ReadableStream<Uint8Array>,
   options: {
     url: URL;
@@ -52,44 +60,77 @@ export async function renderHTML(
     nonce?: string;
     debugNojs?: boolean;
   },
-): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
+): Promise<SsrResponse> {
   const [rscStreamForSsr, rscStreamForBrowserFlightData] = rscStream.tee();
 
   let payload: Promise<RscPayload> | undefined = undefined;
   function SsrRoot() {
     payload ??= createFromReadableStream(rscStreamForSsr);
-    return <SsrApp url={options.url} routeStack={React.use(payload).stack} />;
+    return <SsrApp url={options.url} payload={payload} />;
   }
 
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent("index");
-  let htmlStream: ReadableStream<Uint8Array>;
-  let status: number | undefined;
+  let responseStream: ReadableStream<Uint8Array>;
   try {
-    htmlStream = await renderToReadableStream(
-      <GlobalErrorBoundary>
-        <SsrRoot />
-      </GlobalErrorBoundary>,
-      {
-        bootstrapScriptContent: options?.debugNojs
-          ? undefined
-          : bootstrapScriptContent,
-        nonce: options?.nonce,
-        formState: options?.formState,
-        onError: (error: unknown, errorInfo: ErrorInfo) => {
-          onClientSideRenderError({
-            isSsr: true,
-            url: options.url,
-            error,
-            errorInfo,
-            type: "recoverable",
-          });
-        },
+    responseStream = await renderToReadableStream(<SsrRoot />, {
+      bootstrapScriptContent: options?.debugNojs
+        ? undefined
+        : bootstrapScriptContent,
+      nonce: options?.nonce,
+      formState: options?.formState,
+      onError: (error: unknown, errorInfo: ErrorInfo) => {
+        onClientSideRenderError({
+          isSsr: true,
+          url: options.url,
+          error,
+          errorInfo,
+          type: "recoverable",
+        });
+
+        // We must return digest here so that the error thrown by renderToReadableStream will have the digest value necessary for the router to correctly detect special errors.
+        if (
+          typeof error === "object" &&
+          error !== null &&
+          "digest" in error &&
+          typeof error.digest === "string"
+        ) {
+          return error.digest;
+        } else {
+          return undefined;
+        }
       },
+    });
+  } catch (error) {
+    return { type: "error", error };
+  }
+
+  if (!options?.debugNojs) {
+    responseStream = responseStream.pipeThrough(
+      injectRSCPayload(rscStreamForBrowserFlightData, {
+        nonce: options?.nonce,
+      }),
     );
-  } catch (e) {
-    status = 500;
-    htmlStream = await renderToReadableStream(<ErrorPage error={e} />, {
+  }
+
+  return { type: "stream", stream: responseStream };
+}
+
+export async function renderRecoveryHtml(
+  rscStream: ReadableStream<Uint8Array>,
+  error: unknown,
+  options: {
+    url: URL;
+    formState?: ReactFormState;
+    nonce?: string;
+    debugNojs?: boolean;
+  },
+): Promise<ReadableStream<Uint8Array>> {
+  const bootstrapScriptContent =
+    await import.meta.viteRsc.loadBootstrapScriptContent("index");
+  let responseStream: ReadableStream<Uint8Array> = await renderToReadableStream(
+    <ErrorPage error={error} />,
+    {
       bootstrapScriptContent:
         process.env.NODE_ENV === "production"
           ? `self.__NO_HYDRATE=1;` +
@@ -102,17 +143,16 @@ document.getElementById('ssr-request-hydrate').style.display = '';
 document.getElementById('ssr-request-hydrate').addEventListener('click', function() { document.getElementById('ssr-request-hydrate').style.display = 'none'; ${bootstrapScriptContent} });
 `),
       nonce: options?.nonce,
-    });
-  }
+    },
+  );
 
-  let responseStream: ReadableStream<Uint8Array> = htmlStream;
   if (!options?.debugNojs) {
     responseStream = responseStream.pipeThrough(
-      injectRSCPayload(rscStreamForBrowserFlightData, {
+      injectRSCPayload(rscStream, {
         nonce: options?.nonce,
       }),
     );
   }
 
-  return { stream: responseStream, status };
+  return responseStream;
 }

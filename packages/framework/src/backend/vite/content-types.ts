@@ -2,6 +2,7 @@ import { ParsedHeaderValue, parseHeaderValue } from "@hattip/headers";
 
 export const headerAccept = "accept";
 export const headerContentType = "content-type";
+export const headerLocation = "location";
 
 export const contentType = {
   rsc: "text/x-component;charset=utf-8",

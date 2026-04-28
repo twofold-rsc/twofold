@@ -6,10 +6,21 @@ import {
 import { createRscRenderRequest } from "../request.js";
 import { RscPayload } from "../payload.js";
 import { RedirectError } from "../../../../client/errors/redirect-error.js";
-import { headerContentType, isContentType } from "../../content-types.js";
+import {
+  headerContentType,
+  headerLocation,
+  isContentType,
+} from "../../content-types.js";
 import { parseHeaderValue } from "@hattip/headers";
 
-export async function callServer(id: string, args: any) {
+export async function fetchPageAsRscPayload(
+  renderRequest: Request,
+): Promise<RscPayload> {
+  const response = await fetch(renderRequest);
+  return await createFromReadableStream<RscPayload>(response.body!, {});
+}
+
+export async function callServerAction(id: string, args: any) {
   const temporaryReferences = createTemporaryReferenceSet();
   const renderRequest = createRscRenderRequest(window.location.href, {
     id,

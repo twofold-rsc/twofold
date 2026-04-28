@@ -8,6 +8,7 @@ import { RscPayload } from "../payload.js";
 import { rscStream } from "rsc-html-stream/client";
 import { createRscRenderRequest } from "../request.js";
 import { getInitialPayload } from "./initial-payload.js";
+import { fetchPageAsRscPayload } from "./call-server.js";
 
 type State = {
   version: number;
@@ -286,7 +287,7 @@ async function fetchRscPayload(
     fetchCache.set(
       cacheKey,
       (async () => {
-        return await createFromFetch<RscPayload>(fetch(renderRequest));
+        return await fetchPageAsRscPayload(renderRequest);
       })(),
     );
   }
