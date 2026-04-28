@@ -15,12 +15,6 @@ import {
 } from "./entrypoint/request.js";
 import { API } from "../build/rsc/api.js";
 import { applyPathParams, pathMatches } from "../runtime/helpers/routing.js";
-import {
-  isNotFoundError,
-  isRedirectError,
-  isUnauthorizedError,
-  redirectErrorInfo,
-} from "../runtime/helpers/errors.js";
 import { ReactFormState } from "react-dom/client";
 import { RscActionPayload, RscPayload } from "./entrypoint/payload.js";
 import {
@@ -61,7 +55,7 @@ import {
   onServerSidePageRenderError,
   onServerSideReceivedSsrError,
 } from "./error-handling.server.js";
-import fallbackErrorHtml from "./internal-error.html?inline";
+import catastrophicErrorHtml from "./catastrophic-internal-error.html?raw";
 import { NodePlatformInfo } from "@hattip/adapter-node/native-fetch";
 import globalMiddleware from "virtual:twofold/server-global-middleware";
 import { tfPaths } from "./special-pages.js";
@@ -202,7 +196,7 @@ export class ApplicationRuntime {
             },
           });
         } else if (isContentType.html(accepts)) {
-          let html = fallbackErrorHtml;
+          let html = catastrophicErrorHtml;
           return new Response(html, {
             status,
             headers: {
