@@ -209,7 +209,7 @@ export default function ErrorPage(props: ErrorPageProps) {
                     scenario.
                   </p>
                 )}
-                <p className={`pt-3 ${digest ? "" : "hidden"}`}>
+                <p className={`pt-3 ${digest.trim() !== "" ? "" : "hidden"}`}>
                   Digest: {digest}
                 </p>
                 <div className="pt-4">
