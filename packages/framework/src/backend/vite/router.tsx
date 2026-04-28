@@ -55,6 +55,7 @@ import {
 } from "./error-handling.server.js";
 import fallbackErrorHtml from "./internal-error.html?inline";
 import { NodePlatformInfo } from "@hattip/adapter-node/native-fetch";
+import globalMiddleware from "virtual:twofold/server-global-middleware";
 
 const tfPathsUnauthorized = "/__tf/errors/unauthorized";
 const tfPathsNotFound = "/__tf/errors/not-found";
@@ -127,7 +128,7 @@ export class ApplicationRuntime {
     });
 
     // silence not found for external requests
-    app.get("/http/installHook.js.map", async (ctx) => {
+    app.get("/**/installHook.js.map", async (ctx) => {
       return new Response(null, { status: 404 });
     });
 
@@ -273,8 +274,14 @@ export class ApplicationRuntime {
       return runStore(store, () => ctx.next());
     });
 
+    // global middleware
+    // @note: This used to be before errors and request store setup, but we want to be able to capture errors from global middleware.
+    app.use(async (ctx) => {
+      return await globalMiddleware(ctx.request);
+    });
+
     // handle all requests here
-    app.use("/**/*", async (ctx) => {
+    app.use(async (ctx) => {
       const renderRequest = parseRenderRequest(ctx.request);
       const request = renderRequest.request;
       const url = new URL(request.url);
