@@ -668,7 +668,22 @@ export class ApplicationRuntime {
     overridePageProps?: { error: unknown },
     overrideStatus?: number,
   ): Promise<ReplacementResponse> {
-    const segments = await page.segments();
+    // If page.segments() fails to load the module or any parent modules,
+    // we want to report as an error rather than letting it propagate as
+    // a catastrophic error.
+    let segments;
+    try {
+      segments = await page.segments();
+    } catch (error: unknown) {
+      return onServerSidePageMiddlewareError({
+        applicationRuntime: this,
+        url: url,
+        request,
+        error: error,
+        willRecover: false,
+        location: "page-middleware",
+      });
+    }
 
     const execPattern = page.pattern.exec(url);
     const params = execPattern?.pathname.groups ?? {};
