@@ -7,6 +7,7 @@ import {
 } from "../runtime/helpers/errors.js";
 import { ApplicationRuntime } from "./router.js";
 import { tfPaths } from "./special-pages.js";
+import { ReplacementResponse } from "./replacement-response.js";
 
 export interface ServerErrorContext {
   applicationRuntime: ApplicationRuntime;
@@ -132,7 +133,7 @@ export function onServerSideApiMiddlewareError(
 // This will cause a change in response content.
 export async function onServerSidePageMiddlewareError(
   context: ServerErrorContext,
-): Promise<Response | ReadableStream<Uint8Array>> {
+): Promise<ReplacementResponse> {
   logError(context);
 
   if (isNotFoundError(context.error)) {
@@ -186,7 +187,7 @@ export function onServerSidePageRenderError(context: ServerErrorContext) {
 // boundaries to catch.
 export async function onServerSideReceivedSsrError(
   context: ServerErrorContext,
-) {
+): Promise<ReplacementResponse> {
   if (isNotFoundError(context.error)) {
     return await context.applicationRuntime.runSpecialPage(
       context.request,
@@ -208,7 +209,9 @@ export async function onServerSideReceivedSsrError(
   }
 }
 
-export async function onServerSideActionError(context: ServerErrorContext) {
+export async function onServerSideActionError(
+  context: ServerErrorContext,
+): Promise<ReplacementResponse> {
   logError(context);
 
   if (isNotFoundError(context.error)) {

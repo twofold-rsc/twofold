@@ -61,6 +61,7 @@ import fallbackErrorHtml from "./internal-error.html?inline";
 import { NodePlatformInfo } from "@hattip/adapter-node/native-fetch";
 import globalMiddleware from "virtual:twofold/server-global-middleware";
 import { tfPaths } from "./special-pages.js";
+import { ReplacementResponse } from "./replacement-response.js";
 
 enum MiddlewareMode {
   Run,
@@ -322,10 +323,7 @@ export class ApplicationRuntime {
       }
 
       // If the action result throws an error, and the error is a safe error, handle it here.
-      let rscStreamOrResponse:
-        | Response
-        | ReadableStream<Uint8Array<ArrayBufferLike>>
-        | undefined = undefined;
+      let rscStreamOrResponse: ReplacementResponse = undefined;
       if (actionResult?.returnValue?.type === "throw") {
         rscStreamOrResponse = await onServerSideActionError({
           applicationRuntime: this,
@@ -358,16 +356,22 @@ export class ApplicationRuntime {
 
       // Return stream directly if RSC stream requested.
       if (renderRequest.isRsc) {
-        return new Response(rscStreamOrResponse, {
-          status: actionResult?.actionStatus,
+        return new Response(rscStreamOrResponse?.stream, {
+          status: actionResult?.actionStatus ?? rscStreamOrResponse?.status,
           headers: {
             [headerContentType]: contentType.rsc,
           },
         });
       }
 
+      invariant(
+        rscStreamOrResponse !== undefined,
+        "must have a response or RSC stream by this point",
+      );
+
       // Use SSR module to render RSC stream to HTML.
-      const [rscStreamForSsr, rscStreamForRecovery] = rscStreamOrResponse.tee();
+      const [rscStreamForSsr, rscStreamForRecovery] =
+        rscStreamOrResponse.stream.tee();
       const ssrEntryModule = await import.meta.viteRsc.loadModule<
         typeof import("./entrypoint/entry.ssr.js")
       >("ssr", "index");
@@ -378,6 +382,7 @@ export class ApplicationRuntime {
       });
       if (ssrResult.type === "stream") {
         return new Response(ssrResult.stream, {
+          status: rscStreamOrResponse?.status,
           headers: {
             [headerContentType]: contentType.html,
           },
@@ -385,23 +390,22 @@ export class ApplicationRuntime {
       }
 
       // Handle known errors from SSR failure.
-      let replacement:
-        | Response
-        | ReadableStream<Uint8Array<ArrayBufferLike>>
-        | undefined = await onServerSideReceivedSsrError({
-        applicationRuntime: this,
-        url: url,
-        request: request,
-        error: ssrResult.error,
-        willRecover: true,
-        location: "ssr",
-      });
+      let replacement: ReplacementResponse = await onServerSideReceivedSsrError(
+        {
+          applicationRuntime: this,
+          url: url,
+          request: request,
+          error: ssrResult.error,
+          willRecover: true,
+          location: "ssr",
+        },
+      );
       if (replacement) {
         if (replacement instanceof Response) {
           return replacement;
         } else {
           const ssrReplacementResult = await ssrEntryModule.renderHtmlOrError(
-            replacement,
+            replacement.stream,
             {
               url: url,
               formState: actionResult?.formState,
@@ -410,6 +414,7 @@ export class ApplicationRuntime {
           );
           if (ssrReplacementResult.type === "stream") {
             return new Response(ssrReplacementResult.stream, {
+              status: replacement.status,
               headers: {
                 [headerContentType]: contentType.html,
               },
@@ -612,7 +617,7 @@ export class ApplicationRuntime {
   private async runPage(
     request: Request,
     actionResult: ActionResultData | undefined,
-  ): Promise<ReadableStream<Uint8Array> | Response> {
+  ): Promise<ReplacementResponse> {
     const url = new URL(request.url);
     let page = this.#root.tree.findPageForPath(url.pathname);
     if (page) {
@@ -635,7 +640,8 @@ export class ApplicationRuntime {
     request: Request,
     middleware: MiddlewareMode,
     overridePageProps?: { error: unknown },
-  ): Promise<ReadableStream<Uint8Array> | Response> {
+    overrideStatus?: number,
+  ): Promise<ReplacementResponse> {
     const segments = await page.segments();
 
     const execPattern = page.pattern.exec(url);
@@ -734,16 +740,35 @@ export class ApplicationRuntime {
         });
       },
     };
-    return renderToReadableStream<RscPayload>(rscPayload, rscOptions);
+    return {
+      status: overrideStatus,
+      stream: renderToReadableStream<RscPayload>(rscPayload, rscOptions),
+    };
   }
 
   runSpecialPage(
     request: Request,
     specialPage: string,
     error?: unknown,
-  ): Promise<ReadableStream<Uint8Array> | Response> {
+  ): Promise<ReplacementResponse> {
     let page = this.#root.tree.findPageForPath(specialPage);
     invariant(page, `Could not find special page '${specialPage}'`);
+
+    let overrideStatus;
+    if (
+      specialPage === tfPaths.throwing.notFound ||
+      specialPage === tfPaths.rendered.notFound
+    ) {
+      overrideStatus = 404;
+    } else if (
+      specialPage === tfPaths.throwing.unauthorized ||
+      specialPage === tfPaths.rendered.unauthorized
+    ) {
+      overrideStatus = 403;
+    } else if (specialPage === tfPaths.throwing.internalServerError) {
+      overrideStatus = 500;
+    }
+
     return this.runPageForInstance(
       new URL(request.url),
       page,
@@ -755,6 +780,7 @@ export class ApplicationRuntime {
             error,
           }
         : undefined,
+      overrideStatus,
     );
   }
 
@@ -830,11 +856,32 @@ export class ApplicationRuntime {
     return root;
   }
 
+  private static hasSuffix(relativePath: string, suffix: string) {
+    return (
+      relativePath.endsWith(`${suffix}.tsx`) ||
+      relativePath.endsWith(`${suffix}.ts`)
+    );
+  }
+
+  private static snipSuffix(relativePath: string, suffix: string) {
+    if (relativePath.endsWith(`.tsx`)) {
+      return relativePath.slice(0, -`${suffix}.tsx`.length);
+    } else if (relativePath.endsWith(`.ts`)) {
+      return relativePath.slice(0, -`${suffix}.ts`.length);
+    } else {
+      throw new Error(
+        `'${relativePath}' does not have '.tsx' or '.ts' as a suffix.`,
+      );
+    }
+  }
+
   private static loadApis(modules: ModuleMap): API[] {
     return Object.getOwnPropertyNames(modules)
-      .filter((relativePath) => relativePath.endsWith(".api.tsx"))
+      .filter((relativePath) =>
+        ApplicationRuntime.hasSuffix(relativePath, ".api"),
+      )
       .map((relativePath) => {
-        let path = relativePath.slice(2).slice(0, -".api.tsx".length);
+        let path = ApplicationRuntime.snipSuffix(relativePath.slice(2), ".api");
         if (path === "index" || path.endsWith("/index")) {
           path = path.slice(0, -6);
         }
@@ -847,9 +894,14 @@ export class ApplicationRuntime {
 
   private static loadPages(modules: ModuleMap): Page[] {
     return Object.getOwnPropertyNames(modules)
-      .filter((relativePath) => relativePath.endsWith(".page.tsx"))
+      .filter((relativePath) =>
+        ApplicationRuntime.hasSuffix(relativePath, ".page"),
+      )
       .map((relativePath) => {
-        let path = relativePath.slice(2).slice(0, -".page.tsx".length);
+        let path = ApplicationRuntime.snipSuffix(
+          relativePath.slice(2),
+          ".page",
+        );
         if (path === "index" || path.endsWith("/index")) {
           path = path.slice(0, -6);
         }
@@ -863,9 +915,14 @@ export class ApplicationRuntime {
 
   private static loadLayouts(modules: ModuleMap): Layout[] {
     return Object.getOwnPropertyNames(modules)
-      .filter((relativePath) => relativePath.endsWith("/layout.tsx"))
+      .filter((relativePath) =>
+        ApplicationRuntime.hasSuffix(relativePath, "/layout"),
+      )
       .map((relativePath) => {
-        let path = relativePath.slice(2).slice(0, -"/layout.tsx".length);
+        let path = ApplicationRuntime.snipSuffix(
+          relativePath.slice(2),
+          "/layout",
+        );
         return new Layout({
           path: `/${path}`,
           css: undefined,
@@ -876,9 +933,11 @@ export class ApplicationRuntime {
 
   private static loadErrorTemplates(modules: ModuleMap): ErrorTemplate[] {
     let templates = Object.getOwnPropertyNames(modules)
-      .filter((relativePath) => relativePath.endsWith(".error.tsx"))
+      .filter((relativePath) =>
+        ApplicationRuntime.hasSuffix(relativePath, ".error"),
+      )
       .map((relativePath) => {
-        let path = `/${relativePath.slice(2).slice(0, -".error.tsx".length)}`;
+        let path = `/${ApplicationRuntime.snipSuffix(relativePath.slice(2), ".error")}`;
         let tag = path.split("/").at(-1) ?? "unknown";
         return new ErrorTemplate({
           tag,
