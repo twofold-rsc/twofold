@@ -59,6 +59,13 @@ table.stack {
     border-bottom: #f3f3f3 1px solid;
     color: #333;
     font-style: italic;
+
+    span {
+      opacity: 50%;
+    }
+  }
+
+  tr.frame-internal-ssr {
     opacity: 50%;
   }
 

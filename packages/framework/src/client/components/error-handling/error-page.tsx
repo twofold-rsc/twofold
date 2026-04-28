@@ -7,16 +7,24 @@ interface ErrorPageProps {
   error: unknown;
 }
 
-function StackFrame(props: { file: ReactNode; frame: InternalStackFrame }) {
+function StackFrame(props: {
+  file: ReactNode;
+  frame: InternalStackFrame;
+  isInternalForcedShow?: boolean;
+}) {
   return (
     <>
-      <tr className="frame-function">
+      <tr
+        className={`frame-function${props.isInternalForcedShow ? " frame-internal-ssr" : ""}`}
+      >
         <td colSpan={3}>
           {props.frame.methodName}
           {props.frame.arguments.join(", ")}
         </td>
       </tr>
-      <tr className="frame-source">
+      <tr
+        className={`frame-source${props.isInternalForcedShow ? " frame-internal-ssr" : ""}`}
+      >
         <td>{props.file}</td>
         <td>{props.frame.lineNumber}</td>
         <td>{props.frame.column}</td>
@@ -25,27 +33,47 @@ function StackFrame(props: { file: ReactNode; frame: InternalStackFrame }) {
   );
 }
 
-function InternalFrames(props: { count: number }) {
-  return (
-    <tr className="frame-internal">
-      <td colSpan={3}>
-        {props.count} internal frame{props.count === 1 ? "" : "s"}
-      </td>
-    </tr>
+function InternalFrames(props: { count: number; children: React.ReactNode }) {
+  const [show, setShow] = useState(false);
+  const showInternalFrames = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setShow(true);
+    },
+    [setShow],
   );
+  if (show) {
+    return props.children;
+  } else {
+    return (
+      <tr className="frame-internal">
+        <td colSpan={3}>
+          <span>
+            {props.count} internal frame{props.count === 1 ? "" : "s"}
+          </span>{" "}
+          (
+          <a href="#" onClick={showInternalFrames}>
+            Show
+          </a>
+          )
+        </td>
+      </tr>
+    );
+  }
 }
 
-function StackTrace(props: { stack: string }) {
+function StackTrace(props: { stack: string; hideInternal: boolean }) {
   const stack = stackTraceParser.parse(props.stack);
 
   const rows = [];
-  let internalFrames = 0;
+  let internalFrames = [];
   for (let i = 0; i < stack.length; i++) {
     const frame = stack[i];
     if (frame === undefined) {
       continue;
     }
     let file = frame?.file;
+    let isInternal = false;
     if (file !== undefined && file !== null) {
       let hasDecoded = false;
       if (file.includes("about://React/Server/")) {
@@ -78,8 +106,7 @@ function StackTrace(props: { stack: string }) {
         file.includes("/node_modules/") ||
         file.startsWith("node:internal/process/task_queues")
       ) {
-        internalFrames++;
-        continue;
+        isInternal = true;
       }
     }
     let fileElement: ReactNode = file;
@@ -107,19 +134,39 @@ function StackTrace(props: { stack: string }) {
         );
       }
     }
-    if (internalFrames > 0) {
-      rows.push(
-        <InternalFrames key={`hidden-frames-${i}`} count={internalFrames} />,
+    if (isInternal && props.hideInternal) {
+      internalFrames.push(
+        <StackFrame key={i} file={fileElement} frame={frame} />,
       );
-      internalFrames = 0;
+      continue;
     }
-    rows.push(<StackFrame key={i} file={fileElement} frame={frame} />);
-  }
-  if (internalFrames > 0) {
+    if (internalFrames.length > 0) {
+      rows.push(
+        <InternalFrames
+          key={`hidden-frames-${i}`}
+          count={internalFrames.length}
+        >
+          {internalFrames}
+        </InternalFrames>,
+      );
+      internalFrames = [];
+    }
     rows.push(
-      <InternalFrames key={`hidden-frames-last`} count={internalFrames} />,
+      <StackFrame
+        key={i}
+        file={fileElement}
+        frame={frame}
+        isInternalForcedShow={isInternal}
+      />,
     );
-    internalFrames = 0;
+  }
+  if (internalFrames.length > 0) {
+    rows.push(
+      <InternalFrames key={`hidden-frames-last`} count={internalFrames.length}>
+        {internalFrames}
+      </InternalFrames>,
+    );
+    internalFrames = [];
   }
 
   return (
@@ -155,7 +202,10 @@ export default function ErrorPage(props: ErrorPageProps) {
           <>
             <p className="text-red-500 pt-3">{error.message}</p>
             {error.stack !== undefined ? (
-              <StackTrace stack={error.stack} />
+              <StackTrace
+                stack={error.stack}
+                hideInternal={!import.meta.env.SSR}
+              />
             ) : null}
           </>
         ) : (
