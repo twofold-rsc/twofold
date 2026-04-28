@@ -87,6 +87,7 @@ class ActionResultData {
   formState: ReactFormState | undefined;
   temporaryReferences: unknown | undefined;
   response: Response | undefined;
+  error: unknown | undefined;
 }
 
 let { h64Raw } = await xxhash();
@@ -321,21 +322,36 @@ export class ApplicationRuntime {
       }
 
       // If the action result throws an error, and the error is a safe error, handle it here.
-      if (
-        actionResult?.returnValue?.type === "throw" &&
-        isRedirectError(actionResult.returnValue.error)
-      ) {
-        const redirectInfo = redirectErrorInfo(actionResult.returnValue.error);
-        return this.createRedirectResponse(url, redirectInfo.url, true);
+      let rscStreamOrResponse:
+        | Response
+        | ReadableStream<Uint8Array<ArrayBufferLike>>
+        | undefined = undefined;
+      if (actionResult?.returnValue?.type === "throw") {
+        rscStreamOrResponse = await onServerSideActionError({
+          applicationRuntime: this,
+          url: new URL(request.url),
+          request,
+          error: actionResult.returnValue.error,
+          willRecover: false,
+          location: "action-request",
+        });
       }
 
-      // Return response from action result if present.
-      if (actionResult?.response) {
+      // Return response from action result if it's present and
+      // we don't have an RSC stream or response already set via
+      // error handling.
+      if (actionResult?.response && !rscStreamOrResponse) {
         return actionResult.response;
       }
 
-      // Handle page requests.
-      const rscStreamOrResponse = await this.runPage(request, actionResult);
+      // Handle page request if the action hasn't already given us
+      // a response stream.
+      if (!rscStreamOrResponse) {
+        rscStreamOrResponse = await this.runPage(request, actionResult);
+      }
+
+      // If we have a direct response from the page (for a redirect),
+      // return that immediately.
       if (rscStreamOrResponse instanceof Response) {
         return rscStreamOrResponse;
       }
@@ -537,16 +553,9 @@ export class ApplicationRuntime {
         formState: undefined,
         temporaryReferences,
         response: undefined,
+        error: undefined,
       };
     } catch (e) {
-      onServerSideActionError({
-        applicationRuntime: this,
-        url: new URL(request.url),
-        request,
-        error: e,
-        willRecover: false,
-        location: "action-request",
-      });
       return {
         returnValue: {
           type: "throw",
@@ -559,6 +568,7 @@ export class ApplicationRuntime {
         formState: undefined,
         temporaryReferences,
         response: undefined,
+        error: e,
       };
     }
   }
@@ -576,16 +586,9 @@ export class ApplicationRuntime {
         formState: await decodeFormState(result, formData),
         temporaryReferences: undefined,
         response: undefined,
+        error: undefined,
       };
     } catch (e) {
-      onServerSideActionError({
-        applicationRuntime: this,
-        url: new URL(request.url),
-        request,
-        error: e,
-        willRecover: false,
-        location: "action-form",
-      });
       return {
         returnValue: undefined,
         actionStatus: undefined,
@@ -594,6 +597,7 @@ export class ApplicationRuntime {
         response: new Response("Internal Server Error: server action failed", {
           status: 500,
         }),
+        error: e,
       };
     }
   }

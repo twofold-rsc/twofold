@@ -208,6 +208,25 @@ export async function onServerSideReceivedSsrError(
   }
 }
 
-export function onServerSideActionError(context: ServerErrorContext) {
+export async function onServerSideActionError(context: ServerErrorContext) {
   logError(context);
+
+  if (isNotFoundError(context.error)) {
+    return await context.applicationRuntime.runSpecialPage(
+      context.request,
+      tfPaths.rendered.notFound,
+    );
+  } else if (isUnauthorizedError(context.error)) {
+    return await context.applicationRuntime.runSpecialPage(
+      context.request,
+      tfPaths.rendered.unauthorized,
+    );
+  } else if (isRedirectError(context.error)) {
+    const redirectInfo = redirectErrorInfo(context.error);
+    return context.applicationRuntime.createRedirectResponse(
+      context.url,
+      redirectInfo.url,
+      true,
+    );
+  }
 }
