@@ -122,6 +122,10 @@ export class ApplicationRuntime {
     this.#handler = this.createHandler();
   }
 
+  private static getPathForRscPayload(url: URL) {
+    return url.pathname + url.search;
+  }
+
   private createHandler(): HattipHandler<unknown> {
     const app = createRouter();
 
@@ -185,7 +189,9 @@ export class ApplicationRuntime {
                   error: error,
                 },
               ],
-              path: ctx.request.url,
+              path: ApplicationRuntime.getPathForRscPayload(
+                new URL(ctx.request.url),
+              ),
               action: undefined,
               formState: undefined,
             },
@@ -734,7 +740,7 @@ export class ApplicationRuntime {
 
     const rscPayload: RscPayload = {
       stack: routeStack,
-      path: url.pathname,
+      path: ApplicationRuntime.getPathForRscPayload(url),
       action: actionResult?.returnValue,
       formState: actionResult?.formState,
     };
