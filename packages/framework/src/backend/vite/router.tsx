@@ -303,10 +303,33 @@ export class ApplicationRuntime {
       const request = renderRequest.request;
       const url = new URL(request.url);
 
-      // Handle API requests.
-      const apiResponse = await this.runApi(request);
-      if (apiResponse) {
-        return apiResponse;
+      // Attempt to discover a matching API request.
+      const api = this.findApi(request);
+      if (api && !renderRequest.isRsc) {
+        // We have an API request, but the URL might be overloaded with
+        // a page request, and we need to determine whether the API should
+        // actually run on this request.
+        const potentialMatchingPage = this.#root.tree.findPageForPath(
+          url.pathname,
+        );
+
+        const pageExists = potentialMatchingPage !== undefined;
+        const accepts = parseHeaderValue(request.headers.get("accept"));
+        const acceptsHTML = isContentType.html(accepts);
+        const pageIsDynamic =
+          potentialMatchingPage?.isDynamic || potentialMatchingPage?.isCatchAll;
+        const apiIsDynamic = api.isDynamic || api.isCatchAll;
+        const apiTakesPrecedence = !apiIsDynamic && pageIsDynamic;
+
+        const skipApi = pageExists && acceptsHTML && !apiTakesPrecedence;
+        if (!skipApi) {
+          // There is either no page, or the page does not take precedence
+          // over the API, so run the API for this request.
+          const apiResponse = await this.runApi(request, api);
+          if (apiResponse) {
+            return apiResponse;
+          }
+        }
       }
 
       // Handle actions.
@@ -470,7 +493,7 @@ export class ApplicationRuntime {
     return await this.#handler(context);
   }
 
-  private async runApi(request: Request): Promise<Response | undefined> {
+  private findApi(request: Request): API | undefined {
     const url = new URL(request.url);
     const realPath = url.pathname;
 
@@ -492,9 +515,14 @@ export class ApplicationRuntime {
       dynamicApisInOrder.find((api) => pathMatches(api.path, realPath)) ??
       catchAllApis.find((api) => pathMatches(api.path, realPath));
 
-    if (!api) {
-      return undefined;
-    }
+    return api;
+  }
+
+  private async runApi(
+    request: Request,
+    api: API,
+  ): Promise<Response | undefined> {
+    const url = new URL(request.url);
 
     const module = await api.loadModule();
     const execPattern = api.pattern.exec(url);

@@ -2,7 +2,7 @@
 
 - [x] Encrypted cookies
 - [x] Global middleware
-- [ ] API routes
+- [x] API routes
 - [ ] Navigation external link (sometimes errors on nav, but nav still succeeds)
 - [ ] Search params (a render happened where client and server search params do not match)
 - [ ] Link fragments (e.g. link#hash)
