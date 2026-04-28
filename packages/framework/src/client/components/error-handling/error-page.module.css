@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+.production {
+  html {
+    height: 100%;
+  }
+}
+
+.development {
+  html,
+  body,
+  #root {
+    height: 100%;
+    background-color: var(--color-red-50);
+  }
+}

@@ -1,7 +1,10 @@
 import { Component, ReactNode } from "react";
-import { DevErrorPage, ProdErrorPage } from "./error-pages";
+import ErrorPage from "./error-page";
 
-export class ErrorBoundary extends Component<
+/**
+ * This error boundary wraps the router internals in the browser, handling errors that arrive as part of client-initiated navigation in the browser, as well as catching any errors that occur in client components or returned via server actions.
+ */
+export class BrowserErrorBoundary extends Component<
   { children?: ReactNode },
   {
     hasError: boolean;
@@ -46,11 +49,7 @@ export class ErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      return process.env.NODE_ENV === "production" ? (
-        <ProdErrorPage error={this.state.error} />
-      ) : (
-        <DevErrorPage error={this.state.error} />
-      );
+      return <ErrorPage error={this.state.error} />;
     }
 
     return this.props.children;

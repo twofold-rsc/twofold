@@ -44,10 +44,9 @@ export async function callServer(id: string, args: any) {
       // should be a better way to do this. my mental model is
       // off here because i thought errors thrown in transitions trigger
       // boundaries, but that won't work unless we put it into a stream.
-      let error = null; //deserializeError(action.error);
       let stream = new ReadableStream({
         start(controller) {
-          controller.error(error);
+          controller.error(action.error);
         },
       });
       result = createFromReadableStream(stream, {});

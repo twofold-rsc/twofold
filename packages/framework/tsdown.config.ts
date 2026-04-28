@@ -21,11 +21,8 @@ export default defineConfig([
     outDir: "./dist/backend/vite/production",
     platform: "node",
     deps: {
-      alwaysBundle: [
-        /@hattip\/.+/,
-        "commander",
-        "mime-types",
-      ],
+      onlyBundle: false,
+      alwaysBundle: [/.+/],
     },
     fixedExtension: false,
     dts: false,

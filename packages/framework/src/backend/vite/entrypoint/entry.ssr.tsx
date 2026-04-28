@@ -1,6 +1,6 @@
 import { createFromReadableStream } from "@vitejs/plugin-rsc/ssr";
 import React, { use } from "react";
-import type { ReactFormState } from "react-dom/client";
+import type { ErrorInfo, ReactFormState } from "react-dom/client";
 import { renderToReadableStream } from "react-dom/server.edge";
 import { injectRSCPayload } from "rsc-html-stream/server";
 import type { RscPayload } from "./payload.js";
@@ -9,8 +9,8 @@ import {
   RouteStackEntry,
 } from "../../../client/apps/client/contexts/route-stack-context.js";
 import { RoutingContext } from "../../../client/apps/client/contexts/routing-context.js";
-import { CrashBoundary } from "../../../client/apps/client/components/crash-boundary.js";
-import { onClientSidePageRenderError } from "../error-handling.client.js";
+import { GlobalErrorBoundary } from "../../../client/components/error-handling/global-error-boundary.js";
+import { onClientSideRenderError } from "../error-handling.client.js";
 
 function SsrApp(props: { url: URL; routeStack: RouteStackEntry[] }) {
   let navigate = () => {
@@ -66,16 +66,24 @@ export async function renderHTML(
   let status: number | undefined;
   try {
     htmlStream = await renderToReadableStream(
-      <CrashBoundary>
+      <GlobalErrorBoundary>
         <SsrRoot />
-      </CrashBoundary>,
+      </GlobalErrorBoundary>,
       {
         bootstrapScriptContent: options?.debugNojs
           ? undefined
           : bootstrapScriptContent,
         nonce: options?.nonce,
         formState: options?.formState,
-        onError: onClientSidePageRenderError.bind(null, options.url),
+        onError: (error: unknown, errorInfo: ErrorInfo) => {
+          onClientSideRenderError({
+            isSsr: true,
+            url: options.url,
+            error,
+            errorInfo,
+            type: "recoverable",
+          });
+        },
       },
     );
   } catch (e) {

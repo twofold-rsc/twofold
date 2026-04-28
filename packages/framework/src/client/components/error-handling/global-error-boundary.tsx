@@ -1,6 +1,9 @@
 import { Component, ReactNode } from "react";
 
-export class CrashBoundary extends Component<
+/**
+ * This error boundary wraps the React stack for both SSR and browser scenarios, and is the last moment an error can be caught. This will be used when errors occur during SSR (where there's no dynamic router) or when errors occur in the router itself.
+ */
+export class GlobalErrorBoundary extends Component<
   { children?: ReactNode },
   {
     hasError: boolean;

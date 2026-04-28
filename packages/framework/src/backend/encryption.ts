@@ -1,5 +1,9 @@
 import { webcrypto } from "crypto";
 import { invariant } from "./utils/invariant.js";
+import {
+  createFromReadableStream,
+  renderToReadableStream,
+} from "@vitejs/plugin-rsc/rsc";
 
 let subtle = webcrypto.subtle;
 let algorithm = "AES-GCM";
@@ -17,7 +21,10 @@ async function deriveKeyFromString(password: string) {
   return key;
 }
 
-export async function encrypt(plainText: string, password: string) {
+async function encryptString(
+  plainText: string,
+  password: string,
+): Promise<string> {
   let encoder = new TextEncoder();
   let iv = webcrypto.getRandomValues(new Uint8Array(ivByteSize));
   let key = await deriveKeyFromString(password);
@@ -37,7 +44,10 @@ export async function encrypt(plainText: string, password: string) {
   return `${ivText}:${cipherText}`;
 }
 
-export async function decrypt(encrypted: string, password: string) {
+async function decryptString(
+  encrypted: string,
+  password: string,
+): Promise<string> {
   let decoder = new TextDecoder();
   let [iv, cipherText] = encrypted.split(":");
   invariant(iv, "Invalid encrypted text");
@@ -54,4 +64,47 @@ export async function decrypt(encrypted: string, password: string) {
   );
 
   return decoder.decode(decrypted);
+}
+
+async function encode(value: any) {
+  let serializationError: unknown;
+
+  let rscStream = renderToReadableStream(value, {}, {});
+
+  let decoder = new TextDecoder();
+  let text = "";
+  for await (let chunk of rscStream) {
+    text += decoder.decode(chunk);
+  }
+
+  if (serializationError) {
+    throw serializationError;
+  }
+
+  return text;
+}
+
+async function decode(value: any) {
+  let encoder = new TextEncoder();
+
+  let stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(value));
+      controller.close();
+    },
+  });
+
+  return createFromReadableStream(stream, {});
+}
+
+export async function encrypt(value: any, key: string) {
+  let encoded = await encode(value);
+  let encrypted = await encryptString(encoded, key);
+  return encrypted;
+}
+
+export async function decrypt(value: string, key: string) {
+  let decrypted = await decryptString(value, key);
+  let decoded = await decode(decrypted);
+  return decoded;
 }

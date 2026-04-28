@@ -62,8 +62,8 @@ let cookies = {
       }
 
       try {
-        let [storedName, value] =
-          await store.encryption.decrypt(encryptedValue);
+        let v = await store.encryption.decrypt(encryptedValue);
+        let [storedName, value] = v;
         if (storedName !== name) {
           return undefined;
         }

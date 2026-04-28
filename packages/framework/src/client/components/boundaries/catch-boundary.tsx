@@ -33,8 +33,6 @@ export default class CatchBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: unknown) {
-    console.log("CatchBoundary got error!");
-
     if (error instanceof Error) {
       return {
         error,

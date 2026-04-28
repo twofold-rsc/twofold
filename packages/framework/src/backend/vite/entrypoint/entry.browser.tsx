@@ -11,8 +11,8 @@ import {
 } from "react";
 import { RoutingContext } from "../../../client/apps/client/contexts/routing-context.js";
 import { useRouterReducer } from "./browser/router-hooks.js";
-import { ErrorBoundary } from "../../../client/apps/client/components/error-boundary.js";
-import { CrashBoundary } from "../../../client/apps/client/components/crash-boundary.js";
+import { BrowserErrorBoundary } from "../../../client/components/error-handling/browser-error-boundary.client.js";
+import { GlobalErrorBoundary } from "../../../client/components/error-handling/global-error-boundary.js";
 import {
   RouteStack,
   RouteStackEntry,
@@ -21,6 +21,7 @@ import { hydrateRoot } from "react-dom/client";
 import { setServerCallback } from "@vitejs/plugin-rsc/browser";
 import { callServer } from "./browser/call-server.js";
 import { getInitialPayload } from "./browser/initial-payload.js";
+import { onClientSideRenderError } from "../error-handling.client.js";
 
 declare global {
   interface Window {
@@ -36,9 +37,9 @@ declare global {
 
 function BrowserApp() {
   return (
-    <CrashBoundary>
+    <GlobalErrorBoundary>
       <Router />
-    </CrashBoundary>
+    </GlobalErrorBoundary>
   );
 }
 
@@ -248,7 +249,7 @@ function Router() {
   let stack = routerState.stack ?? [];
 
   return (
-    <ErrorBoundary>
+    <BrowserErrorBoundary>
       <RoutingContext
         version={routerState.version}
         path={url.pathname}
@@ -263,7 +264,7 @@ function Router() {
       >
         <RouteStack stack={stack} />
       </RoutingContext>
-    </ErrorBoundary>
+    </BrowserErrorBoundary>
   );
 }
 
@@ -289,66 +290,36 @@ async function main() {
   const initialPayload = await getInitialPayload();
   startTransition(() => {
     hydrateRoot(document, tree, {
-      onCaughtError,
+      onRecoverableError: (error, errorInfo) => {
+        onClientSideRenderError({
+          isSsr: false,
+          url: new URL(window.location.href),
+          error,
+          errorInfo,
+          type: "recoverable",
+        });
+      },
+      onUncaughtError: (error, errorInfo) => {
+        onClientSideRenderError({
+          isSsr: false,
+          url: new URL(window.location.href),
+          error,
+          errorInfo,
+          type: "uncaught",
+        });
+      },
+      onCaughtError: (error, errorInfo) => {
+        onClientSideRenderError({
+          isSsr: false,
+          url: new URL(window.location.href),
+          error,
+          errorInfo,
+          type: "caught",
+        });
+      },
       formState: initialPayload.formState,
     });
   });
 }
 
 main();
-
-type ErrorInfo = {
-  componentStack?: string | undefined;
-  errorBoundary?: Component<unknown, object, any> | undefined;
-};
-
-function onCaughtError(error: unknown, errorInfo: ErrorInfo) {
-  let isSafeError =
-    isRedirectError(error) ||
-    isNotFoundError(error) ||
-    isUnauthorizedError(error);
-
-  if (!isSafeError && process.env.NODE_ENV !== "production") {
-    // Let's redisplay the normal react error message here.
-    //
-    // This is taken from: https://github.com/facebook/react/blob/65eec428c40d542d4d5a9c1af5c3f406aecf3440/packages/react-reconciler/src/ReactFiberErrorLogger.js#L60
-
-    // let stack = errorInfo.componentStack ?? "";
-    let errorBoundaryName = errorInfo.errorBoundary?.constructor.name;
-
-    console.error(
-      "%o\n\n%s",
-      error,
-      errorBoundaryName
-        ? `The error was handled by the ${errorBoundaryName} error boundary.`
-        : "The error was caught by React",
-    );
-  }
-}
-
-function isNotFoundError(err: unknown) {
-  return (
-    err instanceof Error &&
-    "digest" in err &&
-    typeof err.digest === "string" &&
-    err.digest === "TwofoldNotFoundError"
-  );
-}
-
-function isRedirectError(err: unknown) {
-  return (
-    err instanceof Error &&
-    "digest" in err &&
-    typeof err.digest === "string" &&
-    err.digest.startsWith("TwofoldRedirectError")
-  );
-}
-
-function isUnauthorizedError(err: unknown) {
-  return (
-    err instanceof Error &&
-    "digest" in err &&
-    typeof err.digest === "string" &&
-    err.digest.startsWith("TwofoldUnauthorizedError")
-  );
-}

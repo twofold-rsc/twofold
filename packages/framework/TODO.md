@@ -1,0 +1,23 @@
+# Things that don't work correctly in Vite yet
+
+- [x] Encrypted cookies
+- [ ] Global middleware
+- [ ] API routes
+- [ ] Navigation external link (sometimes errors on nav, but nav still succeeds)
+- [ ] Search params (a render happened where client and server search params do not match)
+- [ ] Link fragments (e.g. link#hash)
+- [ ] Pathless API route
+- [ ] Route masking?
+- [ ] Clicking on links in the nav sometimes doesn't update navigation?
+- [ ] Action calls not found
+- [ ] Middleware calls redirect
+- [ ] Typed useActionState redirect
+- [ ] Action redirect to another domain
+- [ ] RSC no default export
+- [ ] RSC layout no default export
+- [ ] RSC missing import
+- [ ] Server actions throw (does not show error message details)
+- [ ] SSR throw
+- [ ] Middleware error (enqueueModel error instead of actual error)
+- [ ] Async middleware error (enqueueModel error instead of actual error)
+- [ ] Login UI (unknown error occurred)

@@ -8,6 +8,7 @@ import { copyFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import kleur from "kleur";
+import { randomBytes } from "node:crypto";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
@@ -47,14 +48,28 @@ program
   .description("Run the development server")
   .action(async (options) => {
     process.env.NODE_ENV = "development";
+
+    {
+      let key = process.env.TWOFOLD_SECRET_KEY;
+      if (!key || typeof key !== "string") {
+        console.warn(
+          `Missing ${kleur.yellow("TWOFOLD_SECRET_KEY")}. Generating a random key.`,
+        );
+        process.env.TWOFOLD_SECRET_KEY = randomBytes(32).toString("hex");
+      }
+    }
+
     const port = parseInt(options.port, 10) || 3000;
-    console.log(`Server started on 0.0.0.0:${port}`);
     const server = await vite.createServer(
       withTwofold({
         server: { host: "0.0.0.0", port },
       }),
     );
     await server.listen();
+
+    console.log(`Twofold development server started, serving on:`);
+    await server.printUrls();
+    await server.bindCLIShortcuts({ print: true });
   });
 
 program
@@ -96,7 +111,6 @@ program
       withTwofold({
         preview: {
           port: port,
-          open: true,
         },
       }),
     );

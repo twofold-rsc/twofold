@@ -126,6 +126,11 @@ export class ApplicationRuntime {
       }
     });
 
+    // silence not found for external requests
+    app.get("/http/installHook.js.map", async (ctx) => {
+      return new Response(null, { status: 404 });
+    });
+
     // cookies
     app.use(cookie());
 
@@ -136,7 +141,14 @@ export class ApplicationRuntime {
         let accepts = parseHeaderValue(request.headers.get(headerAccept));
         let error = e instanceof Error ? e : new Error("Internal server error");
 
-        onServerSideCatastrophicError(request, error);
+        onServerSideCatastrophicError({
+          applicationRuntime: this,
+          url: new URL(request.url),
+          request,
+          error,
+          willRecover: false,
+          location: undefined,
+        });
 
         let status =
           "digest" in error &&
@@ -407,7 +419,14 @@ export class ApplicationRuntime {
       try {
         response = await module[method](props);
       } catch (error: unknown) {
-        response = onServerSideApiMiddlewareError(error);
+        response = onServerSideApiMiddlewareError({
+          applicationRuntime: this,
+          url,
+          request,
+          error,
+          willRecover: false,
+          location: "api-middleware",
+        });
       }
     } else {
       response = new Response("Method not exported", { status: 404 });
@@ -440,7 +459,14 @@ export class ApplicationRuntime {
         response: undefined,
       };
     } catch (e) {
-      onServerSideActionError(e);
+      onServerSideActionError({
+        applicationRuntime: this,
+        url: new URL(request.url),
+        request,
+        error: e,
+        willRecover: false,
+        location: "action-request",
+      });
       return {
         returnValue: {
           type: "throw",
@@ -472,7 +498,14 @@ export class ApplicationRuntime {
         response: undefined,
       };
     } catch (e) {
-      onServerSideActionError(e);
+      onServerSideActionError({
+        applicationRuntime: this,
+        url: new URL(request.url),
+        request,
+        error: e,
+        willRecover: false,
+        location: "action-form",
+      });
       return {
         returnValue: undefined,
         actionStatus: undefined,
@@ -530,7 +563,14 @@ export class ApplicationRuntime {
       ];
       await Promise.all(promises);
     } catch (error: unknown) {
-      return onServerSidePageMiddlewareError(this, url, request, error);
+      return onServerSidePageMiddlewareError({
+        applicationRuntime: this,
+        url: url,
+        request,
+        error: error,
+        willRecover: false,
+        location: "page-middleware",
+      });
     }
 
     const routeStack = segments.map((segment): RouteStackEntry => {
@@ -570,7 +610,16 @@ export class ApplicationRuntime {
     };
     const rscOptions = {
       temporaryReferences: actionResult?.temporaryReferences,
-      onError: onServerSidePageRenderError.bind(null, url),
+      onError: (error: unknown) => {
+        onServerSidePageRenderError({
+          applicationRuntime: this,
+          url: url,
+          request,
+          error: error,
+          willRecover: true,
+          location: "page",
+        });
+      },
     };
     return renderToReadableStream<RscPayload>(rscPayload, rscOptions);
   }
