@@ -3,21 +3,45 @@ import {
   createTemporaryReferenceSet,
   encodeReply,
 } from "@vitejs/plugin-rsc/browser";
-import { createRscRenderRequest } from "../request.js";
+import {
+  createRscRenderRequest,
+  getPathForRouterFromRscUrl,
+  parseRenderRequest,
+} from "../request.js";
 import { RscPayload } from "../payload.js";
 import { RedirectError } from "../../../../client/errors/redirect-error.js";
-import {
-  headerContentType,
-  headerLocation,
-  isContentType,
-} from "../../content-types.js";
+import { headerContentType, isContentType } from "../../content-types.js";
 import { parseHeaderValue } from "@hattip/headers";
 
 export async function fetchPageAsRscPayload(
   renderRequest: Request,
 ): Promise<RscPayload> {
   const response = await fetch(renderRequest);
-  return await createFromReadableStream<RscPayload>(response.body!, {});
+  const contentType = response.headers.get(headerContentType);
+  if (isContentType.rsc(contentType)) {
+    // Got an RSC stream, which is what we expect.
+    return await createFromReadableStream<RscPayload>(response.body!, {});
+  } else {
+    // Got some other kind of content or HTTP response. This usually
+    // means there's a catastrophic error on the server such that it
+    // can't provide an RSC stream. We need to synthesize an error
+    // response so that the router will correctly add the attempted
+    // URL to the history.
+    return {
+      stack: [
+        {
+          type: "error",
+          error:
+            response.statusText.trim() === ""
+              ? new Error(`${response.status}`)
+              : new Error(`${response.status}: ${response.statusText}`),
+        },
+      ],
+      path: getPathForRouterFromRscUrl(parseRenderRequest(renderRequest).url),
+      action: undefined,
+      formState: undefined,
+    };
+  }
 }
 
 export async function callServerAction(id: string, args: any) {

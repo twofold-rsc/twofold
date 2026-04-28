@@ -28,8 +28,11 @@ export const contentTypePrimary = (() => {
 
 function isContentTypeGeneric(
   targetValue: string,
-  headerValue: string | ParsedHeaderValue[],
+  headerValue: string | ParsedHeaderValue[] | null,
 ) {
+  if (headerValue === null) {
+    return false;
+  }
   let parsedValue =
     typeof headerValue === "string"
       ? parseHeaderValue(headerValue)
@@ -40,7 +43,7 @@ function isContentTypeGeneric(
 export const isContentType = (() => {
   let result: {
     [P in keyof ContentType]?: (
-      headerValue: string | ParsedHeaderValue[],
+      headerValue: string | ParsedHeaderValue[] | null,
     ) => boolean;
   } = {};
   for (const key in contentType) {
@@ -51,7 +54,7 @@ export const isContentType = (() => {
   }
   return result as {
     [P in keyof ContentType]: (
-      headerValue: string | ParsedHeaderValue[],
+      headerValue: string | ParsedHeaderValue[] | null,
     ) => boolean;
   };
 })();

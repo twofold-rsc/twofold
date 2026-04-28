@@ -8,7 +8,11 @@ import type { LayoutProps, PageProps } from "../../types/importable.js";
 import { Layout } from "../build/rsc/layout.js";
 import { partition } from "../utils/partition.js";
 import { Page } from "../build/rsc/page.js";
-import { parseRenderRequest, URL_POSTFIX } from "./entrypoint/request.js";
+import {
+  getPathForRouterFromRscUrl,
+  parseRenderRequest,
+  URL_POSTFIX,
+} from "./entrypoint/request.js";
 import { API } from "../build/rsc/api.js";
 import { applyPathParams, pathMatches } from "../runtime/helpers/routing.js";
 import {
@@ -122,10 +126,6 @@ export class ApplicationRuntime {
     this.#handler = this.createHandler();
   }
 
-  private static getPathForRscPayload(url: URL) {
-    return url.pathname + url.search;
-  }
-
   private createHandler(): HattipHandler<unknown> {
     const app = createRouter();
 
@@ -189,9 +189,7 @@ export class ApplicationRuntime {
                   error: error,
                 },
               ],
-              path: ApplicationRuntime.getPathForRscPayload(
-                new URL(ctx.request.url),
-              ),
+              path: getPathForRouterFromRscUrl(new URL(ctx.request.url)),
               action: undefined,
               formState: undefined,
             },
@@ -740,7 +738,7 @@ export class ApplicationRuntime {
 
     const rscPayload: RscPayload = {
       stack: routeStack,
-      path: ApplicationRuntime.getPathForRscPayload(url),
+      path: getPathForRouterFromRscUrl(url),
       action: actionResult?.returnValue,
       formState: actionResult?.formState,
     };

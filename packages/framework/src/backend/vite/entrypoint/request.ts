@@ -56,3 +56,7 @@ export function parseRenderRequest(request: Request): RenderRequest {
     };
   }
 }
+
+export function getPathForRouterFromRscUrl(url: URL) {
+  return url.pathname + url.search;
+}
