@@ -131,6 +131,12 @@ export class ApplicationRuntime {
     app.get("/**/installHook.js.map", async (ctx) => {
       return new Response(null, { status: 404 });
     });
+    app.get(
+      "/.well-known/appspecific/com.chrome.devtools.json",
+      async (ctx) => {
+        return new Response(null, { status: 204 });
+      },
+    );
 
     // cookies
     app.use(cookie());
