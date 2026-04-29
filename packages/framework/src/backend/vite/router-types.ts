@@ -11,7 +11,10 @@ export enum MiddlewareMode {
 
 export interface ModuleSurface {
   default?: FunctionComponent<
-    LayoutProps | PageProps<any> | { error: unknown }
+    | LayoutProps
+    | PageProps<any>
+    | { error: unknown }
+    | { unauthorizedMessage: string | undefined }
   >;
   auth?: AuthPolicyArray;
   before?: (props: any) => Promise<void>;

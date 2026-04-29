@@ -16,6 +16,7 @@ export type AuthPolicyProps =
   | {
       type: "api";
       request: Request;
+      routeParams: Record<string, string | undefined>;
       authCache: Map<string, unknown>;
     };
 

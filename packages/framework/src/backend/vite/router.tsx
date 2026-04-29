@@ -16,7 +16,7 @@ import {
 } from "@vitejs/plugin-rsc/rsc";
 import xxhash from "xxhash-wasm";
 import type { RouteStackEntry } from "../../client/apps/client/contexts/route-stack-context.js";
-import { runStore, type Store } from "../stores/rsc-store.js";
+import { getStore, runStore, type Store } from "../stores/rsc-store.js";
 import type { SerializeOptions } from "cookie";
 import { createRouter } from "@hattip/router";
 import { cookie } from "@hattip/cookie";
@@ -38,8 +38,10 @@ import {
 } from "./content-types.js";
 import {
   onServerSideActionError,
-  onServerSideApiMiddlewareError,
+  onServerSideApiAuthUnknownError,
+  onServerSideApiError,
   onServerSideCatastrophicError,
+  onServerSidePageAuthUnknownError,
   onServerSidePageMiddlewareError,
   onServerSidePageRenderError,
   onServerSideReceivedSsrError,
@@ -55,7 +57,7 @@ import {
   MiddlewareMode,
   type ModuleSurface,
 } from "./router-types.js";
-import { lookupServerActionAppTreePath } from "./router-lookup.js";
+import { lookupServerActionMetadata } from "./router-lookup.js";
 import {
   getPathForRouterFromRscUrl,
   getPathForRscRequest,
@@ -64,6 +66,18 @@ import {
   parseRenderRequest,
   RenderRequestActionType,
 } from "./entrypoint/request.server.js";
+import {
+  evaluatePolicyArray,
+  evaluatePolicyArrayToResponse,
+} from "../runtime/helpers/auth.js";
+import {
+  isNotFoundError,
+  isRedirectError,
+  isUnauthorizedError,
+  redirectErrorInfo,
+} from "../runtime/helpers/errors.js";
+import { UnauthorizedError } from "../../client/errors/unauthorized-error.js";
+import { ProxyingRequest } from "../proxying-request.js";
 
 let { h64Raw } = await xxhash();
 
@@ -139,12 +153,14 @@ export class ApplicationRuntime {
           location: undefined,
         });
 
-        let status =
-          "digest" in error &&
-          typeof error.digest === "string" &&
-          error.digest === "TwofoldNotFoundError"
-            ? 404
-            : 500;
+        let status = 500;
+        if ("digest" in error && typeof error.digest === "string") {
+          if (error.digest === "TwofoldNotFoundError") {
+            status = 404;
+          } else if (error.digest === "TwofoldUnauthorizedError") {
+            status = 403;
+          }
+        }
 
         if (isContentType.rsc(accepts)) {
           // maybe let the runtime own this?
@@ -272,7 +288,7 @@ export class ApplicationRuntime {
     // handle all requests here
     app.use(async (ctx) => {
       const renderRequest = await parseRenderRequest(ctx.request);
-      const request = renderRequest.request;
+      const request = new ProxyingRequest(renderRequest.request);
       const url = new URL(request.url);
 
       // Attempt to discover a matching API request.
@@ -307,26 +323,11 @@ export class ApplicationRuntime {
       // Handle actions.
       let actionResult: ActionResultData | undefined = undefined;
       if (renderRequest.isAction) {
-        const appPath = await lookupServerActionAppTreePath(
+        actionResult = await this.runAction(
+          request,
           renderRequest.actionId,
+          renderRequest.actionType,
         );
-        if (appPath !== undefined) {
-          const applicableAuth =
-            this.#root.tree.findNearestApplicableAuthForPath(appPath);
-          if (applicableAuth instanceof Page) {
-            console.log("auth defined by page: " + applicableAuth.path);
-          } else if (applicableAuth instanceof Layout) {
-            console.log("auth defined by layout: " + applicableAuth.path);
-          }
-        }
-        if (renderRequest.actionType === RenderRequestActionType.Request) {
-          actionResult = await this.runActionViaRequest(
-            request,
-            renderRequest.actionId,
-          );
-        } else {
-          actionResult = await this.runActionViaFormState(request);
-        }
       }
 
       // If the action result throws an error, and the error is a safe error, handle it here.
@@ -517,8 +518,57 @@ export class ApplicationRuntime {
       request,
     };
 
-    if (module.before) {
-      await module.before(props);
+    const authResponse = await evaluatePolicyArrayToResponse<Response>(
+      api,
+      {
+        type: "api",
+        request: request,
+        routeParams: props.params,
+        authCache: getStore().authCache,
+      },
+      async (error) => {
+        const authFailedResponse = await onServerSideApiAuthUnknownError({
+          applicationRuntime: this,
+          url: url,
+          request,
+          error,
+          willRecover: false,
+          location: "api",
+        });
+        return (
+          authFailedResponse ??
+          new Response("Access denied due to an internal error", {
+            status: 403,
+          })
+        );
+      },
+      async (message) =>
+        new Response(message ?? "Unauthorized", { status: 401 }),
+    );
+    if (authResponse) {
+      return authResponse;
+    }
+
+    try {
+      const layouts = api.layouts;
+      const promises = [
+        (async (props) => {
+          if (module.before) {
+            await module.before(props);
+          }
+        })(),
+        ...layouts.map((layout) => layout.runMiddleware(props)),
+      ];
+      await Promise.all(promises);
+    } catch (error: unknown) {
+      return onServerSideApiError({
+        applicationRuntime: this,
+        url,
+        request,
+        error: error,
+        willRecover: false,
+        location: "api",
+      });
     }
 
     const method = request.method.toUpperCase();
@@ -532,7 +582,7 @@ export class ApplicationRuntime {
       try {
         response = await module[method](props);
       } catch (error: unknown) {
-        response = onServerSideApiMiddlewareError({
+        response = onServerSideApiError({
           applicationRuntime: this,
           url,
           request,
@@ -548,7 +598,84 @@ export class ApplicationRuntime {
     return response;
   }
 
-  private async runActionViaRequest(
+  private async runAction(
+    request: Request,
+    actionId: string,
+    actionType: RenderRequestActionType,
+  ): Promise<ActionResultData> {
+    const unauthorizedAction = (error?: Error): ActionResultData => {
+      const errorToReturn = error ?? new UnauthorizedError();
+      return {
+        returnValue:
+          actionType === RenderRequestActionType.Request
+            ? {
+                type: "throw",
+                error: errorToReturn,
+              }
+            : undefined,
+        actionStatus: undefined,
+        formState: undefined,
+        temporaryReferences: undefined,
+        response:
+          actionType === RenderRequestActionType.FormState
+            ? new Response(
+                "You do not have permission to perform this action",
+                {
+                  status: 403,
+                },
+              )
+            : undefined,
+        error: error,
+      };
+    };
+
+    const serverActionMetadata = await lookupServerActionMetadata(actionId);
+    if (serverActionMetadata === undefined) {
+      if (process.env.NODE_ENV === "development") {
+        throw new Error(
+          `Server action '${actionId}' is not located underneath '/app/pages', which is required for authentication on server actions to be enforced. Move your server action to a file underneath '/app/pages'.`,
+        );
+      }
+      return unauthorizedAction();
+    }
+    const applicableAuthEntity = this.#root.tree.findNearestParentAuthForPath(
+      serverActionMetadata.appPath,
+    );
+    if (applicableAuthEntity === undefined) {
+      if (process.env.NODE_ENV === "development") {
+        throw new Error(
+          `Unable to find page or layout to associate with server action '${actionId}' even though it is located underneath '/app/pages'. This is a bug - it is expected that the root layout will be returned if nothing else.`,
+        );
+      }
+      return unauthorizedAction();
+    }
+    const serverActionAuth = (await serverActionMetadata.loadModule()).auth;
+
+    const authResponse = await evaluatePolicyArray(
+      applicableAuthEntity,
+      {
+        type: "action",
+        request: request,
+        authCache: getStore().authCache,
+      },
+      serverActionAuth,
+    );
+    if (!authResponse.__allow) {
+      if (authResponse.__error) {
+        return unauthorizedAction(authResponse.__error);
+      } else {
+        return unauthorizedAction();
+      }
+    }
+
+    if (actionType === RenderRequestActionType.Request) {
+      return await this.noAuthChecks_runActionViaRequest(request, actionId);
+    } else {
+      return await this.noAuthChecks_runActionViaFormState(request);
+    }
+  }
+
+  private async noAuthChecks_runActionViaRequest(
     request: Request,
     actionId: string,
   ): Promise<ActionResultData> {
@@ -590,7 +717,7 @@ export class ApplicationRuntime {
     }
   }
 
-  private async runActionViaFormState(
+  private async noAuthChecks_runActionViaFormState(
     request: Request,
   ): Promise<ActionResultData> {
     const formData = await request.formData();
@@ -632,20 +759,61 @@ export class ApplicationRuntime {
   ): Promise<ReplacementResponse> {
     const url = new URL(request.url);
     let page = this.#root.tree.findPageForPath(url.pathname);
-    if (page) {
-      return this.runPageForInstance(
-        url,
-        page,
-        actionResult,
+    if (!page) {
+      return this.noAuthChecks_runSpecialPage(
         request,
-        MiddlewareMode.Run,
+        tfPaths.throwing.notFound,
       );
-    } else {
-      return this.runSpecialPage(request, tfPaths.throwing.notFound);
     }
+
+    const execPattern = page.pattern.exec(url);
+    const routeParams = execPattern?.pathname.groups ?? {};
+    const authResponse =
+      await evaluatePolicyArrayToResponse<ReplacementResponse>(
+        page,
+        {
+          type: "page",
+          request: request,
+          routeParams: routeParams,
+          authCache: getStore().authCache,
+        },
+        async (error) => {
+          const authFailedResponse = await onServerSidePageAuthUnknownError({
+            applicationRuntime: this,
+            url: url,
+            request,
+            error,
+            willRecover: false,
+            location: "page",
+          });
+          return (
+            authFailedResponse ??
+            new Response("Access denied due to an internal error", {
+              status: 403,
+            })
+          );
+        },
+        async (_message) => {
+          return await this.noAuthChecks_runSpecialPage(
+            request,
+            tfPaths.rendered.unauthorized,
+          );
+        },
+      );
+    if (authResponse) {
+      return authResponse;
+    }
+
+    return this.noAuthChecks_runPageForInstance(
+      url,
+      page,
+      actionResult,
+      request,
+      MiddlewareMode.Run,
+    );
   }
 
-  private async runPageForInstance(
+  private async noAuthChecks_runPageForInstance(
     url: URL,
     page: Page,
     actionResult: ActionResultData | undefined,
@@ -672,9 +840,9 @@ export class ApplicationRuntime {
     }
 
     const execPattern = page.pattern.exec(url);
-    const params = execPattern?.pathname.groups ?? {};
+    const routeParams = execPattern?.pathname.groups ?? {};
     const props = {
-      params,
+      params: routeParams,
       searchParams: url.searchParams,
       url,
       request,
@@ -703,7 +871,7 @@ export class ApplicationRuntime {
     const routeStack = segments.map((segment): RouteStackEntry => {
       const segmentKey = `${segment.path}:${applyPathParams(
         segment.path,
-        params,
+        routeParams,
       )}`;
 
       // we hash the key because if they "look" like urls or paths
@@ -773,7 +941,7 @@ export class ApplicationRuntime {
     };
   }
 
-  runSpecialPage(
+  noAuthChecks_runSpecialPage(
     request: Request,
     specialPage: string,
     error?: unknown,
@@ -796,7 +964,7 @@ export class ApplicationRuntime {
       overrideStatus = 500;
     }
 
-    return this.runPageForInstance(
+    return this.noAuthChecks_runPageForInstance(
       new URL(request.url),
       page,
       undefined,

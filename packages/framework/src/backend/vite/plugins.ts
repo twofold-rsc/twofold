@@ -170,7 +170,11 @@ function twofoldServerReferencesMetaMapDev(baseDir: string): Plugin {
               `Server action in file ${meta.importId} is not located underneath '/app/pages', which is required for authentication on server actions to be enforced. Move your server action to a file underneath '/app/pages'.`,
             );
           }
-          return `export default ${JSON.stringify(appPath)}`;
+          return `\
+export default { 
+  loadModule: () => import(${JSON.stringify(meta.importId)}),
+  appPath: ${JSON.stringify(appPath)},
+}`;
         }
       },
     },
@@ -201,7 +205,7 @@ function twofoldServerReferencesMetaMapBuild(baseDir: string): Plugin {
           if (this.environment.mode === "dev") {
             return `export {}`;
           }
-          let referencesToAppPaths: Record<string, string> = {};
+          let referencesToAppPaths: string[] = [];
           for (const key of Object.getOwnPropertyNames(
             manager.serverReferenceMetaMap,
           )) {
@@ -215,10 +219,17 @@ function twofoldServerReferencesMetaMapBuild(baseDir: string): Plugin {
             if (appPath === undefined) {
               continue;
             }
-            referencesToAppPaths[value.referenceKey] = appPath;
+            referencesToAppPaths.push(`\
+  ${JSON.stringify(value.referenceKey)}: {
+    loadModule: () => import(${JSON.stringify(value.importId)}),
+    appPath: ${JSON.stringify(appPath)}
+  }
+`);
           }
           return `
-export default ${JSON.stringify(referencesToAppPaths)}
+export default {
+  ${referencesToAppPaths.join(",\n")}
+}
 `;
         }
       },

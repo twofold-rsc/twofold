@@ -1,8 +1,14 @@
 import builtServerReferences from "virtual:twofold/server-references-meta-map";
+import { ModuleSurface } from "./router-types";
 
-export async function lookupServerActionAppTreePath(
+interface ServerActionMetadata {
+  loadModule: () => Promise<ModuleSurface>;
+  appPath: string;
+}
+
+export async function lookupServerActionMetadata(
   id: string,
-): Promise<string | undefined> {
+): Promise<ServerActionMetadata | undefined> {
   id = id.split("#")[0]!;
   if (!import.meta.env.__vite_rsc_build__) {
     return (

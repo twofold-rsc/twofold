@@ -1,4 +1,6 @@
+import { AuthPolicyArray } from "../../auth/auth.js";
 import { type ModuleSurface } from "../../vite/router-types.js";
+import { Layout } from "./layout.js";
 import { Treeable, TreeNode } from "./tree-node.js";
 
 export class API implements Treeable {
@@ -69,11 +71,29 @@ export class API implements Treeable {
     });
   }
 
+  get parents() {
+    let parents = this.tree.parents.map((node) => node.value);
+    return parents.reverse();
+  }
+
+  get layouts() {
+    return this.parents.filter((p) => p instanceof Layout);
+  }
+
   async loadModule() {
     return await this.#loadModule();
   }
 
   async preload() {
     await this.loadModule();
+  }
+
+  async getAuthPolicy(): Promise<AuthPolicyArray> {
+    let module = await this.loadModule();
+    if (module.auth) {
+      return module.auth;
+    } else {
+      return [];
+    }
   }
 }

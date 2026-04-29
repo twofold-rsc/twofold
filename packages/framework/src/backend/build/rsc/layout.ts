@@ -1,3 +1,4 @@
+import { AuthPolicyArray } from "../../auth/auth.js";
 import { type ModuleSurface } from "../../vite/router-types.js";
 import { type Node, TreeNode, type Treeable } from "./tree-node.js";
 import { Wrapper } from "./wrapper.js";
@@ -144,8 +145,10 @@ export class Layout implements Treeable {
         props: {},
       };
       return [...wrappers, layout, routeStackPlaceholder];
-    } else {
+    } else if (module.auth) {
       return [...wrappers, routeStackPlaceholder];
+    } else {
+      throw new Error(`Layout for ${this.path}/ has no default export.`);
     }
   }
 
@@ -166,5 +169,14 @@ export class Layout implements Treeable {
 
   async preload() {
     await this.loadModule();
+  }
+
+  async getAuthPolicy(): Promise<AuthPolicyArray> {
+    let module = await this.loadModule();
+    if (module.auth) {
+      return module.auth;
+    } else {
+      return [];
+    }
   }
 }

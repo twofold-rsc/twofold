@@ -412,6 +412,14 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
+                    <ExampleGroup name="Auth" path="/auth">
+                      <ExampleLink
+                        title="Auth"
+                        description="Demonstrates auth policies."
+                        href="/auth"
+                      />
+                    </ExampleGroup>
+
                     <NavigationMenu.Indicator className="-right-5 z-10 flex h-6 items-center justify-center overflow-hidden">
                       <div className="relative -left-[70%] flex h-6 w-6 rotate-45 items-center justify-center rounded-[3px] bg-gray-100">
                         <div className="relative h-4 w-4 rounded-[1.5px] bg-white" />
