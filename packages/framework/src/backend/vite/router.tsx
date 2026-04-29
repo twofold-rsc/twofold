@@ -257,6 +257,7 @@ export class ApplicationRuntime {
         },
         context: null,
         assets: [],
+        authCache: new Map<string, unknown>(),
       };
 
       return runStore(store, () => ctx.next());
