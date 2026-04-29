@@ -1,12 +1,8 @@
+import "server-only";
 import { type ComponentType, createElement, type ReactElement } from "react";
 import { Layout } from "../build/rsc/layout.js";
 import { partition } from "../utils/partition.js";
 import { Page } from "../build/rsc/page.js";
-import {
-  getPathForRouterFromRscUrl,
-  getPathForRscRequest,
-  parseRenderRequest,
-} from "./entrypoint/request.js";
 import { API } from "../build/rsc/api.js";
 import { applyPathParams, pathMatches } from "../runtime/helpers/routing.js";
 import type { RscPayload } from "./entrypoint/payload.js";
@@ -59,6 +55,14 @@ import {
   MiddlewareMode,
   type ModuleSurface,
 } from "./router-types.js";
+import {
+  getPathForRouterFromRscUrl,
+  getPathForRscRequest,
+} from "./entrypoint/request.js";
+import {
+  parseRenderRequest,
+  RenderRequestActionType,
+} from "./entrypoint/request.server.js";
 
 let { h64Raw } = await xxhash();
 
@@ -265,7 +269,7 @@ export class ApplicationRuntime {
 
     // handle all requests here
     app.use(async (ctx) => {
-      const renderRequest = parseRenderRequest(ctx.request);
+      const renderRequest = await parseRenderRequest(ctx.request);
       const request = renderRequest.request;
       const url = new URL(request.url);
 
@@ -301,7 +305,7 @@ export class ApplicationRuntime {
       // Handle actions.
       let actionResult: ActionResultData | undefined = undefined;
       if (renderRequest.isAction) {
-        if (renderRequest.actionId) {
+        if (renderRequest.actionType === RenderRequestActionType.Request) {
           actionResult = await this.runActionViaRequest(
             request,
             renderRequest.actionId,

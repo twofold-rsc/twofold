@@ -3,15 +3,20 @@ import {
   createTemporaryReferenceSet,
   encodeReply,
 } from "@vitejs/plugin-rsc/browser";
-import {
-  createRscActionRequest,
-  getPathForRouterFromRscUrl,
-  parseRenderRequest,
-} from "../request.js";
 import type { RscPayload } from "../payload.js";
 import { RedirectError } from "../../../../client/errors/redirect-error.js";
 import { headerContentType, isContentType } from "../../content-types.js";
 import { parseHeaderValue } from "@hattip/headers";
+import { createRscActionRequest } from "../request.client.js";
+import { getPathForRouterFromRscUrl } from "../request.js";
+
+function getOriginalPathFromRscUrlForCatastrophicError(url: URL) {
+  if (url.pathname.startsWith("/__rsc/")) {
+    return new URL(url.searchParams.get("path")!, window.location.href);
+  } else {
+    return url;
+  }
+}
 
 export async function fetchPageAsRscPayload(
   renderRequest: Request,
@@ -37,7 +42,11 @@ export async function fetchPageAsRscPayload(
               : new Error(`${response.status}: ${response.statusText}`),
         },
       ],
-      path: getPathForRouterFromRscUrl(parseRenderRequest(renderRequest).url),
+      path: getPathForRouterFromRscUrl(
+        getOriginalPathFromRscUrlForCatastrophicError(
+          new URL(renderRequest.url),
+        ),
+      ),
       action: undefined,
       formState: undefined,
     };
