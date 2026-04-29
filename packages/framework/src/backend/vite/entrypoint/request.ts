@@ -1,62 +1,106 @@
-// Framework conventions (arbitrary choices for this demo):
-// - Use `_.rsc` URL suffix to differentiate RSC requests from SSR requests
-// - Use `x-rsc-action` header to pass server action ID
-export const URL_POSTFIX = "_.rsc";
-const HEADER_ACTION_ID = "x-rsc-action";
+import { contentType, headerAccept } from "../content-types.js";
 
-// Parsed request information used to route between RSC/SSR rendering and action handling.
-// Created by parseRenderRequest() from incoming HTTP requests.
-type RenderRequest = {
-  isRsc: boolean; // true if request should return RSC payload (via _.rsc suffix)
-  isAction: boolean; // true if this is a server action call (POST request)
-  actionId?: string; // server action ID from x-rsc-action header
-  request: Request; // normalized Request with _.rsc suffix removed from URL
-  url: URL; // normalized URL with _.rsc suffix removed
+export const rscActionUrlPrefix = "/__rsc/action";
+export const rscPageUrlPrefix = "/__rsc/page";
+
+export const headerTwofoldServerReference = "x-twofold-server-reference";
+export const headerTwofoldInitiator = "x-twofold-initiator";
+export const headerTwofoldPath = "x-twofold-path";
+
+export type TwofoldInitiator =
+  | "call-server"
+  | "client-side-navigation"
+  | "refresh"
+  | "populate"
+  | "initial-render"
+  | "not-specified";
+export const twofoldInitiator = {
+  callServer: "call-server" as TwofoldInitiator,
+  clientSideNavigation: "client-side-navigation" as TwofoldInitiator,
+  refresh: "refresh" as TwofoldInitiator,
+  populate: "populate" as TwofoldInitiator,
+  initialRender: "initial-render" as TwofoldInitiator,
+  notSpecified: "not-specified" as TwofoldInitiator,
 };
 
+type RenderRequest = {
+  isRsc: boolean;
+  isAction: boolean;
+  actionId?: string;
+  request: Request;
+  url: URL;
+};
+
+export function createRscActionRequest(id: string, body: BodyInit): Request {
+  const browserPath = getPathForRouterFromRscUrl(location);
+  const twofoldPath = window.__twofold?.currentPath;
+
+  const path = twofoldPath ?? browserPath;
+  const encodedPath = encodeURIComponent(path);
+  const encodedId = encodeURIComponent(id);
+
+  return new Request(`${rscActionUrlPrefix}/${encodedId}?path=${encodedPath}`, {
+    method: "POST",
+    headers: {
+      [headerAccept]: contentType.rsc,
+      [headerTwofoldInitiator]: twofoldInitiator.callServer,
+      [headerTwofoldServerReference]: id,
+      [headerTwofoldPath]: path,
+    },
+    body: body,
+  });
+}
+
 export function createRscRenderRequest(
-  urlString: string,
-  action?: { id: string; body: BodyInit },
+  path: string,
+  options: { initiator?: TwofoldInitiator } = {},
 ): Request {
-  const url = new URL(urlString);
-  url.pathname += URL_POSTFIX;
-  const headers = new Headers();
-  if (action) {
-    headers.set(HEADER_ACTION_ID, action.id);
-  }
-  return new Request(url.toString(), {
-    method: action ? "POST" : "GET",
-    headers,
-    body: action?.body!,
+  const encodedPath = encodeURIComponent(path);
+  const initiator = options.initiator ?? twofoldInitiator.notSpecified;
+
+  return new Request(`${rscPageUrlPrefix}?path=${encodedPath}`, {
+    method: "GET",
+    headers: {
+      [headerAccept]: contentType.rsc,
+      [headerTwofoldInitiator]: initiator,
+    },
   });
 }
 
 export function parseRenderRequest(request: Request): RenderRequest {
   const url = new URL(request.url);
-  const isAction = request.method === "POST";
-  if (url.pathname.endsWith(URL_POSTFIX)) {
-    url.pathname = url.pathname.slice(0, -URL_POSTFIX.length);
-    const actionId = request.headers.get(HEADER_ACTION_ID) || undefined;
-    if (request.method === "POST" && !actionId) {
-      throw new Error("Missing action id header for RSC action request");
+  const isRscPath = url.pathname === rscPageUrlPrefix;
+  const isRscAction = url.pathname.startsWith(`${rscActionUrlPrefix}/`);
+  if (isRscPath || isRscAction) {
+    const requestUrl = new URL(url.searchParams.get("path")!, url);
+    if (isRscPath) {
+      return {
+        isRsc: true,
+        isAction: false,
+        request: new Request(requestUrl, request),
+        url: requestUrl,
+      };
+    } else if (isRscAction) {
+      const actionId =
+        request.headers.get(headerTwofoldServerReference) || undefined;
+      return {
+        isRsc: true,
+        isAction: true,
+        actionId: actionId!,
+        request: new Request(requestUrl, request),
+        url: requestUrl,
+      };
     }
-    return {
-      isRsc: true,
-      isAction,
-      actionId: actionId!,
-      request: new Request(url, request),
-      url,
-    };
-  } else {
-    return {
-      isRsc: false,
-      isAction,
-      request,
-      url,
-    };
   }
+
+  return {
+    isRsc: false,
+    isAction: false,
+    request,
+    url,
+  };
 }
 
-export function getPathForRouterFromRscUrl(url: URL) {
-  return url.pathname + url.search;
+export function getPathForRouterFromRscUrl(url: URL | Location) {
+  return `${url.pathname}${url.search}${url.hash}`;
 }

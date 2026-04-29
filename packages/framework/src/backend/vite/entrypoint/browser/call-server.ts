@@ -4,7 +4,7 @@ import {
   encodeReply,
 } from "@vitejs/plugin-rsc/browser";
 import {
-  createRscRenderRequest,
+  createRscActionRequest,
   getPathForRouterFromRscUrl,
   parseRenderRequest,
 } from "../request.js";
@@ -46,12 +46,12 @@ export async function fetchPageAsRscPayload(
 
 export async function callServerAction(id: string, args: any) {
   const temporaryReferences = createTemporaryReferenceSet();
-  const renderRequest = createRscRenderRequest(window.location.href, {
+  const renderRequest = createRscActionRequest(
     id,
-    body: await encodeReply(args, { temporaryReferences }),
-  });
+    await encodeReply(args, { temporaryReferences }),
+  );
 
-  const browserPath = `${location.pathname}${location.search}${location.hash}`;
+  const browserPath = getPathForRouterFromRscUrl(location);
   const twofoldPath = window.__twofold?.currentPath;
 
   const path = twofoldPath ?? browserPath;

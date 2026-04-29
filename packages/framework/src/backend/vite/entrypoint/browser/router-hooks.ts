@@ -1,12 +1,11 @@
 import { use, useEffect, useReducer } from "react";
 import { RouteStackEntry } from "../../../../client/apps/client/contexts/route-stack-context.js";
-import {
-  createFromReadableStream,
-  createFromFetch,
-} from "@vitejs/plugin-rsc/browser";
 import { RscPayload } from "../payload.js";
-import { rscStream } from "rsc-html-stream/client";
-import { createRscRenderRequest } from "../request.js";
+import {
+  createRscRenderRequest,
+  getPathForRouterFromRscUrl,
+  TwofoldInitiator,
+} from "../request.js";
 import { getInitialPayload } from "./initial-payload.js";
 import { fetchPageAsRscPayload } from "./call-server.js";
 
@@ -269,7 +268,7 @@ function createRouterState({
 }
 
 type FetchOptions = {
-  initiator?: string;
+  initiator?: TwofoldInitiator;
   resource?: "page";
 };
 
@@ -277,12 +276,11 @@ async function fetchRscPayload(
   path: string,
   options: FetchOptions = {},
 ): Promise<RscPayload> {
-  const renderRequest = createRscRenderRequest(
-    new URL(path, window.location.href).href,
-  );
-
   const initiator = options.initiator ?? "not-specified";
-  const cacheKey = `${initiator}:${renderRequest.url}`;
+  const targetUrl = new URL(path, window.location.href).href;
+  const renderRequest = createRscRenderRequest(targetUrl, { initiator });
+  const renderUrl = new URL(renderRequest.url);
+  const cacheKey = `${initiator}:${getPathForRouterFromRscUrl(renderUrl)}`;
   if (!fetchCache.has(cacheKey)) {
     fetchCache.set(
       cacheKey,
@@ -296,9 +294,7 @@ async function fetchRscPayload(
 
 async function getInitialRouterState() {
   let initialPath =
-    typeof window !== "undefined"
-      ? `${location.pathname}${location.search}${location.hash}`
-      : "/";
+    typeof window !== "undefined" ? getPathForRouterFromRscUrl(location) : "/";
   let cache = new Map<string, RouteStackEntry[]>();
   let path = initialPath;
 
