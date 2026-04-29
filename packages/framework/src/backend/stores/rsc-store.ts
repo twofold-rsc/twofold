@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { SerializeOptions } from "cookie";
+import { type SerializeOptions } from "cookie";
 
 type JSONValue =
   | string
@@ -36,6 +36,7 @@ export type Store = {
     assets: string[];
   } | null;
   assets: string[];
+  authCache: Map<string, unknown>;
 };
 
 let asyncLocalStorage = new AsyncLocalStorage<Store>();

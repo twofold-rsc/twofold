@@ -1,15 +1,14 @@
-import { Generic } from "../../../src/backend/build/rsc/generic.ts";
 import { Layout } from "../../../src/backend/build/rsc/layout.ts";
 import { expect, test } from "vitest";
 
-const fileUrl = new URL("file:///tmp/dummy.js");
-const routeStackPlaceholder = new Generic({ fileUrl });
+const loadModule = async () => {
+  return {};
+};
 
 function createLayout(path: string) {
   return new Layout({
     path,
-    fileUrl,
-    routeStackPlaceholder,
+    loadModule,
   });
 }
 
@@ -93,7 +92,7 @@ test("the order of adding layouts does not matter", () => {
     for (let i = 0; i < arr.length; i++) {
       const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
       for (const perm of permutations(rest)) {
-        result.push([arr[i], ...perm]);
+        result.push([arr[i]!, ...perm]);
       }
     }
     return result;
@@ -113,7 +112,7 @@ test("the order of adding layouts does not matter", () => {
     let layouts = [posts, post, topPosts, postComments, postMeta, about];
 
     for (const index of ordering) {
-      root.addChild(layouts[index]);
+      root.addChild(layouts[index]!);
     }
 
     // root

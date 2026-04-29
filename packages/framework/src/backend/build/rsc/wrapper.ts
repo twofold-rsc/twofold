@@ -1,10 +1,16 @@
 export class Wrapper {
   #path: string;
-  #fileUrl: URL;
+  #loadModule: () => Promise<any>;
 
-  constructor({ path, fileUrl }: { path: string; fileUrl: URL }) {
+  constructor({
+    path,
+    loadModule,
+  }: {
+    path: string;
+    loadModule: () => Promise<any>;
+  }) {
     this.#path = path;
-    this.#fileUrl = fileUrl;
+    this.#loadModule = loadModule;
   }
 
   get path() {
@@ -12,8 +18,7 @@ export class Wrapper {
   }
 
   async loadModule() {
-    let module = await import(this.#fileUrl.href);
-    return module;
+    return this.#loadModule();
   }
 
   async preload() {

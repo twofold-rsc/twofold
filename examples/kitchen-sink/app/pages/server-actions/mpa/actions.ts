@@ -1,5 +1,5 @@
 "use server";
 
-export function logFromActionFile() {
+export async function logFromActionFile() {
   console.log("logging from an action file");
 }
