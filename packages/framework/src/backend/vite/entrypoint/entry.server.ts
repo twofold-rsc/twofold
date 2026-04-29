@@ -12,7 +12,3 @@ export default {
     return routerProxy.fetch(req);
   },
 };
-
-if (import.meta.hot) {
-  import.meta.hot.accept();
-}

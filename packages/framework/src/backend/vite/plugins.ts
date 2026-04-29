@@ -2,22 +2,58 @@ import react from "@vitejs/plugin-react";
 import rsc from "@vitejs/plugin-rsc";
 import { type InlineConfig, mergeConfig, type Plugin } from "vite";
 import tailwindcss from "@tailwindcss/vite";
+import { exactRegex } from "@rolldown/pluginutils";
 
-function twofold(baseDir: string): Plugin {
+function createVirtualPlugin(
+  name: string,
+  impl: {
+    resolveId?: Plugin["resolveId"];
+    load: Exclude<Plugin["load"], undefined>;
+  },
+): Plugin {
+  const virtualId = `virtual:twofold/${name}`;
+  const resolvedId = "\0" + virtualId;
   return {
-    name: "twofold",
-    async resolveId(source, _importer, options) {
-      if (source === "virtual:twofold/server-application-router") {
-        return "\0" + source;
-      } else if (source === "virtual:twofold/server-global-middleware") {
-        const middlewarePath = `${baseDir}/app/middleware.ts`;
-        const resolved = await this.resolve(middlewarePath, undefined, options);
-        return resolved ? resolved : "\0" + source;
-      }
+    name: `twofold:${name}`,
+    resolveId: {
+      filter: { id: exactRegex(virtualId) },
+      async handler(source, importer, options) {
+        if (source === virtualId) {
+          const resolveIdFunc =
+            typeof impl.resolveId === "function"
+              ? impl.resolveId
+              : impl.resolveId?.handler;
+          if (resolveIdFunc) {
+            const resolvedIdOverride = await resolveIdFunc.bind(this)(
+              source,
+              importer,
+              options,
+            );
+            if (resolvedIdOverride) {
+              return resolvedIdOverride;
+            }
+          }
+          return resolvedId;
+        }
+      },
     },
-    load(id) {
-      if (id === "\0virtual:twofold/server-application-router") {
-        return `
+    load: {
+      filter: { id: exactRegex(resolvedId) },
+      async handler(id) {
+        if (id === resolvedId) {
+          const loadFunc =
+            typeof impl.load === "function" ? impl.load : impl.load.handler;
+          return await loadFunc.bind(this)(id);
+        }
+      },
+    },
+  };
+}
+
+function twofoldServerApplicationRouter(): Plugin {
+  return createVirtualPlugin("server-application-router", {
+    load() {
+      return `
 import { ApplicationRuntime } from '@twofold/framework/internal/router';
 export default new ApplicationRuntime(
   import.meta.glob(
@@ -25,16 +61,27 @@ export default new ApplicationRuntime(
     { base: "./app/pages" }
   ));
 `;
-      } else if (id === "\0virtual:twofold/server-global-middleware") {
-        return `
+    },
+  });
+}
+
+function twofoldGlobalMiddleware(baseDir: string): Plugin {
+  return createVirtualPlugin("server-global-middleware", {
+    async resolveId(_source, _importer, options) {
+      const middlewarePath = `${baseDir}/app/middleware.ts`;
+      const resolved = await this.resolve(middlewarePath, undefined, options);
+      return resolved;
+    },
+    load() {
+      return `
 export default function middleware(req: Request) { }
 `;
-      }
     },
-  };
+  });
 }
 
 export function withTwofold(config: InlineConfig): InlineConfig {
+  const baseDir = process.cwd();
   return mergeConfig(
     {
       configFile: false,
@@ -80,7 +127,13 @@ export function withTwofold(config: InlineConfig): InlineConfig {
           },
         },
       },
-      plugins: [tailwindcss(), rsc({}), react(), twofold(process.cwd())],
+      plugins: [
+        tailwindcss(),
+        rsc({}),
+        react(),
+        twofoldServerApplicationRouter(),
+        twofoldGlobalMiddleware(baseDir),
+      ],
     },
     config ?? {},
   );
