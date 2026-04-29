@@ -59,16 +59,65 @@ program
       }
     }
 
-    const port = parseInt(options.port, 10) || 3000;
-    const server = await vite.createServer(
-      withTwofold({
-        server: { host: "0.0.0.0", port },
-      }),
-    );
-    await server.listen();
+    function createServerRestartHandler() {
+      let restarting = false;
 
-    console.log(`Twofold development server started, serving on:`);
-    await server.printUrls();
+      return async (server: vite.ViteDevServer) => {
+        if (restarting) {
+          return;
+        }
+        restarting = true;
+        try {
+          console.log(
+            "Performing full restart of server because files were created, renamed or deleted underneath /app/pages ...",
+          );
+          const previousUrls = server.resolvedUrls;
+          await server.close();
+          const newServer = await startDevServer(true);
+          if (previousUrls) {
+            server.resolvedUrls = newServer.resolvedUrls;
+          }
+        } finally {
+          restarting = false;
+        }
+      };
+    }
+
+    async function startDevServer(
+      isRestart: boolean,
+    ): Promise<vite.ViteDevServer> {
+      const port = parseInt(options.port, 10) || 3000;
+      const server = await vite.createServer(
+        withTwofold({
+          server: { host: "0.0.0.0", port },
+        }),
+      );
+      const handleServerRestart = createServerRestartHandler();
+      await server.listen();
+
+      server.watcher.on("unlink", invalidateOnTreeChange);
+      server.watcher.on("add", invalidateOnTreeChange);
+
+      async function invalidateOnTreeChange(changedFile: string) {
+        if (!changedFile.startsWith(process.cwd())) {
+          return;
+        }
+        const relativePath = path
+          .relative(process.cwd(), changedFile)
+          .replaceAll("\\", "/");
+        if (relativePath.startsWith("app/")) {
+          await handleServerRestart(server);
+        }
+      }
+
+      if (!isRestart) {
+        await server.printUrls();
+      }
+
+      return server;
+    }
+
+    const server = await startDevServer(false);
     await server.bindCLIShortcuts({ print: true });
   });
 
