@@ -26,6 +26,7 @@ export enum FindPageType {
   Static,
   Dynamic,
   CatchAll,
+  NearestLayout,
 }
 
 export class TreeNode {
@@ -165,6 +166,23 @@ export class TreeNode {
     return results;
   }
 
+  findNearestApplicableAuthForPath(path: string): Page | Layout | undefined {
+    let page: Page | Layout | undefined = this.findPageForPathWithType(
+      FindPageType.Static,
+      path,
+    );
+    if (!page) {
+      page = this.findPageForPathWithType(FindPageType.Dynamic, path);
+    }
+    if (!page) {
+      page = this.findPageForPathWithType(FindPageType.CatchAll, path);
+    }
+    if (!page) {
+      page = this.findLayoutForPath(path);
+    }
+    return page;
+  }
+
   findPageForPath(path: string): Page | undefined {
     let page = this.findPageForPathWithType(FindPageType.Static, path);
     if (!page) {
@@ -173,7 +191,7 @@ export class TreeNode {
     if (!page) {
       page = this.findPageForPathWithType(FindPageType.CatchAll, path);
     }
-    return page;
+    return page as Page;
   }
 
   private findPageForPathWithType(
@@ -220,5 +238,25 @@ export class TreeNode {
     }
 
     return page;
+  }
+
+  private findLayoutForPath(realPath: string): Layout | undefined {
+    let childValues = this.children.map((child) => child.value);
+
+    // assumes that immediate page children didn't match via findPageForPathWithType.
+    let layout = childValues
+      .filter((value) => {
+        let holdsPages =
+          value instanceof Layout || value instanceof CatchBoundary;
+        return holdsPages && pathPartialMatches(value.path, realPath);
+      })
+      .map((value) => value.tree.findLayoutForPath(realPath))
+      .find(Boolean);
+
+    if (!layout && this.#value instanceof Layout) {
+      layout = this.#value;
+    }
+
+    return layout;
   }
 }

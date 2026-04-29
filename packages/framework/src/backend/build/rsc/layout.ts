@@ -143,7 +143,7 @@ export class Layout implements Treeable {
         requirements: ["dynamicRequest"],
         props: {},
       };
-    return [...wrappers, layout, routeStackPlaceholder];
+      return [...wrappers, layout, routeStackPlaceholder];
     } else {
       return [...wrappers, routeStackPlaceholder];
     }

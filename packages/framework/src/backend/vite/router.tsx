@@ -307,9 +307,18 @@ export class ApplicationRuntime {
       // Handle actions.
       let actionResult: ActionResultData | undefined = undefined;
       if (renderRequest.isAction) {
-        const metadata = await lookupServerActionAppTreePath(
+        const appPath = await lookupServerActionAppTreePath(
           renderRequest.actionId,
         );
+        if (appPath !== undefined) {
+          const applicableAuth =
+            this.#root.tree.findNearestApplicableAuthForPath(appPath);
+          if (applicableAuth instanceof Page) {
+            console.log("auth defined by page: " + applicableAuth.path);
+          } else if (applicableAuth instanceof Layout) {
+            console.log("auth defined by layout: " + applicableAuth.path);
+          }
+        }
         if (renderRequest.actionType === RenderRequestActionType.Request) {
           actionResult = await this.runActionViaRequest(
             request,
