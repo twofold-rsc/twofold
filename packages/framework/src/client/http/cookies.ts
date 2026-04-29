@@ -1,6 +1,6 @@
 import "server-only";
 import { getStore } from "../../backend/stores/rsc-store";
-import { SerializeOptions } from "cookie";
+import type { SerializeOptions } from "cookie";
 
 let cookies = {
   all() {
@@ -62,8 +62,8 @@ let cookies = {
       }
 
       try {
-        let [storedName, value] =
-          await store.encryption.decrypt(encryptedValue);
+        let v = await store.encryption.decrypt(encryptedValue);
+        let [storedName, value] = v;
         if (storedName !== name) {
           return undefined;
         }

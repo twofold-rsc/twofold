@@ -1,4 +1,4 @@
-import { ReactNode, createContext } from "react";
+import { type ReactNode, createContext } from "react";
 
 type NavigateOptions = {
   scroll?: boolean;

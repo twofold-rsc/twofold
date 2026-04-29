@@ -12,7 +12,7 @@ export function VerifySearchParams({
 
   if (router.searchParams.toString() !== serverSearchParams.toString()) {
     throw new Error(
-      "A render happened where client and server search params do not match",
+      `A render happened where client and server search params do not match router:'${router.searchParams.toString()}' != server:'${serverSearchParams.toString()}'`,
     );
   }
 

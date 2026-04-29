@@ -1,10 +1,18 @@
+import { type ModuleSurface } from "../../vite/router-types.js";
+
 export class API {
   #path: string;
-  #fileUrl: URL;
+  #loadModule: () => Promise<ModuleSurface>;
 
-  constructor({ path, fileUrl }: { path: string; fileUrl: URL }) {
+  constructor({
+    path,
+    loadModule,
+  }: {
+    path: string;
+    loadModule: () => Promise<ModuleSurface>;
+  }) {
     this.#path = path;
-    this.#fileUrl = fileUrl;
+    this.#loadModule = loadModule;
   }
 
   get path() {
@@ -41,8 +49,7 @@ export class API {
   }
 
   async loadModule() {
-    let module = await import(this.#fileUrl.href);
-    return module;
+    return await this.#loadModule();
   }
 
   async preload() {

@@ -1,13 +1,12 @@
 export class Generic {
-  #fileUrl: URL;
+  #loadModule: () => Promise<any>;
 
-  constructor({ fileUrl }: { fileUrl: URL }) {
-    this.#fileUrl = fileUrl;
+  constructor({ loadModule }: { loadModule: () => Promise<any> }) {
+    this.#loadModule = loadModule;
   }
 
   async loadModule() {
-    let module = await import(this.#fileUrl.href);
-    return module;
+    return await this.#loadModule();
   }
 
   async preload() {

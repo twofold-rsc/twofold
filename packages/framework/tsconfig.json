@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": true,
+    "allowImportingTsExtensions": true,
+    "exactOptionalPropertyTypes": false,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "module": "ESNext",
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.AsyncIterable"],
+    "types": [
+      "vite/client",
+      "@vitejs/plugin-rsc/types",
+      "react",
+      "react-dom",
+      "node"
+    ],
+    "jsx": "react-jsx"
+  },
+  "exclude": ["node_modules", "dist"]
+}

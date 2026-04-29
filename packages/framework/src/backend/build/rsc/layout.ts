@@ -1,13 +1,12 @@
-import { Generic } from "./generic.js";
-import { Node, TreeNode, Treeable } from "./tree-node.js";
+import { type ModuleSurface } from "../../vite/router-types.js";
+import { type Node, TreeNode, type Treeable } from "./tree-node.js";
 import { Wrapper } from "./wrapper.js";
 
 export class Layout implements Treeable {
   #path: string;
   #css?: string | undefined;
-  #fileUrl: URL;
+  #loadModule: () => Promise<ModuleSurface>;
 
-  #routeStackPlaceholder: Generic;
   #wrappers: Wrapper[] = [];
 
   tree: TreeNode;
@@ -15,18 +14,15 @@ export class Layout implements Treeable {
   constructor({
     path,
     css,
-    fileUrl,
-    routeStackPlaceholder,
+    loadModule,
   }: {
     path: string;
     css?: string | undefined;
-    fileUrl: URL;
-    routeStackPlaceholder: Generic;
+    loadModule: () => Promise<ModuleSurface>;
   }) {
     this.#path = path;
-    this.#fileUrl = fileUrl;
+    this.#loadModule = loadModule;
     this.#css = css;
-    this.#routeStackPlaceholder = routeStackPlaceholder;
 
     this.tree = new TreeNode(this);
   }
@@ -88,8 +84,8 @@ export class Layout implements Treeable {
   }
 
   async loadRouteStackPlaceholder() {
-    let routeStackPlaceholder = this.#routeStackPlaceholder;
-    let module = await routeStackPlaceholder.loadModule();
+    let module =
+      await import("../../../client/components/route-stack/placeholder.js");
     if (!module.default) {
       throw new Error(
         `Route placeholder for ${this.#path} has no default export.`,
@@ -107,7 +103,9 @@ export class Layout implements Treeable {
    * Gets a list of component functions and their requirements and
    * props for rendering.
    */
-  async components() {
+  async components(): Promise<
+    { func: any; requirements: string[]; props: object }[]
+  > {
     // flat list of all the components needed to render this layout.
     // it includes props as well as requirements.
     //
@@ -163,8 +161,7 @@ export class Layout implements Treeable {
   }
 
   private async loadModule() {
-    let module = await import(this.#fileUrl.href);
-    return module;
+    return await this.#loadModule();
   }
 
   async preload() {
