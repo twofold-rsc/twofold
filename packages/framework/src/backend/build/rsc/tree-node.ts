@@ -3,12 +3,13 @@ import {
   pathPartialMatches,
 } from "../../runtime/helpers/routing.js";
 import { partition } from "../../utils/partition.js";
+import { API } from "./api.js";
 import { CatchBoundary } from "./catch-boundary.js";
 import { ErrorTemplate } from "./error-template.js";
 import { Layout } from "./layout.js";
 import { Page } from "./page.js";
 
-export type Node = Layout | CatchBoundary | Page | ErrorTemplate;
+export type Node = Layout | CatchBoundary | Page | ErrorTemplate | API;
 
 export type Treeable = {
   path: string;
@@ -151,6 +152,17 @@ export class TreeNode {
     print(this);
 
     console.log("*** Done Printing Tree ***");
+  }
+
+  findAllOfType<T>(t: { new (...args: any): T }): T[] {
+    const results = [];
+    if (this.#value instanceof t) {
+      results.push(this.#value);
+    }
+    for (const child of this.#children) {
+      results.push(...child.findAllOfType(t));
+    }
+    return results;
   }
 
   findPageForPath(path: string): Page | undefined {

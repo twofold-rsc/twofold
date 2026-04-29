@@ -91,7 +91,7 @@ export class ApplicationRuntime {
 
   constructor(modules: ModuleMap) {
     this.#root = ApplicationRuntime.loadRoot(modules);
-    this.#apiEndpoints = ApplicationRuntime.loadApis(modules);
+    this.#apiEndpoints = this.#root.tree.findAllOfType(API);
     this.#reqId = 0;
     this.#handler = this.createHandler();
   }
@@ -791,6 +791,7 @@ export class ApplicationRuntime {
   private static loadRoot(modules: ModuleMap): Layout {
     let pages = ApplicationRuntime.loadPages(modules);
     let layouts = ApplicationRuntime.loadLayouts(modules);
+    let apiEndpoints = ApplicationRuntime.loadApiEndpoints(modules);
     let errorTemplates = ApplicationRuntime.loadErrorTemplates(modules);
     let catchBoundaries =
       ApplicationRuntime.loadCatchBoundaries(errorTemplates);
@@ -807,6 +808,7 @@ export class ApplicationRuntime {
     otherLayouts.forEach((layout) => root.addChild(layout));
     catchBoundaries.forEach((catchBoundary) => root.addChild(catchBoundary));
     pages.forEach((page) => root.addChild(page));
+    apiEndpoints.forEach((apiEndpoint) => root.addChild(apiEndpoint));
     errorTemplates.forEach((errorTemplate) => root.addChild(errorTemplate));
     specialPages.forEach((page) => root.addChild(page));
 
@@ -834,7 +836,7 @@ export class ApplicationRuntime {
     }
   }
 
-  private static loadApis(modules: ModuleMap): API[] {
+  private static loadApiEndpoints(modules: ModuleMap): API[] {
     return Object.getOwnPropertyNames(modules)
       .filter((relativePath) =>
         ApplicationRuntime.hasSuffix(relativePath, ".api"),

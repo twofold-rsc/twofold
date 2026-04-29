@@ -1,8 +1,11 @@
 import { type ModuleSurface } from "../../vite/router-types.js";
+import { Treeable, TreeNode } from "./tree-node.js";
 
-export class API {
+export class API implements Treeable {
   #path: string;
   #loadModule: () => Promise<ModuleSurface>;
+
+  tree: TreeNode;
 
   constructor({
     path,
@@ -13,6 +16,24 @@ export class API {
   }) {
     this.#path = path;
     this.#loadModule = loadModule;
+
+    this.tree = new TreeNode(this);
+  }
+
+  canAcceptAsChild() {
+    return false;
+  }
+
+  addChild() {
+    throw new Error("Cannot add children to API routes.");
+  }
+
+  get children() {
+    return this.tree.children.map((c) => c.value);
+  }
+
+  get parent() {
+    return this.tree.parent?.value;
   }
 
   get path() {
