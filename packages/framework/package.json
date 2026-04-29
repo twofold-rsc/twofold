@@ -116,6 +116,7 @@
     "minimatch": "^10.0.3",
     "picomatch": "^4.0.4",
     "react-refresh": "^0.18.0",
+    "react-transition-progress": "^0.0.4",
     "rolldown": "1.0.0-beta.53",
     "rsc-html-stream": "^0.0.7",
     "serialize-error": "^13.0.1",
