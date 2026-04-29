@@ -1,24 +1,25 @@
-import { Treeable, TreeNode } from "./tree-node.js";
+import type { ModuleSurface } from "../../vite/router-types.js";
+import { type Treeable, TreeNode } from "./tree-node.js";
 
 export class ErrorTemplate implements Treeable {
   #tag: string;
   #path;
-  #fileUrl: URL;
+  #loadModule: () => Promise<ModuleSurface>;
 
   tree: TreeNode;
 
   constructor({
     tag,
     path,
-    fileUrl,
+    loadModule,
   }: {
     tag: string;
     path: string;
-    fileUrl: URL;
+    loadModule: () => Promise<ModuleSurface>;
   }) {
     this.#tag = tag;
     this.#path = path;
-    this.#fileUrl = fileUrl;
+    this.#loadModule = loadModule;
 
     this.tree = new TreeNode(this);
   }
@@ -48,8 +49,7 @@ export class ErrorTemplate implements Treeable {
   }
 
   async loadModule() {
-    let module = await import(this.#fileUrl.href);
-    return module;
+    return await this.#loadModule();
   }
 
   async preload() {

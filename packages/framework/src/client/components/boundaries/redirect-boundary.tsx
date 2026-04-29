@@ -1,4 +1,10 @@
-import { Component, ReactNode, startTransition, use, useEffect } from "react";
+import {
+  Component,
+  type ReactNode,
+  startTransition,
+  use,
+  useEffect,
+} from "react";
 import { Context } from "../../apps/client/contexts/routing-context";
 
 type Props = {
@@ -24,7 +30,7 @@ export class RedirectBoundary extends Component<
       "digest" in error &&
       typeof error.digest === "string"
     ) {
-      let [name, status, url] = error.digest.split(":");
+      let [name, _status, _url] = error.digest.split(":");
 
       if (name === "TwofoldRedirectError") {
         return {

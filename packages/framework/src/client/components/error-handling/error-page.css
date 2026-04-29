@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+.production {
+  html {
+    height: 100%;
+  }
+}
+
+.development {
+  html,
+  body,
+  #root {
+    height: 100%;
+    background-color: var(--color-red-50);
+  }
+}
+
+table.stack {
+  table-layout: auto;
+  box-sizing: border-box;
+  border: #f3f3f3 1px solid;
+  border-radius: 5px;
+  width: 100%;
+
+  th {
+    text-align: left;
+  }
+
+  th {
+    white-space: nowrap;
+    background-color: #333;
+    color: #fff;
+  }
+
+  td,
+  th {
+    padding: 0.4em 0.5em;
+  }
+
+  tr.frame-function {
+    border-top: #f3f3f3 1px solid;
+    font-family: "Courier New", Courier, monospace;
+
+    td {
+      padding-bottom: 0em;
+    }
+  }
+
+  tr.frame-source {
+    border-bottom: #f3f3f3 1px solid;
+
+    td {
+      padding-top: 0em;
+    }
+  }
+
+  tr.frame-internal {
+    border-top: #f3f3f3 1px solid;
+    border-bottom: #f3f3f3 1px solid;
+    color: #333;
+    font-style: italic;
+
+    span {
+      opacity: 50%;
+    }
+  }
+
+  tr.frame-internal-ssr {
+    opacity: 50%;
+  }
+
+  a {
+    color: rgb(27, 141, 218);
+  }
+}
+
+.hidden {
+  display: none;
+}

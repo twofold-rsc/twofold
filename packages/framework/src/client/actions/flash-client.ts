@@ -1,7 +1,11 @@
 import "client-only";
 
 import { use, useEffect, useRef } from "react";
-import { FlashContext, JSONValue, Message } from "../components/flash-provider";
+import {
+  FlashContext,
+  type JSONValue,
+  type Message,
+} from "../components/flash-provider";
 import * as z from "zod";
 
 type ZodTypeAny = z.ZodType<any, any, any>;

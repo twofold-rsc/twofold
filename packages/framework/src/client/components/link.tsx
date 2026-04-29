@@ -1,7 +1,15 @@
 "use client";
 
-import { ComponentProps, ElementType, MouseEvent, ReactNode, Ref } from "react";
+import {
+  useTransition,
+  type ComponentProps,
+  type ElementType,
+  type MouseEvent,
+  type ReactNode,
+  type Ref,
+} from "react";
 import { useRouter } from "../hooks/use-router";
+import { useProgress } from "react-transition-progress";
 
 type Props<C extends ElementType> = {
   as?: C;
@@ -28,6 +36,9 @@ export default function Link<T extends ElementType = "a">({
   let using: "replace" | "navigate" = replace ? "replace" : "navigate";
   let shouldScroll = !scroll || scroll == "top";
 
+  const startProgress = useProgress();
+  const [_isTransitioning, startTransition] = useTransition();
+
   function handleClick(e: MouseEvent<HTMLAnchorElement>) {
     if (onClick) {
       onClick(e);
@@ -46,6 +57,11 @@ export default function Link<T extends ElementType = "a">({
       router[using](href, {
         scroll: shouldScroll,
         ...(mask ? { mask: mask } : {}),
+      });
+    } else {
+      startTransition(async () => {
+        startProgress();
+        await new Promise(() => {});
       });
     }
   }
