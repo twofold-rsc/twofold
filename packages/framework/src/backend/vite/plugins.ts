@@ -82,6 +82,19 @@ export default function middleware(req: Request) { }
   });
 }
 
+function twofoldGlobalAuth(baseDir: string): Plugin {
+  return createVirtualPlugin("server-global-auth", {
+    async resolveId(_source, _importer, options) {
+      const middlewarePath = `${baseDir}/app/auth.ts`;
+      const resolved = await this.resolve(middlewarePath, undefined, options);
+      return resolved;
+    },
+    load() {
+      return "export default undefined";
+    },
+  });
+}
+
 function parseIdQuery(id: string): {
   filename: string;
   query: {
@@ -266,6 +279,7 @@ export function withTwofold(config: InlineConfig): InlineConfig {
         react(),
         twofoldServerApplicationRouter(),
         twofoldGlobalMiddleware(baseDir),
+        twofoldGlobalAuth(baseDir),
         twofoldServerReferencesMetaMapDev(baseDir),
         twofoldServerReferencesMetaMapBuild(baseDir),
       ],

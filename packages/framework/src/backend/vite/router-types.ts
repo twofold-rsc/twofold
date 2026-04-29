@@ -2,6 +2,7 @@ import type { FunctionComponent } from "react";
 import type { ReactFormState } from "react-dom/client";
 import type { LayoutProps, PageProps } from "../../types/importable";
 import type { RscActionPayload } from "./entrypoint/payload";
+import { AuthPolicyArray } from "../auth/auth";
 
 export enum MiddlewareMode {
   Run,
@@ -12,6 +13,7 @@ export interface ModuleSurface {
   default?: FunctionComponent<
     LayoutProps | PageProps<any> | { error: unknown }
   >;
+  auth?: AuthPolicyArray;
   before?: (props: any) => Promise<void>;
   GET?: (req: Request) => Promise<Response>;
   POST?: (req: Request) => Promise<Response>;
