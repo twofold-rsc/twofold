@@ -55,6 +55,7 @@ import {
   MiddlewareMode,
   type ModuleSurface,
 } from "./router-types.js";
+import { lookupServerActionAppTreePath } from "./router-lookup.js";
 import {
   getPathForRouterFromRscUrl,
   getPathForRscRequest,
@@ -305,6 +306,9 @@ export class ApplicationRuntime {
       // Handle actions.
       let actionResult: ActionResultData | undefined = undefined;
       if (renderRequest.isAction) {
+        const metadata = await lookupServerActionAppTreePath(
+          renderRequest.actionId,
+        );
         if (renderRequest.actionType === RenderRequestActionType.Request) {
           actionResult = await this.runActionViaRequest(
             request,

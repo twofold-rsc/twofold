@@ -1,8 +1,10 @@
 import react from "@vitejs/plugin-react";
-import rsc from "@vitejs/plugin-rsc";
+import rsc, { getPluginApi } from "@vitejs/plugin-rsc";
 import { type InlineConfig, mergeConfig, type Plugin } from "vite";
 import tailwindcss from "@tailwindcss/vite";
-import { exactRegex } from "@rolldown/pluginutils";
+import { RscPluginManager } from "@vitejs/plugin-rsc/plugin";
+import { exactRegex, prefixRegex } from "@rolldown/pluginutils";
+import path from "node:path";
 
 function createVirtualPlugin(
   name: string,
@@ -80,6 +82,137 @@ export default function middleware(req: Request) { }
   });
 }
 
+function parseIdQuery(id: string): {
+  filename: string;
+  query: {
+    [k: string]: string;
+  };
+} {
+  if (!id.includes("?")) return { filename: id, query: {} };
+  const [filename, rawQuery] = id.split(`?`, 2) as [string, string];
+  const query = Object.fromEntries(new URLSearchParams(rawQuery));
+  return { filename, query };
+}
+
+function normalizeRelativePathToRoute(appPath: string) {
+  appPath = appPath.replaceAll("\\", "/");
+  if (
+    appPath.startsWith(".") ||
+    !appPath.startsWith("app/pages") ||
+    path.isAbsolute(appPath)
+  ) {
+    return;
+  }
+  appPath = appPath.slice("app/pages".length);
+  appPath = appPath.replaceAll(/^(.+)\.tsx?$/g, "$1");
+  if (appPath.endsWith("/layout")) {
+    appPath = appPath.slice(0, -"/layout".length);
+  }
+  const knownSuffixes = [".page", ".api", ".error"];
+  for (const suffix of knownSuffixes) {
+    if (appPath.endsWith(suffix)) {
+      appPath = appPath.slice(0, -suffix.length);
+    }
+  }
+  if (appPath.endsWith("/index")) {
+    appPath = appPath.slice(0, -"/index".length);
+  }
+  if (appPath === "") {
+    appPath = "/";
+  }
+  return appPath;
+}
+
+function twofoldServerReferencesMetaMapDev(baseDir: string): Plugin {
+  let manager: RscPluginManager;
+  return {
+    name: "twofold:server-references-meta-map-dev",
+    apply: "serve",
+    async configureServer(server) {
+      console.log("twofoldServerActionMetadata: configureServer");
+      manager = getPluginApi(server.config)!.manager;
+    },
+    load: {
+      filter: {
+        id: prefixRegex("\0virtual:twofold/server-references-meta-map-lookup?"),
+      },
+      handler(id, _options) {
+        if (
+          id.startsWith("\0virtual:twofold/server-references-meta-map-lookup?")
+        ) {
+          const parsed = parseIdQuery(id).query as any;
+          const meta = Object.values(manager.serverReferenceMetaMap).find(
+            (meta) => meta.referenceKey === parsed.id,
+          );
+          if (!meta) {
+            throw new Error(
+              `Missing reference to server action ${parsed.id} in serverReferenceMetaMap`,
+            );
+          }
+          const appPath = normalizeRelativePathToRoute(
+            path.relative(baseDir, meta.importId),
+          );
+          if (appPath === undefined) {
+            throw new Error(
+              `Server action in file ${meta.importId} is not located underneath '/app/pages', which is required for authentication on server actions to be enforced. Move your server action to a file underneath '/app/pages'.`,
+            );
+          }
+          return `export default ${JSON.stringify(appPath)}`;
+        }
+      },
+    },
+  };
+}
+
+function twofoldServerReferencesMetaMapBuild(baseDir: string): Plugin {
+  const virtualId = "virtual:twofold/server-references-meta-map";
+  const resolvedId = "\0" + virtualId;
+  let manager: RscPluginManager;
+  return {
+    name: "twofold:server-references-meta-map-build",
+    async configResolved(config) {
+      manager = getPluginApi(config)!.manager;
+    },
+    resolveId: {
+      filter: { id: exactRegex(virtualId) },
+      handler(source) {
+        if (source === virtualId) {
+          return resolvedId;
+        }
+      },
+    },
+    load: {
+      filter: { id: exactRegex(resolvedId) },
+      handler(id) {
+        if (id === resolvedId) {
+          if (this.environment.mode === "dev") {
+            return `export {}`;
+          }
+          let referencesToAppPaths: Record<string, string> = {};
+          for (const key of Object.getOwnPropertyNames(
+            manager.serverReferenceMetaMap,
+          )) {
+            const value = manager.serverReferenceMetaMap[key];
+            if (value?.referenceKey === undefined) {
+              continue;
+            }
+            let appPath = normalizeRelativePathToRoute(
+              path.relative(baseDir, key),
+            );
+            if (appPath === undefined) {
+              continue;
+            }
+            referencesToAppPaths[value.referenceKey] = appPath;
+          }
+          return `
+export default ${JSON.stringify(referencesToAppPaths)}
+`;
+        }
+      },
+    },
+  };
+}
+
 export function withTwofold(config: InlineConfig): InlineConfig {
   const baseDir = process.cwd();
   return mergeConfig(
@@ -133,6 +266,8 @@ export function withTwofold(config: InlineConfig): InlineConfig {
         react(),
         twofoldServerApplicationRouter(),
         twofoldGlobalMiddleware(baseDir),
+        twofoldServerReferencesMetaMapDev(baseDir),
+        twofoldServerReferencesMetaMapBuild(baseDir),
       ],
     },
     config ?? {},
