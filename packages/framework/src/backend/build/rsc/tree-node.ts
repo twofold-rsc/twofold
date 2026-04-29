@@ -166,7 +166,7 @@ export class TreeNode {
     return results;
   }
 
-  findNearestApplicableAuthForPath(path: string): Page | Layout | undefined {
+  findNearestParentAuthForPath(path: string): Page | Layout | undefined {
     let page: Page | Layout | undefined = this.findPageForPathWithType(
       FindPageType.Static,
       path,

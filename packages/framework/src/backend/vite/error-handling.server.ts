@@ -106,11 +106,9 @@ export async function onServerSideCatastrophicError(
   logError(context, true);
 }
 
-// Non-recoverable middleware error on server during API handling.
+// Non-recoverable error on server during API handling.
 // This will cause a change in response content.
-export function onServerSideApiMiddlewareError(
-  context: ServerErrorContext,
-): Response {
+export function onServerSideApiError(context: ServerErrorContext): Response {
   logError(context);
 
   if (isNotFoundError(context.error)) {
@@ -138,12 +136,12 @@ export async function onServerSidePageMiddlewareError(
   logError(context);
 
   if (isNotFoundError(context.error)) {
-    return context.applicationRuntime.runSpecialPage(
+    return context.applicationRuntime.noAuthChecks_runSpecialPage(
       context.renderRequest,
       tfPaths.throwing.notFound,
     );
   } else if (isUnauthorizedError(context.error)) {
-    return context.applicationRuntime.runSpecialPage(
+    return context.applicationRuntime.noAuthChecks_runSpecialPage(
       context.renderRequest,
       tfPaths.throwing.unauthorized,
     );
@@ -155,7 +153,7 @@ export async function onServerSidePageMiddlewareError(
       errorInfo.status,
     );
   } else {
-    return context.applicationRuntime.runSpecialPage(
+    return context.applicationRuntime.noAuthChecks_runSpecialPage(
       context.renderRequest,
       tfPaths.throwing.internalServerError,
       context.error,
@@ -182,6 +180,9 @@ export function onServerSidePageRenderError(context: ServerErrorContext) {
   }
 }
 
+// Error thrown by a server action; this will be returned
+// to the client and re-thrown if this implementation does
+// not replace the response.
 export async function onServerSideActionError(
   context: ServerErrorContext,
 ): Promise<ReplacementResponse> {
@@ -193,5 +194,66 @@ export async function onServerSideActionError(
       context.renderRequest,
       redirectInfo.url,
     );
+  }
+}
+
+// Called when authentication policies run for a page and
+// throw an unknown type of error. In this case, access
+// is denied and the result of this function is the response.
+export async function onServerSidePageAuthUnknownError(
+  context: ServerErrorContext,
+): Promise<ReplacementResponse> {
+  logError(context);
+
+  if (isNotFoundError(context.error)) {
+    return context.applicationRuntime.noAuthChecks_runSpecialPage(
+      context.renderRequest,
+      tfPaths.throwing.notFound,
+    );
+  } else if (isUnauthorizedError(context.error)) {
+    return context.applicationRuntime.noAuthChecks_runSpecialPage(
+      context.renderRequest,
+      tfPaths.throwing.unauthorized,
+    );
+  } else if (isRedirectError(context.error)) {
+    const redirectInfo = redirectErrorInfo(context.error);
+    return context.applicationRuntime.createRedirectResponse(
+      context.renderRequest,
+      redirectInfo.url,
+      redirectInfo.status,
+    );
+  } else {
+    logError(context);
+    return new Response("Access denied due to an internal error", {
+      status: 403,
+    });
+  }
+}
+
+// Called when authentication policies run for an API route and
+// throw an unknown type of error. In this case, access
+// is denied and the result of this function is the response.
+export async function onServerSideApiAuthUnknownError(
+  context: ServerErrorContext,
+): Promise<Response> {
+  logError(context);
+
+  if (isNotFoundError(context.error)) {
+    return new Response("Not Found", { status: 404 });
+  } else if (isUnauthorizedError(context.error)) {
+    return new Response("Unauthorized", { status: 401 });
+  } else if (isRedirectError(context.error)) {
+    let { status, url } = redirectErrorInfo(context.error);
+    return new Response(null, {
+      status,
+      headers: {
+        Location: url,
+      },
+    });
+  } else {
+    logError(context);
+    return new Response("Access denied due to an internal error", {
+      status: 403,
+    });
   }
 }

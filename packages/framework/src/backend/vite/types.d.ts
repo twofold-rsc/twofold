@@ -7,7 +7,13 @@ declare module "virtual:twofold/server-global-middleware" {
   export default default_;
 }
 declare module "virtual:twofold/server-references-meta-map" {
-  const default_: Record<string, string>;
+  const default_: Record<
+    string,
+    {
+      loadModule: () => Promise<ModuleSurface>;
+      appPath: string;
+    }
+  >;
   export default default_;
 }
 declare module "virtual:twofold/server-global-auth" {

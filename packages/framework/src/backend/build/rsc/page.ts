@@ -3,6 +3,7 @@ import "urlpattern-polyfill";
 import { type Treeable, TreeNode } from "./tree-node.js";
 import { CatchBoundary } from "./catch-boundary.js";
 import { type ModuleSurface } from "../../vite/router-types.js";
+import { AuthPolicyArray } from "../../auth/auth.js";
 
 export class Page implements Treeable {
   #path: string;
@@ -168,5 +169,14 @@ export class Page implements Treeable {
 
   async preload() {
     await this.loadModule();
+  }
+
+  async getAuthPolicy(): Promise<AuthPolicyArray> {
+    let module = await this.loadModule();
+    if (module.auth) {
+      return module.auth;
+    } else {
+      return [];
+    }
   }
 }
