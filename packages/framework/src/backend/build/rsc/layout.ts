@@ -130,15 +130,6 @@ export class Layout implements Treeable {
     //    ]
 
     let module = await this.loadModule();
-    if (!module.default) {
-      throw new Error(`Layout for ${this.path}/ has no default export.`);
-    }
-
-    let layout = {
-      func: module.default,
-      requirements: ["dynamicRequest"],
-      props: {},
-    };
 
     // wrappers
     let wrappers = await this.loadWrappers();
@@ -146,7 +137,16 @@ export class Layout implements Treeable {
     // route stack placeholder
     let routeStackPlaceholder = await this.loadRouteStackPlaceholder();
 
+    if (module.default) {
+      let layout = {
+        func: module.default,
+        requirements: ["dynamicRequest"],
+        props: {},
+      };
     return [...wrappers, layout, routeStackPlaceholder];
+    } else {
+      return [...wrappers, routeStackPlaceholder];
+    }
   }
 
   async runMiddleware(props: {
