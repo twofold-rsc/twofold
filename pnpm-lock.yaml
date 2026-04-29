@@ -354,6 +354,9 @@ importers:
       '@eslint/js':
         specifier: ^9.37.0
         version: 9.39.4
+      '@rolldown/pluginutils':
+        specifier: 1.0.0-rc.17
+        version: 1.0.0-rc.17
       '@types/babel__core':
         specifier: ^7.20.5
         version: 7.20.5

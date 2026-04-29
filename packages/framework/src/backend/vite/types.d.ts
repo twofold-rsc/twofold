@@ -6,3 +6,7 @@ declare module "virtual:twofold/server-global-middleware" {
   const default_: ((req: Request) => Promise<Response | undefined>) | undefined;
   export default default_;
 }
+declare module "virtual:twofold/server-references-meta-map" {
+  const default_: Record<string, string>;
+  export default default_;
+}
