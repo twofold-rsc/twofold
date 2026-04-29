@@ -21,6 +21,7 @@ import { setServerCallback } from "@vitejs/plugin-rsc/browser";
 import { callServerAction } from "./browser/call-server.js";
 import { getInitialPayload } from "./browser/initial-payload.js";
 import { onClientSideRenderError } from "../error-handling.client.js";
+import { ProgressBarProvider, useProgress } from "react-transition-progress";
 
 declare global {
   interface Window {
@@ -37,7 +38,9 @@ declare global {
 function BrowserApp() {
   return (
     <GlobalErrorBoundary>
-      <Router />
+      <ProgressBarProvider>
+        <Router />
+      </ProgressBarProvider>
     </GlobalErrorBoundary>
   );
 }
@@ -48,6 +51,7 @@ function Router() {
   let [routerState, dispatch] = useRouterReducer();
   let [optimisticPath, setOptimisticPath] = useOptimistic(routerState.path);
   let [isTransitioning, startTransition] = useTransition();
+  const startProgress = useProgress();
 
   let navigateToPath = useCallback(
     (
@@ -68,6 +72,7 @@ function Router() {
       let newPath = `${pathname}${url.search}${url.hash}`;
 
       startTransition(() => {
+        startProgress();
         setOptimisticPath(newPath);
         dispatch({
           type: "NAVIGATE",
@@ -79,7 +84,7 @@ function Router() {
         });
       });
     },
-    [dispatch, setOptimisticPath],
+    [dispatch, setOptimisticPath, startProgress],
   );
 
   let navigate = useCallback(
@@ -221,6 +226,7 @@ function Router() {
       ...window.__twofold,
       updateStack(path: string, stack: RouteStackEntry[]) {
         startTransition(() => {
+          startProgress();
           setOptimisticPath(path);
           dispatch({
             type: "UPDATE",
@@ -232,6 +238,7 @@ function Router() {
       },
       navigate(path: string) {
         startTransition(() => {
+          startProgress();
           setOptimisticPath(path);
           dispatch({
             type: "NAVIGATE",
@@ -251,7 +258,7 @@ function Router() {
         delete window.__twofold.navigate;
       }
     };
-  }, [dispatch, setOptimisticPath]);
+  }, [dispatch, setOptimisticPath, startProgress]);
 
   let url = useURLFromPath(routerState.path);
   let optimisticURL = useURLFromPath(optimisticPath);

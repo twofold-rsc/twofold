@@ -8,6 +8,7 @@ import { RouteStack } from "../../../client/apps/client/contexts/route-stack-con
 import { RoutingContext } from "../../../client/apps/client/contexts/routing-context.js";
 import { onClientSideRenderError } from "../error-handling.client.js";
 import ErrorPage from "../../../client/components/error-handling/error-page.js";
+import { ProgressBarProvider } from "react-transition-progress";
 
 function SsrApp(props: { url: URL; payload: Promise<RscPayload> }) {
   let navigate = () => {
@@ -25,20 +26,22 @@ function SsrApp(props: { url: URL; payload: Promise<RscPayload> }) {
   let routeStack = React.use(props.payload).stack;
 
   return (
-    <RoutingContext
-      version={1}
-      path={props.url.pathname}
-      mask={undefined}
-      searchParams={props.url.searchParams}
-      optimisticPath={props.url.pathname}
-      optimisticSearchParams={props.url.searchParams}
-      isTransitioning={false}
-      navigate={navigate}
-      replace={replace}
-      refresh={refresh}
-    >
-      <RouteStack stack={routeStack} />
-    </RoutingContext>
+    <ProgressBarProvider>
+      <RoutingContext
+        version={1}
+        path={props.url.pathname}
+        mask={undefined}
+        searchParams={props.url.searchParams}
+        optimisticPath={props.url.pathname}
+        optimisticSearchParams={props.url.searchParams}
+        isTransitioning={false}
+        navigate={navigate}
+        replace={replace}
+        refresh={refresh}
+      >
+        <RouteStack stack={routeStack} />
+      </RoutingContext>
+    </ProgressBarProvider>
   );
 }
 

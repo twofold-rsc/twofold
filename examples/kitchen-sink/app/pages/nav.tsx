@@ -235,6 +235,16 @@ export default function Nav() {
                         description="Request normalization for proxies and load balancers."
                         href="/http/request-forwarding"
                       />
+                      <ExampleLink
+                        title="External link"
+                        description="Navigation progress for external links"
+                        href="/http/external"
+                      />
+                      <ExampleLink
+                        title="Slow page"
+                        description="Navigation progress during a slow page load"
+                        href="/http/slow"
+                      />
                     </ExampleGroup>
 
                     <ExampleGroup name="Build" path="/build">

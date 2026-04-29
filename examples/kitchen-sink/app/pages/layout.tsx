@@ -3,6 +3,7 @@ import Nav from "./nav";
 import TwofoldFramework from "@twofold/framework/twofold-framework";
 import { LayoutProps } from "@twofold/framework/types";
 import { Toaster } from "./toaster";
+import { ProgressBar } from "react-transition-progress";
 
 export default function Layout({ children }: LayoutProps) {
   return (
@@ -13,6 +14,7 @@ export default function Layout({ children }: LayoutProps) {
         <meta charSet="utf-8" />
       </head>
       <body className="subpixel-antialiased">
+        <ProgressBar className="fixed top-0 h-1 bg-sky-500 shadow-lg shadow-sky-500/20" />
         <div>
           <Nav />
         </div>
