@@ -1,6 +1,12 @@
 "use client";
 
-import { ComponentProps, ElementType, MouseEvent, ReactNode, Ref } from "react";
+import type {
+  ComponentProps,
+  ElementType,
+  MouseEvent,
+  ReactNode,
+  Ref,
+} from "react";
 import { useRouter } from "../hooks/use-router";
 
 type Props<C extends ElementType> = {

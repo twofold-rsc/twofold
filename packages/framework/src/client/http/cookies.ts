@@ -1,6 +1,6 @@
 import "server-only";
 import { getStore } from "../../backend/stores/rsc-store";
-import { SerializeOptions } from "cookie";
+import type { SerializeOptions } from "cookie";
 
 let cookies = {
   all() {

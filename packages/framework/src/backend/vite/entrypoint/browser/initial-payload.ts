@@ -1,5 +1,5 @@
 import { createFromReadableStream } from "@vitejs/plugin-rsc/browser";
-import { RscPayload } from "../payload.js";
+import type { RscPayload } from "../payload.js";
 import { rscStream } from "rsc-html-stream/client";
 
 let initialPayload: Promise<RscPayload> | undefined = undefined;

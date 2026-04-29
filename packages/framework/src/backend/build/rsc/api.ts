@@ -1,4 +1,4 @@
-import { ModuleSurface } from "../../vite/router.js";
+import { type ModuleSurface } from "../../vite/router-types.js";
 
 export class API {
   #path: string;

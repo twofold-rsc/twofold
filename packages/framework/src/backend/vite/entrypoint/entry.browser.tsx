@@ -1,5 +1,4 @@
 import {
-  Component,
   startTransition,
   StrictMode,
   useCallback,
@@ -15,9 +14,9 @@ import { BrowserErrorBoundary } from "../../../client/components/error-handling/
 import { GlobalErrorBoundary } from "../../../client/components/error-handling/global-error-boundary.js";
 import {
   RouteStack,
-  RouteStackEntry,
+  type RouteStackEntry,
 } from "../../../client/apps/client/contexts/route-stack-context.js";
-import { createRoot, hydrateRoot, RootOptions } from "react-dom/client";
+import { createRoot, hydrateRoot, type RootOptions } from "react-dom/client";
 import { setServerCallback } from "@vitejs/plugin-rsc/browser";
 import { callServerAction } from "./browser/call-server.js";
 import { getInitialPayload } from "./browser/initial-payload.js";

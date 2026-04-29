@@ -1,22 +1,15 @@
-import {
-  ComponentType,
-  createElement,
-  FunctionComponent,
-  ReactElement,
-} from "react";
-import type { LayoutProps, PageProps } from "../../types/importable.js";
+import { type ComponentType, createElement, type ReactElement } from "react";
 import { Layout } from "../build/rsc/layout.js";
 import { partition } from "../utils/partition.js";
 import { Page } from "../build/rsc/page.js";
 import {
   getPathForRouterFromRscUrl,
+  getPathForRscRequest,
   parseRenderRequest,
-  URL_POSTFIX,
 } from "./entrypoint/request.js";
 import { API } from "../build/rsc/api.js";
 import { applyPathParams, pathMatches } from "../runtime/helpers/routing.js";
-import { ReactFormState } from "react-dom/client";
-import { RscActionPayload, RscPayload } from "./entrypoint/payload.js";
+import type { RscPayload } from "./entrypoint/payload.js";
 import {
   renderToReadableStream,
   createTemporaryReferenceSet,
@@ -26,14 +19,14 @@ import {
   decodeFormState,
 } from "@vitejs/plugin-rsc/rsc";
 import xxhash from "xxhash-wasm";
-import { RouteStackEntry } from "../../client/apps/client/contexts/route-stack-context.js";
-import { runStore, Store } from "../stores/rsc-store.js";
-import { SerializeOptions } from "cookie";
+import type { RouteStackEntry } from "../../client/apps/client/contexts/route-stack-context.js";
+import { runStore, type Store } from "../stores/rsc-store.js";
+import type { SerializeOptions } from "cookie";
 import { createRouter } from "@hattip/router";
 import { cookie } from "@hattip/cookie";
 import { decrypt, encrypt } from "../encryption.js";
 import { randomBytes } from "node:crypto";
-import { AdapterRequestContext, type HattipHandler } from "@hattip/core";
+import type { AdapterRequestContext, HattipHandler } from "@hattip/core";
 import { ErrorTemplate } from "../build/rsc/error-template.js";
 import { CatchBoundary } from "../build/rsc/catch-boundary.js";
 import { Generic } from "../build/rsc/generic.js";
@@ -56,38 +49,16 @@ import {
   onServerSideReceivedSsrError,
 } from "./error-handling.server.js";
 import catastrophicErrorHtml from "./catastrophic-internal-error.html?raw";
-import { NodePlatformInfo } from "@hattip/adapter-node/native-fetch";
+import type { NodePlatformInfo } from "@hattip/adapter-node/native-fetch";
 import globalMiddleware from "virtual:twofold/server-global-middleware";
 import { tfPaths } from "./special-pages.js";
-import { ReplacementResponse } from "./replacement-response.js";
-
-enum MiddlewareMode {
-  Run,
-  Skip,
-}
-
-export interface ModuleSurface {
-  default?: FunctionComponent<
-    LayoutProps | PageProps<any> | { error: unknown }
-  >;
-  before?: (props: any) => Promise<void>;
-  GET?: (req: Request) => Promise<Response>;
-  POST?: (req: Request) => Promise<Response>;
-  [key: string | symbol]: any | undefined;
-}
-
-type ModuleMap = {
-  [path: string]: () => Promise<ModuleSurface>;
-};
-
-class ActionResultData {
-  returnValue: RscActionPayload | undefined;
-  actionStatus: number | undefined;
-  formState: ReactFormState | undefined;
-  temporaryReferences: unknown | undefined;
-  response: Response | undefined;
-  error: unknown | undefined;
-}
+import type { ReplacementResponse } from "./replacement-response.js";
+import {
+  type ModuleMap,
+  type ActionResultData,
+  MiddlewareMode,
+  type ModuleSurface,
+} from "./router-types.js";
 
 let { h64Raw } = await xxhash();
 
@@ -137,15 +108,12 @@ export class ApplicationRuntime {
     });
 
     // silence not found for external requests
-    app.get("/**/*.js.map", async (ctx) => {
+    app.get("/**/*.js.map", async () => {
       return new Response(null, { status: 404 });
     });
-    app.get(
-      "/.well-known/appspecific/com.chrome.devtools.json",
-      async (ctx) => {
-        return new Response(null, { status: 204 });
-      },
-    );
+    app.get("/.well-known/appspecific/com.chrome.devtools.json", async () => {
+      return new Response(null, { status: 204 });
+    });
 
     // cookies
     app.use(cookie());
@@ -486,7 +454,7 @@ export class ApplicationRuntime {
         return process.env[variable];
       },
       passThrough: () => {},
-      waitUntil: (promise) => {},
+      waitUntil: () => {},
     };
     return await this.#handler(context);
   }
@@ -574,7 +542,7 @@ export class ApplicationRuntime {
     const args = await decodeReply(body, { temporaryReferences });
     const action = await loadServerAction(actionId);
     try {
-      const data = await action.apply(null, args);
+      const data = await action(...args);
       return {
         returnValue: {
           type: "return",
@@ -839,7 +807,7 @@ export class ApplicationRuntime {
       return new Response(null, {
         status: status ?? 303,
         headers: {
-          [headerLocation]: `${redirectUrl.pathname}${URL_POSTFIX}${redirectUrl.search}`,
+          [headerLocation]: getPathForRscRequest(redirectUrl),
         },
       });
     }
@@ -872,12 +840,10 @@ export class ApplicationRuntime {
     let pages = ApplicationRuntime.loadPages(modules);
     let layouts = ApplicationRuntime.loadLayouts(modules);
     let errorTemplates = ApplicationRuntime.loadErrorTemplates(modules);
-    let catchBoundaries = ApplicationRuntime.loadCatchBoundaries(
-      modules,
-      errorTemplates,
-    );
+    let catchBoundaries =
+      ApplicationRuntime.loadCatchBoundaries(errorTemplates);
     let outerRootWrapper = ApplicationRuntime.loadOuterRootWrapper();
-    let specialPages = ApplicationRuntime.loadSpecialPages(modules);
+    let specialPages = ApplicationRuntime.loadSpecialPages();
     let [rootLayout, otherLayouts] = partition(layouts, (x) => x.path === "/");
 
     if (rootLayout.length === 0) {
@@ -1015,7 +981,6 @@ export class ApplicationRuntime {
   }
 
   private static loadCatchBoundaries(
-    modules: ModuleMap,
     errorTemplates: ErrorTemplate[],
   ): CatchBoundary[] {
     let routeStackPlaceholder = new Generic({
@@ -1071,7 +1036,7 @@ export class ApplicationRuntime {
     });
   }
 
-  private static loadSpecialPages(modules: ModuleMap): Page[] {
+  private static loadSpecialPages(): Page[] {
     const specialPages = {
       [tfPaths.throwing.notFound]: () =>
         import("../../client/pages/throwing/not-found.js"),

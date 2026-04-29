@@ -5,11 +5,9 @@
   "type": "module",
   "scripts": {
     "prepack": "cp ../../README.md ./ && pnpm compile",
-    "dev": "nodemon --exec \"pnpm run compile\" --watch src -e ts,tsx",
     "compile": "tsdown",
-    "lint": "eslint . && pnpm lint:backend && pnpm lint:client",
-    "lint:backend": "tsc --noEmit -p src/backend/tsconfig.json",
-    "lint:client": "tsc --noEmit -p src/client/tsconfig.json"
+    "lint": "eslint . && tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
   },
   "bin": {
     "twofold": "./dist/backend/bin.js"
@@ -18,7 +16,6 @@
     "dist",
     "src"
   ],
-  "types": "src/types/global.d.ts",
   "exports": {
     ".": {
       "types": "./src/types/global.d.ts"
@@ -75,7 +72,7 @@
     "tsdown": "^0.21.10",
     "typescript": "catalog:",
     "typescript-eslint": "^8.45.0",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.5"
   },
   "peerDependencies": {
     "react": "catalog:",

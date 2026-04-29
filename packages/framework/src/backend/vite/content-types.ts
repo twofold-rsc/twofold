@@ -1,4 +1,4 @@
-import { ParsedHeaderValue, parseHeaderValue } from "@hattip/headers";
+import { type ParsedHeaderValue, parseHeaderValue } from "@hattip/headers";
 
 export const headerAccept = "accept";
 export const headerContentType = "content-type";

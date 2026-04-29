@@ -55,10 +55,9 @@ export function createRscRenderRequest(
   path: string,
   options: { initiator?: TwofoldInitiator } = {},
 ): Request {
-  const encodedPath = encodeURIComponent(path);
   const initiator = options.initiator ?? twofoldInitiator.notSpecified;
 
-  return new Request(`${rscPageUrlPrefix}?path=${encodedPath}`, {
+  return new Request(getPathForRscRequest(path), {
     method: "GET",
     headers: {
       [headerAccept]: contentType.rsc,
@@ -99,6 +98,13 @@ export function parseRenderRequest(request: Request): RenderRequest {
     request,
     url,
   };
+}
+
+export function getPathForRscRequest(pageUrl: URL | string) {
+  const encodedPath = encodeURIComponent(
+    typeof pageUrl === "string" ? pageUrl : getPathForRouterFromRscUrl(pageUrl),
+  );
+  return `${rscPageUrlPrefix}?path=${encodedPath}`;
 }
 
 export function getPathForRouterFromRscUrl(url: URL | Location) {

@@ -1,10 +1,10 @@
 import { use, useEffect, useReducer } from "react";
-import { RouteStackEntry } from "../../../../client/apps/client/contexts/route-stack-context.js";
-import { RscPayload } from "../payload.js";
+import type { RouteStackEntry } from "../../../../client/apps/client/contexts/route-stack-context.js";
+import type { RscPayload } from "../payload.js";
 import {
   createRscRenderRequest,
   getPathForRouterFromRscUrl,
-  TwofoldInitiator,
+  type TwofoldInitiator,
 } from "../request.js";
 import { getInitialPayload } from "./initial-payload.js";
 import { fetchPageAsRscPayload } from "./call-server.js";

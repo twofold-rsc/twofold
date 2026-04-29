@@ -4,7 +4,7 @@ import { use } from "react";
 import {
   Context,
   RouteStack,
-  RouteStackEntry,
+  type RouteStackEntry,
 } from "../../apps/client/contexts/route-stack-context";
 import { RedirectBoundary } from "../boundaries/redirect-boundary";
 

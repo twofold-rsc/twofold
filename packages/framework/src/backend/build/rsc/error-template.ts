@@ -1,5 +1,5 @@
-import { ModuleSurface } from "../../vite/router.js";
-import { Treeable, TreeNode } from "./tree-node.js";
+import type { ModuleSurface } from "../../vite/router-types.js";
+import { type Treeable, TreeNode } from "./tree-node.js";
 
 export class ErrorTemplate implements Treeable {
   #tag: string;

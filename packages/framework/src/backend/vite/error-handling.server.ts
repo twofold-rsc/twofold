@@ -7,7 +7,7 @@ import {
 } from "../runtime/helpers/errors.js";
 import { ApplicationRuntime } from "./router.js";
 import { tfPaths } from "./special-pages.js";
-import { ReplacementResponse } from "./replacement-response.js";
+import type { ReplacementResponse } from "./replacement-response.js";
 
 export interface ServerErrorContext {
   applicationRuntime: ApplicationRuntime;

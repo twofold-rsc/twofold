@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import {
   createServer,
-  NodePlatformInfo,
+  type NodePlatformInfo,
 } from "@hattip/adapter-node/native-fetch";
 import { Command } from "commander";
 import { Socket } from "node:net";

@@ -77,7 +77,7 @@ program
   .description("Build the project for production")
   .action(async () => {
     process.env.NODE_ENV = "production";
-    const builder = await vite.createBuilder(withTwofold());
+    const builder = await vite.createBuilder(withTwofold({}));
     await builder.buildApp();
     await copyFile(
       path.join(__dirname, "vite/production/server.js"),

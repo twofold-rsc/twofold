@@ -1,6 +1,6 @@
 import react from "@vitejs/plugin-react";
 import rsc from "@vitejs/plugin-rsc";
-import { InlineConfig, mergeConfig, Plugin, ResolvedConfig } from "vite";
+import { type InlineConfig, mergeConfig, type Plugin } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 
 function twofold(baseDir: string): Plugin {
@@ -34,9 +34,7 @@ export default function middleware(req: Request) { }
   };
 }
 
-export function withTwofold(
-  config?: InlineConfig | ResolvedConfig | undefined,
-) {
+export function withTwofold(config: InlineConfig): InlineConfig {
   return mergeConfig(
     {
       configFile: false,

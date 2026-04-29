@@ -1,7 +1,7 @@
 import { ErrorTemplate } from "./error-template.js";
 import { Generic } from "./generic.js";
 import { Layout } from "./layout.js";
-import { Node, Treeable, TreeNode } from "./tree-node.js";
+import { type Node, type Treeable, TreeNode } from "./tree-node.js";
 
 export class CatchBoundary implements Treeable {
   #path;

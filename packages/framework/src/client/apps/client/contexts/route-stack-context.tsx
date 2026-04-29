@@ -1,4 +1,4 @@
-import { createContext, ReactElement, ReactNode } from "react";
+import { createContext, type ReactElement, type ReactNode } from "react";
 import { Reader } from "../../../components/route-stack/reader";
 
 type TreeEntry = {

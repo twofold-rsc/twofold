@@ -1,8 +1,6 @@
-import { type ModuleSurface } from "../../vite/router.js";
-import { Generic } from "./generic.js";
-import { Node, TreeNode, Treeable } from "./tree-node.js";
+import { type ModuleSurface } from "../../vite/router-types.js";
+import { type Node, TreeNode, type Treeable } from "./tree-node.js";
 import { Wrapper } from "./wrapper.js";
-import Placeholder from "../../../client/components/route-stack/placeholder.js";
 
 export class Layout implements Treeable {
   #path: string;
@@ -106,7 +104,7 @@ export class Layout implements Treeable {
    * props for rendering.
    */
   async components(): Promise<
-    { func: any; requirements: string[]; props: {} }[]
+    { func: any; requirements: string[]; props: object }[]
   > {
     // flat list of all the components needed to render this layout.
     // it includes props as well as requirements.

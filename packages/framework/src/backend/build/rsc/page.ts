@@ -1,8 +1,8 @@
 import { Layout } from "./layout.js";
 import "urlpattern-polyfill";
-import { Treeable, TreeNode } from "./tree-node.js";
+import { type Treeable, TreeNode } from "./tree-node.js";
 import { CatchBoundary } from "./catch-boundary.js";
-import { type ModuleSurface } from "../../vite/router.js";
+import { type ModuleSurface } from "../../vite/router-types.js";
 
 export class Page implements Treeable {
   #path: string;

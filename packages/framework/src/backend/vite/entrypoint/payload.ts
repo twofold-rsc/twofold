@@ -1,4 +1,4 @@
-import { ReactFormState } from "react-dom/client";
+import { type ReactFormState } from "react-dom/client";
 import type { RouteStackEntry } from "../../../client/apps/client/contexts/route-stack-context.js";
 
 export type RscActionPayload =

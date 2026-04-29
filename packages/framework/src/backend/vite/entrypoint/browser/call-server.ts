@@ -8,7 +8,7 @@ import {
   getPathForRouterFromRscUrl,
   parseRenderRequest,
 } from "../request.js";
-import { RscPayload } from "../payload.js";
+import type { RscPayload } from "../payload.js";
 import { RedirectError } from "../../../../client/errors/redirect-error.js";
 import { headerContentType, isContentType } from "../../content-types.js";
 import { parseHeaderValue } from "@hattip/headers";

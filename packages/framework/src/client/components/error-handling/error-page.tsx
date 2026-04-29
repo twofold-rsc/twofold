@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 import errorPageStyles from "./error-page.css?inline";
 import * as stackTraceParser from "stacktrace-parser";
 import { type StackFrame as InternalStackFrame } from "stacktrace-parser";
