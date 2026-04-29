@@ -90,6 +90,22 @@ export default function DynamicLayout({
               Deep catch all
             </Link>
           </li>
+          <li>
+            <Link
+              href="/routing/dynamic/depth/dynamic"
+              className={`text-blue-500 ${pathname === "/routing/dynamic/depth/dynamic" ? "underline" : ""} whitespace-nowrap`}
+            >
+              Depth check (dynamic)
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/dynamic/depth/exact"
+              className={`text-blue-500 ${pathname === "/routing/dynamic/depth/exact" ? "underline" : ""} whitespace-nowrap`}
+            >
+              Depth check (exact)
+            </Link>
+          </li>
         </ul>
         <div>{children}</div>
       </div>
