@@ -26,7 +26,7 @@ program
 
     // Serve static files.
     const staticRoot = new URL("./client", import.meta.url);
-    const staticFiles = walk(staticRoot);
+    const staticFiles = walk(staticRoot, { prune: [] });
     router.use(
       createStaticMiddleware(staticFiles, createFileReader(staticRoot), {
         gzip: true,
