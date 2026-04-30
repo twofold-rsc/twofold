@@ -264,7 +264,9 @@ export class ApplicationRuntime {
     // global middleware
     // @note: This used to be before errors and request store setup, but we want to be able to capture errors from global middleware.
     app.use(async (ctx) => {
-      return await globalMiddleware(ctx.request);
+      if (globalMiddleware) {
+        return await globalMiddleware(ctx.request);
+      }
     });
 
     // handle all requests here

@@ -3,6 +3,6 @@ declare module "virtual:twofold/server-application-router" {
   export default default_;
 }
 declare module "virtual:twofold/server-global-middleware" {
-  function default_(req: Request): Promise<Response | undefined>;
+  const default_: ((req: Request) => Promise<Response | undefined>) | undefined;
   export default default_;
 }

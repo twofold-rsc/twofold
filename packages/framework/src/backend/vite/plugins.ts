@@ -74,7 +74,7 @@ function twofoldGlobalMiddleware(baseDir: string): Plugin {
     },
     load() {
       return `
-export default function middleware(req: Request) { }
+export default undefined
 `;
     },
   });
