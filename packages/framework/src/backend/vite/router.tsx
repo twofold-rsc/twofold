@@ -335,6 +335,16 @@ export class ApplicationRuntime {
         return actionResult.response;
       }
 
+      // This is now a page request; set context appropriately.
+      let store = getStore();
+      if (store) {
+        store.context = {
+          type: "page",
+          request: request,
+          assets: [],
+        };
+      }
+
       // Handle page request if the action hasn't already given us
       // a response stream.
       if (!rscStreamOrResponse) {
