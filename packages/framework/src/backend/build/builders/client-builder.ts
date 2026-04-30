@@ -12,34 +12,33 @@ import * as mime from "mime-types";
 import { fileURLToEscapedPath, hashFile } from "../helpers/file.js";
 import { transform } from "esbuild";
 import { transformAsync } from "@babel/core";
-import { EntriesBuilder } from "./entries-builder.js";
 
 export class ClientBuilder extends Builder {
   readonly name = "client";
 
   #build: Build;
-  #entriesBuilder: EntriesBuilder;
   #outputs?: Output[] | undefined;
 
   #imagesMap = new Map<string, Image>();
 
   constructor({
     build,
-    entriesBuilder,
   }: {
     build: Build;
-    entriesBuilder: EntriesBuilder;
   }) {
     super();
     this.#build = build;
-    this.#entriesBuilder = entriesBuilder;
   }
 
   get clientEntryPoints() {
-    let files = Array.from(this.#entriesBuilder.clientComponentEntryMap.keys());
+    let files = Array.from(this.entriesBuilder.clientComponentEntryMap.keys());
 
     // entry point order matters for deterministic builds
     return files.sort();
+  }
+
+  get entriesBuilder() {
+    return this.#build.getBuilder("entries");
   }
 
   get #env() {
@@ -410,7 +409,7 @@ export class ClientBuilder extends Builder {
     }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentEntryMap.values(),
+      this.entriesBuilder.clientComponentEntryMap.values(),
     );
     let clientComponentModuleMap = new Map<
       string,
@@ -453,7 +452,7 @@ export class ClientBuilder extends Builder {
     // }
 
     let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentEntryMap.values(),
+      this.entriesBuilder.clientComponentEntryMap.values(),
     );
     let clientComponentMap = new Map<
       string,

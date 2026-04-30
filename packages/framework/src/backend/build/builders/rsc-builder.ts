@@ -22,7 +22,6 @@ import { esbuildPluginTailwind } from "@ryanto/esbuild-plugin-tailwind";
 import { Image, imagesPlugin } from "../plugins/images-plugin.js";
 import { Font, fontsPlugin } from "../plugins/fonts-plugin.js";
 import { excludePackages } from "../externals/predefined-externals.js";
-import { EntriesBuilder } from "./entries-builder.js";
 import { ErrorTemplate } from "../rsc/error-template.js";
 import { Generic } from "../rsc/generic.js";
 import { CatchBoundary } from "../rsc/catch-boundary.js";
@@ -40,21 +39,17 @@ export class RSCBuilder extends Builder {
   readonly name = "rsc";
 
   #metafile?: Metafile | undefined;
-  #entriesBuilder: EntriesBuilder;
   #build: Build;
   #serverActionMap = new Map<string, CompiledAction>();
   #imagesMap = new Map<string, Image>();
   #fontsMap = new Map<string, Font>();
 
   constructor({
-    entriesBuilder,
     build,
   }: {
-    entriesBuilder: EntriesBuilder;
     build: Build;
   }) {
     super();
-    this.#entriesBuilder = entriesBuilder;
     this.#build = build;
   }
 
@@ -70,8 +65,8 @@ export class RSCBuilder extends Builder {
     return this.#fontsMap;
   }
 
-  get entries() {
-    return this.#entriesBuilder;
+  get entriesBuilder() {
+    return this.#build.getBuilder("entries");
   }
 
   async setup() {}
@@ -88,7 +83,7 @@ export class RSCBuilder extends Builder {
 
     // files need to be sorted for deterministic builds
     let serverActionEntries = Array.from(
-      this.#entriesBuilder.serverActionEntryMap.keys(),
+      this.entriesBuilder.serverActionEntryMap.keys(),
     ).sort();
 
     this.#serverActionMap = new Map();
@@ -100,7 +95,7 @@ export class RSCBuilder extends Builder {
     try {
       let appConfig = await this.#build.getAppConfig();
       let userDefinedExternalPackages = appConfig.externalPackages ?? [];
-      let discoveredExternals = this.#entriesBuilder.discoveredExternals;
+      let discoveredExternals = this.entriesBuilder.discoveredExternals;
 
       let result = await build({
         bundle: true,
@@ -179,7 +174,7 @@ export class RSCBuilder extends Builder {
               let errorsRegex = `^${fileURLToEscapedPath(pagesDir)}/.*\\.error\\.tsx$`;
 
               function isClientComponent(file: string) {
-                return builder.#entriesBuilder.clientComponentEntryMap.has(
+                return builder.entriesBuilder.clientComponentEntryMap.has(
                   file,
                 );
               }
