@@ -110,8 +110,8 @@ function Router() {
     });
   }, [dispatch]);
 
-  if (import.meta.hot) {
-    useEffect(() => {
+  useEffect(() => {
+    if (import.meta.hot) {
       const onRscReload = () => {
         console.log("[rsc:update] refreshing page due to RSC change...");
         refresh();
@@ -124,8 +124,8 @@ function Router() {
           import.meta.hot.off("rsc:update", onRscReload);
         }
       };
-    });
-  }
+    }
+  });
 
   useEffect(() => {
     function onPopState(event: PopStateEvent) {
