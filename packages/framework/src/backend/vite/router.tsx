@@ -585,9 +585,10 @@ export class ApplicationRuntime {
       }
       return unauthorizedAction();
     }
-    const applicableAuthEntity = this.#root.tree.findNearestParentAuthForPath(
-      serverActionMetadata.appPath,
-    );
+    const applicableAuthEntity =
+      this.#root.tree.findNearestParentAuthForPathlessPath(
+        serverActionMetadata.appPath,
+      );
     if (applicableAuthEntity === undefined) {
       if (process.env.NODE_ENV === "development") {
         throw new Error(

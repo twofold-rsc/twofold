@@ -166,7 +166,17 @@ export class TreeNode {
     return results;
   }
 
-  findNearestParentAuthForPath(path: string): Page | Layout | undefined {
+  findNearestParentAuthForPathlessPath(
+    pathWithPathless: string,
+  ): Page | Layout | undefined {
+    let path =
+      "/" +
+      pathWithPathless
+        .split("/")
+        .filter((segment) => !/^\(.*\)$/.test(segment))
+        .filter((segment) => segment !== "")
+        .join("/");
+
     let page: Page | Layout | undefined = this.findPageForPathWithType(
       FindPageType.Static,
       path,
@@ -178,7 +188,7 @@ export class TreeNode {
       page = this.findPageForPathWithType(FindPageType.CatchAll, path);
     }
     if (!page) {
-      page = this.findLayoutForPath(path);
+      page = this.findLayoutForPath(path, pathWithPathless);
     }
     return page;
   }
@@ -240,20 +250,34 @@ export class TreeNode {
     return page;
   }
 
-  private findLayoutForPath(realPath: string): Layout | undefined {
+  private findLayoutForPath(
+    path: string,
+    pathWithPathless: string,
+  ): Layout | Page | undefined {
     let childValues = this.children.map((child) => child.value);
 
     // assumes that immediate page children didn't match via findPageForPathWithType.
     let layout = childValues
       .filter((value) => {
         let holdsPages =
-          value instanceof Layout || value instanceof CatchBoundary;
-        return holdsPages && pathPartialMatches(value.path, realPath);
+          value instanceof Layout ||
+          value instanceof Page ||
+          value instanceof CatchBoundary;
+        return holdsPages && pathPartialMatches(value.path, path);
       })
-      .map((value) => value.tree.findLayoutForPath(realPath))
+      .map((value) => value.tree.findLayoutForPath(path, pathWithPathless))
+      .filter((x) => x !== undefined && pathWithPathless.startsWith(x.path))
+      .sort((a, b) => {
+        let distanceA = pathWithPathless.length - a!.path.length;
+        let distanceB = pathWithPathless.length - b!.path.length;
+        return distanceA - distanceB;
+      })
       .find(Boolean);
 
-    if (!layout && this.#value instanceof Layout) {
+    if (
+      !layout &&
+      (this.#value instanceof Layout || this.#value instanceof Page)
+    ) {
       layout = this.#value;
     }
 
