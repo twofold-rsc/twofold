@@ -80,12 +80,16 @@ export default undefined
   });
 }
 
-export function withTwofold(config: InlineConfig): InlineConfig {
+export function withTwofold(
+  config: InlineConfig,
+  isBuild: boolean,
+): InlineConfig {
   const baseDir = process.cwd();
   return mergeConfig(
     {
       configFile: false,
       resolve: {
+        noExternal: isBuild ? true : undefined,
         alias: [
           {
             find: "@",

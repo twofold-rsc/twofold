@@ -88,9 +88,12 @@ program
     ): Promise<vite.ViteDevServer> {
       const port = parseInt(options.port, 10) || 3000;
       const server = await vite.createServer(
-        withTwofold({
-          server: { host: "0.0.0.0", port },
-        }),
+        withTwofold(
+          {
+            server: { host: "0.0.0.0", port },
+          },
+          false,
+        ),
       );
       const handleServerRestart = createServerRestartHandler();
       await server.listen();
@@ -126,7 +129,7 @@ program
   .description("Build the project for production")
   .action(async () => {
     process.env.NODE_ENV = "production";
-    const builder = await vite.createBuilder(withTwofold({}));
+    const builder = await vite.createBuilder(withTwofold({}, true));
     await builder.buildApp();
     await copyFile(
       path.join(__dirname, "vite/production/server.js"),
@@ -157,11 +160,14 @@ program
     process.env.NODE_ENV = "production";
     const port = parseInt(options.port, 10) || 3000;
     const previewServer = await vite.preview(
-      withTwofold({
-        preview: {
-          port: port,
+      withTwofold(
+        {
+          preview: {
+            port: port,
+          },
         },
-      }),
+        true,
+      ),
     );
     await previewServer.printUrls();
     await previewServer.bindCLIShortcuts({ print: true });
