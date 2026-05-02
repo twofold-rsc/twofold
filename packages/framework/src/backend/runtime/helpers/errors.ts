@@ -26,7 +26,7 @@ export function isUnauthorizedError(err: unknown): err is Error {
 }
 
 export function redirectErrorToResponse(err: Error & { digest: string }) {
-  let [name, status, url] = err.digest.split(":");
+  let [_name, status, url] = err.digest.split(":");
 
   if (!url) {
     throw new Error("Invalid redirect");
@@ -47,7 +47,7 @@ export function redirectErrorInfo(err: unknown) {
     typeof err.digest === "string" &&
     err.digest.startsWith("TwofoldRedirectError")
   ) {
-    let [name, status, url] = err.digest.split(":");
+    let [_name, status, url] = err.digest.split(":");
 
     if (!url) {
       throw new Error("Invalid redirect");

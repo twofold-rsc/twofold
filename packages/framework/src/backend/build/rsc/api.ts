@@ -1,10 +1,41 @@
-export class API {
-  #path: string;
-  #fileUrl: URL;
+import { AuthPolicyArray } from "../../auth/auth.js";
+import { type ModuleSurface } from "../../vite/router-types.js";
+import { Layout } from "./layout.js";
+import { Treeable, TreeNode } from "./tree-node.js";
 
-  constructor({ path, fileUrl }: { path: string; fileUrl: URL }) {
+export class API implements Treeable {
+  #path: string;
+  #loadModule: () => Promise<ModuleSurface>;
+
+  tree: TreeNode;
+
+  constructor({
+    path,
+    loadModule,
+  }: {
+    path: string;
+    loadModule: () => Promise<ModuleSurface>;
+  }) {
     this.#path = path;
-    this.#fileUrl = fileUrl;
+    this.#loadModule = loadModule;
+
+    this.tree = new TreeNode(this);
+  }
+
+  canAcceptAsChild() {
+    return false;
+  }
+
+  addChild() {
+    throw new Error("Cannot add children to API routes.");
+  }
+
+  get children() {
+    return this.tree.children.map((c) => c.value);
+  }
+
+  get parent() {
+    return this.tree.parent?.value;
   }
 
   get path() {
@@ -40,12 +71,29 @@ export class API {
     });
   }
 
+  get parents() {
+    let parents = this.tree.parents.map((node) => node.value);
+    return parents.reverse();
+  }
+
+  get layouts() {
+    return this.parents.filter((p) => p instanceof Layout);
+  }
+
   async loadModule() {
-    let module = await import(this.#fileUrl.href);
-    return module;
+    return await this.#loadModule();
   }
 
   async preload() {
     await this.loadModule();
+  }
+
+  async getAuthPolicy(): Promise<AuthPolicyArray> {
+    let module = await this.loadModule();
+    if (module.auth) {
+      return module.auth;
+    } else {
+      return [];
+    }
   }
 }

@@ -1,9 +1,4 @@
-import Assets from "./assets";
-
+// this is no longer required, but included for compatibility
 export default function TwofoldFramework() {
-  return (
-    <>
-      <Assets />
-    </>
-  );
+  return null;
 }

@@ -3,12 +3,13 @@ import {
   pathPartialMatches,
 } from "../../runtime/helpers/routing.js";
 import { partition } from "../../utils/partition.js";
+import { API } from "./api.js";
 import { CatchBoundary } from "./catch-boundary.js";
 import { ErrorTemplate } from "./error-template.js";
 import { Layout } from "./layout.js";
 import { Page } from "./page.js";
 
-export type Node = Layout | CatchBoundary | Page | ErrorTemplate;
+export type Node = Layout | CatchBoundary | Page | ErrorTemplate | API;
 
 export type Treeable = {
   path: string;
@@ -20,6 +21,13 @@ export type Treeable = {
   children: Node[];
   parent: Node | undefined;
 };
+
+export enum FindPageType {
+  Static,
+  Dynamic,
+  CatchAll,
+  NearestLayout,
+}
 
 export class TreeNode {
   #value: Node;
@@ -147,7 +155,59 @@ export class TreeNode {
     console.log("*** Done Printing Tree ***");
   }
 
-  findPageForPath(realPath: string): Page | undefined {
+  findAllOfType<T>(t: { new (...args: any): T }): T[] {
+    const results = [];
+    if (this.#value instanceof t) {
+      results.push(this.#value);
+    }
+    for (const child of this.#children) {
+      results.push(...child.findAllOfType(t));
+    }
+    return results;
+  }
+
+  findNearestParentAuthForPathlessPath(
+    pathWithPathless: string,
+  ): Page | Layout | undefined {
+    let path =
+      "/" +
+      pathWithPathless
+        .split("/")
+        .filter((segment) => !/^\(.*\)$/.test(segment))
+        .filter((segment) => segment !== "")
+        .join("/");
+
+    let page: Page | Layout | undefined = this.findPageForPathWithType(
+      FindPageType.Static,
+      path,
+    );
+    if (!page) {
+      page = this.findPageForPathWithType(FindPageType.Dynamic, path);
+    }
+    if (!page) {
+      page = this.findPageForPathWithType(FindPageType.CatchAll, path);
+    }
+    if (!page) {
+      page = this.findLayoutForPath(path, pathWithPathless);
+    }
+    return page;
+  }
+
+  findPageForPath(path: string): Page | undefined {
+    let page = this.findPageForPathWithType(FindPageType.Static, path);
+    if (!page) {
+      page = this.findPageForPathWithType(FindPageType.Dynamic, path);
+    }
+    if (!page) {
+      page = this.findPageForPathWithType(FindPageType.CatchAll, path);
+    }
+    return page as Page;
+  }
+
+  private findPageForPathWithType(
+    findType: FindPageType,
+    realPath: string,
+  ): Page | undefined {
     let childValues = this.children.map((child) => child.value);
     let [staticAndDynamicPages, catchAllPages] = partition(
       childValues.filter((value) => value instanceof Page),
@@ -158,25 +218,69 @@ export class TreeNode {
       staticAndDynamicPages,
       (page) => page.isDynamic,
     );
-
-    let sortBy = (a: Page, b: Page) =>
-      a.dynamicSegments.length - b.dynamicSegments.length;
-    let dynamicPagesInOrder = dynamicPages.toSorted(sortBy);
-
-    let page =
-      staticPages.find((page) => pathMatches(page.path, realPath)) ??
-      dynamicPagesInOrder.find((page) => pathMatches(page.path, realPath)) ??
-      // this should really be DFS
-      childValues
+    let page: Page | undefined = undefined;
+    switch (findType) {
+      case FindPageType.Static:
+        page = staticPages.find((page) => pathMatches(page.path, realPath));
+        break;
+      case FindPageType.Dynamic: {
+        let sortBy = (a: Page, b: Page) =>
+          a.dynamicSegments.length - b.dynamicSegments.length;
+        let dynamicPagesInOrder = dynamicPages.toSorted(sortBy);
+        page = dynamicPagesInOrder.find((page) =>
+          pathMatches(page.path, realPath),
+        );
+        break;
+      }
+      case FindPageType.CatchAll:
+        page = catchAllPages.find((page) => pathMatches(page.path, realPath));
+        break;
+    }
+    if (!page) {
+      page = childValues
         .filter((value) => {
           let holdsPages =
             value instanceof Layout || value instanceof CatchBoundary;
           return holdsPages && pathPartialMatches(value.path, realPath);
         })
-        .map((value) => value.tree.findPageForPath(realPath))
-        .find(Boolean) ??
-      catchAllPages.find((page) => pathMatches(page.path, realPath));
+        .map((value) => value.tree.findPageForPathWithType(findType, realPath))
+        .find(Boolean);
+    }
 
     return page;
+  }
+
+  private findLayoutForPath(
+    path: string,
+    pathWithPathless: string,
+  ): Layout | Page | undefined {
+    let childValues = this.children.map((child) => child.value);
+
+    // assumes that immediate page children didn't match via findPageForPathWithType.
+    let layout = childValues
+      .filter((value) => {
+        let holdsPages =
+          value instanceof Layout ||
+          value instanceof Page ||
+          value instanceof CatchBoundary;
+        return holdsPages && pathPartialMatches(value.path, path);
+      })
+      .map((value) => value.tree.findLayoutForPath(path, pathWithPathless))
+      .filter((x) => x !== undefined && pathWithPathless.startsWith(x.path))
+      .sort((a, b) => {
+        let distanceA = pathWithPathless.length - a!.path.length;
+        let distanceB = pathWithPathless.length - b!.path.length;
+        return distanceA - distanceB;
+      })
+      .find(Boolean);
+
+    if (
+      !layout &&
+      (this.#value instanceof Layout || this.#value instanceof Page)
+    ) {
+      layout = this.#value;
+    }
+
+    return layout;
   }
 }

@@ -1,5 +1,5 @@
 import { notFound } from "../http/not-found";
 
-export default function NotFoundPage() {
+export default function ThrowNotFoundPage() {
   notFound();
 }

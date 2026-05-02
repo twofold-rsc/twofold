@@ -1,5 +1,5 @@
 import { unauthorized } from "../http/unauthorized";
 
-export default function UnauthorizedPage() {
+export default function ThrowUnauthorizedPage() {
   unauthorized();
 }
