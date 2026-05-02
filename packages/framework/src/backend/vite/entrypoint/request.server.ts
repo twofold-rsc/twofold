@@ -13,7 +13,7 @@ export enum RenderRequestActionType {
   FormState,
 }
 
-type RenderRequest =
+export type RenderRequest =
   | {
       isRsc: boolean;
       isAction: true;

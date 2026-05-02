@@ -16,7 +16,7 @@ import {
 } from "@vitejs/plugin-rsc/rsc";
 import xxhash from "xxhash-wasm";
 import type { RouteStackEntry } from "../../client/apps/client/contexts/route-stack-context.js";
-import { runStore, type Store } from "../stores/rsc-store.js";
+import { getStore, runStore, type Store } from "../stores/rsc-store.js";
 import type { SerializeOptions } from "cookie";
 import { createRouter } from "@hattip/router";
 import { cookie } from "@hattip/cookie";
@@ -42,7 +42,6 @@ import {
   onServerSideCatastrophicError,
   onServerSidePageMiddlewareError,
   onServerSidePageRenderError,
-  onServerSideReceivedSsrError,
 } from "./error-handling.server.js";
 import catastrophicErrorHtml from "./catastrophic-internal-error.html?raw";
 import type { NodePlatformInfo } from "@hattip/adapter-node/native-fetch";
@@ -61,6 +60,7 @@ import {
 } from "./entrypoint/request.js";
 import {
   parseRenderRequest,
+  RenderRequest,
   RenderRequestActionType,
 } from "./entrypoint/request.server.js";
 
@@ -132,7 +132,7 @@ export class ApplicationRuntime {
         onServerSideCatastrophicError({
           applicationRuntime: this,
           url: new URL(request.url),
-          request,
+          renderRequest: await parseRenderRequest(request),
           error,
           willRecover: false,
           location: undefined,
@@ -297,7 +297,7 @@ export class ApplicationRuntime {
         if (!skipApi) {
           // There is either no page, or the page does not take precedence
           // over the API, so run the API for this request.
-          const apiResponse = await this.runApi(request, api);
+          const apiResponse = await this.runApi(renderRequest, api);
           if (apiResponse) {
             return apiResponse;
           }
@@ -323,7 +323,7 @@ export class ApplicationRuntime {
         rscStreamOrResponse = await onServerSideActionError({
           applicationRuntime: this,
           url: new URL(request.url),
-          request,
+          renderRequest: renderRequest,
           error: actionResult.returnValue.error,
           willRecover: false,
           location: "action-request",
@@ -350,7 +350,7 @@ export class ApplicationRuntime {
       // Handle page request if the action hasn't already given us
       // a response stream.
       if (!rscStreamOrResponse) {
-        rscStreamOrResponse = await this.runPage(request, actionResult);
+        rscStreamOrResponse = await this.runPage(renderRequest, actionResult);
       }
 
       // If we have a direct response from the page (for a redirect),
@@ -375,76 +375,19 @@ export class ApplicationRuntime {
       );
 
       // Use SSR module to render RSC stream to HTML.
-      const [rscStreamForSsr, rscStreamForRecovery] =
-        rscStreamOrResponse.stream.tee();
       const ssrEntryModule = await import.meta.viteRsc.loadModule<
         typeof import("./entrypoint/entry.ssr.js")
       >("ssr", "index");
-      let ssrResult = await ssrEntryModule.renderHtmlOrError(rscStreamForSsr, {
-        url: url,
-        formState: actionResult?.formState,
-        debugNojs: url.searchParams.has("__nojs"),
-      });
-      if (ssrResult.type === "stream") {
-        return new Response(ssrResult.stream, {
-          status: rscStreamOrResponse?.status,
-          headers: {
-            [headerContentType]: contentType.html,
-          },
-        });
-      }
-
-      // Handle known errors from SSR failure.
-      let replacement: ReplacementResponse = await onServerSideReceivedSsrError(
-        {
-          applicationRuntime: this,
-          url: url,
-          request: request,
-          error: ssrResult.error,
-          willRecover: true,
-          location: "ssr",
-        },
-      );
-      if (replacement) {
-        if (replacement instanceof Response) {
-          return replacement;
-        } else {
-          const ssrReplacementResult = await ssrEntryModule.renderHtmlOrError(
-            replacement.stream,
-            {
-              url: url,
-              formState: actionResult?.formState,
-              debugNojs: url.searchParams.has("__nojs"),
-            },
-          );
-          if (ssrReplacementResult.type === "stream") {
-            return new Response(ssrReplacementResult.stream, {
-              status: replacement.status,
-              headers: {
-                [headerContentType]: contentType.html,
-              },
-            });
-          } else {
-            // Replacement result failed during SSR; proceed with the new error.
-            console.error("SSR of replacement response also failed.");
-            console.error(ssrReplacementResult.error);
-            ssrResult = ssrReplacementResult;
-          }
-        }
-      }
-
-      // Use SSR module to render just the bootstrap and stream, with no hydration. This allows the error boundary on the client to handle the error.
-      const ssrRecoveryStream = await ssrEntryModule.renderRecoveryHtml(
-        rscStreamForRecovery,
-        ssrResult.error,
+      let ssrStream = await ssrEntryModule.renderHtml(
+        rscStreamOrResponse.stream,
         {
           url: url,
           formState: actionResult?.formState,
           debugNojs: url.searchParams.has("__nojs"),
         },
       );
-      return new Response(ssrRecoveryStream, {
-        status: 500,
+      return new Response(ssrStream, {
+        status: rscStreamOrResponse?.status,
         headers: {
           [headerContentType]: contentType.html,
         },
@@ -501,25 +444,23 @@ export class ApplicationRuntime {
   }
 
   private async runApi(
-    request: Request,
+    renderRequest: RenderRequest,
     api: API,
   ): Promise<Response | undefined> {
-    const url = new URL(request.url);
-
     const module = await api.loadModule();
-    const execPattern = api.pattern.exec(url);
+    const execPattern = api.pattern.exec(renderRequest.url);
     const props = {
       params: execPattern?.pathname.groups ?? {},
-      searchParams: url.searchParams,
-      url,
-      request,
+      searchParams: renderRequest.url.searchParams,
+      url: renderRequest.url,
+      request: renderRequest.request,
     };
 
     if (module.before) {
       await module.before(props);
     }
 
-    const method = request.method.toUpperCase();
+    const method = renderRequest.request.method.toUpperCase();
     let response: Response;
 
     if (
@@ -532,8 +473,8 @@ export class ApplicationRuntime {
       } catch (error: unknown) {
         response = onServerSideApiMiddlewareError({
           applicationRuntime: this,
-          url,
-          request,
+          url: renderRequest.url,
+          renderRequest: renderRequest,
           error,
           willRecover: false,
           location: "api-middleware",
@@ -625,29 +566,26 @@ export class ApplicationRuntime {
   }
 
   private async runPage(
-    request: Request,
+    renderRequest: RenderRequest,
     actionResult: ActionResultData | undefined,
   ): Promise<ReplacementResponse> {
-    const url = new URL(request.url);
-    let page = this.#root.tree.findPageForPath(url.pathname);
+    let page = this.#root.tree.findPageForPath(renderRequest.url.pathname);
     if (page) {
       return this.runPageForInstance(
-        url,
         page,
         actionResult,
-        request,
+        renderRequest,
         MiddlewareMode.Run,
       );
     } else {
-      return this.runSpecialPage(request, tfPaths.throwing.notFound);
+      return this.runSpecialPage(renderRequest, tfPaths.throwing.notFound);
     }
   }
 
   private async runPageForInstance(
-    url: URL,
     page: Page,
     actionResult: ActionResultData | undefined,
-    request: Request,
+    renderRequest: RenderRequest,
     middleware: MiddlewareMode,
     overridePageProps?: { error: unknown },
     overrideStatus?: number,
@@ -661,21 +599,21 @@ export class ApplicationRuntime {
     } catch (error: unknown) {
       return onServerSidePageMiddlewareError({
         applicationRuntime: this,
-        url: url,
-        request,
+        url: renderRequest.url,
+        renderRequest: renderRequest,
         error: error,
         willRecover: false,
         location: "page-middleware",
       });
     }
 
-    const execPattern = page.pattern.exec(url);
+    const execPattern = page.pattern.exec(renderRequest.url);
     const params = execPattern?.pathname.groups ?? {};
     const props = {
       params,
-      searchParams: url.searchParams,
-      url,
-      request,
+      searchParams: renderRequest.url.searchParams,
+      url: renderRequest.url,
+      request: renderRequest.request,
     };
 
     if (middleware === MiddlewareMode.Run) {
@@ -689,8 +627,8 @@ export class ApplicationRuntime {
       } catch (error: unknown) {
         return onServerSidePageMiddlewareError({
           applicationRuntime: this,
-          url: url,
-          request,
+          url: renderRequest.url,
+          renderRequest: renderRequest,
           error: error,
           willRecover: false,
           location: "page-middleware",
@@ -731,7 +669,7 @@ export class ApplicationRuntime {
 
     const rscPayload: RscPayload = {
       stack: routeStack,
-      path: getPathForRouterFromRscUrl(url),
+      path: getPathForRouterFromRscUrl(renderRequest.url),
       action: actionResult?.returnValue,
       formState: actionResult?.formState,
     };
@@ -757,8 +695,8 @@ export class ApplicationRuntime {
         // Otherwise forward error to error handling.
         return onServerSidePageRenderError({
           applicationRuntime: this,
-          url: url,
-          request,
+          url: renderRequest.url,
+          renderRequest: renderRequest,
           error: error,
           willRecover: true,
           location: "page",
@@ -772,7 +710,7 @@ export class ApplicationRuntime {
   }
 
   runSpecialPage(
-    request: Request,
+    renderRequest: RenderRequest,
     specialPage: string,
     error?: unknown,
   ): Promise<ReplacementResponse> {
@@ -780,25 +718,18 @@ export class ApplicationRuntime {
     invariant(page, `Could not find special page '${specialPage}'`);
 
     let overrideStatus;
-    if (
-      specialPage === tfPaths.throwing.notFound ||
-      specialPage === tfPaths.rendered.notFound
-    ) {
+    if (specialPage === tfPaths.throwing.notFound) {
       overrideStatus = 404;
-    } else if (
-      specialPage === tfPaths.throwing.unauthorized ||
-      specialPage === tfPaths.rendered.unauthorized
-    ) {
+    } else if (specialPage === tfPaths.throwing.unauthorized) {
       overrideStatus = 403;
     } else if (specialPage === tfPaths.throwing.internalServerError) {
       overrideStatus = 500;
     }
 
     return this.runPageForInstance(
-      new URL(request.url),
       page,
       undefined,
-      request,
+      renderRequest,
       MiddlewareMode.Skip,
       error
         ? {
@@ -810,16 +741,16 @@ export class ApplicationRuntime {
   }
 
   createRedirectResponse(
-    requestUrl: URL,
+    renderRequest: RenderRequest,
     targetUrl: string,
-    isRsc: boolean,
     status?: number,
   ): Response {
-    let redirectUrl = new URL(targetUrl, requestUrl);
-    let isRelative =
-      redirectUrl.origin === requestUrl.origin && targetUrl.startsWith("/");
+    const redirectUrl = new URL(targetUrl, renderRequest.url);
+    const isRelative =
+      redirectUrl.origin === renderRequest.url.origin &&
+      targetUrl.startsWith("/");
 
-    if (isRsc && isRelative) {
+    if (renderRequest.isRsc && isRelative) {
       return new Response(null, {
         status: status ?? 303,
         headers: {
@@ -828,7 +759,7 @@ export class ApplicationRuntime {
       });
     }
 
-    if (!isRsc) {
+    if (!renderRequest.isRsc) {
       return new Response(null, {
         status: status ?? 303,
         headers: {
@@ -1055,15 +986,11 @@ export class ApplicationRuntime {
   private static loadSpecialPages(): Page[] {
     const specialPages = {
       [tfPaths.throwing.notFound]: () =>
-        import("../../client/pages/throwing/not-found.js"),
+        import("../../client/pages/not-found.js"),
       [tfPaths.throwing.unauthorized]: () =>
-        import("../../client/pages/throwing/unauthorized.js"),
+        import("../../client/pages/unauthorized.js"),
       [tfPaths.throwing.internalServerError]: () =>
-        import("../../client/pages/throwing/internal-server-error.js"),
-      [tfPaths.rendered.notFound]: () =>
-        import("../../client/pages/rendered/not-found.js"),
-      [tfPaths.rendered.unauthorized]: () =>
-        import("../../client/pages/rendered/unauthorized.js"),
+        import("../../client/pages/internal-server-error.js"),
     };
     const pages = [];
     for (const key of Object.getOwnPropertyNames(specialPages)) {

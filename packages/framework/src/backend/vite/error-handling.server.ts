@@ -8,11 +8,12 @@ import {
 import { ApplicationRuntime } from "./router.js";
 import { tfPaths } from "./special-pages.js";
 import type { ReplacementResponse } from "./replacement-response.js";
+import type { RenderRequest } from "./entrypoint/request.server.js";
 
 export interface ServerErrorContext {
   applicationRuntime: ApplicationRuntime;
   url: URL;
-  request: Request;
+  renderRequest: RenderRequest;
   error: unknown;
   willRecover: boolean;
   location:
@@ -65,27 +66,27 @@ function logError(context: ServerErrorContext, isCatastrophic?: boolean) {
       console.error(
         `${kleur["red"](`[Not found]`)}%s %s`,
         location,
-        context.request.url,
+        context.renderRequest.url,
       );
     } else if (isUnauthorizedError(context.error)) {
       console.error(
         `${kleur["red"](`[Unauthorized]`)}%s %s`,
         location,
-        context.request.url,
+        context.renderRequest.url,
       );
     } else if (isRedirectError(context.error)) {
       const redirectError = redirectErrorInfo(context.error);
       console.error(
         `${kleur["cyan"](`[Redirect]`)}%s %s -> %s`,
         location,
-        context.request.url,
+        context.renderRequest.url,
         redirectError.url,
       );
     } else {
       console.error(
         `${kleur["red"](`[${defaultCategory}]`)}%s %s %o`,
         location,
-        context.request.url,
+        context.renderRequest.url,
         context.error,
       );
     }
@@ -93,7 +94,7 @@ function logError(context: ServerErrorContext, isCatastrophic?: boolean) {
     console.error(
       `${kleur["red"](`[${defaultCategory}]`)}%s %s`,
       location,
-      context.request.url,
+      context.renderRequest.url,
     );
   }
 }
@@ -138,25 +139,24 @@ export async function onServerSidePageMiddlewareError(
 
   if (isNotFoundError(context.error)) {
     return context.applicationRuntime.runSpecialPage(
-      context.request,
+      context.renderRequest,
       tfPaths.throwing.notFound,
     );
   } else if (isUnauthorizedError(context.error)) {
     return context.applicationRuntime.runSpecialPage(
-      context.request,
+      context.renderRequest,
       tfPaths.throwing.unauthorized,
     );
   } else if (isRedirectError(context.error)) {
     const errorInfo = redirectErrorInfo(context.error);
     return context.applicationRuntime.createRedirectResponse(
-      context.url,
+      context.renderRequest,
       errorInfo.url,
-      true,
       errorInfo.status,
     );
   } else {
     return context.applicationRuntime.runSpecialPage(
-      context.request,
+      context.renderRequest,
       tfPaths.throwing.internalServerError,
       context.error,
     );
@@ -182,54 +182,16 @@ export function onServerSidePageRenderError(context: ServerErrorContext) {
   }
 }
 
-// Recoverable error received from SSR; the server will render a recovery HTML
-// where the client will re-render from the stream to allow error
-// boundaries to catch.
-export async function onServerSideReceivedSsrError(
-  context: ServerErrorContext,
-): Promise<ReplacementResponse> {
-  if (isNotFoundError(context.error)) {
-    return await context.applicationRuntime.runSpecialPage(
-      context.request,
-      tfPaths.rendered.notFound,
-    );
-  } else if (isUnauthorizedError(context.error)) {
-    return await context.applicationRuntime.runSpecialPage(
-      context.request,
-      tfPaths.rendered.unauthorized,
-    );
-  } else if (isRedirectError(context.error)) {
-    const redirectInfo = redirectErrorInfo(context.error);
-    return context.applicationRuntime.createRedirectResponse(
-      context.url,
-      redirectInfo.url,
-      false,
-      redirectInfo.status,
-    );
-  }
-}
-
 export async function onServerSideActionError(
   context: ServerErrorContext,
 ): Promise<ReplacementResponse> {
   logError(context);
 
-  if (isNotFoundError(context.error)) {
-    return await context.applicationRuntime.runSpecialPage(
-      context.request,
-      tfPaths.rendered.notFound,
-    );
-  } else if (isUnauthorizedError(context.error)) {
-    return await context.applicationRuntime.runSpecialPage(
-      context.request,
-      tfPaths.rendered.unauthorized,
-    );
-  } else if (isRedirectError(context.error)) {
+  if (isRedirectError(context.error)) {
     const redirectInfo = redirectErrorInfo(context.error);
     return context.applicationRuntime.createRedirectResponse(
-      context.url,
+      context.renderRequest,
       redirectInfo.url,
-      true,
     );
   }
 }
