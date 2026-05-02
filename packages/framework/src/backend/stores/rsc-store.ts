@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { SerializeOptions } from "cookie";
+import { type SerializeOptions } from "cookie";
 
 type JSONValue =
   | string

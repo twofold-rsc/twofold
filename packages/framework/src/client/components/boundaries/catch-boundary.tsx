@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, FunctionComponent, ReactNode } from "react";
+import { Component, type FunctionComponent, type ReactNode } from "react";
 import { Context as RawRoutingContext } from "../../apps/client/contexts/routing-context";
 
 type Props = {

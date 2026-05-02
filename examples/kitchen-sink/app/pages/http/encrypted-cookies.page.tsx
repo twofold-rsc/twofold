@@ -44,7 +44,7 @@ async function setToPromise() {
 async function setToFunction() {
   "use server";
 
-  let func = () => {
+  let func = async () => {
     "use server";
     console.log("Function called");
   };

@@ -1,11 +1,16 @@
 #!/usr/bin/env node
-import "./monkey-patch.js";
 import "dotenv/config";
-import { DevelopmentBuild } from "./build/build/development.js";
-import { ProductionBuild } from "./build/build/production.js";
 import { Command } from "commander";
-import { DevTask } from "./tasks/dev.js";
-import { ServeTask } from "./tasks/serve.js";
+import * as vite from "vite";
+import { withTwofold } from "./vite/plugins.js";
+import { chmodSync } from "node:fs";
+import { copyFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import kleur from "kleur";
+import { randomBytes } from "node:crypto";
+
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 let nodeVersion = process.versions.node.split(".").map(Number);
 
@@ -29,8 +34,6 @@ if (!hasRequiredNodeVersion) {
   process.exit(1);
 }
 
-let nodeEnv = process.env.NODE_ENV ?? "development";
-
 let program = new Command();
 
 program.name("twofold").description("Twofold CLI");
@@ -44,49 +47,130 @@ program
   )
   .description("Run the development server")
   .action(async (options) => {
-    let build =
-      nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
+    process.env.NODE_ENV = "development";
 
-    let port = parseInt(options.port, 10) || 3000;
+    {
+      let key = process.env.TWOFOLD_SECRET_KEY;
+      if (!key || typeof key !== "string") {
+        console.warn(
+          `Missing ${kleur.yellow("TWOFOLD_SECRET_KEY")}. Generating a random key.`,
+        );
+        process.env.TWOFOLD_SECRET_KEY = randomBytes(32).toString("hex");
+      }
+    }
 
-    let task = new DevTask({ build, port });
-    task.start();
+    function createServerRestartHandler() {
+      let restarting = false;
+
+      return async (server: vite.ViteDevServer) => {
+        if (restarting) {
+          return;
+        }
+        restarting = true;
+        try {
+          console.log(
+            "Performing full restart of server because files were created, renamed or deleted underneath /app/pages ...",
+          );
+          const previousUrls = server.resolvedUrls;
+          await server.close();
+          const newServer = await startDevServer(true);
+          if (previousUrls) {
+            server.resolvedUrls = newServer.resolvedUrls;
+          }
+        } finally {
+          restarting = false;
+        }
+      };
+    }
+
+    async function startDevServer(
+      isRestart: boolean,
+    ): Promise<vite.ViteDevServer> {
+      const port = parseInt(options.port, 10) || 3000;
+      const server = await vite.createServer(
+        withTwofold(
+          {
+            server: { host: "0.0.0.0", port },
+          },
+          false,
+        ),
+      );
+      const handleServerRestart = createServerRestartHandler();
+      await server.listen();
+
+      server.watcher.on("unlink", invalidateOnTreeChange);
+      server.watcher.on("add", invalidateOnTreeChange);
+
+      async function invalidateOnTreeChange(changedFile: string) {
+        if (!changedFile.startsWith(process.cwd())) {
+          return;
+        }
+        const relativePath = path
+          .relative(process.cwd(), changedFile)
+          .replaceAll("\\", "/");
+        if (relativePath.startsWith("app/")) {
+          await handleServerRestart(server);
+        }
+      }
+
+      if (!isRestart) {
+        await server.printUrls();
+      }
+
+      return server;
+    }
+
+    const server = await startDevServer(false);
+    await server.bindCLIShortcuts({ print: true });
   });
 
 program
   .command("build")
   .description("Build the project for production")
   .action(async () => {
-    let build =
-      nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
+    process.env.NODE_ENV = "production";
+    const builder = await vite.createBuilder(withTwofold({}, true));
+    await builder.buildApp();
+    await copyFile(
+      path.join(__dirname, "vite/production/server.js"),
+      path.join(process.cwd(), ".twofold/server.js"),
+    );
+    chmodSync(path.join(process.cwd(), ".twofold/server.js"), 0o775);
 
-    // build
-    await build.setup();
-    let { time, key } = await build.build();
-    console.log(`Build complete in ${time.toFixed(2)}ms [version: ${key}]`);
-    await build.stop();
+    console.log(
+      `
+🎉 Your Twofold app was successfully built.
 
-    // stash the build
-    await build.save();
+You can now run '${kleur["bold"](kleur["green"](`.twofold/server.js`))}' to run your server.
+
+You can also copy the self-contained '.twofold' folder to another location (e.g. inside a Docker container), and run your app without source code or installing node_modules.
+`,
+    );
   });
 
 program
-  .command("serve")
+  .command("preview")
   .option(
     "-p, --port <number>",
     "Port to run the development server on",
     "3000",
   )
-  .alias("start")
-  .description("Serve a production build")
+  .description("Preview a built production build")
   .action(async (options) => {
-    let build =
-      nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
-
-    let port = parseInt(options.port, 10) || 3000;
-
-    let task = new ServeTask({ build, port });
-    task.start();
+    process.env.NODE_ENV = "production";
+    const port = parseInt(options.port, 10) || 3000;
+    const previewServer = await vite.preview(
+      withTwofold(
+        {
+          preview: {
+            port: port,
+          },
+        },
+        true,
+      ),
+    );
+    await previewServer.printUrls();
+    await previewServer.bindCLIShortcuts({ print: true });
   });
 
 program.parse();

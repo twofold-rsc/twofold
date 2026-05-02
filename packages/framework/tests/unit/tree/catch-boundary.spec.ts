@@ -5,28 +5,29 @@ import { Layout } from "../../../src/backend/build/rsc/layout.ts";
 import { Page } from "../../../src/backend/build/rsc/page.ts";
 import { expect, test } from "vitest";
 
-const fileUrl = new URL("file:///tmp/dummy.js");
-const routeStackPlaceholder = new Generic({ fileUrl });
+const loadModule = async () => {
+  return {};
+};
+const routeStackPlaceholder = new Generic({ loadModule });
 
 function createLayout(path: string) {
   return new Layout({
     path,
-    fileUrl,
-    routeStackPlaceholder,
+    loadModule,
   });
 }
 
 function createPage(path: string) {
   return new Page({
     path,
-    fileUrl,
+    loadModule,
   });
 }
 
 function createCatchBoundary(path: string) {
   return new CatchBoundary({
     path,
-    fileUrl,
+    loadModule,
     routeStackPlaceholder,
   });
 }
@@ -35,7 +36,7 @@ function createErrorTemplate(path: string, tag: string) {
   return new ErrorTemplate({
     path,
     tag,
-    fileUrl,
+    loadModule,
   });
 }
 
@@ -46,7 +47,7 @@ test("the order of adding files to the tree does not matter", () => {
     for (let i = 0; i < arr.length; i++) {
       const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
       for (const perm of permutations(rest)) {
-        result.push([arr[i], ...perm]);
+        result.push([arr[i]!, ...perm]);
       }
     }
     return result;
@@ -74,7 +75,7 @@ test("the order of adding files to the tree does not matter", () => {
     expect(positions.length).toEqual(layouts.length);
 
     for (const index of ordering) {
-      root.addChild(layouts[index]);
+      root.addChild(layouts[index]!);
     }
 
     // root
