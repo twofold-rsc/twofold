@@ -9,7 +9,6 @@
     "lint": "eslint .",
     "build": "twofold build",
     "serve": "twofold serve",
-    "dev-framework": "nodemon --delay 100ms --exec \"pnpm twofold dev\" --watch ../../packages/framework/dist -e js",
     "start": "twofold start"
   },
   "keywords": [],
