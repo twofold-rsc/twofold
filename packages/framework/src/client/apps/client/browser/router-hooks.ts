@@ -370,10 +370,16 @@ async function getInitialRouterState() {
   if (typeof window === "undefined") {
     // was called on the server, do nothing.
   } else if (window.initialRSC?.stream) {
-    let payload = await createFromReadableStream(window.initialRSC.stream, {
-      callServer,
-    });
-    cache.set(initialPath, payload.stack);
+    if (window.initialRSC.stream.locked) {
+      throw new Error(
+        "Attempting to read a locked stream during initialization. This is a bug in @twofold/framework, please open an issue: https://github.com/twofold-rsc/twofold/issues/new?title=Bug+attempting+to+read+locked+stream+during+initialization",
+      );
+    } else {
+      let payload = await createFromReadableStream(window.initialRSC.stream, {
+        callServer,
+      });
+      cache.set(initialPath, payload.stack);
+    }
   } else {
     let rscPayload = await fetchRSCPayload(initialPath, {
       initiator: "initial-render",

@@ -97,7 +97,10 @@ export class EntriesBuilder extends Builder {
                 ],
               },
               handler() {
-                return { code: "" };
+                return {
+                  code: "",
+                  moduleType: "js",
+                };
               },
             },
           },

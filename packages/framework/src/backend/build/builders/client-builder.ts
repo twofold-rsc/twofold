@@ -1,5 +1,11 @@
+import { createRequire } from "module";
 import { fileURLToPath } from "url";
-import { appAppDir, appCompiledDir, frameworkSrcDir } from "../../files.js";
+import {
+  appAppDir,
+  appCompiledDir,
+  cwdUrl,
+  frameworkSrcDir,
+} from "../../files.js";
 import { Build } from "../build/build.js";
 import { Builder } from "./builder.js";
 import { build, OutputAsset, OutputChunk, Plugin } from "rolldown";
@@ -80,6 +86,15 @@ export class ClientBuilder extends Builder {
       format: "cjs",
     });
     let rsdwHeader = rsdwPatch.code;
+    let appRequire = createRequire(
+      fileURLToPath(new URL("./package.json", cwdUrl)),
+    );
+    let rsdwPackageJsonPath = appRequire.resolve(
+      "react-server-dom-webpack/package.json",
+    );
+    let rsdwPackageDir = dirname(rsdwPackageJsonPath);
+    let rsdwClientBrowserPath = path.join(rsdwPackageDir, "client.browser.js");
+    let rsdwClientEdgePath = path.join(rsdwPackageDir, "client.edge.js");
 
     // react babel plugin
     let appConfig = await this.#build.getAppConfig();
@@ -93,12 +108,18 @@ export class ClientBuilder extends Builder {
     try {
       let result = await build({
         // platform: "browser",
-        tsconfig: true,
         input: [
-          ...this.clientEntryPoints,
           this.initializeBrowserPath,
           this.srcSSRAppPath,
+          ...this.clientEntryPoints,
         ],
+        resolve: {
+          alias: {
+            "react-server-dom-webpack/client": rsdwClientBrowserPath,
+            "react-server-dom-webpack/client.edge": rsdwClientEdgePath,
+            "react-server-dom-webpack/client.browser": rsdwClientBrowserPath,
+          },
+        },
         transform: {
           define: {
             "process.env.NODE_ENV": `"${this.#env}"`,
@@ -223,13 +244,31 @@ export class ClientBuilder extends Builder {
           format: "esm",
           cleanDir: true,
 
-          advancedChunks: {
+          codeSplitting: {
             groups: [
               {
                 name: "react-vendor",
                 test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-refresh|react-server-dom-webpack)[\\/](?!.*(server|edge))/,
                 priority: 999,
-                // minShareCount: 2,
+              },
+              {
+                name: "call-server",
+                test: `^${fileURLToEscapedPath(
+                  new URL(
+                    "./client/apps/client/actions/call-server",
+                    frameworkSrcDir,
+                  ),
+                )}`,
+                priority: 998,
+              },
+              {
+                name: "contexts",
+                test: new RegExp(
+                  `^${fileURLToEscapedPath(
+                    new URL("./client/apps/client/contexts/", frameworkSrcDir),
+                  )}`,
+                ),
+                priority: 997,
               },
               {
                 name: "client-browser-app",
@@ -377,11 +416,11 @@ export class ClientBuilder extends Builder {
   }
 
   private get srcSSRAppPath() {
-    let initializeBrowser = fileURLToPath(
+    let initializeSSR = fileURLToPath(
       new URL("./client/apps/client/ssr/ssr-app.tsx", frameworkSrcDir),
     );
 
-    return initializeBrowser;
+    return initializeSSR;
   }
 
   get bootstrapPath() {

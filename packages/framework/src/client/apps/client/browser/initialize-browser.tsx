@@ -1,5 +1,4 @@
 import "../ext/react-refresh";
-import "../ext/webpack-loaders";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { BrowserApp } from "./browser-app";
 import { Component, startTransition, StrictMode } from "react";
@@ -7,6 +6,7 @@ import { Component, startTransition, StrictMode } from "react";
 declare global {
   interface Window {
     SSRDidError?: boolean;
+    clientAppDidInitialize?: boolean;
   }
 }
 
@@ -36,8 +36,9 @@ function main() {
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && !window.clientAppDidInitialize) {
   main();
+  window.clientAppDidInitialize = true;
 }
 
 type ErrorInfo = {

@@ -87,23 +87,15 @@ export default function DevReload() {
     async function handleChanges(message: ChangesMessage) {
       let changes = message.changes;
       key.current = message.key;
-      if (changes.rscFiles.added.length > 0) {
-        startTransition(async () => {
-          refresh();
-          setCSSToCleanup((c) => [...c, ...changes.cssFiles.removed]);
 
-          // if any of the added files had previous been removed, then we
-          // have to manually add them back. reason being react still
-          // thinks they are rendered, and will not automatically re-insert
-          // them.
-          let addingCSS = changes.cssFiles.added.map(addCSSFile);
-          await Promise.all(addingCSS);
-        });
-      } else if (
+      const hasClientChanges =
         changes.chunkFiles.added.length > 0 ||
         changes.chunkIds.added.length > 0 ||
-        changes.cssFiles.added.length > 0
-      ) {
+        changes.cssFiles.added.length > 0;
+
+      const hasRSCChanges = changes.rscFiles.added.length > 0;
+
+      if (hasClientChanges) {
         // add new css
         let cssFiles = changes.cssFiles.added.map(addCSSFile);
 
@@ -116,11 +108,16 @@ export default function DevReload() {
         await Promise.all([...cssFiles, ...chunkModules, ...clientModules]);
 
         startTransition(async () => {
-          // refresh react
-          await window.$RefreshRuntime$.performReactRefresh();
+          if (hasRSCChanges) {
+            // refresh the rsc
+            refresh();
+          }
 
           // remove old css
           setCSSToCleanup((c) => [...c, ...changes.cssFiles.removed]);
+
+          // refresh react
+          await window.$RefreshRuntime$.performReactRefresh();
         });
       } else {
         // some other change, like a non-frontent file (env, etc)
