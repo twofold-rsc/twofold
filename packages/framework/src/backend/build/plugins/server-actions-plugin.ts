@@ -11,10 +11,13 @@ import {
 import { getModuleId } from "../helpers/module.js";
 import { pathToLanguage } from "../helpers/languages.js";
 import { shouldIgnoreUseServer } from "../helpers/excluded.js";
+import { CompiledServerAction } from "../rsc/compiled-server-action.js";
+import { join, sep } from "path";
 
 type ServerAction = {
   id: string;
   path: string;
+  virtualPath: string;
   moduleId: string;
   export: string;
 };
@@ -41,6 +44,13 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
           return null;
         }
 
+        const prefix = join(process.cwd(), 'app', 'pages');
+        if (!path.startsWith(prefix)) {
+          return null;
+        }
+
+        let virtualPath = path.substring(prefix.length).replaceAll(sep, '/');
+
         let contents = await readFile(path, "utf-8");
         let hasUseServer = contents.includes("use server");
 
@@ -64,6 +74,7 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
             serverActions.add({
               id: `${moduleId}#${serverFunction}`,
               path,
+              virtualPath,
               moduleId,
               export: serverFunction,
             });
@@ -113,13 +124,14 @@ export function serverActionsPlugin({ builder }: { builder: RSCBuilder }) {
           actions.forEach((action) => {
             let outputPath = path.join(fileURLToPath(cwdUrl), outputFile);
             let hash = getHash(outputFile);
-            builder.serverActionMap.set(action.id, {
+            builder.serverActionMap.set(action.id, new CompiledServerAction({
               id: action.id,
               moduleId: action.moduleId,
               hash: hash,
               path: outputPath,
-              export: action.export,
-            });
+              virtualPath: action.virtualPath,
+              "export": action.export,
+            }));
           });
         }
       });

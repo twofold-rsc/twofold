@@ -97,12 +97,14 @@ export class Runtime {
     });
   }
 
-  unauthorizedPageRequest(request: Request) {
+  unauthorizedPageRequest(request: Request, optionalMessage: string | undefined) {
     let page = this.build
       .getBuilder("rsc")
       .findPageForPath("/__tf/errors/unauthorized");
 
     invariant(page, "Could not find unauthorized page");
+
+    // @todo: pass optionalMessage to unauthorized page somehow...
 
     return new PageRequest({
       page,

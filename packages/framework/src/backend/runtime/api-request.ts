@@ -1,5 +1,10 @@
 import { API } from "../build/rsc/api.js";
 import { Runtime } from "../runtime.js";
+import { getStore } from "../stores/rsc-store.js";
+import {
+  evaluatePolicyArray,
+  evaluatePolicyArrayToResponse,
+} from "./helpers/auth.js";
 import {
   isNotFoundError,
   isRedirectError,
@@ -37,6 +42,39 @@ export class APIRequest {
   async response() {
     let request = this.#request;
     let module = await this.#api.loadModule();
+
+    const authResponse = await evaluatePolicyArrayToResponse(
+      this.#runtime,
+      this.#api,
+      {
+        type: "api",
+        request: this.#request,
+        authCache: getStore().authCache,
+      },
+      async (error) => {
+        if (isNotFoundError(error)) {
+          return new Response("Not Found", { status: 404 });
+        } else if (isUnauthorizedError(error)) {
+          return new Response("Unauthorized", { status: 401 });
+        } else if (isRedirectError(error)) {
+          let { status, url } = redirectErrorInfo(error);
+          return new Response(null, {
+            status,
+            headers: {
+              Location: url,
+            },
+          });
+        } else {
+          console.error(error);
+          return new Response("Internal Server Error", { status: 500 });
+        }
+      },
+      async (message) =>
+        new Response(message ?? "Unauthorized", { status: 401 }),
+    );
+    if (authResponse) {
+      return authResponse;
+    }
 
     if (module.before) {
       await module.before(this.props);

@@ -27,14 +27,441 @@ import { ErrorTemplate } from "../rsc/error-template.js";
 import { Generic } from "../rsc/generic.js";
 import { CatchBoundary } from "../rsc/catch-boundary.js";
 import { invariant } from "../../utils/invariant.js";
+import { Node } from "../rsc/tree-node.js"
+import { CompiledServerAction } from "../rsc/compiled-server-action.js";
 
-export type CompiledAction = {
-  id: string;
-  moduleId: string;
-  path: string;
-  hash: string;
-  export: string;
-};
+interface ApplicationTreeProps {
+  metafile: Metafile | undefined;
+  serverActionMap: Map<string, CompiledServerAction>;
+  routeStackPlaceholder: Generic;
+  compiledPathForEntry: (entryPath: string) => string;
+}
+
+/**
+ * We need to ensure that all of the constructed values used by the application
+ * are the values that exist in the root tree, otherwise objects that would be
+ * constructed dynamically would not have access to 'parent'.
+ * 
+ * This did not matter in the past for API routes, but now that we use the tree
+ * to lookup authentication policies, we want to make sure nothing ever constructs
+ * something for routing without the appropriate parent context set.
+ */
+class ApplicationTree {
+  #pages: Page[];
+  #layouts: Layout[];
+  #apiEndpoints: API[];
+  #errorTemplates: ErrorTemplate[];
+  #catchBoundaries: CatchBoundary[];
+  #outerRootWrapper: Wrapper;
+  #serverActionMap: Map<string, CompiledServerAction>;
+  #unauthorizedPage: Page;
+  #notFoundPage: Page;
+  #root: Layout;
+
+  constructor(props: ApplicationTreeProps) {
+    this.#pages = ApplicationTree.#constructPages(props.metafile);
+    this.#layouts = ApplicationTree.#constructLayouts(props.metafile, props.routeStackPlaceholder);
+    this.#apiEndpoints = ApplicationTree.#constructApiEndpoints(props.metafile);
+    this.#errorTemplates = ApplicationTree.#constructErrorTemplates(props.metafile);
+    this.#catchBoundaries = ApplicationTree.#constructCatchBoundaries(props.metafile, props.routeStackPlaceholder, props.compiledPathForEntry, this.#errorTemplates)
+    this.#outerRootWrapper = ApplicationTree.#constructOuterRootWrapper(props.compiledPathForEntry);
+    this.#serverActionMap = props.serverActionMap;
+    this.#unauthorizedPage = ApplicationTree.#constructUnauthorizedPage(props.metafile);
+    this.#notFoundPage = ApplicationTree.#constructNotFoundPage(props.metafile);
+    this.#root = this.#constructRoot();
+  }
+  
+  findPageForPath(path: string) {
+    return this.#root.tree.findPageForPath(path);
+  }
+
+  get root() {
+    return this.#root;
+  }
+
+  get pages() {
+    return this.#pages;
+  }
+
+  get layouts() {
+    return this.#layouts;
+  }
+
+  get apiEndpoints() {
+    return this.#apiEndpoints;
+  }
+
+  get notFoundPage() {
+    return this.#notFoundPage;
+  }
+
+  get outerRootWrapper() {
+    return this.#outerRootWrapper;
+  }
+
+  get errorTemplates() {
+    return this.#errorTemplates;
+  }
+
+  get catchBoundaries() {
+    return this.#catchBoundaries;
+  }
+
+  static #constructPages(metafile: Metafile | undefined) {
+    if (!metafile) {
+      return [];
+    }
+
+    let outputs = metafile.outputs;
+    let cwd = process.cwd();
+    let baseUrl = pathToFileURL(`${cwd}/`);
+    let prefix = "app/pages/";
+    let pageSuffix = ".page.tsx";
+
+    let cssUrl = new URL("./rsc/css/", appCompiledDir);
+    let cssPath = fileURLToPath(cssUrl);
+    let cssPrefix = cssPath.slice(process.cwd().length + 1);
+
+    let keys = Object.keys(outputs);
+    return keys
+      .filter((key) => {
+        let entryPoint = outputs[key]?.entryPoint;
+        return (
+          entryPoint &&
+          entryPoint.startsWith(prefix) &&
+          entryPoint.endsWith(pageSuffix)
+        );
+      })
+      .map((key) => {
+        let output = outputs[key];
+        if (!output) {
+          throw new Error("No output found for key");
+        }
+
+        let entryPoint = output.entryPoint;
+        if (!entryPoint) {
+          throw new Error("No entry point");
+        }
+
+        let path = entryPoint.slice(prefix.length).slice(0, -pageSuffix.length);
+        if (path === "index" || path.endsWith("/index")) {
+          path = path.slice(0, -6);
+        }
+        path = `/${path}`;
+
+        return new Page({
+          path,
+          css: output.cssBundle
+            ? output.cssBundle.slice(cssPrefix.length)
+            : undefined,
+          fileUrl: new URL(key, baseUrl),
+        });
+      });
+  }
+
+  static #constructLayouts(metafile: Metafile | undefined, routeStackPlaceholder: Generic) {
+    if (!metafile) {
+      return [];
+    }
+
+    let outputs = metafile.outputs;
+    let cwd = process.cwd();
+    let baseUrl = pathToFileURL(`${cwd}/`);
+    let prefix = "app/pages/";
+    let layoutSuffix = "/layout.tsx";
+
+    let cssUrl = new URL("./rsc/css/", appCompiledDir);
+    let cssPath = fileURLToPath(cssUrl);
+    let cssPrefix = cssPath.slice(process.cwd().length + 1);
+
+    let keys = Object.keys(outputs);
+
+    return keys
+      .filter((key) => {
+        let entryPoint = outputs[key]?.entryPoint;
+        return (
+          entryPoint &&
+          entryPoint.startsWith(prefix) &&
+          entryPoint.endsWith(layoutSuffix)
+        );
+      })
+      .map((key) => {
+        let output = outputs[key];
+        if (!output) {
+          throw new Error("No output found for key");
+        }
+
+        let entryPoint = output.entryPoint;
+        if (!entryPoint) {
+          throw new Error("No entry point");
+        }
+
+        let path = entryPoint
+          .slice(prefix.length)
+          .slice(0, -layoutSuffix.length);
+
+        return new Layout({
+          path: `/${path}`,
+          css: output.cssBundle
+            ? output.cssBundle.slice(cssPrefix.length)
+            : undefined,
+          fileUrl: new URL(key, baseUrl),
+          routeStackPlaceholder,
+        });
+      });
+  }
+
+  static #constructApiEndpoints(metafile: Metafile | undefined) {
+    if (!metafile) {
+      return [];
+    }
+
+    let outputs = metafile.outputs;
+    let cwd = process.cwd();
+    let baseUrl = pathToFileURL(`${cwd}/`);
+    let prefix = "app/pages/";
+    let apiSuffix = /\.api\.tsx?$/;
+
+    let keys = Object.keys(outputs);
+    return keys
+      .filter((key) => {
+        let entryPoint = outputs[key]?.entryPoint;
+        return (
+          entryPoint &&
+          entryPoint.startsWith(prefix) &&
+          apiSuffix.test(entryPoint)
+        );
+      })
+      .map((key) => {
+        let output = outputs[key];
+        if (!output) {
+          throw new Error("No output found for key");
+        }
+
+        let entryPoint = output.entryPoint;
+        if (!entryPoint) {
+          throw new Error("No entry point");
+        }
+
+        let suffixMatch = apiSuffix.exec(entryPoint);
+        if (!suffixMatch) {
+          throw new Error("No suffix match");
+        }
+
+        // either api.ts or api.tsx
+        let suffix = suffixMatch[0];
+
+        let path = entryPoint.slice(prefix.length).slice(0, -suffix.length);
+        if (path === "index" || path.endsWith("/index")) {
+          path = path.slice(0, -6);
+        }
+        path = `/${path}`;
+
+        return new API({
+          path,
+          fileUrl: new URL(key, baseUrl),
+        });
+      });
+  }
+
+  static #constructErrorTemplates(metafile: Metafile | undefined) {
+    if (!metafile) {
+      return [];
+    }
+
+    let outputs = metafile.outputs;
+    let cwd = process.cwd();
+    let baseUrl = pathToFileURL(`${cwd}/`);
+    let prefix = "app/pages/";
+    let errorSuffix = ".error.tsx";
+
+    let keys = Object.keys(outputs);
+    let templates = keys
+      .filter((key) => {
+        let entryPoint = outputs[key]?.entryPoint;
+        return (
+          entryPoint &&
+          entryPoint.startsWith(prefix) &&
+          entryPoint.endsWith(errorSuffix)
+        );
+      })
+      .map((key) => {
+        let output = outputs[key];
+        if (!output) {
+          throw new Error("No output found for key");
+        }
+
+        let entryPoint = output.entryPoint;
+        if (!entryPoint) {
+          throw new Error("No entry point");
+        }
+
+        let path = `/${entryPoint
+          .slice(prefix.length)
+          .slice(0, -errorSuffix.length)}`;
+
+        let tag = path.split("/").at(-1) ?? "unknown";
+
+        return new ErrorTemplate({
+          tag,
+          path,
+          fileUrl: new URL(key, baseUrl),
+        });
+      });
+
+    // if there is no root level unauthorized template we will add the default
+    if (!templates.some((t) => t.tag === "unauthorized" && t.path === "/")) {
+      let defaultUnauthorizedPath = getCompiledEntrypoint(
+        srcPaths.framework.errorTemplates.unauthorized,
+        metafile,
+      );
+
+      templates.push(
+        new ErrorTemplate({
+          tag: "unauthorized",
+          path: "/",
+          fileUrl: pathToFileURL(defaultUnauthorizedPath),
+        }),
+      );
+    }
+
+    // if there is no root level not found template we will add the default
+    if (!templates.some((t) => t.tag === "not-found" && t.path === "/")) {
+      let defaultNotFoundPath = getCompiledEntrypoint(
+        srcPaths.framework.errorTemplates.notFound,
+        metafile,
+      );
+
+      templates.push(
+        new ErrorTemplate({
+          tag: "not-found",
+          path: "/",
+          fileUrl: pathToFileURL(defaultNotFoundPath),
+        }),
+      );
+    }
+
+    return templates;
+  }
+
+  static #constructCatchBoundaries(metafile: Metafile | undefined, routeStackPlaceholder: Generic, compiledPathForEntry: (entryPath: string) => string, errorTemplates: ErrorTemplate[]) {
+    let catchBoundaryPath = compiledPathForEntry(
+      srcPaths.framework.catchBoundary,
+    );
+    let catchBoundaryUrl = pathToFileURL(catchBoundaryPath);
+
+    let catchBoundaryMap = new Map<string, CatchBoundary>();
+
+    // always have a root level catch boundary
+    catchBoundaryMap.set(
+      "/",
+      new CatchBoundary({
+        path: "/",
+        fileUrl: catchBoundaryUrl,
+        routeStackPlaceholder,
+      }),
+    );
+
+    for (let errorTemplate of errorTemplates) {
+      let path =
+        errorTemplate.path === "/"
+          ? "/"
+          : "/" +
+            errorTemplate.path
+              .split("/")
+              .filter(Boolean)
+              .slice(0, -1)
+              .join("/");
+
+      let catchBoundary = catchBoundaryMap.get(path);
+
+      if (!catchBoundary) {
+        catchBoundary = new CatchBoundary({
+          path,
+          fileUrl: catchBoundaryUrl,
+          routeStackPlaceholder,
+        });
+
+        catchBoundaryMap.set(path, catchBoundary);
+      }
+    }
+
+    return [...catchBoundaryMap.values()];
+  }
+
+  static #constructOuterRootWrapper(compiledPathForEntry: (entryPath: string) => string) {
+    let outputFilePath = compiledPathForEntry(
+      srcPaths.framework.outerRootWrapper,
+    );
+    let outputFileUrl = pathToFileURL(outputFilePath);
+
+    let wrapper = new Wrapper({
+      path: "/",
+      fileUrl: outputFileUrl,
+    });
+
+    return wrapper;
+  }
+
+  static #constructUnauthorizedPage(metafile: Metafile | undefined) {
+    invariant(metafile, "Could not find metafile");
+
+    let entryPoint = srcPaths.framework.pages.unauthorized;
+    let outputFile = getCompiledEntrypoint(entryPoint, metafile);
+
+    let page = new Page({
+      path: "/__tf/errors/unauthorized",
+      fileUrl: pathToFileURL(outputFile),
+    });
+
+    return page;
+  }
+
+  static #constructNotFoundPage(metafile: Metafile | undefined) {
+    invariant(metafile, "Could not find metafile");
+
+    let entryPoint = srcPaths.framework.pages.notFound;
+    let outputFile = getCompiledEntrypoint(entryPoint, metafile);
+
+    let page = new Page({
+      path: "/__tf/errors/not-found",
+      fileUrl: pathToFileURL(outputFile),
+    });
+
+    return page;
+  }
+
+  #constructRoot() {
+    let pages = this.#pages;
+    let layouts = this.#layouts;
+    let apiEndpoints = this.#apiEndpoints;
+    let serverActions = this.#serverActionMap.values();
+    let errorTemplates = this.#errorTemplates;
+    let catchBoundaries = this.#catchBoundaries;
+    let outerRootWrapper = this.#outerRootWrapper;
+
+    let root = layouts.find((layout) => layout.path === "/");
+    let otherLayouts = layouts.filter((layout) => layout.path !== "/");
+
+    if (!root) {
+      throw new Error("No root layout");
+    }
+
+    otherLayouts.forEach((layout) => root.addChild(layout));
+    catchBoundaries.forEach((catchBoundary) => root.addChild(catchBoundary));
+    pages.forEach((page) => root.addChild(page));
+    apiEndpoints.forEach((apiEndpoint) => root.addChild(apiEndpoint));
+    serverActions.forEach((serverAction) => root.addChild(serverAction));
+    errorTemplates.forEach((errorTemplate) => root.addChild(errorTemplate));
+
+    root.addChild(this.#unauthorizedPage);
+    root.addChild(this.#notFoundPage);
+
+    root.addWrapper(outerRootWrapper);
+
+    return root;
+  }
+}
 
 export class RSCBuilder extends Builder {
   readonly name = "rsc";
@@ -42,9 +469,10 @@ export class RSCBuilder extends Builder {
   #metafile?: Metafile | undefined;
   #entriesBuilder: EntriesBuilder;
   #build: Build;
-  #serverActionMap = new Map<string, CompiledAction>();
+  #serverActionMap = new Map<string, CompiledServerAction>();
   #imagesMap = new Map<string, Image>();
   #fontsMap = new Map<string, Font>();
+  #cachedApplicationTree: ApplicationTree | undefined = undefined;
 
   constructor({
     entriesBuilder,
@@ -74,6 +502,19 @@ export class RSCBuilder extends Builder {
     return this.#entriesBuilder;
   }
 
+  get #applicationTree() {
+    if (this.#cachedApplicationTree !== undefined) {
+      return this.#cachedApplicationTree;
+    }
+    this.#cachedApplicationTree = new ApplicationTree({
+      metafile: this.#metafile,
+      serverActionMap: this.#serverActionMap,
+      routeStackPlaceholder: this.routeStackPlaceholder,
+      compiledPathForEntry: (path) => this.compiledPathForEntry(path),
+    });
+    return this.#cachedApplicationTree;
+  }
+
   async setup() {}
 
   async build() {
@@ -81,6 +522,9 @@ export class RSCBuilder extends Builder {
 
     let hasMiddleware = await this.hasMiddleware();
     let middlewareEntry = hasMiddleware ? [srcPaths.app.globalMiddleware] : [];
+
+    let hasRootAuth = await this.hasRootAuth();
+    let rootAuthEntry = hasRootAuth ? [srcPaths.app.rootAuth] : [];
 
     let notFoundTemplateEntry = await this.notFoundTemplateSrcPath();
     let unauthorizedTemplateEntry =
@@ -114,6 +558,7 @@ export class RSCBuilder extends Builder {
           "./app/pages/**/*.api.ts",
           "./app/pages/**/*.api.tsx",
           ...middlewareEntry,
+          ...rootAuthEntry,
           ...serverActionEntries,
           notFoundTemplateEntry,
           unauthorizedTemplateEntry,
@@ -235,7 +680,7 @@ export class RSCBuilder extends Builder {
   serialize() {
     return {
       metafile: this.#metafile,
-      serverActionMap: Object.fromEntries(this.#serverActionMap.entries()),
+      serverActionMap: Object.fromEntries(this.#serverActionMap.entries().map(kv => [kv[0], kv[1].serialize()])),
       imagesMap: Object.fromEntries(this.#imagesMap.entries()),
       fontsMap: Object.fromEntries(this.#fontsMap.entries()),
     };
@@ -243,31 +688,37 @@ export class RSCBuilder extends Builder {
 
   load(data: any) {
     this.#metafile = data.metafile;
-    this.#serverActionMap = new Map(Object.entries(data.serverActionMap));
+    this.#serverActionMap = new Map(Object.entries(data.serverActionMap).map(kv => [kv[0], new CompiledServerAction(kv[1] as any)]));
     this.#imagesMap = new Map(Object.entries(data.imagesMap));
     this.#fontsMap = new Map(Object.entries(data.fontsMap));
+    this.#cachedApplicationTree = undefined;
   }
 
   async warm() {
-    let loadLayouts = this.layouts.map((l) => l.preload());
-    let loadPages = this.pages.map((p) => p.preload());
-    let loadNotFound = this.notFoundPage.preload();
-    let loadOuterRootWrapper = this.outerRootWrapper.preload();
-    let apiEndpoints = this.apiEndpoints.map((api) => api.preload());
-    let errorTemplates = this.errorTemplates.map((errorTemplate) =>
+    let loadLayouts = this.#applicationTree.layouts.map((l) => l.preload());
+    let loadPages = this.#applicationTree.pages.map((p) => p.preload());
+    let loadNotFound = this.#applicationTree.notFoundPage.preload();
+    let loadOuterRootWrapper = this.#applicationTree.outerRootWrapper.preload();
+    let apiEndpoints = this.#applicationTree.apiEndpoints.map((api) => api.preload());
+    let errorTemplates = this.#applicationTree.errorTemplates.map((errorTemplate) =>
       errorTemplate.preload(),
     );
-    let catchBoundaries = this.catchBoundaries.map((catchBoundary) =>
+    let catchBoundaries = this.#applicationTree.catchBoundaries.map((catchBoundary) =>
       catchBoundary.preload(),
     );
 
     let loadServerActions = this.#serverActionMap
       .values()
-      .map((a) => import(pathToFileURL(a.path).href));
+      .map((a) => a.preload());
 
     let hasMiddleware = await this.hasMiddleware();
     let loadGlobalMiddleware = hasMiddleware
       ? import(pathToFileURL(this.middlewarePath).href)
+      : Promise.resolve();
+
+    let hasRootAuth = await this.hasRootAuth();
+    let loadRootAuth = hasRootAuth
+      ? import(pathToFileURL(this.rootAuthPath).href)
       : Promise.resolve();
 
     let loadRouteStackPlaceholder = import(
@@ -284,6 +735,7 @@ export class RSCBuilder extends Builder {
       ...apiEndpoints,
       ...loadServerActions,
       loadGlobalMiddleware,
+      loadRootAuth,
       loadRouteStackPlaceholder,
     ];
 
@@ -298,6 +750,14 @@ export class RSCBuilder extends Builder {
     }
 
     return Object.keys(metafile.outputs);
+  }
+
+  hasRootAuth() {
+    return fileExists(srcPaths.app.rootAuth);
+  }
+
+  get rootAuthPath() {
+    return this.compiledPathForEntry(srcPaths.app.rootAuth);
   }
 
   hasMiddleware() {
@@ -322,280 +782,16 @@ export class RSCBuilder extends Builder {
       : srcPaths.framework.errorTemplates.unauthorized;
   }
 
-  private get notFoundPage() {
-    let metafile = this.#metafile;
-    invariant(metafile, "Could not find metafile");
-
-    let entryPoint = srcPaths.framework.pages.notFound;
-    let outputFile = getCompiledEntrypoint(entryPoint, metafile);
-
-    let page = new Page({
-      path: "/__tf/errors/not-found",
-      fileUrl: pathToFileURL(outputFile),
-    });
-
-    return page;
-  }
-
-  private get unauthorizedPage() {
-    let metafile = this.#metafile;
-    invariant(metafile, "Could not find metafile");
-
-    let entryPoint = srcPaths.framework.pages.unauthorized;
-    let outputFile = getCompiledEntrypoint(entryPoint, metafile);
-
-    let page = new Page({
-      path: "/__tf/errors/unauthorized",
-      fileUrl: pathToFileURL(outputFile),
-    });
-
-    return page;
-  }
-
   get pages() {
-    let metafile = this.#metafile;
-
-    if (!metafile) {
-      return [];
-    }
-
-    let outputs = metafile.outputs;
-    let cwd = process.cwd();
-    let baseUrl = pathToFileURL(`${cwd}/`);
-    let prefix = "app/pages/";
-    let pageSuffix = ".page.tsx";
-
-    let cssUrl = new URL("./rsc/css/", appCompiledDir);
-    let cssPath = fileURLToPath(cssUrl);
-    let cssPrefix = cssPath.slice(process.cwd().length + 1);
-
-    let keys = Object.keys(outputs);
-    return keys
-      .filter((key) => {
-        let entryPoint = outputs[key]?.entryPoint;
-        return (
-          entryPoint &&
-          entryPoint.startsWith(prefix) &&
-          entryPoint.endsWith(pageSuffix)
-        );
-      })
-      .map((key) => {
-        let output = outputs[key];
-        if (!output) {
-          throw new Error("No output found for key");
-        }
-
-        let entryPoint = output.entryPoint;
-        if (!entryPoint) {
-          throw new Error("No entry point");
-        }
-
-        let path = entryPoint.slice(prefix.length).slice(0, -pageSuffix.length);
-        if (path === "index" || path.endsWith("/index")) {
-          path = path.slice(0, -6);
-        }
-        path = `/${path}`;
-
-        return new Page({
-          path,
-          css: output.cssBundle
-            ? output.cssBundle.slice(cssPrefix.length)
-            : undefined,
-          fileUrl: new URL(key, baseUrl),
-        });
-      });
-  }
-
-  private get errorTemplates() {
-    let metafile = this.#metafile;
-    if (!metafile) {
-      return [];
-    }
-
-    let outputs = metafile.outputs;
-    let cwd = process.cwd();
-    let baseUrl = pathToFileURL(`${cwd}/`);
-    let prefix = "app/pages/";
-    let errorSuffix = ".error.tsx";
-
-    let keys = Object.keys(outputs);
-    let templates = keys
-      .filter((key) => {
-        let entryPoint = outputs[key]?.entryPoint;
-        return (
-          entryPoint &&
-          entryPoint.startsWith(prefix) &&
-          entryPoint.endsWith(errorSuffix)
-        );
-      })
-      .map((key) => {
-        let output = outputs[key];
-        if (!output) {
-          throw new Error("No output found for key");
-        }
-
-        let entryPoint = output.entryPoint;
-        if (!entryPoint) {
-          throw new Error("No entry point");
-        }
-
-        let path = `/${entryPoint
-          .slice(prefix.length)
-          .slice(0, -errorSuffix.length)}`;
-
-        let tag = path.split("/").at(-1) ?? "unknown";
-
-        return new ErrorTemplate({
-          tag,
-          path,
-          fileUrl: new URL(key, baseUrl),
-        });
-      });
-
-    // if there is no root level unauthorized template we will add the default
-    if (!templates.some((t) => t.tag === "unauthorized" && t.path === "/")) {
-      let defaultUnauthorizedPath = getCompiledEntrypoint(
-        srcPaths.framework.errorTemplates.unauthorized,
-        metafile,
-      );
-
-      templates.push(
-        new ErrorTemplate({
-          tag: "unauthorized",
-          path: "/",
-          fileUrl: pathToFileURL(defaultUnauthorizedPath),
-        }),
-      );
-    }
-
-    // if there is no root level not found template we will add the default
-    if (!templates.some((t) => t.tag === "not-found" && t.path === "/")) {
-      let defaultNotFoundPath = getCompiledEntrypoint(
-        srcPaths.framework.errorTemplates.notFound,
-        metafile,
-      );
-
-      templates.push(
-        new ErrorTemplate({
-          tag: "not-found",
-          path: "/",
-          fileUrl: pathToFileURL(defaultNotFoundPath),
-        }),
-      );
-    }
-
-    return templates;
+    return this.#applicationTree.pages;
   }
 
   get layouts() {
-    let metafile = this.#metafile;
-
-    if (!metafile) {
-      return [];
-    }
-
-    let outputs = metafile.outputs;
-    let cwd = process.cwd();
-    let baseUrl = pathToFileURL(`${cwd}/`);
-    let prefix = "app/pages/";
-    let layoutSuffix = "/layout.tsx";
-
-    let cssUrl = new URL("./rsc/css/", appCompiledDir);
-    let cssPath = fileURLToPath(cssUrl);
-    let cssPrefix = cssPath.slice(process.cwd().length + 1);
-
-    let keys = Object.keys(outputs);
-
-    let routeStackPlaceholder = this.routeStackPlaceholder;
-
-    return keys
-      .filter((key) => {
-        let entryPoint = outputs[key]?.entryPoint;
-        return (
-          entryPoint &&
-          entryPoint.startsWith(prefix) &&
-          entryPoint.endsWith(layoutSuffix)
-        );
-      })
-      .map((key) => {
-        let output = outputs[key];
-        if (!output) {
-          throw new Error("No output found for key");
-        }
-
-        let entryPoint = output.entryPoint;
-        if (!entryPoint) {
-          throw new Error("No entry point");
-        }
-
-        let path = entryPoint
-          .slice(prefix.length)
-          .slice(0, -layoutSuffix.length);
-
-        return new Layout({
-          path: `/${path}`,
-          css: output.cssBundle
-            ? output.cssBundle.slice(cssPrefix.length)
-            : undefined,
-          fileUrl: new URL(key, baseUrl),
-          routeStackPlaceholder,
-        });
-      });
+    return this.#applicationTree.layouts;
   }
 
   get apiEndpoints() {
-    let metafile = this.#metafile;
-
-    if (!metafile) {
-      return [];
-    }
-
-    let outputs = metafile.outputs;
-    let cwd = process.cwd();
-    let baseUrl = pathToFileURL(`${cwd}/`);
-    let prefix = "app/pages/";
-    let apiSuffix = /\.api\.tsx?$/;
-
-    let keys = Object.keys(outputs);
-    return keys
-      .filter((key) => {
-        let entryPoint = outputs[key]?.entryPoint;
-        return (
-          entryPoint &&
-          entryPoint.startsWith(prefix) &&
-          apiSuffix.test(entryPoint)
-        );
-      })
-      .map((key) => {
-        let output = outputs[key];
-        if (!output) {
-          throw new Error("No output found for key");
-        }
-
-        let entryPoint = output.entryPoint;
-        if (!entryPoint) {
-          throw new Error("No entry point");
-        }
-
-        let suffixMatch = apiSuffix.exec(entryPoint);
-        if (!suffixMatch) {
-          throw new Error("No suffix match");
-        }
-
-        // either api.ts or api.tsx
-        let suffix = suffixMatch[0];
-
-        let path = entryPoint.slice(prefix.length).slice(0, -suffix.length);
-        if (path === "index" || path.endsWith("/index")) {
-          path = path.slice(0, -6);
-        }
-        path = `/${path}`;
-
-        return new API({
-          path,
-          fileUrl: new URL(key, baseUrl),
-        });
-      });
+    return this.#applicationTree.apiEndpoints;
   }
 
   private compiledPathForEntry(entryPath: string) {
@@ -613,20 +809,6 @@ export class RSCBuilder extends Builder {
     return outputFilePath;
   }
 
-  private get outerRootWrapper() {
-    let outputFilePath = this.compiledPathForEntry(
-      srcPaths.framework.outerRootWrapper,
-    );
-    let outputFileUrl = pathToFileURL(outputFilePath);
-
-    let wrapper = new Wrapper({
-      path: "/",
-      fileUrl: outputFileUrl,
-    });
-
-    return wrapper;
-  }
-
   get routeStackPlaceholderPath() {
     return this.compiledPathForEntry(srcPaths.framework.routeStackPlaceholder);
   }
@@ -636,53 +818,6 @@ export class RSCBuilder extends Builder {
     let placeholderUrl = pathToFileURL(placeholderPath);
     let placeholder = new Generic({ fileUrl: placeholderUrl });
     return placeholder;
-  }
-
-  private get catchBoundaries() {
-    let routeStackPlaceholder = this.routeStackPlaceholder;
-    let catchBoundaryPath = this.compiledPathForEntry(
-      srcPaths.framework.catchBoundary,
-    );
-    let catchBoundaryUrl = pathToFileURL(catchBoundaryPath);
-
-    let errorTemplates = this.errorTemplates;
-    let catchBoundaryMap = new Map<string, CatchBoundary>();
-
-    // always have a root level catch boundary
-    catchBoundaryMap.set(
-      "/",
-      new CatchBoundary({
-        path: "/",
-        fileUrl: catchBoundaryUrl,
-        routeStackPlaceholder,
-      }),
-    );
-
-    for (let errorTemplate of errorTemplates) {
-      let path =
-        errorTemplate.path === "/"
-          ? "/"
-          : "/" +
-            errorTemplate.path
-              .split("/")
-              .filter(Boolean)
-              .slice(0, -1)
-              .join("/");
-
-      let catchBoundary = catchBoundaryMap.get(path);
-
-      if (!catchBoundary) {
-        catchBoundary = new CatchBoundary({
-          path,
-          fileUrl: catchBoundaryUrl,
-          routeStackPlaceholder,
-        });
-
-        catchBoundaryMap.set(path, catchBoundary);
-      }
-    }
-
-    return [...catchBoundaryMap.values()];
   }
 
   get css() {
@@ -695,30 +830,14 @@ export class RSCBuilder extends Builder {
   }
 
   get root() {
-    let pages = this.pages;
-    let layouts = this.layouts;
-    let errorTemplates = this.errorTemplates;
-    let catchBoundaries = this.catchBoundaries;
-    let outerRootWrapper = this.outerRootWrapper;
-
-    let root = layouts.find((layout) => layout.path === "/");
-    let otherLayouts = layouts.filter((layout) => layout.path !== "/");
-
-    if (!root) {
-      throw new Error("No root layout");
+    return this.#applicationTree.root;
+  }
+  
+  #dumpNode(node: Node, indent: string = "") {
+    console.log(indent + node.path);
+    for (const child of node.children) {
+      this.#dumpNode(child, indent + "  ");
     }
-
-    otherLayouts.forEach((layout) => root.addChild(layout));
-    catchBoundaries.forEach((catchBoundary) => root.addChild(catchBoundary));
-    pages.forEach((page) => root.addChild(page));
-    errorTemplates.forEach((errorTemplate) => root.addChild(errorTemplate));
-
-    root.addChild(this.unauthorizedPage);
-    root.addChild(this.notFoundPage);
-
-    root.addWrapper(outerRootWrapper);
-
-    return root;
   }
 
   findPageForPath(path: string) {
@@ -738,11 +857,7 @@ export class RSCBuilder extends Builder {
       } else {
         return {
           ...acc,
-          [action.id]: {
-            id: action.id,
-            name: action.export,
-            chunks: [`${action.moduleId}:${action.export}:${action.hash}`],
-          },
+          [action.id]: action.serverManifestEntry,
         };
       }
     }, {});
@@ -763,7 +878,7 @@ export class RSCBuilder extends Builder {
           return {
             ...acc,
             [action.moduleId]: {
-              path: action.path,
+              path: action.filePath,
             },
           };
         }
@@ -824,6 +939,7 @@ let srcPaths = {
     ),
   },
   app: {
+    rootAuth: path.join(appAppPath, "auth.ts"),
     globalMiddleware: path.join(appAppPath, "middleware.ts"),
     notFound: path.join(appAppPath, "pages", "errors", "not-found.tsx"),
     unauthorized: path.join(appAppPath, "pages", "unauthorized.error.tsx"),

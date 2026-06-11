@@ -77,6 +77,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
       },
       context: null,
       assets: [],
+      authCache: new Map<string, unknown>(),
     };
 
     return runStore(store, () => ctx.next());

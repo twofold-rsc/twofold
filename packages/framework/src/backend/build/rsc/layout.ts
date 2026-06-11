@@ -1,6 +1,8 @@
 import { Generic } from "./generic.js";
 import { Node, TreeNode, Treeable } from "./tree-node.js";
 import { Wrapper } from "./wrapper.js";
+import { AuthPolicyArray } from "../../auth/auth.js"
+import { ReactNode } from "react";
 
 export class Layout implements Treeable {
   #path: string;
@@ -48,7 +50,7 @@ export class Layout implements Treeable {
 
     let isSame = child.path === this.path && child.constructor === Layout;
     let hasMatchingPath = child.path.startsWith(this.path);
-
+    
     return !alreadyHave && !isSame && hasMatchingPath;
   }
 
@@ -132,12 +134,13 @@ export class Layout implements Treeable {
     //    ]
 
     let module = await this.loadModule();
-    if (!module.default) {
+    if (!module.default && !module.auth) {
       throw new Error(`Layout for ${this.path}/ has no default export.`);
     }
 
     let layout = {
-      func: module.default,
+      // this allows for "auth only" layouts; layouts which only define new auth policies but don't actually provide a layout component.
+      func: module.default ?? (({ children }: { children: ReactNode }) => { return children }),
       requirements: ["dynamicRequest"],
       props: {},
     };
@@ -149,6 +152,15 @@ export class Layout implements Treeable {
     let routeStackPlaceholder = await this.loadRouteStackPlaceholder();
 
     return [...wrappers, layout, routeStackPlaceholder];
+  }
+
+  async getAuthPolicy(): Promise<AuthPolicyArray> {
+    let module = await this.loadModule();
+    if (module.auth) {
+      return module.auth;
+    } else {
+      return [];
+    }
   }
 
   async runMiddleware(props: {
