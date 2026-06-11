@@ -40,7 +40,6 @@ export abstract class Build {
   abstract readonly canReload: boolean;
   abstract build(): Promise<Complete>;
 
-  #session = randomBytes(6).toString("hex");
   #key = randomBytes(6).toString("hex");
   #builders: Builder[] = [];
   #appConfig?: Config | undefined;
@@ -127,10 +126,6 @@ export abstract class Build {
 
   get key() {
     return this.#key;
-  }
-
-  get session() {
-    return this.#session;
   }
 
   get error() {
