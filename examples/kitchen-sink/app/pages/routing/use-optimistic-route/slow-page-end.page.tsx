@@ -6,16 +6,16 @@ export default async function SlowPage() {
 
   return (
     <div>
-      <h1 className="text-4xl font-black tracking-tight">Slow route</h1>
+      <h1 className="text-4xl font-black tracking-tight">Slow end page</h1>
       <div className="mt-3">
         This page took 2 seconds to load.{" "}
         <Link
-          href="/routing/use-optimistic-route"
+          href="/routing/use-optimistic-route/slow-page-start"
           className="text-blue-500 underline"
         >
           Go back
         </Link>{" "}
-        to the start page.
+        to the slow start page.
       </div>
       <div className="mt-3">
         <RouteInfo />
