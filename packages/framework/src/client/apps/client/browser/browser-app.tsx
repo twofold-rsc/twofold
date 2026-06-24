@@ -198,7 +198,6 @@ function Router() {
       ...window.__twofold,
       updateStack(path: string, stack: RouteStackEntry[]) {
         startTransition(() => {
-          setOptimisticPath(path);
           dispatch({
             type: "UPDATE",
             path,
