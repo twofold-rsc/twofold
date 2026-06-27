@@ -9,9 +9,14 @@ export function Component() {
 
   useEffect(() => {
     console.log(name);
-  }, []);
+  });
+  // this will fail lint
+  // }, []);
 
   let thingRef = useRef(1);
 
-  return <div>{thingRef.current}</div>;
+  // this will fail lint
+  // return <div>{thingRef.current}</div>;
+
+  return <div>hello world</div>;
 }

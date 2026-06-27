@@ -17,7 +17,7 @@ import { getModuleId } from "../helpers/module.js";
 import * as mime from "mime-types";
 import { fileURLToEscapedPath, hashFile } from "../helpers/file.js";
 import { transform } from "esbuild";
-import { transformAsync } from "@babel/core";
+import { PluginItem, transformAsync } from "@babel/core";
 import { EntriesBuilder } from "./entries-builder.js";
 
 export class ClientBuilder extends Builder {
@@ -713,7 +713,7 @@ function createReactBabelPlugin({
 
   let appAppPath = fileURLToPath(appAppDir);
 
-  let plugins = [];
+  let plugins: PluginItem[] = [];
 
   if (compilerEnabled) {
     plugins.push(["babel-plugin-react-compiler", { sources: null }]);

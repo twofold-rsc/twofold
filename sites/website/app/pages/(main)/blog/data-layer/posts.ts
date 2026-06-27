@@ -4,7 +4,7 @@ import { readdir, readFile } from "fs/promises";
 import path from "path";
 import { cache, ComponentType } from "react";
 import * as z from "zod";
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 import slugify from "@sindresorhus/slugify";
 import * as PromisePost from "../posts/you-can-serialize-a-promise-in-react/components";
 import * as StreamingPost from "../posts/composable-streaming-with-suspense/components";

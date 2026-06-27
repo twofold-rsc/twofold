@@ -1,26 +1,26 @@
-import { NodePath, PluginObj } from "@babel/core";
+import { NodePath, PluginObject, PluginPass } from "@babel/core";
 import * as t from "@babel/types";
 
 type State = {
   isServerModule: boolean;
 };
 
-export function CheckPlugin(): PluginObj<State> {
+export function CheckPlugin(): PluginObject {
   return {
     pre() {
-      this.isServerModule = false;
+      setState(this, "isServerModule", false);
     },
 
     visitor: {
       FunctionDeclaration(path, state) {
         if (hasUseServerDirective(path.node.body)) {
-          state.isServerModule = true;
+          setState(state, "isServerModule", true);
         }
       },
 
       FunctionExpression(path, state) {
         if (hasUseServerDirective(path.node.body)) {
-          state.isServerModule = true;
+          setState(state, "isServerModule", true);
         }
       },
 
@@ -29,7 +29,7 @@ export function CheckPlugin(): PluginObj<State> {
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
         ) {
-          state.isServerModule = true;
+          setState(state, "isServerModule", true);
         }
       },
 
@@ -39,13 +39,13 @@ export function CheckPlugin(): PluginObj<State> {
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
         ) {
-          state.isServerModule = true;
+          setState(state, "isServerModule", true);
         }
       },
 
-      Program(path: NodePath<t.Program>, state: State) {
+      Program(path: NodePath<t.Program>, state) {
         if (hasUseServerDirective(path.node)) {
-          state.isServerModule = true;
+          setState(state, "isServerModule", true);
         }
       },
     },
@@ -53,10 +53,28 @@ export function CheckPlugin(): PluginObj<State> {
     post(file) {
       file.metadata = file.metadata || {};
       file.metadata = {
-        isServerModule: this.isServerModule,
+        isServerModule: getState(this, "isServerModule"),
       };
     },
   };
+}
+
+function setState<K extends keyof State>(
+  state: PluginPass,
+  key: K,
+  value: State[K],
+): void {
+  state.set(key, value);
+}
+
+function getState<K extends keyof State>(state: PluginPass, key: K): State[K] {
+  let value = state.get(key) as State[K] | undefined;
+
+  if (value === undefined) {
+    throw new Error(`CheckPlugin state "${key}" is missing`);
+  }
+
+  return value;
 }
 
 function hasUseServerDirective(

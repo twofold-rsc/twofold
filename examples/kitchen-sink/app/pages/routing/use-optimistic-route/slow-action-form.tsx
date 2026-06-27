@@ -24,7 +24,7 @@ export function SlowActionForm() {
         href="/routing/use-optimistic-route/slow-action"
         className="bg-black px-3 py-2 text-white"
       >
-        Reset count
+        Reset query
       </Link>
     </form>
   );

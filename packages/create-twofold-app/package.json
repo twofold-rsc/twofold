@@ -23,14 +23,13 @@
     "@types/node": "catalog:",
     "@types/prompts": "^2.4.9",
     "@types/signale": "^1.4.7",
-    "@types/tar": "^6.1.11",
     "esbuild": "catalog:",
-    "prettier": "^3.6.2"
+    "prettier": "^3.8.5"
   },
   "dependencies": {
     "prompts": "^2.4.2",
     "signale": "^1.4.0",
-    "tar": "^7.4.3",
-    "yaml": "^2.8.0"
+    "tar": "^7.5.17",
+    "yaml": "^2.9.0"
   }
 }

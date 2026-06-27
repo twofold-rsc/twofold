@@ -1,5 +1,6 @@
-import { NodePath, PluginObj, traverse } from "@babel/core";
+import { NodePath, PluginObject, PluginPass, traverse } from "@babel/core";
 import * as t from "@babel/types";
+import invariant from "tiny-invariant";
 
 type Options = {
   moduleId: string;
@@ -15,19 +16,35 @@ type State = {
 
 export function ClientTransformPlugin(
   babel: any,
-  options: Options,
-): PluginObj<State> {
+  options: object,
+): PluginObject {
   return {
     pre() {
-      this.moduleId = options.moduleId;
-      this.callServerModule = options.callServerModule;
-      this.isServerModule = false;
-      this.serverFunctions = new Set<string>();
+      invariant(
+        typeof options === "object" && options !== null,
+        "options must be an object",
+      );
+      invariant("moduleId" in options, "moduleId is required");
+      invariant("callServerModule" in options, "callServerModule is required");
+
+      let moduleId = options.moduleId;
+      let callServerModule = options.callServerModule;
+
+      invariant(typeof moduleId === "string", "moduleId must be a string");
+      invariant(
+        typeof callServerModule === "string",
+        "callServerModule must be a string",
+      );
+
+      setState(this, "moduleId", moduleId);
+      setState(this, "callServerModule", callServerModule);
+      setState(this, "isServerModule", false);
+      setState(this, "serverFunctions", new Set<string>());
     },
 
     visitor: {
       ExportNamedDeclaration(path, state) {
-        if (state.isServerModule) {
+        if (getState(state, "isServerModule")) {
           let { specifiers } = path.node;
 
           // we turn default into a specifier before running through babel,
@@ -40,20 +57,23 @@ export function ClientTransformPlugin(
               let exportName = specifier.exported.name;
               let localName = specifier.local.name;
 
-              state.serverFunctions.add(exportName);
+              getState(state, "serverFunctions").add(exportName);
             }
           }
         }
       },
 
       Program: {
-        enter(path: NodePath<t.Program>, state: State) {
-          state.isServerModule = hasUseServerDirective(path.node);
+        enter(path: NodePath<t.Program>, state) {
+          setState(state, "isServerModule", hasUseServerDirective(path.node));
         },
 
-        exit(path: NodePath<t.Program>, state: State) {
-          let hasServerFunction = state.serverFunctions.size > 0;
-          let isServerModule = state.isServerModule;
+        exit(path: NodePath<t.Program>, state) {
+          let serverFunctions = getState(state, "serverFunctions");
+          let hasServerFunction = serverFunctions.size > 0;
+          let isServerModule = getState(state, "isServerModule");
+          let callServerModule = getState(state, "callServerModule");
+          let moduleId = getState(state, "moduleId");
 
           if (isServerModule && hasServerFunction) {
             let newProgram = t.program([]);
@@ -76,16 +96,16 @@ export function ClientTransformPlugin(
                       t.identifier("callServer"),
                     ),
                   ],
-                  t.stringLiteral(state.callServerModule),
+                  t.stringLiteral(callServerModule),
                 );
 
                 path.pushContainer("body", createServerReferenceImport);
                 path.pushContainer("body", callServerImport);
 
-                for (let exported of state.serverFunctions) {
+                for (let exported of serverFunctions) {
                   let exportLine = createExportedServerReference(
                     exported,
-                    state.moduleId,
+                    moduleId,
                   );
 
                   path.pushContainer("body", exportLine);
@@ -103,10 +123,28 @@ export function ClientTransformPlugin(
     post(file) {
       file.metadata = file.metadata || {};
       file.metadata = {
-        serverFunctions: this.serverFunctions,
+        serverFunctions: getState(this, "serverFunctions"),
       };
     },
   };
+}
+
+function setState<K extends keyof State>(
+  state: PluginPass,
+  key: K,
+  value: State[K],
+): void {
+  state.set(key, value);
+}
+
+function getState<K extends keyof State>(state: PluginPass, key: K): State[K] {
+  let value = state.get(key) as State[K] | undefined;
+
+  if (value === undefined) {
+    throw new Error(`ClientTransformPlugin state "${key}" is missing`);
+  }
+
+  return value;
 }
 
 function hasUseServerDirective(

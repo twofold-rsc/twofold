@@ -1,5 +1,5 @@
 import { transform as esbuildTransform } from "esbuild";
-import { transformAsync } from "@babel/core";
+import { PluginItem, transformAsync } from "@babel/core";
 import { TransformPlugin } from "./plugins/transform-plugin.js";
 import dedent from "dedent";
 
@@ -24,14 +24,7 @@ export async function transform({
   });
 
   let result = await transformAsync(esResult.code, {
-    plugins: [
-      [
-        TransformPlugin,
-        {
-          moduleId,
-        },
-      ],
-    ],
+    plugins: [[TransformPlugin, { moduleId }]],
     ast: false,
     code: false,
   });

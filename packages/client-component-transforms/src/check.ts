@@ -18,7 +18,7 @@ export async function check({ input }: CheckOptions) {
   });
 
   let result = await transformAsync(esResult.code, {
-    plugins: [[CheckPlugin]],
+    plugins: [CheckPlugin],
     ast: false,
     code: false,
   });

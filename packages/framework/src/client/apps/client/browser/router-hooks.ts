@@ -295,7 +295,7 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
       let contentType = response.headers.get("content-type");
       let fetchedPath = responsePath ?? decodeURIComponent(encodedPath);
       let rscOptions = { callServer };
-      let stack: RouteStackEntry[] = [];
+      let stack: RouteStackEntry[];
 
       if (contentType === "text/x-component") {
         let payload = await createFromReadableStream(response.body, rscOptions);

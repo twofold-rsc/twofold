@@ -1,4 +1,4 @@
-import { transformAsync } from "@babel/core";
+import { PluginItem, transformAsync } from "@babel/core";
 import generate from "@babel/generator";
 import * as t from "@babel/types";
 import { transform as esbuildTransform } from "esbuild";
@@ -44,7 +44,7 @@ export async function transform({
 
   let output = client ? "client" : "server";
 
-  let plugins =
+  let plugins: PluginItem<object>[] =
     output === "server"
       ? [
           [
@@ -96,7 +96,7 @@ export async function transform({
   }
 
   // babel types are currently being reworked and this is broken
-  let result = generate.default(ast, { compact: false });
+  let result = generate(ast, { compact: false });
 
   return {
     code: result.code,

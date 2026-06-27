@@ -9,7 +9,7 @@ async function action() {
 
 export default function Page() {
   if (shouldRedirectInRender) {
-    // @eslint-disable-next-line react-hooks/rules-of-hooks
+    // eslint-disable-next-line react-hooks/globals
     shouldRedirectInRender = false;
     redirect("/routing/redirects/ending");
   }

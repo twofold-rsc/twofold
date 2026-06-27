@@ -44,10 +44,10 @@ async function main() {
     }
 
     let pnpmVersion = versionString.split(".").map(Number);
-    let hasRequiredPnpmVersion = pnpmVersion[0] && pnpmVersion[0] >= 9;
+    let hasRequiredPnpmVersion = pnpmVersion[0] && pnpmVersion[0] >= 11;
     if (!hasRequiredPnpmVersion) {
       signale.error(
-        "You must use pnpm version 9.0.0 or higher to create a new app.",
+        "You must use pnpm version 11.0.0 or higher to create a new app.",
       );
       process.exit(1);
     }
@@ -65,14 +65,11 @@ async function main() {
     process.exit(1);
   }
 
-  let hasRequiredNodeVersion =
-    nodeVersion[0] > 22 ||
-    (nodeVersion[0] === 22 &&
-      (nodeVersion[1] > 20 || (nodeVersion[1] === 20 && nodeVersion[2] >= 0)));
+  let hasRequiredNodeVersion = nodeVersion[0] >= 24;
 
   if (!hasRequiredNodeVersion) {
     signale.error(
-      "You must use Node.js version 22.20.0 or higher to create a new app.",
+      "You must use Node.js version 24.0.0 or higher to create a new app.",
     );
     process.exit(1);
   }
@@ -244,7 +241,19 @@ async function main() {
 
   if (packageManager === "pnpm") {
     let contents = {
-      onlyBuiltDependencies: ["@tailwindcss/oxide", "esbuild", "rolldown"],
+      minimumReleaseAge: 1440,
+      minimumReleaseAgeExclude: [
+        "@twofold/*",
+        "react",
+        "react-dom",
+        "react-server-dom-webpack",
+      ],
+      allowBuilds: {
+        "@tailwindcss/oxide": true,
+        esbuild: true,
+        rolldown: true,
+      },
+      nodeOptions: "--conditions=react-server",
     };
     await writeFile(
       new URL("./pnpm-workspace.yaml", appUrl),
