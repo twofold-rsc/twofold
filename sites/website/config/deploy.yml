@@ -1,0 +1,51 @@
+service: twofold-website
+
+image: ryanto/twofold-website
+
+servers:
+  web:
+    - 10.100.103.20
+    - 10.100.103.21
+
+env:
+  clear:
+    NODE_ENV: production
+  secret:
+    - TWOFOLD_SECRET_KEY
+
+aliases:
+  shell: app exec --interactive --reuse "bash"
+  pnpm: app exec --interactive --reuse --primary pnpm
+
+ssh:
+  user: ryan
+  proxy: ryan@twofold-jump-001
+
+proxy:
+  ssl: false
+  hosts:
+    - twofoldframework.com
+    - www.twofoldframework.com
+    - em1.twofoldframework.com
+  app_port: 3000
+  buffering:
+    responses: false
+
+registry:
+  username: ryanto
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+  context: ../..
+  dockerfile: Dockerfile
+
+accessories:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    role: web
+    cmd: "tunnel --no-autoupdate run"
+    env:
+      secret:
+        - TUNNEL_TOKEN
