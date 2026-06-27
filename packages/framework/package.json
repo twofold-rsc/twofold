@@ -48,7 +48,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.7",
-    "@types/babel__core": "^7.20.5",
     "@types/etag": "^1.8.4",
     "@types/mime-types": "^3.0.1",
     "@types/node": "catalog:",
