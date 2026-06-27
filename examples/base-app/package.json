@@ -23,8 +23,8 @@
     "react-dom": "catalog:",
     "react-server-dom-webpack": "catalog:",
     "server-only": "^0.0.1",
-    "tailwindcss": "^4.2.4",
-    "zod": "^4.3.6"
+    "tailwindcss": "^4.3.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "catalog:",
@@ -32,8 +32,8 @@
     "@types/react-dom": "catalog:",
     "eslint": "^9.38.0",
     "eslint-plugin-twofold": "workspace:*",
-    "prettier": "^3.8.3",
-    "prettier-plugin-tailwindcss": "^0.7.3",
+    "prettier": "^3.8.5",
+    "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "catalog:"
   }
 }

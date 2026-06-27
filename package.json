@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "compile": "pnpm run -r compile"
+    "compile": "pnpm run --reporter=append-only -r --aggregate-output compile",
+    "test": "pnpm run --reporter=append-only -r --aggregate-output test",
+    "lint": "pnpm run --reporter=append-only -r --aggregate-output lint"
   },
   "keywords": [],
   "author": "Ryan Toronto",

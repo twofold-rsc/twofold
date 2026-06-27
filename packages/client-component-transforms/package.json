@@ -13,25 +13,24 @@
   "scripts": {
     "compile": "node compile.js && tsc --emitDeclarationOnly --declaration --outDir ./dist",
     "lint": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "Ryan Toronto",
   "license": "ISC",
   "devDependencies": {
-    "@types/babel__core": "^7.20.5",
-    "@types/babel__generator": "^7.27.0",
     "@types/node": "catalog:",
-    "prettier": "^3.8.3",
+    "prettier": "^3.8.4",
     "typescript": "catalog:",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.9"
   },
   "dependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/generator": "^7.29.1",
-    "@babel/types": "^7.29.0",
+    "@babel/core": "^8.0.1",
+    "@babel/generator": "^8.0.0",
+    "@babel/types": "^8.0.0",
     "dedent": "^1.7.2",
-    "esbuild": "catalog:"
+    "esbuild": "catalog:",
+    "tiny-invariant": "^1.3.3"
   },
   "peerDependencies": {
     "react": "catalog:",

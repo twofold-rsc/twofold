@@ -1,5 +1,5 @@
 import "./monkey-patch.js";
-import { MessageChannel, TransferListItem, Worker } from "node:worker_threads";
+import { MessageChannel, Transferable, Worker } from "node:worker_threads";
 import { PageRequest } from "./runtime/page-request.js";
 import { APIRequest } from "./runtime/api-request.js";
 import {
@@ -225,11 +225,15 @@ export class Runtime {
     let isRequestActive = true;
     let rscReader: ReturnType<typeof readStream<Uint8Array>> | undefined;
 
-    function post(message: unknown, transfer?: TransferListItem[]) {
+    function post(message: unknown, transfer?: Transferable[]) {
       if (!isRequestActive) return false;
 
       try {
-        port1.postMessage(message, transfer);
+        if (transfer) {
+          port1.postMessage(message, transfer);
+        } else {
+          port1.postMessage(message);
+        }
         return true;
       } catch {
         return false;

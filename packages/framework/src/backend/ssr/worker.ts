@@ -2,7 +2,7 @@ import "../monkey-patch.js";
 import {
   MessagePort,
   parentPort,
-  TransferListItem,
+  Transferable,
   workerData,
 } from "node:worker_threads";
 import { ReadableStream } from "stream/web";
@@ -81,11 +81,15 @@ parentPort.on("message", async (request: RenderRequest) => {
     finish();
   }
 
-  function post(message: unknown, transfer?: TransferListItem[]) {
+  function post(message: unknown, transfer?: Transferable[]) {
     if (!isRequestActive) return false;
 
     try {
-      request.port.postMessage(message, transfer);
+      if (transfer) {
+        request.port.postMessage(message, transfer);
+      } else {
+        request.port.postMessage(message);
+      }
       return true;
     } catch {
       return false;

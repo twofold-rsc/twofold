@@ -1,15 +1,8 @@
-import { NodePath, PluginObj } from "@babel/core";
+import { NodePath, PluginObject, PluginPass } from "@babel/core";
 import * as t from "@babel/types";
+import invariant from "tiny-invariant";
 
 let DEBUG = false;
-
-type Options = {
-  moduleId: string;
-  encryption: {
-    key?: t.Expression;
-    module?: string;
-  };
-};
 
 type State = {
   moduleId: string;
@@ -27,28 +20,57 @@ type State = {
 
 export function ServerTransformPlugin(
   babel: any,
-  options: Options,
-): PluginObj<State> {
+  options: object,
+): PluginObject {
   return {
     pre() {
       let functionNameCounter = new Map<string, number>();
 
-      this.moduleId = options.moduleId;
-      this.isServerModule = false;
-      this.serverFunctions = new Set<string>();
-      this.registeredServerReferences = new Set<string>();
-      this.exported = new Set<string>();
-      this.encryption = {
+      invariant(
+        typeof options === "object" && options !== null,
+        "options must be an object",
+      );
+      invariant("moduleId" in options, "moduleId is required");
+      invariant("encryption" in options, "encryption is required");
+
+      let moduleId = options.moduleId;
+      let encryption = options.encryption;
+
+      invariant(typeof moduleId === "string", "moduleId must be a string");
+      invariant(
+        typeof encryption === "object" && encryption !== null,
+        "encryption must be an object",
+      );
+
+      let encryptionModule =
+        "module" in encryption ? encryption.module : undefined;
+      let encryptionKey = "key" in encryption ? encryption.key : undefined;
+
+      invariant(
+        encryptionModule === undefined || typeof encryptionModule === "string",
+        "encryption.module must be a string",
+      );
+      invariant(
+        encryptionKey === undefined ||
+          (isNodeLike(encryptionKey) && t.isExpression(encryptionKey)),
+        "encryption.key must be an expression",
+      );
+
+      setState(this, "moduleId", moduleId);
+      setState(this, "isServerModule", false);
+      setState(this, "serverFunctions", new Set<string>());
+      setState(this, "registeredServerReferences", new Set<string>());
+      setState(this, "exported", new Set<string>());
+      setState(this, "encryption", {
         hasEncryptedVariables: false,
-        module:
-          options.encryption.module ?? "@twofold/server-function-transforms",
-        key: options.encryption.key,
-      };
-      this.getUniqueFunctionName = (name: string) => {
+        module: encryptionModule ?? "@twofold/server-function-transforms",
+        key: encryptionKey,
+      });
+      setState(this, "getUniqueFunctionName", (name: string) => {
         let count = functionNameCounter.get(name) ?? 0;
         functionNameCounter.set(name, count + 1);
         return `tf$serverFunction$${count}$${name}`;
-      };
+      });
     },
 
     visitor: {
@@ -57,12 +79,12 @@ export function ServerTransformPlugin(
           return;
         }
 
-        if (isTopLevelFunction(path) && state.isServerModule) {
+        if (isTopLevelFunction(path) && getState(state, "isServerModule")) {
           return;
         }
 
         let name = path.node.id?.name;
-        if (name && !state.serverFunctions.has(name)) {
+        if (name && !getState(state, "serverFunctions").has(name)) {
           let { functionDeclaration, functionName, capturedVariables } =
             createServerFunction({
               path,
@@ -90,7 +112,7 @@ export function ServerTransformPlugin(
 
           path.replaceWith(assignNameToServerFunction);
 
-          state.serverFunctions.add(functionName);
+          getState(state, "serverFunctions").add(functionName);
         }
       },
       FunctionExpression(path, state) {
@@ -102,7 +124,7 @@ export function ServerTransformPlugin(
           return;
         }
 
-        if (isTopLevelFunction(path) && state.isServerModule) {
+        if (isTopLevelFunction(path) && getState(state, "isServerModule")) {
           return;
         }
 
@@ -129,7 +151,7 @@ export function ServerTransformPlugin(
 
         path.replaceWith(binding);
 
-        state.serverFunctions.add(functionName);
+        getState(state, "serverFunctions").add(functionName);
       },
       ArrowFunctionExpression(path, state) {
         if (!t.isBlockStatement(path.node.body)) {
@@ -140,7 +162,7 @@ export function ServerTransformPlugin(
           return;
         }
 
-        if (isTopLevelFunction(path) && state.isServerModule) {
+        if (isTopLevelFunction(path) && getState(state, "isServerModule")) {
           return;
         }
 
@@ -167,7 +189,7 @@ export function ServerTransformPlugin(
 
         path.replaceWith(binding);
 
-        state.serverFunctions.add(functionName);
+        getState(state, "serverFunctions").add(functionName);
       },
       ObjectMethod(path, state) {
         if (
@@ -203,12 +225,12 @@ export function ServerTransformPlugin(
 
           path.replaceWith(newProperty);
 
-          state.serverFunctions.add(functionName);
+          getState(state, "serverFunctions").add(functionName);
         }
       },
 
       ExportNamedDeclaration(path, state) {
-        if (state.isServerModule) {
+        if (getState(state, "isServerModule")) {
           let { specifiers } = path.node;
 
           // we turn default into a specifier before running through babel,
@@ -228,26 +250,29 @@ export function ServerTransformPlugin(
                 state,
               });
 
-              state.serverFunctions.add(exportName);
-              state.exported.add(exportName);
+              getState(state, "serverFunctions").add(exportName);
+              getState(state, "exported").add(exportName);
             }
           }
         }
       },
 
       Program: {
-        enter(path: NodePath<t.Program>, state: State) {
+        enter(path: NodePath<t.Program>, state) {
           if (hasUseServerDirective(path.node)) {
-            state.isServerModule = true;
+            setState(state, "isServerModule", true);
           }
         },
 
         // find module decorator and transform functions
-        exit(path: NodePath<t.Program>, state: State) {
-          let hasServerFunction = state.serverFunctions.size > 0;
-          let encryptionModule = state.encryption.module;
-          let hasEncryptedVariables = state.encryption.hasEncryptedVariables;
-          let key = state.encryption.key;
+        exit(path: NodePath<t.Program>, state) {
+          let serverFunctions = getState(state, "serverFunctions");
+          let exported = getState(state, "exported");
+          let encryption = getState(state, "encryption");
+          let hasServerFunction = serverFunctions.size > 0;
+          let encryptionModule = encryption.module;
+          let hasEncryptedVariables = encryption.hasEncryptedVariables;
+          let key = encryption.key;
 
           // import registerServerReference
           if (hasServerFunction) {
@@ -284,8 +309,8 @@ export function ServerTransformPlugin(
 
           // make sure all server functions are exported
           if (hasServerFunction) {
-            let exports = Array.from(state.serverFunctions).filter(
-              (serverFunction) => !state.exported.has(serverFunction),
+            let exports = Array.from(serverFunctions).filter(
+              (serverFunction) => !exported.has(serverFunction),
             );
             if (exports.length > 0) {
               let exportDeclaration = t.exportNamedDeclaration(
@@ -307,10 +332,28 @@ export function ServerTransformPlugin(
     post(file) {
       file.metadata = file.metadata || {};
       file.metadata = {
-        serverFunctions: this.serverFunctions,
+        serverFunctions: getState(this, "serverFunctions"),
       };
     },
   };
+}
+
+function setState<K extends keyof State>(
+  state: PluginPass,
+  key: K,
+  value: State[K],
+): void {
+  state.set(key, value);
+}
+
+function getState<K extends keyof State>(state: PluginPass, key: K): State[K] {
+  let value = state.get(key) as State[K] | undefined;
+
+  if (value === undefined) {
+    throw new Error(`ServerTransformPlugin state "${key}" is missing`);
+  }
+
+  return value;
 }
 
 function hasUseServerDirective(
@@ -319,6 +362,15 @@ function hasUseServerDirective(
   if (!block || !block.directives) return false;
   return block.directives.some((directive) =>
     t.isDirectiveLiteral(directive.value, { value: "use server" }),
+  );
+}
+
+function isNodeLike(value: unknown): value is t.Node {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "type" in value &&
+    typeof value.type === "string"
   );
 }
 
@@ -332,9 +384,10 @@ function createServerFunction({
     | t.ArrowFunctionExpression
     | t.ObjectMethod
   >;
-  state: State;
+  state: PluginPass;
 }) {
-  let key = state.encryption.key;
+  let encryption = getState(state, "encryption");
+  let key = encryption.key;
   let originalFunctionName = getFunctionName(path);
   let capturedVariables = getCapturedVariables(path);
 
@@ -351,7 +404,10 @@ function createServerFunction({
     );
   }
 
-  let functionName = state.getUniqueFunctionName(originalFunctionName);
+  let functionName = getState(
+    state,
+    "getUniqueFunctionName",
+  )(originalFunctionName);
   let params = path.node.params.map((param) => t.cloneNode(param));
   let newParams = [
     ...(capturedVariables.length > 0
@@ -381,7 +437,7 @@ function createServerFunction({
   }
 
   if (capturedVariables.length > 0 && key) {
-    state.encryption.hasEncryptedVariables = true;
+    encryption.hasEncryptedVariables = true;
   }
 
   return {
@@ -435,7 +491,7 @@ function registerServerFunction({
   name,
 }: {
   path: NodePath<t.FunctionDeclaration>;
-  state: State;
+  state: PluginPass;
   name?: string;
 }) {
   let functionName = getFunctionName(path);
@@ -467,20 +523,25 @@ function insertRegisterServerReference({
   path: NodePath;
   functionName: string;
   name: string;
-  state: State;
+  state: PluginPass;
 }) {
-  if (!state.registeredServerReferences.has(functionName)) {
+  let registeredServerReferences = getState(
+    state,
+    "registeredServerReferences",
+  );
+
+  if (!registeredServerReferences.has(functionName)) {
     let callExpression = t.expressionStatement(
       t.callExpression(t.identifier("registerServerReference"), [
         t.identifier(functionName),
-        t.stringLiteral(state.moduleId),
+        t.stringLiteral(getState(state, "moduleId")),
         t.stringLiteral(name),
       ]),
     );
 
     path.insertAfter(callExpression);
 
-    state.registeredServerReferences.add(functionName);
+    registeredServerReferences.add(functionName);
   }
 }
 
@@ -491,10 +552,12 @@ function createBinding({
 }: {
   functionName: string;
   capturedVariables: string[];
-  state: State;
+  state: PluginPass;
 }) {
   let functionBinding: t.CallExpression | t.Identifier;
-  let key = state.encryption.key;
+  let encryption = getState(state, "encryption");
+  let key = encryption.key;
+  let moduleId = getState(state, "moduleId");
 
   if (capturedVariables.length > 0) {
     let binding = t.callExpression(
@@ -505,7 +568,7 @@ function createBinding({
           ? t.callExpression(t.identifier("tf$encrypt"), [
               t.arrayExpression([
                 ...capturedVariables.map((varName) => t.identifier(varName)),
-                t.stringLiteral(`${state.moduleId}#${functionName}`),
+                t.stringLiteral(`${moduleId}#${functionName}`),
               ]),
               key,
             ])
@@ -557,10 +620,11 @@ function insertDecryptedVariables(
   node: t.FunctionDeclaration,
   functionName: string,
   variables: string[],
-  state: State,
+  state: PluginPass,
 ) {
   let body = node.body;
-  let key = state.encryption.key;
+  let key = getState(state, "encryption").key;
+  let moduleId = getState(state, "moduleId");
 
   if (!key || !body || !body.directives) {
     return;
@@ -595,7 +659,7 @@ function insertDecryptedVariables(
     t.binaryExpression(
       "!==",
       t.identifier("tf$encrypted$id"),
-      t.stringLiteral(`${state.moduleId}#${functionName}`),
+      t.stringLiteral(`${moduleId}#${functionName}`),
     ),
     t.blockStatement([
       t.throwStatement(

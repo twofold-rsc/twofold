@@ -4,16 +4,21 @@ packages:
   - sites/*
 
 catalog:
-  "@types/node": ^22.16.5
+  "@types/node": ^26.0.1
   "@types/react": ^19.2.17
   "@types/react-dom": ^19.2.3
-  esbuild: 0.28.0
+  esbuild: 0.28.1
   react: 19.2.7
   react-dom: 19.2.7
   react-server-dom-webpack: 19.2.7
-  typescript: ^5.9.3
+  typescript: ^6.0.3
 
-onlyBuiltDependencies:
-  - "@tailwindcss/oxide"
-  - esbuild
-  - sharp
+minimumReleaseAge: 1440
+
+allowBuilds:
+  "@tailwindcss/oxide": true
+  esbuild: true
+  rolldown: true
+  sharp: true
+
+nodeOptions: "--conditions=react-server"
