@@ -1,8 +1,5 @@
 # TODO
 
-- www redirect
-- pr/merge
-
 - publish
 - release
 
