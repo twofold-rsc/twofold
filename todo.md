@@ -1,5 +1,11 @@
 # TODO
 
+- www redirect
+- pr/merge
+
+- publish
+- release
+
 - [ ] rsc stream renderer shouldnt check the stream for errors, remove buffer
       take a look at runtime rsc render to see
 - [ ] can we serialize redirect

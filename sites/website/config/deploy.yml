@@ -26,7 +26,6 @@ proxy:
   hosts:
     - twofoldframework.com
     - www.twofoldframework.com
-    - em1.twofoldframework.com
   app_port: 3000
   buffering:
     responses: false
