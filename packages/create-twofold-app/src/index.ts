@@ -244,6 +244,7 @@ async function main() {
       minimumReleaseAge: 1440,
       minimumReleaseAgeExclude: [
         "@twofold/*",
+        "eslint-plugin-twofold",
         "react",
         "react-dom",
         "react-server-dom-webpack",
