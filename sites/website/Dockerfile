@@ -6,7 +6,7 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN npm install -g corepack@latest && \
   corepack enable && \
-  corepack prepare pnpm@10.18.2 --activate
+  corepack prepare pnpm@11.9.0 --activate
 
 FROM base AS build
 COPY . /usr/src/twofold
