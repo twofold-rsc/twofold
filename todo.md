@@ -1,8 +1,5 @@
 # TODO
 
-- publish
-- release
-
 - [ ] rsc stream renderer shouldnt check the stream for errors, remove buffer
       take a look at runtime rsc render to see
 - [ ] can we serialize redirect
@@ -32,6 +29,8 @@
 
 - use node version of rsdw
 - how can we bundle rsdw?
+
+- image: <https://takumi.kane.tw/>
 
 - can the toast system accept mini schemas
 
