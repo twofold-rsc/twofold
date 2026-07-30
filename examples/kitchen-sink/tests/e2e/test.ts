@@ -2,7 +2,11 @@ import { expect, test as base } from "@playwright/test";
 
 declare global {
   interface Window {
-    reactRootDidInitialize?: boolean;
+    __twofold?: WindowTwofold | undefined;
+  }
+
+  interface WindowTwofold {
+    clientAppIsInteractive?: boolean;
   }
 }
 
@@ -13,7 +17,9 @@ export let test = base.extend<{
     let goto = page.goto.bind(page);
     page.goto = async (url, options) => {
       let response = await goto(url, options);
-      await page.waitForFunction(() => window.reactRootDidInitialize === true);
+      await page.waitForFunction(
+        () => window.__twofold?.clientAppIsInteractive === true,
+      );
       return response;
     };
 

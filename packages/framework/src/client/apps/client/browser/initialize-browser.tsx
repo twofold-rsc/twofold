@@ -7,7 +7,6 @@ declare global {
   interface Window {
     SSRDidError?: boolean;
     clientAppDidInitialize?: boolean;
-    reactRootDidInitialize?: boolean;
   }
 }
 
@@ -23,7 +22,6 @@ function main() {
       hydrateRoot(document, tree, {
         onCaughtError,
       });
-      window.reactRootDidInitialize = true;
     });
   } else {
     // we have a bad ssr stream and we dont want to attempt to hydrate anything
@@ -34,7 +32,6 @@ function main() {
     });
     startTransition(() => {
       root.render(tree);
-      window.reactRootDidInitialize = true;
     });
   }
 }

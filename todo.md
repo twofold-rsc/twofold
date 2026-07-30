@@ -1,7 +1,5 @@
 # TODO
 
-- preserve first click and refire it on hydration
-
 - [ ] rsc stream renderer shouldnt check the stream for errors, remove buffer
       take a look at runtime rsc render to see
 - [ ] can we serialize redirect
