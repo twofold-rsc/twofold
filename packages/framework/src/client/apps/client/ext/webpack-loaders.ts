@@ -15,10 +15,10 @@ if (typeof window !== "undefined") {
         throw new Error("Invalid chunk id");
       }
       let modulePath = `/__tf/assets/${name}-${hash}.js`;
-      let mod = moduleMap.get(moduleId);
-      if (!mod) {
-        // only import modules we don't know about
-        mod = await import(modulePath);
+        let mod = moduleMap.get(moduleId);
+        if (!mod) {
+          // only import modules we don't know about
+          mod = await import(modulePath);
         moduleMap.set(moduleId, mod);
       }
       return mod;
