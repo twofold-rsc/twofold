@@ -14,7 +14,7 @@ test("navigates to the cache example", async ({ page }) => {
 
 test("server-renders the cached value for each waterfall component", async ({
   page,
-  verifyNoHydrationErrors,
+  verifyNoErrors,
 }) => {
   await page.goto("/react/cache");
 
@@ -29,5 +29,5 @@ test("server-renders the cached value for each waterfall component", async ({
       new RegExp(`^Waterfall component loaded! \\[${value}\\] \\[${value}\\]$`),
     ),
   ).toHaveCount(2);
-  verifyNoHydrationErrors();
+  verifyNoErrors();
 });

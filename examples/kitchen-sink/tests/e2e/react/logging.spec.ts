@@ -15,7 +15,7 @@ test("navigates to the Logging example", async ({ page }) => {
 
 test("server-renders and hydrates escaped logging output", async ({
   page,
-  verifyNoHydrationErrors,
+  verifyNoErrors,
 }) => {
   await page.goto("/react/logging");
 
@@ -35,7 +35,7 @@ test("server-renders and hydrates escaped logging output", async ({
 
   await expect(page.getByText("HTML", { exact: true })).toBeVisible();
 
-  verifyNoHydrationErrors();
+  verifyNoErrors();
 });
 
 test("forwards server logs to the browser console", async ({ page }) => {

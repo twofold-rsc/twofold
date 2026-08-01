@@ -16,12 +16,12 @@ test("navigates to the Suspense example", async ({ page }) => {
 
 test("server-renders the Suspense fallback before the content", async ({
   page,
-  verifyNoHydrationErrors,
+  verifyNoErrors,
 }) => {
   await page.goto("/react/suspense", { waitUntil: "commit" });
 
   await expect(page.getByText("Loading...", { exact: true })).toBeVisible();
   await expect(page.getByText("I finally loaded!", { exact: true })).toBeVisible();
   await expect(page.getByText("Loading...", { exact: true })).not.toBeVisible();
-  verifyNoHydrationErrors();
+  verifyNoErrors();
 });

@@ -13,10 +13,10 @@ test("navigates to the useId example", async ({ page }) => {
 
 test("server-renders and hydrates the useId example", async ({
   page,
-  verifyNoHydrationErrors,
+  verifyNoErrors,
 }) => {
   await page.goto("/react/use-id");
 
   await expect(page.getByText(/^id:/)).toHaveCount(2);
-  verifyNoHydrationErrors();
+  verifyNoErrors();
 });

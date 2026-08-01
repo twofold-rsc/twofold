@@ -20,7 +20,10 @@ export default function Page() {
 
       <p className="mt-3">
         The name on the server is{" "}
-        <span className="bg-purple-50 px-1.5 py-0.5 font-medium text-purple-900">
+          <span
+            data-testid="server-name"
+            className="bg-purple-50 px-1.5 py-0.5 font-medium text-purple-900"
+          >
           {name}
         </span>
       </p>

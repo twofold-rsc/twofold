@@ -18,7 +18,10 @@ export default function Page() {
       </p>
       <p className="mt-3">
         The text on the server is{" "}
-        <span className="bg-purple-50 px-1.5 py-0.5 font-medium text-purple-900">
+          <span
+            data-testid="server-text"
+            className="bg-purple-50 px-1.5 py-0.5 font-medium text-purple-900"
+          >
           {text}
         </span>
       </p>

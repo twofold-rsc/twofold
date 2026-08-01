@@ -11,7 +11,7 @@ declare global {
 }
 
 export let test = base.extend<{
-  verifyNoHydrationErrors: () => void;
+  verifyNoErrors: () => void;
 }>({
   page: async ({ page }, provide) => {
     let goto = page.goto.bind(page);
@@ -25,7 +25,7 @@ export let test = base.extend<{
 
     await provide(page);
   },
-  verifyNoHydrationErrors: async ({ page }, provide) => {
+  verifyNoErrors: async ({ page }, provide) => {
     let errors: string[] = [];
 
     let onPageError = (error: Error) => errors.push(error.message);

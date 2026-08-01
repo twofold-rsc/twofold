@@ -8,7 +8,9 @@ export default function Page() {
     <div>
       <h1 className="text-4xl font-black tracking-tighter">Action factory</h1>
       <div className="mt-3 space-y-3">
-        <div>Count: {database.count}</div>
+        <div>
+          Count: <span data-testid="count">{database.count}</span>
+        </div>
         <form action={by1Action} className="mt-4">
           <button
             type="submit"

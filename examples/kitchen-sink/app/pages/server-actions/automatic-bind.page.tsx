@@ -35,7 +35,10 @@ function ActionComponent({ id }: { id: string }) {
         </button>
       </form>
       <div>
-        Count: <span className="tabular-nums">{counterMap.get(id) ?? 0}</span>
+        Count: {" "}
+        <span data-testid={`counter-${id}`} className="tabular-nums">
+          {counterMap.get(id) ?? 0}
+        </span>
       </div>
     </div>
   );

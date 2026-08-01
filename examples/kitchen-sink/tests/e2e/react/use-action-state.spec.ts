@@ -15,7 +15,7 @@ test("navigates to the useActionState example", async ({ page }) => {
 
 test("server-renders and hydrates the useActionState example", async ({
   page,
-  verifyNoHydrationErrors,
+  verifyNoErrors,
 }) => {
   await page.goto("/react/use-action-state");
 
@@ -23,7 +23,7 @@ test("server-renders and hydrates the useActionState example", async ({
     page.getByText("You have not yet submitted the form"),
   ).toBeVisible();
 
-  verifyNoHydrationErrors();
+  verifyNoErrors();
 });
 
 test("shows the successful action state after submitting the form", async ({

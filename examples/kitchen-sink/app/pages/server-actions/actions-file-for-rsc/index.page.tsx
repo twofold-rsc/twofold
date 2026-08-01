@@ -8,7 +8,9 @@ export default function Page() {
         Server actions file RSC
       </h1>
       <div className="mt-4 space-y-3">
-        <div>Count: {bucket.count}</div>
+        <div>
+          Count: <span data-testid="count">{bucket.count}</span>
+        </div>
 
         <form action={action}>
           <button

@@ -15,14 +15,14 @@ test("navigates to the useOptimistic example", async ({ page }) => {
 
 test("server-renders and hydrates the useOptimistic example", async ({
   page,
-  verifyNoHydrationErrors,
+  verifyNoErrors,
 }) => {
   await page.goto("/react/use-optimistic");
 
   await expect(page.getByText("Buy milk", { exact: true })).toBeVisible();
   await expect(page.getByText("Do laundry", { exact: true })).toBeVisible();
 
-  verifyNoHydrationErrors();
+  verifyNoErrors();
 });
 
 test("shows an optimistic todo until the server action settles", async ({
