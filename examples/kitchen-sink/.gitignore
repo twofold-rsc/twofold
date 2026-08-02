@@ -2,3 +2,5 @@ node_modules
 .env
 
 .twofold
+playwright-report
+test-results

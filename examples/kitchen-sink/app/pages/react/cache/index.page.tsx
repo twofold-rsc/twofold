@@ -8,7 +8,9 @@ export default async function CachePage() {
       <h1 className="text-4xl font-extrabold tracking-tighter">Cache</h1>
 
       <div className="mt-4">
-        <div>Random number: {number}</div>
+        <div>
+          Random number: <span data-testid="random-number">{number}</span>
+        </div>
       </div>
 
       <div className="mt-4">

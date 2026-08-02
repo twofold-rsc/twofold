@@ -5,7 +5,9 @@ import { action } from "./actions-file-for-cc";
 export default function CCInvokesAction({ count }: { count: number }) {
   return (
     <div className="space-y-3">
-      <div>Count: {count}</div>
+      <div>
+        Count: <span data-testid="count">{count}</span>
+      </div>
       <form action={action}>
         <button
           type="submit"

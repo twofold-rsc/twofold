@@ -23,7 +23,9 @@ export default function Page() {
 
       {log && (
         <p className="mt-3">
-          <span className="text-gray-900">{log}</span>
+          <span data-testid="update-log" className="text-gray-900">
+            {log}
+          </span>
         </p>
       )}
 

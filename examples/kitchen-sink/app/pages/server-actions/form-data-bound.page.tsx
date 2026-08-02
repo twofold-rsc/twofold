@@ -12,7 +12,10 @@ export default function Page() {
 
       <p className="mt-3">
         The value on the server is{" "}
-        <span className="bg-purple-50 px-1.5 py-0.5 font-medium text-purple-900">
+          <span
+            data-testid="server-value"
+            className="bg-purple-50 px-1.5 py-0.5 font-medium text-purple-900"
+          >
           {serverValue}
         </span>
       </p>

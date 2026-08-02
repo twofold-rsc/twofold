@@ -25,6 +25,7 @@ declare global {
     updateStack?: (path: string, stack: RouteStackEntry[]) => void;
     navigate?: (path: string) => void;
     currentPath?: string;
+    clientAppIsInteractive?: boolean;
   }
 }
 
@@ -42,6 +43,19 @@ function Router() {
   let [routerState, dispatch] = useRouterReducer();
   let [optimisticPath, setOptimisticPath] = useOptimistic(routerState.path);
   let [isTransitioning, startTransition] = useTransition();
+
+  useLayoutEffect(() => {
+    window.__twofold = {
+      ...window.__twofold,
+      clientAppIsInteractive: true,
+    };
+
+    return () => {
+      if (window.__twofold) {
+        delete window.__twofold.clientAppIsInteractive;
+      }
+    };
+  }, []);
 
   let navigateToPath = useCallback(
     (
