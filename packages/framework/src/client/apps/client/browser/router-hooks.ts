@@ -37,8 +37,8 @@ export function useRouterReducer() {
   }
 
   useEffect(() => {
+    // this isnt a good idea, have fetchRSCPayload own its own cache
     fetchCache.clear();
-    routerStateCache.clear();
   }, [finalizedState]);
 
   let returnedState = {
@@ -88,7 +88,6 @@ type UpdateAction = {
   type: "UPDATE";
   path: string;
   stack: RouteStackEntry[];
-  updateId: string;
 };
 
 type Action =
@@ -103,7 +102,8 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
   switch (action.type) {
     case "NAVIGATE":
       return createRouterState({
-        cacheKey: `navigate-${action.path}`,
+        state,
+        action,
         async reduce() {
           let previous = await state;
           let newCache = new Map(previous.cache);
@@ -132,7 +132,8 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
       });
     case "POP":
       return createRouterState({
-        cacheKey: `pop-${action.path}`,
+        state,
+        action,
         async reduce() {
           let previous = await state;
 
@@ -148,7 +149,8 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
       });
     case "REFRESH":
       return createRouterState({
-        cacheKey: `refresh`,
+        state,
+        action,
         async reduce() {
           let previous = await state;
           let rsc = await fetchRSCPayload(previous.path, {
@@ -169,7 +171,8 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
       });
     case "POPULATE":
       return createRouterState({
-        cacheKey: `populate-${action.path}`,
+        state,
+        action,
         async reduce() {
           let previous = await state;
           let rsc = await fetchRSCPayload(action.path, {
@@ -202,7 +205,8 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
       });
     case "RENDER":
       return createRouterState({
-        cacheKey: `populate-${action.path}`,
+        state,
+        action,
         async reduce() {
           let previous = await state;
           let rsc = await fetchRSCPayload(action.path, {
@@ -225,7 +229,8 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
       });
     case "UPDATE":
       return createRouterState({
-        cacheKey: `update-${action.path}-${action.updateId}`,
+        state,
+        action,
         async reduce() {
           let previous = await state;
           let newCache = new Map(previous.cache);
@@ -244,23 +249,32 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
   }
 }
 
-let routerStateCache = new Map<string, Promise<State>>();
+let routerStateCache = new WeakMap<
+  Action,
+  WeakMap<Promise<State>, Promise<State>>
+>();
 
 function createRouterState({
-  cacheKey,
+  state,
+  action,
   reduce,
 }: {
-  cacheKey: string;
+  state: Promise<State>;
+  action: Action;
   reduce: () => State | Promise<State>;
 }) {
-  if (!routerStateCache.get(cacheKey)) {
-    let routerStatePromise = new Promise<State>((resolve) => resolve(reduce()));
-    routerStateCache.set(cacheKey, routerStatePromise);
+  let statesForAction = routerStateCache.get(action);
+
+  if (!statesForAction) {
+    statesForAction = new WeakMap();
+    routerStateCache.set(action, statesForAction);
   }
 
-  let routerStatePromise = routerStateCache.get(cacheKey);
+  let routerStatePromise = statesForAction.get(state);
+
   if (!routerStatePromise) {
-    throw new Error(`Could not find routing state for cacheKey: ${cacheKey}`);
+    routerStatePromise = new Promise<State>((resolve) => resolve(reduce()));
+    statesForAction.set(state, routerStatePromise);
   }
 
   return routerStatePromise;

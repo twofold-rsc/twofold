@@ -24,6 +24,7 @@ import { pathMatches } from "./runtime/helpers/routing.js";
 import { invariant } from "./utils/invariant.js";
 import { readStream } from "./steams/read-stream.js";
 import { combineBatch, createBatchStream } from "./steams/batch-stream.js";
+import { probeFirstChunk } from "./steams/probe-stream.js";
 
 type Build = DevelopmentBuild | ProductionBuild;
 
@@ -168,33 +169,30 @@ export class Runtime {
       },
     });
 
-    // await the first chunk
-    // this is not really needed, its debt
+    // await the first chunk. an http error/redirect
+    // is more likely to happen inside the first chunk, so lets
+    // see if that comes out before any flight data.
     //
-    // instead we should return the rsc stream and handle the
-    // errors via the ssr layer.
+    // this is not really needed, instead we should return the
+    // rsc stream and handle the errors via the ssr/csr layer.
     //
     // ill clean this up one day
-    let [t1, t2] = rscStream.tee();
-    let reader = t1.getReader();
-    await reader.read();
-    reader.releaseLock();
-    t1.cancel();
+    const stream = await probeFirstChunk(rscStream);
 
     if (isNotFoundError(streamError)) {
       return {
-        stream: t2,
+        stream,
         notFound: true,
       };
     } else if (isUnauthorizedError(streamError)) {
       return {
-        stream: t2,
+        stream,
         unauthorized: true,
       };
     } else if (isRedirectError(streamError)) {
       let { status, url } = redirectErrorInfo(streamError);
       return {
-        stream: t2,
+        stream,
         redirect: {
           status,
           url,
@@ -203,7 +201,7 @@ export class Runtime {
     }
 
     return {
-      stream: t2,
+      stream: stream,
       error: streamError,
     };
   }
