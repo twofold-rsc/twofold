@@ -13,13 +13,15 @@ declare global {
 export let test = base.extend<{
   verifyNoErrors: () => void;
 }>({
-  page: async ({ page }, provide) => {
+  page: async ({ page, javaScriptEnabled }, provide) => {
     let goto = page.goto.bind(page);
     page.goto = async (url, options) => {
       let response = await goto(url, options);
-      await page.waitForFunction(
-        () => window.__twofold?.clientAppIsInteractive === true,
-      );
+      if (javaScriptEnabled) {
+        await page.waitForFunction(
+          () => window.__twofold?.clientAppIsInteractive === true,
+        );
+      }
       return response;
     };
 

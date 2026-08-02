@@ -28,7 +28,7 @@ export default function Control() {
 
   return (
     <div>
-      <p>Result: {chunks.join(", ")}</p>
+      <p data-testid="result">Result: {chunks.join(", ")}</p>
 
       <form onSubmit={handleSubmit} className="mt-4">
         <button

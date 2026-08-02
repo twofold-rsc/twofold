@@ -13,7 +13,9 @@ export function FormWithServerState({
 
   return (
     <form action={action} className="space-y-3">
-      <p>Count: {state.count}</p>
+      <p>
+        Count: <span data-testid="count">{state.count}</span>
+      </p>
       <button
         type="submit"
         className="inline-flex items-center justify-center rounded bg-black px-2.5 py-1.5 text-sm font-medium text-white shadow"

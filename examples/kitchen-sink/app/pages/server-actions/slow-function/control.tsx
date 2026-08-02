@@ -8,7 +8,7 @@ export default function Control() {
 
   return (
     <div>
-      <p>Result: {state}</p>
+      <p data-testid="result">Result: {state}</p>
 
       <form action={formAction} className="mt-4">
         <button
