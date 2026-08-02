@@ -399,6 +399,14 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
+                    <ExampleGroup name="Bugs" path="/bugs">
+                      <ExampleLink
+                        title="Outer Suspense"
+                        description="Reproduction for an outer suspense boundary."
+                        href="/bugs/outer-suspense"
+                      />
+                    </ExampleGroup>
+
                     <ExampleGroup name="UIs" path="/uis">
                       <ExampleLink
                         title="Login"

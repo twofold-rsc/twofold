@@ -189,11 +189,6 @@ function Router() {
   }, [routerState.path]);
 
   useEffect(() => {
-    function genUpdateId() {
-      let random = Math.random().toString(36).slice(2, 18);
-      return `${random}-${Date.now()}`;
-    }
-
     window.__twofold = {
       ...window.__twofold,
       updateStack(path: string, stack: RouteStackEntry[]) {
@@ -202,7 +197,6 @@ function Router() {
             type: "UPDATE",
             path,
             stack,
-            updateId: genUpdateId(),
           });
         });
       },
