@@ -107,23 +107,45 @@ export class DevTask {
   }
 
   private async watch() {
+    let pending = new Set<() => Promise<void>>();
+    let work = new CoalescingTask(async () => {
+      let actions = pending;
+      pending = new Set();
+
+      for (let action of actions) {
+        await action();
+      }
+    });
+
+    let schedule = (action: () => Promise<void>) => {
+      if (!pending.has(action)) {
+        pending.add(action);
+      }
+
+      return work.run();
+    };
+
+    let rebuild = () => this.rebuild();
+    let restart = () => this.restart();
+    let reloadEnv = () => this.reloadEnv();
+
     let watcher = new Watcher({
       routes: [
         {
           patterns: ["app/**/*", "lib/**/*", "public/**/*"],
-          callback: () => this.rebuild(),
+          callback: () => schedule(rebuild),
         },
         {
           patterns: ["config/**/*", "package.json"],
-          callback: () => this.restart(),
+          callback: () => schedule(restart),
         },
         {
           patterns: ["**/*.{js,jsx,ts,tsx}"],
-          callback: () => this.rebuild(),
+          callback: () => schedule(rebuild),
         },
         {
           patterns: [".env"],
-          callback: () => this.reloadEnv(),
+          callback: () => schedule(reloadEnv),
         },
       ],
       ignores: [
@@ -136,5 +158,33 @@ export class DevTask {
     });
 
     await watcher.start();
+  }
+}
+
+class CoalescingTask {
+  #running: Promise<void> | undefined;
+  #rerun = false;
+
+  constructor(private action: () => Promise<void>) {}
+
+  run() {
+    if (this.#running) {
+      this.#rerun = true;
+      return this.#running;
+    }
+
+    this.#running = this.runUntilCurrent();
+    return this.#running;
+  }
+
+  private async runUntilCurrent() {
+    try {
+      do {
+        this.#rerun = false;
+        await this.action();
+      } while (this.#rerun);
+    } finally {
+      this.#running = undefined;
+    }
   }
 }
