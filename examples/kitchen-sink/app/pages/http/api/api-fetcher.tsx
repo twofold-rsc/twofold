@@ -17,7 +17,9 @@ export function APIFetcher({ path }: { path: string }) {
 
   return (
     <div>
-      <div>{json && <pre>{JSON.stringify(json, null, 2)}</pre>}</div>
+      <div>
+        {json && <pre data-testid="api-response">{JSON.stringify(json, null, 2)}</pre>}
+      </div>
       <div className="mt-4 flex space-x-2">
         <button
           onClick={clearData}

@@ -1,4 +1,8 @@
-export default function middleware(req: Request) {
+type MiddlewareContext = {
+  setCookie(name: string, value: string): void;
+};
+
+export default function middleware(req: Request, context: MiddlewareContext) {
   let url = new URL(req.url);
 
   // match SSR requests as well as RSC client-side navigation requests
@@ -8,6 +12,7 @@ export default function middleware(req: Request) {
     url.searchParams.get("path")?.match(/\/middleware\/global$/)
   ) {
     console.log("running global middleware function!");
+    context.setCookie("ran-global-middleware", "true");
   }
 
   // match SSR requests only for the global middleware

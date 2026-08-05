@@ -18,7 +18,9 @@ export function APIForm() {
 
   return (
     <div>
-      <div>{json && <pre>{JSON.stringify(json, null, 2)}</pre>}</div>
+      <div>
+        {json && <pre data-testid="api-response">{JSON.stringify(json, null, 2)}</pre>}
+      </div>
       <form action={sendToAPI} className="mt-4">
         <div>
           <input

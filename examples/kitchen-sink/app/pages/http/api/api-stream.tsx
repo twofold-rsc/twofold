@@ -25,7 +25,7 @@ export function APIStream() {
 
   return (
     <div>
-      <div>{text && <pre>{text}</pre>}</div>
+      <div>{text && <pre data-testid="api-stream-response">{text}</pre>}</div>
       <div className="mt-3 flex items-center space-x-2">
         <button
           onClick={() => setText("")}
