@@ -33,7 +33,7 @@ export default function ClientComponent() {
             }}
             className="inline-flex rounded border border-gray-100 bg-gray-50 px-4 py-1.5 text-sm font-bold shadow hover:border-gray-200 hover:bg-gray-100"
           >
-            +
+            <span data-testid="updatable-button-label">+</span>
           </button>
         </div>
       </div>

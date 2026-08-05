@@ -9,7 +9,10 @@ export default async function Page() {
 
       <div className="mt-8">
         <p>Package: Open Graph Scraper</p>
-        <pre className="mt-3 text-xs text-gray-600">
+        <pre
+          data-testid="open-graph-result"
+          className="mt-3 text-xs text-gray-600"
+        >
           {JSON.stringify(result, null, 2)}
         </pre>
       </div>

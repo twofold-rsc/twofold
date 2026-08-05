@@ -12,7 +12,15 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "app-build",
+      testMatch: ["**/build/dev-reload.spec.ts", "**/build/hmr.spec.ts"],
+      workers: 1,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
       name: "chromium",
+      testIgnore: ["**/build/dev-reload.spec.ts", "**/build/hmr.spec.ts"],
+      dependencies: ["app-build"],
       use: { ...devices["Desktop Chrome"] },
     },
   ],
