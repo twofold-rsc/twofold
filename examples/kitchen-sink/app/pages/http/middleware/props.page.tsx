@@ -1,3 +1,5 @@
+import cookies from "@twofold/framework/cookies";
+
 export async function before(props: {
   params: Record<string, string | undefined>;
   searchParams: URLSearchParams;
@@ -8,6 +10,7 @@ export async function before(props: {
     searchParams: props.searchParams,
     requestUrl: props.request.url,
   });
+  cookies.set("middleware-request-url", props.request.url);
 }
 
 export default function Page() {

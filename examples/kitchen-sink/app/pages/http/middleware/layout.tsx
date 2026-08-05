@@ -1,5 +1,10 @@
 import Link from "@twofold/framework/link";
+import cookies from "@twofold/framework/cookies";
 import { ReactNode } from "react";
+
+export function before() {
+  cookies.set("ran-layout-middleware", "true");
+}
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (

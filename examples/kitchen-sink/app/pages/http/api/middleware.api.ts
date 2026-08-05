@@ -1,11 +1,15 @@
+let middleware = false;
+
 export function before() {
-  console.log("API middleware ran");
+  middleware = true;
 }
 
 export function GET() {
   let data = {
-    middleware: true,
+    middleware,
   };
+
+  middleware = false;
 
   return new Response(JSON.stringify(data), {
     headers: {
