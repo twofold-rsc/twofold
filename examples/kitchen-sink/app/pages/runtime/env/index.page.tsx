@@ -23,7 +23,7 @@ export default function Page() {
             <div className="font-mono text-sm font-bold">
               process.env.KITCHEN_SINK_TEST_ENV
             </div>
-            <div className="mt-1 text-purple-500">
+            <div className="mt-1 text-purple-500" data-testid="server-env-value">
               {process.env.KITCHEN_SINK_TEST_ENV}
             </div>
           </div>
