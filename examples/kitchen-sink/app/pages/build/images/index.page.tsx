@@ -23,7 +23,7 @@ export default function AssetsPage() {
       <div className="mt-8">
         <div className="font-medium">PNG import</div>
         <div className="mt-1 text-sm text-gray-500">Image: {drawingImage}</div>
-        <img src={drawingImage} alt="Mountain" className="mt-2 block w-32" />
+        <img src={drawingImage} alt="Drawing" className="mt-2 block w-32" />
       </div>
 
       <div className="mt-8">

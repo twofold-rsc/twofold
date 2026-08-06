@@ -37,27 +37,29 @@ if (process.env.NODE_ENV !== "production") {
 
 function createDebouncedFunction(fn: () => void, timeout: number) {
   let timer: NodeJS.Timeout | null = null;
-  let currentPromiseReject: ((reason?: any) => void) | null = null;
+  let pendingPromises: Array<{
+    resolve: () => void;
+    reject: (reason?: unknown) => void;
+  }> = [];
 
   const debouncedFunction = () => {
-    if (timer) {
-      clearTimeout(timer);
-      if (currentPromiseReject) {
-        currentPromiseReject(new Error("Debounced function reset"));
-      }
-    }
-
     return new Promise<void>((resolve, reject) => {
-      currentPromiseReject = reject;
+      pendingPromises.push({ resolve, reject });
+
+      if (timer) {
+        clearTimeout(timer);
+      }
+
       timer = setTimeout(() => {
+        let promises = pendingPromises;
+        pendingPromises = [];
+        timer = null;
+
         try {
           fn();
-          resolve();
+          promises.forEach(({ resolve }) => resolve());
         } catch (error) {
-          reject(error);
-        } finally {
-          timer = null;
-          currentPromiseReject = null;
+          promises.forEach(({ reject }) => reject(error));
         }
       }, timeout);
     });

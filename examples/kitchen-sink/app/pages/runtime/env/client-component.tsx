@@ -11,13 +11,15 @@ export default function ClientComponent() {
           <div className="font-mono text-sm font-bold">
             process.env.NODE_ENV
           </div>
-          <div className="mt-1 text-sky-500">{process.env.NODE_ENV}</div>
+          <div className="mt-1 text-sky-500" data-testid="client-node-env-value">
+            {process.env.NODE_ENV}
+          </div>
         </div>
         <div className="mt-3">
           <div className="font-mono text-sm font-bold">
             process.env.KITCHEN_SINK_TEST_ENV
           </div>
-          <div className="mt-1 text-sky-500">
+          <div className="mt-1 text-sky-500" data-testid="client-env-value">
             {typeof process !== "undefined" &&
             process.env.KITCHEN_SINK_TEST_ENV ? (
               process.env.KITCHEN_SINK_TEST_ENV
