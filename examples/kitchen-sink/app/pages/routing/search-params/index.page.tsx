@@ -9,7 +9,9 @@ export default function SearchParams({ searchParams }: PageProps) {
       <h1 className="text-4xl font-black tracking-tighter">Search params</h1>
       <div className="mt-8">
         <div className="text-sm text-gray-500">Server side search params</div>
-        <div>{searchParams.size > 0 ? searchParams.toString() : "None"}</div>
+        <div data-testid="server-search-params">
+          {searchParams.size > 0 ? searchParams.toString() : "None"}
+        </div>
       </div>
       <div className="mt-3">
         <ClientSideParams />

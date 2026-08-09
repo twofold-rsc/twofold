@@ -5,12 +5,14 @@ import { startTransition } from "react";
 import { slowIncrement } from "./actions";
 import Link from "@twofold/framework/link";
 
-export function SlowActionForm() {
+export function NavAndSlowActionForm() {
   let { navigate } = useRouter();
 
   function formAction() {
     startTransition(async () => {
-      navigate(`/routing/use-optimistic-route/slow-action?time=${Date.now()}`);
+      navigate(
+        `/routing/use-optimistic-route/nav-and-slow-action?time=${Date.now()}`,
+      );
       await slowIncrement();
     });
   }
@@ -18,10 +20,10 @@ export function SlowActionForm() {
   return (
     <form action={formAction} className="flex items-center gap-3">
       <button type="submit" className="bg-black px-3 py-2 text-white">
-        Run slow action
+        Nav and slow action
       </button>
       <Link
-        href="/routing/use-optimistic-route/slow-action"
+        href="/routing/use-optimistic-route/nav-and-slow-action"
         className="bg-black px-3 py-2 text-white"
       >
         Reset query

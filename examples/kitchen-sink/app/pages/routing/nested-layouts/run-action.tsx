@@ -17,7 +17,9 @@ export default function RunAction({
     <div className="border border-dashed border-purple-500 p-4">
       <h3 className="text-sm text-purple-500">Server action</h3>
       <div className="mt-2">
-        <div className="text-xs">{result ? result : "No result yet"}</div>
+        <div data-testid="nested-layout-action-result" className="text-xs">
+          {result ? result : "No result yet"}
+        </div>
         <form action={formAction} className="mt-2">
           <button
             type="submit"

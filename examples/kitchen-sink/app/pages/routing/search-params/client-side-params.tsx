@@ -8,7 +8,9 @@ export function ClientSideParams() {
   return (
     <div>
       <div className="text-sm text-gray-500">Client side search params</div>
-      <div>{searchParams.size > 0 ? searchParams.toString() : "None"}</div>
+      <div data-testid="client-search-params">
+        {searchParams.size > 0 ? searchParams.toString() : "None"}
+      </div>
     </div>
   );
 }

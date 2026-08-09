@@ -11,7 +11,7 @@ export default function SlugPropsPage(props: PageProps<"slug">) {
         <div>
           <h2 className="font-medium">Params</h2>
 
-          <div className="mt-1 text-gray-500">
+          <div data-testid="page-params" className="mt-1 text-gray-500">
             <ul className="list-disc pl-5">
               {Object.entries(props.params).map(([key, value]) => (
                 <li key={key}>
@@ -23,7 +23,7 @@ export default function SlugPropsPage(props: PageProps<"slug">) {
         </div>
         <div>
           <h2 className="font-medium">Search params</h2>
-          <div className="mt-1 text-gray-500">
+          <div data-testid="page-search-params" className="mt-1 text-gray-500">
             {props.searchParams.size === 0 ? (
               <>none</>
             ) : (
@@ -39,13 +39,18 @@ export default function SlugPropsPage(props: PageProps<"slug">) {
         </div>
         <div>
           <h2 className="font-medium">URL</h2>
-          <div className="mt-1 text-gray-500">{props.url.toString()}</div>
+          <div data-testid="page-url" className="mt-1 text-gray-500">
+            {props.url.toString()}
+          </div>
         </div>
         <div>
           <h2 className="font-medium">Request</h2>
           <div className="mt-1 text-gray-500">
             <Reveal>
-              <pre className="text-xs whitespace-pre-wrap">
+              <pre
+                data-testid="page-request"
+                className="text-xs whitespace-pre-wrap"
+              >
                 {JSON.stringify(
                   {
                     method: props.request.method,
