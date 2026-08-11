@@ -14,14 +14,25 @@ export let test = base.extend<{
   verifyNoErrors: () => void;
 }>({
   page: async ({ page, javaScriptEnabled }, provide) => {
-    let goto = page.goto.bind(page);
-    page.goto = async (url, options) => {
-      let response = await goto(url, options);
+    async function waitForClientApp() {
       if (javaScriptEnabled) {
         await page.waitForFunction(
           () => window.__twofold?.clientAppIsInteractive === true,
         );
       }
+    }
+
+    let goto = page.goto.bind(page);
+    page.goto = async (url, options) => {
+      let response = await goto(url, options);
+      await waitForClientApp();
+      return response;
+    };
+
+    let reload = page.reload.bind(page);
+    page.reload = async (options) => {
+      let response = await reload(options);
+      await waitForClientApp();
       return response;
     };
 

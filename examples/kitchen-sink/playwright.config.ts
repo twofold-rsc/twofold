@@ -31,7 +31,7 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
     {
-      name: "chromium",
+      name: "app-run",
       testIgnore: [
         "**/build/dev-reload.spec.ts",
         "**/build/hmr.spec.ts",

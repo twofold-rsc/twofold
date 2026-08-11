@@ -25,15 +25,12 @@ export function useRouterReducer() {
   let [thenableState, dispatch] = useReducer(reducer, initialState);
   let finalizedState = use(thenableState);
 
-  let { cache, mask, path } = finalizedState;
+  let { cache, mask, path, action } = finalizedState;
 
   if (!cache.has(path)) {
     // we got asked to render a path and we don't have a stack for it.
-    dispatch({
-      type: "RENDER",
-      path,
-      mask,
-    });
+    // we need to lookup the action since it is created during render
+    dispatch(renderAction(thenableState, path, mask));
   }
 
   useEffect(() => {
@@ -247,6 +244,27 @@ function reducer(state: Promise<State>, action: Action): Promise<State> {
     default:
       throw new Error(`Unknown action`);
   }
+}
+
+let renderActionCache = new WeakMap<Promise<State>, RenderAction>();
+
+function renderAction(
+  state: Promise<State>,
+  path: string,
+  mask: string | undefined,
+) {
+  let action = renderActionCache.get(state);
+
+  if (!action) {
+    action = {
+      type: "RENDER",
+      path,
+      mask,
+    };
+    renderActionCache.set(state, action);
+  }
+
+  return action;
 }
 
 let routerStateCache = new WeakMap<

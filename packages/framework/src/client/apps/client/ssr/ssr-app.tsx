@@ -10,11 +10,11 @@ import { ReactDOMServerReadableStream } from "react-dom/server";
 
 export function SSRApp({
   url,
-  getRouteStack,
+  getRouteStackPayload,
   rscStreamReader,
 }: {
   url: URL;
-  getRouteStack: () => Promise<RouteStackEntry[]>;
+  getRouteStackPayload: () => PromiseLike<{ stack: RouteStackEntry[] }>;
   rscStreamReader: ReadableStreamDefaultReader<Uint8Array>;
 }) {
   let navigate = () => {
@@ -29,8 +29,9 @@ export function SSRApp({
     throw new Error("Cannot call refresh during SSR");
   };
 
-  let routeStackPromise = getRouteStack();
-  let routeStack = use(routeStackPromise);
+  let routeStackPayload = getRouteStackPayload();
+  let payload = use(routeStackPayload);
+  let routeStack = payload.stack;
 
   return (
     <>
@@ -84,10 +85,10 @@ export async function render({
     },
   });
 
-  let routeStack: RouteStackEntry[];
-  async function getRouteStack() {
-    if (!routeStack) {
-      let payload = await createFromReadableStream(routeStackStream, {
+  let routeStackPayload: PromiseLike<{ stack: RouteStackEntry[] }>;
+  function getRouteStackPayload() {
+    if (!routeStackPayload) {
+      routeStackPayload = createFromReadableStream(routeStackStream, {
         serverConsumerManifest: {
           // client references
           moduleMap: null,
@@ -100,11 +101,9 @@ export async function render({
           // },
         },
       });
-
-      routeStack = payload.stack;
     }
 
-    return routeStack;
+    return routeStackPayload;
   }
 
   let inlineRscStreamReader = inlineRscStream.getReader();
@@ -117,7 +116,7 @@ export async function render({
       createElement(SSRApp, {
         url,
         rscStreamReader: inlineRscStreamReader,
-        getRouteStack,
+        getRouteStackPayload,
       }),
       {
         bootstrapModules: [bootstrapUrl],
