@@ -33,6 +33,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/error-handling/rsc/rsc-async-oob-throw"
+              className="text-blue-500 underline"
+            >
+              RSC async out-of-band throw
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/error-handling/rsc/rsc-suspended-throw"
               className="text-blue-500 underline"
             >
@@ -61,6 +69,14 @@ export default function Layout({ children }: { children: ReactNode }) {
               className="text-blue-500 underline"
             >
               RSC missing import
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/error-handling/rsc/rsc-missing-image"
+              className="text-blue-500 underline"
+            >
+              RSC missing image
             </Link>
           </li>
           <li>

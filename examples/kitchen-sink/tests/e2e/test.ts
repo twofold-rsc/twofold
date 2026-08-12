@@ -17,7 +17,9 @@ export let test = base.extend<{
     async function waitForClientApp() {
       if (javaScriptEnabled) {
         await page.waitForFunction(
-          () => window.__twofold?.clientAppIsInteractive === true,
+          () =>
+            window.__twofold?.clientAppIsInteractive === true ||
+            document.documentElement.dataset.testid === "error-page",
         );
       }
     }

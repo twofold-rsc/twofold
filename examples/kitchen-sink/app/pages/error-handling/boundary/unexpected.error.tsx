@@ -27,7 +27,9 @@ export default function ErrorUI({ error, reset }: ErrorProps) {
       </div>
       <div>
         <p className="mt-4 text-sm font-semibold text-gray-600">Error</p>
-        <p className="mt-1">{error.message}</p>
+        <p data-testid="error-message" className="mt-1">
+          {error.message}
+        </p>
       </div>
       {error.stack && (
         <div>

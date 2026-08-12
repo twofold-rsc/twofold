@@ -1,15 +1,12 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// build-error-on
 // import { doesntExist } from "doesnt-exist";
-// import MissingImage from "@/images/missing.png";
 
 export default function Page() {
-  // ERROR:
+  // build-error-on
   // console.log({ doesntExist });
   return (
     <div>
       <div>You shouldn't see this</div>
-      {/* <img src={MissingImage} /> */}
     </div>
   );
 }

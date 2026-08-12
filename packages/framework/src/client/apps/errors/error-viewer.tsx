@@ -11,13 +11,17 @@ export function ErrorViewer({ error }: { error: unknown }) {
           <div className="mt-6">
             {error instanceof Error ? (
               <>
-                <p className="text-red-500 text-xl">{error.message}</p>
+                <p data-testid="error-message" className="text-red-500 text-xl">
+                  {error.message}
+                </p>
                 <pre className="mt-6 overflow-x-scroll pr-6 -mr-6 text-sm">
                   {error.stack}
                 </pre>
               </>
             ) : (
-              <p className="text-red-500 text-xl">Unknown error</p>
+              <p data-testid="error-message" className="text-red-500 text-xl">
+                Unknown error
+              </p>
             )}
           </div>
         </div>
