@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 export default async function RSCSuspendedThrowPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div data-testid="suspense-fallback">Loading...</div>}>
       <Posts />
     </Suspense>
   );

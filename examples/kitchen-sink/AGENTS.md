@@ -1,3 +1,7 @@
+## Linting
+
+Run `pnpm lint` and `pnpm tsc --noEmit` to verify linting.
+
 ## E2E Tests
 
 For a targeted Kitchen Sink E2E spec, pass `--no-deps` so Playwright does not also run the `app-build` project:

@@ -25,6 +25,7 @@ export default defineConfig({
       testMatch: [
         "**/build/dev-reload.spec.ts",
         "**/build/hmr.spec.ts",
+        "**/error-handling/*-build.spec.ts",
         "**/runtime/env-reload.spec.ts",
       ],
       workers: 1,
@@ -35,6 +36,7 @@ export default defineConfig({
       testIgnore: [
         "**/build/dev-reload.spec.ts",
         "**/build/hmr.spec.ts",
+        "**/error-handling/*-build.spec.ts",
         "**/runtime/env-reload.spec.ts",
       ],
       dependencies: ["app-build"],

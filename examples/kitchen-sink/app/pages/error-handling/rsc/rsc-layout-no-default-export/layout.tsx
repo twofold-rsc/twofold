@@ -1,5 +1,10 @@
 import { ReactNode } from "react";
 
-export function Layout({ children }: { children: ReactNode }) {
+// build-error-on
+// export { Layout };
+// build-error-off
+export default Layout;
+
+function Layout({ children }: { children: ReactNode }) {
   return <div>{children}</div>;
 }

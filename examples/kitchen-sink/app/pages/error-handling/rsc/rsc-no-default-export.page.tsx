@@ -1,4 +1,8 @@
-// export default function Page() {
-export function Page() {
+// build-error-on
+// export { Page };
+// build-error-off
+export default Page;
+
+function Page() {
   return <div>Oh no!</div>;
 }
