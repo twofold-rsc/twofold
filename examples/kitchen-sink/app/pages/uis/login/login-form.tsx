@@ -55,6 +55,7 @@ export function LoginForm() {
             Email address
           </label>
           <input
+            id="email"
             type="email"
             name="email"
             defaultValue={state.email}
@@ -68,6 +69,7 @@ export function LoginForm() {
             Password
           </label>
           <input
+            id="password"
             type="password"
             name="password"
             defaultValue={state.password}
