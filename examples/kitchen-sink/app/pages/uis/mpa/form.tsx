@@ -77,6 +77,7 @@ export function Form({
             </div>
             <div className="mt-1">
               <input
+                id="username"
                 defaultValue={state.username}
                 className="w-full rounded border border-gray-200 px-3 py-1.5 shadow"
                 name="username"
