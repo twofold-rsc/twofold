@@ -25,7 +25,7 @@ export function useRouterReducer() {
   let [thenableState, dispatch] = useReducer(reducer, initialState);
   let finalizedState = use(thenableState);
 
-  let { cache, mask, path, action } = finalizedState;
+  let { cache, mask, path } = finalizedState;
 
   if (!cache.has(path)) {
     // we got asked to render a path and we don't have a stack for it.
