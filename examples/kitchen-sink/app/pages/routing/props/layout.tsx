@@ -22,7 +22,7 @@ export default function Layout(props: LayoutProps) {
         <div>
           <h2 className="font-medium">Params</h2>
 
-          <div className="mt-1 text-gray-500">
+          <div data-testid="layout-params" className="mt-1 text-gray-500">
             {Object.keys(props.params).length === 0 ? (
               <>none</>
             ) : (
@@ -38,7 +38,10 @@ export default function Layout(props: LayoutProps) {
         </div>
         <div>
           <h2 className="font-medium">Search params</h2>
-          <div className="mt-1 text-gray-500">
+          <div
+            data-testid="layout-search-params"
+            className="mt-1 text-gray-500"
+          >
             {props.searchParams.size === 0 ? (
               <>none</>
             ) : (
@@ -54,13 +57,18 @@ export default function Layout(props: LayoutProps) {
         </div>
         <div>
           <h2 className="font-medium">URL</h2>
-          <div className="mt-1 text-gray-500">{props.url.toString()}</div>
+          <div data-testid="layout-url" className="mt-1 text-gray-500">
+            {props.url.toString()}
+          </div>
         </div>
         <div>
           <h2 className="font-medium">Request</h2>
           <div className="mt-1 text-gray-500">
             <Reveal>
-              <pre className="text-xs whitespace-pre-wrap">
+              <pre
+                data-testid="layout-request"
+                className="text-xs whitespace-pre-wrap"
+              >
                 {JSON.stringify(
                   {
                     method: props.request.method,

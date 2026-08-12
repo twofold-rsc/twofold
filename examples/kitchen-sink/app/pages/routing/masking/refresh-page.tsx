@@ -15,14 +15,16 @@ export function RefreshPage() {
       <div>
         <p>
           <span className="font-mono">path</span>:{" "}
-          <span className="text-gray-500">
+          <span data-testid="router-path" className="text-gray-500">
             {router.path}
             {searchParams ? `?${searchParams}` : ""}
           </span>
         </p>
         <p>
           <span className="font-mono">mask</span>:{" "}
-          <span className="text-gray-500">{router.mask}</span>
+          <span data-testid="router-mask" className="text-gray-500">
+            {router.mask}
+          </span>
         </p>
       </div>
       <div className="mt-4">

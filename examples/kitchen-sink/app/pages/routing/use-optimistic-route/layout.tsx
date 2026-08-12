@@ -17,10 +17,10 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
-              href="/routing/use-optimistic-route/slow-action"
+              href="/routing/use-optimistic-route/nav-and-slow-action"
               className="text-blue-500 underline"
             >
-              Slow action
+              Nav and slow action
             </Link>
           </li>
         </ul>

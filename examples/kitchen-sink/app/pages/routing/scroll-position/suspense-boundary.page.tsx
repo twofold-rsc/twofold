@@ -9,7 +9,10 @@ export default function Page() {
       <div className="mt-4 space-y-4">
         <Suspense
           fallback={
-            <div className="h-[1000px] bg-gradient-to-b from-yellow-100 to-yellow-500"></div>
+            <div
+              data-testid="suspense-fallback"
+              className="h-[1000px] bg-gradient-to-b from-yellow-100 to-yellow-500"
+            ></div>
           }
         >
           <SlowComponent />

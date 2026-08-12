@@ -290,6 +290,11 @@ export default function Nav() {
                         href="/routing/use-router"
                       />
                       <ExampleLink
+                        title="Back"
+                        description="Navigate back through browser history."
+                        href="/routing/back/start"
+                      />
+                      <ExampleLink
                         title="Props"
                         description="Page and layout props."
                         href="/routing/props"
