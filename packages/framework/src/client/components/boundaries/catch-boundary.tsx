@@ -60,6 +60,7 @@ export default class CatchBoundary extends Component<Props, State> {
       this.context.version !== this.#errorVersion
     ) {
       this.#errorVersion = null;
+      // oxlint-disable-next-line react/no-did-update-set-state
       this.setState({
         error: null,
       });

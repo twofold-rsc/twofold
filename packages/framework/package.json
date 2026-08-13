@@ -8,7 +8,7 @@
     "dev": "nodemon --exec \"pnpm run compile\" --watch src -e ts,tsx",
     "compile": "pnpm node compile.js",
     "test": "vitest run",
-    "lint": "eslint . && pnpm lint:backend && pnpm lint:client",
+    "lint": "oxlint && pnpm lint:backend && pnpm lint:client",
     "lint:backend": "tsc --noEmit -p src/backend/tsconfig.json",
     "lint:client": "tsc --noEmit -p src/client/tsconfig.json"
   },
@@ -47,7 +47,6 @@
     "node": ">=22.20.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.7",
     "@types/etag": "^1.8.4",
     "@types/mime-types": "^3.0.1",
     "@types/node": "catalog:",
@@ -55,13 +54,9 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "cookie": "^2.0.0",
-    "eslint": "^9.7",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "globals": "^17.7.0",
     "nodemon": "^3.1.14",
+    "oxlint": "^1.78.0",
     "typescript": "catalog:",
-    "typescript-eslint": "^8.62.0",
     "vitest": "^4.1.9"
   },
   "peerDependencies": {
