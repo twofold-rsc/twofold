@@ -25,7 +25,7 @@ test("renders HMR client components", async ({ page, verifyNoErrors }) => {
   verifyNoErrors();
 });
 
-test("updates HMR A", async ({ page }) => {
+test("updates HMR A", { tag: "@build" }, async ({ page }) => {
   let hmrAUrl = new URL(
     "../../../app/pages/build/hmr/hmr-a.tsx",
     import.meta.url,
@@ -47,7 +47,7 @@ test("updates HMR A", async ({ page }) => {
   }
 });
 
-test("updates HMR B", async ({ page }) => {
+test("updates HMR B", { tag: "@build" }, async ({ page }) => {
   let hmrBUrl = new URL(
     "../../../app/pages/build/hmr/hmr-b.tsx",
     import.meta.url,
@@ -69,29 +69,33 @@ test("updates HMR B", async ({ page }) => {
   }
 });
 
-test("updates the shared HMR component in both places", async ({ page }) => {
-  let sharedComponentUrl = new URL(
-    "../../../app/pages/build/hmr/hmr-shared-test.tsx",
-    import.meta.url,
-  );
-  let source = await readFile(sharedComponentUrl, "utf8");
-  let updatedContent = `Updated shared component ${crypto.randomUUID()}`;
-
-  await page.goto("/build/hmr");
-
-  try {
-    await writeFile(
-      sharedComponentUrl,
-      source.replace("Shared component", updatedContent),
+test(
+  "updates the shared HMR component in both places",
+  { tag: "@build" },
+  async ({ page }) => {
+    let sharedComponentUrl = new URL(
+      "../../../app/pages/build/hmr/hmr-shared-test.tsx",
+      import.meta.url,
     );
+    let source = await readFile(sharedComponentUrl, "utf8");
+    let updatedContent = `Updated shared component ${crypto.randomUUID()}`;
 
-    await expect(page.getByText(updatedContent, { exact: true })).toHaveCount(
-      2,
-      {
-        timeout: 15_000,
-      },
-    );
-  } finally {
-    await writeFile(sharedComponentUrl, source);
-  }
-});
+    await page.goto("/build/hmr");
+
+    try {
+      await writeFile(
+        sharedComponentUrl,
+        source.replace("Shared component", updatedContent),
+      );
+
+      await expect(page.getByText(updatedContent, { exact: true })).toHaveCount(
+        2,
+        {
+          timeout: 15_000,
+        },
+      );
+    } finally {
+      await writeFile(sharedComponentUrl, source);
+    }
+  },
+);

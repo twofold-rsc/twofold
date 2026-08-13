@@ -25,10 +25,15 @@ test("keeps environment variables on the server", async ({
   verifyNoErrors();
 });
 
-test("sets NODE_ENV to development in client components", async ({ page }) => {
+test("sets NODE_ENV in client components", async ({ page }, testInfo) => {
   await page.goto("/runtime/env");
 
+  let expected =
+    testInfo.project.metadata.environment === "production"
+      ? "production"
+      : "development";
+
   await expect(page.getByTestId("client-node-env-value")).toHaveText(
-    "development",
+    expected,
   );
 });

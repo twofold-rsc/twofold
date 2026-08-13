@@ -33,87 +33,101 @@ test("renders server, client, and markdown content", async ({
   verifyNoErrors();
 });
 
-test("reloads when the server component changes", async ({ page }) => {
-  let serverComponentUrl = new URL(
-    "../../../app/pages/build/dev-reload/server-component.tsx",
-    import.meta.url,
-  );
-  let source = await readFile(serverComponentUrl, "utf8");
-
-  let initialContent =
-    "This page is a server component and editing it causes the RSC to re-render.";
-  let updatedContent = `Updated server component content ${crypto.randomUUID()}`;
-
-  await page.goto("/build/dev-reload");
-
-  await expect(page.getByTestId("updatable-content")).toHaveText(
-    initialContent,
-  );
-
-  try {
-    await writeFile(
-      serverComponentUrl,
-      source.replace(
-        /This page is a server component and editing it causes the RSC to\s+re-render\./,
-        updatedContent,
-      ),
+test(
+  "reloads when the server component changes",
+  { tag: "@build" },
+  async ({ page }) => {
+    let serverComponentUrl = new URL(
+      "../../../app/pages/build/dev-reload/server-component.tsx",
+      import.meta.url,
     );
+    let source = await readFile(serverComponentUrl, "utf8");
+
+    let initialContent =
+      "This page is a server component and editing it causes the RSC to re-render.";
+    let updatedContent = `Updated server component content ${crypto.randomUUID()}`;
+
+    await page.goto("/build/dev-reload");
 
     await expect(page.getByTestId("updatable-content")).toHaveText(
-      updatedContent,
-      { timeout: 15_000 },
-    );
-  } finally {
-    await writeFile(serverComponentUrl, source);
-  }
-});
-
-test("reloads when the client component changes", async ({ page }) => {
-  let clientComponentUrl = new URL(
-    "../../../app/pages/build/dev-reload/client-component.tsx",
-    import.meta.url,
-  );
-  let source = await readFile(clientComponentUrl, "utf8");
-
-  await page.goto("/build/dev-reload");
-
-  await expect(page.getByTestId("updatable-button-label")).toHaveText("+");
-
-  try {
-    await writeFile(
-      clientComponentUrl,
-      source.replace(
-        'data-testid="updatable-button-label">+',
-        'data-testid="updatable-button-label">ADD 1',
-      ),
+      initialContent,
     );
 
-    await expect(page.getByTestId("updatable-button-label")).toHaveText(
-      "ADD 1",
-      { timeout: 15_000 },
+    try {
+      await writeFile(
+        serverComponentUrl,
+        source.replace(
+          /This page is a server component and editing it causes the RSC to\s+re-render\./,
+          updatedContent,
+        ),
+      );
+
+      await expect(page.getByTestId("updatable-content")).toHaveText(
+        updatedContent,
+        { timeout: 15_000 },
+      );
+    } finally {
+      await writeFile(serverComponentUrl, source);
+    }
+  },
+);
+
+test(
+  "reloads when the client component changes",
+  { tag: "@build" },
+  async ({ page }) => {
+    let clientComponentUrl = new URL(
+      "../../../app/pages/build/dev-reload/client-component.tsx",
+      import.meta.url,
     );
-  } finally {
-    await writeFile(clientComponentUrl, source);
-  }
-});
+    let source = await readFile(clientComponentUrl, "utf8");
 
-test("reloads when the markdown file changes", async ({ page }) => {
-  let markdownUrl = new URL(
-    "../../../app/pages/build/dev-reload/markdown.md",
-    import.meta.url,
-  );
-  let source = await readFile(markdownUrl, "utf8");
-  let updatedContent = `Updated markdown content ${crypto.randomUUID()}`;
+    await page.goto("/build/dev-reload");
 
-  await page.goto("/build/dev-reload");
+    await expect(page.getByTestId("updatable-button-label")).toHaveText("+");
 
-  try {
-    await writeFile(markdownUrl, `${source}\n\n${updatedContent}\n`);
+    try {
+      await writeFile(
+        clientComponentUrl,
+        source.replace(
+          'data-testid="updatable-button-label">+',
+          'data-testid="updatable-button-label">ADD 1',
+        ),
+      );
 
-    await expect(page.getByText(updatedContent, { exact: true })).toBeVisible({
-      timeout: 15_000,
-    });
-  } finally {
-    await writeFile(markdownUrl, source);
-  }
-});
+      await expect(page.getByTestId("updatable-button-label")).toHaveText(
+        "ADD 1",
+        { timeout: 15_000 },
+      );
+    } finally {
+      await writeFile(clientComponentUrl, source);
+    }
+  },
+);
+
+test(
+  "reloads when the markdown file changes",
+  { tag: "@build" },
+  async ({ page }) => {
+    let markdownUrl = new URL(
+      "../../../app/pages/build/dev-reload/markdown.md",
+      import.meta.url,
+    );
+    let source = await readFile(markdownUrl, "utf8");
+    let updatedContent = `Updated markdown content ${crypto.randomUUID()}`;
+
+    await page.goto("/build/dev-reload");
+
+    try {
+      await writeFile(markdownUrl, `${source}\n\n${updatedContent}\n`);
+
+      await expect(page.getByText(updatedContent, { exact: true })).toBeVisible(
+        {
+          timeout: 15_000,
+        },
+      );
+    } finally {
+      await writeFile(markdownUrl, source);
+    }
+  },
+);

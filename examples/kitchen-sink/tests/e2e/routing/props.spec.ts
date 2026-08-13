@@ -27,13 +27,13 @@ test("server-renders and hydrates dynamic and search props", async ({
   verifyNoErrors();
 });
 
-test("provides layout props to the index page", async ({ page }) => {
+test("provides layout props to the index page", async ({ page, baseURL }) => {
   await page.goto("/routing/props");
 
   await expect(page.getByTestId("layout-params")).toHaveText("none");
   await expect(page.getByTestId("layout-search-params")).toHaveText("none");
   await expect(page.getByTestId("layout-url")).toHaveText(
-    "http://127.0.0.1:3000/routing/props",
+    new URL("/routing/props", baseURL).href,
   );
 
   let request = JSON.parse(
@@ -43,12 +43,12 @@ test("provides layout props to the index page", async ({ page }) => {
   expect(Object.keys(request.headers)).not.toHaveLength(0);
 });
 
-test("provides page props to the index page", async ({ page }) => {
+test("provides page props to the index page", async ({ page, baseURL }) => {
   await page.goto("/routing/props");
 
   await expect(page.getByTestId("page-search-params")).toHaveText("none");
   await expect(page.getByTestId("page-url")).toHaveText(
-    "http://127.0.0.1:3000/routing/props",
+    new URL("/routing/props", baseURL).href,
   );
 
   let request = JSON.parse(await page.getByTestId("page-request").innerText());
@@ -56,7 +56,7 @@ test("provides page props to the index page", async ({ page }) => {
   expect(Object.keys(request.headers)).not.toHaveLength(0);
 });
 
-test("provides layout props to the param page", async ({ page }) => {
+test("provides layout props to the param page", async ({ page, baseURL }) => {
   await page.goto("/routing/props/a-page-with-a-param");
 
   await expect(page.getByTestId("layout-params")).toHaveText(
@@ -64,7 +64,7 @@ test("provides layout props to the param page", async ({ page }) => {
   );
   await expect(page.getByTestId("layout-search-params")).toHaveText("none");
   await expect(page.getByTestId("layout-url")).toHaveText(
-    "http://127.0.0.1:3000/routing/props/a-page-with-a-param",
+    new URL("/routing/props/a-page-with-a-param", baseURL).href,
   );
 
   let request = JSON.parse(
@@ -74,7 +74,7 @@ test("provides layout props to the param page", async ({ page }) => {
   expect(Object.keys(request.headers)).not.toHaveLength(0);
 });
 
-test("provides page props to the param page", async ({ page }) => {
+test("provides page props to the param page", async ({ page, baseURL }) => {
   await page.goto("/routing/props/a-page-with-a-param");
 
   await expect(page.getByTestId("page-params")).toHaveText(
@@ -82,7 +82,7 @@ test("provides page props to the param page", async ({ page }) => {
   );
   await expect(page.getByTestId("page-search-params")).toHaveText("none");
   await expect(page.getByTestId("page-url")).toHaveText(
-    "http://127.0.0.1:3000/routing/props/a-page-with-a-param",
+    new URL("/routing/props/a-page-with-a-param", baseURL).href,
   );
 
   let request = JSON.parse(await page.getByTestId("page-request").innerText());
@@ -90,7 +90,10 @@ test("provides page props to the param page", async ({ page }) => {
   expect(Object.keys(request.headers)).not.toHaveLength(0);
 });
 
-test("provides layout props to the search params page", async ({ page }) => {
+test("provides layout props to the search params page", async ({
+  page,
+  baseURL,
+}) => {
   await page.goto("/routing/props/a-page-with-a-param?search=true");
   await expect(page.getByTestId("layout-params")).toHaveText(
     "slug: a-page-with-a-param",
@@ -99,7 +102,10 @@ test("provides layout props to the search params page", async ({ page }) => {
     "search: true",
   );
   await expect(page.getByTestId("layout-url")).toHaveText(
-    "http://127.0.0.1:3000/routing/props/a-page-with-a-param?search=true",
+    new URL(
+      "/routing/props/a-page-with-a-param?search=true",
+      baseURL,
+    ).href,
   );
 
   let request = JSON.parse(
@@ -109,7 +115,10 @@ test("provides layout props to the search params page", async ({ page }) => {
   expect(Object.keys(request.headers)).not.toHaveLength(0);
 });
 
-test("provides page props to the search params page", async ({ page }) => {
+test("provides page props to the search params page", async ({
+  page,
+  baseURL,
+}) => {
   await page.goto("/routing/props/a-page-with-a-param?search=true");
 
   await expect(page.getByTestId("page-params")).toHaveText(
@@ -119,7 +128,10 @@ test("provides page props to the search params page", async ({ page }) => {
     "search: true",
   );
   await expect(page.getByTestId("page-url")).toHaveText(
-    "http://127.0.0.1:3000/routing/props/a-page-with-a-param?search=true",
+    new URL(
+      "/routing/props/a-page-with-a-param?search=true",
+      baseURL,
+    ).href,
   );
 
   let request = JSON.parse(await page.getByTestId("page-request").innerText());

@@ -38,26 +38,30 @@ test("server-renders and hydrates escaped logging output", async ({
   verifyNoErrors();
 });
 
-test("forwards server logs to the browser console", async ({ page }) => {
-  let logs: string[] = [];
+test(
+  "forwards server logs to the browser console",
+  { tag: "@development" },
+  async ({ page }) => {
+    let logs: string[] = [];
 
-  page.on("console", (message) => {
-    if (message.type() === "log") {
-      logs.push(message.text());
-    }
-  });
+    page.on("console", (message) => {
+      if (message.type() === "log") {
+        logs.push(message.text());
+      }
+    });
 
-  await page.goto("/react/logging");
+    await page.goto("/react/logging");
 
-  let expectedLogs = [
-    "Hello world!",
-    "Hello <b>html</b> world!",
-    "Hello <script></script> world!",
-  ];
+    let expectedLogs = [
+      "Hello world!",
+      "Hello <b>html</b> world!",
+      "Hello <script></script> world!",
+    ];
 
-  await expect.poll(() =>
-    expectedLogs.every((expectedLog) =>
-      logs.some((log) => log.includes(expectedLog)),
-    ),
-  ).toBe(true);
-});
+    await expect.poll(() =>
+      expectedLogs.every((expectedLog) =>
+        logs.some((log) => log.includes(expectedLog)),
+      ),
+    ).toBe(true);
+  },
+);

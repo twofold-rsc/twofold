@@ -22,23 +22,15 @@ export default defineConfig({
   projects: [
     {
       name: "app-build",
-      testMatch: [
-        "**/build/dev-reload.spec.ts",
-        "**/build/hmr.spec.ts",
-        "**/error-handling/*-build.spec.ts",
-        "**/runtime/env-reload.spec.ts",
-      ],
+      grep: /@build/,
+      metadata: { environment: "development" },
       workers: 1,
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "app-run",
-      testIgnore: [
-        "**/build/dev-reload.spec.ts",
-        "**/build/hmr.spec.ts",
-        "**/error-handling/*-build.spec.ts",
-        "**/runtime/env-reload.spec.ts",
-      ],
+      grepInvert: /@build|@production/,
+      metadata: { environment: "development" },
       dependencies: ["app-build"],
       use: { ...devices["Desktop Chrome"] },
     },
