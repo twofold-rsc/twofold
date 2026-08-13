@@ -32,7 +32,7 @@ export default function ErrorUI({ error, reset }: ErrorProps) {
         </p>
       </div>
       {error.stack && (
-        <div>
+        <div data-testid="error-stack">
           <p className="mt-4 text-sm font-semibold text-gray-600">
             Stack trace
           </p>
@@ -48,7 +48,9 @@ export default function ErrorUI({ error, reset }: ErrorProps) {
       {error.digest && (
         <div>
           <p className="mt-4 text-sm font-semibold text-gray-600">Digest</p>
-          <p className="mt-1">{error.digest}</p>
+          <p data-testid="error-digest" className="mt-1">
+            {error.digest}
+          </p>
         </div>
       )}
       <div className="mt-8">

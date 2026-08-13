@@ -1,5 +1,7 @@
 # TODO
 
+- [ ] prod build should build to a different directory, so prod and dev server can run at same time.
+
 - [ ] rsc stream renderer shouldnt check the stream for errors, remove buffer
       take a look at runtime rsc render to see
 - [ ] can we serialize redirect

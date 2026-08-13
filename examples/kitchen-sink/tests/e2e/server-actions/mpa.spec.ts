@@ -63,15 +63,21 @@ test.describe("JavaScript enabled", () => {
     await expect(page.getByText("Redirected")).toBeVisible();
   });
 
-  test("surfaces an error from an action", async ({ page }) => {
+  test("surfaces an error from an action", async ({ page }, testInfo) => {
     await page.goto("/server-actions/mpa");
     let form = page.getByText("Action that errors").locator("..");
     await form.getByRole("button", { name: "Run action" }).click();
 
-    await expect(page.getByRole("heading", { name: "Error" })).toBeVisible();
-    await expect(
-      page.getByText("This action threw an error", { exact: true }),
-    ).toBeVisible();
+    if (testInfo.project.metadata.environment === "production") {
+      await expect(
+        page.getByRole("heading", { name: "Application error", exact: true }),
+      ).toBeVisible();
+    } else {
+      await expect(page.getByRole("heading", { name: "Error" })).toBeVisible();
+      await expect(
+        page.getByText("This action threw an error", { exact: true }),
+      ).toBeVisible();
+    }
   });
 });
 
@@ -124,13 +130,19 @@ test.describe("JavaScript disabled", () => {
     await expect(page.getByText("Redirected")).toBeVisible();
   });
 
-  test("surfaces an error from an action", async ({ page }) => {
+  test("surfaces an error from an action", async ({ page }, testInfo) => {
     await page.goto("/server-actions/mpa");
     let form = page.getByText("Action that errors").locator("..");
     await form.getByRole("button", { name: "Run action" }).click();
 
-    await expect(
-      page.getByRole("heading", { name: "This action threw an error" }),
-    ).toBeVisible();
+    if (testInfo.project.metadata.environment === "production") {
+      await expect(
+        page.getByRole("heading", { name: "Application error", exact: true }),
+      ).toBeVisible();
+    } else {
+      await expect(
+        page.getByRole("heading", { name: "This action threw an error" }),
+      ).toBeVisible();
+    }
   });
 });
