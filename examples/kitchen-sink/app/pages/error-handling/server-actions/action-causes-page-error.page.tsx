@@ -7,7 +7,7 @@ async function action() {
 
 export default function Page() {
   if (shouldError) {
-    // eslint-disable-next-line
+    // oxlint-disable-next-line react-compiler
     shouldError = false;
     throw new Error("Render error");
   }

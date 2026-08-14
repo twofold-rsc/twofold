@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "twofold dev",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "build": "twofold build",
     "serve": "twofold serve",
     "start": "twofold start"
@@ -14,7 +14,7 @@
   "keywords": [],
   "license": "ISC",
   "engines": {
-    "node": ">=22.20.0"
+    "node": ">=24.0.0"
   },
   "dependencies": {
     "@twofold/framework": "workspace:*",
@@ -27,11 +27,11 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@twofold/oxlint-config": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "eslint": "^9.38.0",
-    "eslint-plugin-twofold": "workspace:*",
+    "oxlint": "catalog:",
     "prettier": "^3.8.5",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "catalog:"

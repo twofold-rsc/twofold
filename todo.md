@@ -1,5 +1,13 @@
 # TODO
 
+- oxlint
+  - base-app walk through
+    - update default config, rerun update-template
+
+- upgrade deps
+
+- talk through publishing / or list on website
+
 - [ ] prod build should build to a different directory, so prod and dev server can run at same time.
 
 - [ ] rsc stream renderer shouldnt check the stream for errors, remove buffer

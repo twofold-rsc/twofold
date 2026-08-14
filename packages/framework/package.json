@@ -55,7 +55,7 @@
     "@types/react-dom": "catalog:",
     "cookie": "^2.0.0",
     "nodemon": "^3.1.14",
-    "oxlint": "^1.78.0",
+    "oxlint": "catalog:",
     "typescript": "catalog:",
     "vitest": "^4.1.9"
   },

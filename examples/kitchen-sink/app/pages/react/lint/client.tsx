@@ -2,21 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// this file isnt used, its just to test that the linter is working
-
 export function Component() {
   let [name, setName] = useState("bob");
 
   useEffect(() => {
     console.log(name);
+    // lint-error-on
+    // }, []);
+    // lint-error-off
   });
-  // this will fail lint
-  // }, []);
-
   let thingRef = useRef(1);
 
-  // this will fail lint
+  // lint-error-on
   // return <div>{thingRef.current}</div>;
-
+  // lint-error-off
   return <div>hello world</div>;
 }

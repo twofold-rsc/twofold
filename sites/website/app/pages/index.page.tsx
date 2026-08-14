@@ -6,7 +6,9 @@ export default async function Page({ request }: PageProps) {
   let rows = 25;
   let cols = 25;
 
-  let grid = new Array(rows).fill(0).map((_, i) => new Array(cols).fill(false));
+  let grid = Array.from({ length: rows })
+    .fill(0)
+    .map((_, i) => Array.from({ length: cols }).fill(false));
 
   let url = new URL(request.url);
   let ogImageUrl = new URL("/og-image.png", url.origin);

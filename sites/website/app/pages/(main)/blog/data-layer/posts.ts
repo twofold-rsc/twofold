@@ -92,7 +92,6 @@ export const loadComponents = cache(async (slug: string) => {
     notFound();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let map: Record<string, Record<string, ComponentType<any>>> = {
     "you-can-serialize-a-promise-in-react": PromisePost.components,
     "composable-streaming-with-suspense": StreamingPost.components,

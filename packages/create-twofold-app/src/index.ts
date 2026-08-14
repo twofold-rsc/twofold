@@ -221,8 +221,8 @@ async function main() {
   // remap versions
   let versions: Record<any, any> = {
     ...catalog,
-    "eslint-plugin-twofold": `${version}`,
     "@twofold/framework": `${version}`,
+    "@twofold/oxlint-config": `${version}`,
   };
 
   function modifyVersions(deps: Record<string, string>) {
@@ -244,7 +244,6 @@ async function main() {
       minimumReleaseAge: 1440,
       minimumReleaseAgeExclude: [
         "@twofold/*",
-        "eslint-plugin-twofold",
         "react",
         "react-dom",
         "react-server-dom-webpack",

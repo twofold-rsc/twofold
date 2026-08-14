@@ -1,0 +1,31 @@
+{
+  "name": "@twofold/oxlint-config",
+  "version": "0.0.80",
+  "description": "Shared Oxlint configuration for Twofold applications",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "files": [
+    "index.ts",
+    "README.md"
+  ],
+  "keywords": [
+    "oxlint",
+    "twofold"
+  ],
+  "author": "Ryan Toronto",
+  "license": "ISC",
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "oxlint": ">=1.78.0"
+  },
+  "devDependencies": {
+    "oxlint": "catalog:"
+  }
+}
