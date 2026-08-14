@@ -36,6 +36,7 @@ export type Store = {
     assets: string[];
   } | null;
   assets: string[];
+  authCache: Map<string, unknown>;
 };
 
 let asyncLocalStorage = new AsyncLocalStorage<Store>();
