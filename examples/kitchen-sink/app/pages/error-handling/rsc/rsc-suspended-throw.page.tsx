@@ -12,10 +12,8 @@ async function getPosts() {
   await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
-async function Posts() {
+async function Posts(): Promise<never> {
   await getPosts();
 
   throw new Error("Oh no!");
-
-  return <div>Posts...</div>;
 }

@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "twofold dev",
     "dev-framework": "nodemon --delay 100ms --exec \"pnpm twofold dev\" --watch ../../packages/framework/dist -e js",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "build": "twofold build",
     "serve": "twofold serve"
   },
@@ -40,13 +40,13 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@twofold/oxlint-config": "workspace:*",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "eslint": "^9.38.0",
-    "eslint-plugin-twofold": "workspace:*",
     "nodemon": "^3.1.14",
+    "oxlint": "catalog:",
     "prettier": "^3.8.5",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "catalog:"

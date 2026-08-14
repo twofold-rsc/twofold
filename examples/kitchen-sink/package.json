@@ -10,7 +10,7 @@
     "prod-framework": "nodemon --delay 100ms --exec \"NODE_ENV=production pnpm twofold dev\" --watch ../../packages/framework/dist -e js",
     "build": "twofold build",
     "serve": "twofold serve",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "test:e2e": "playwright test",
     "test:e2e:production": "playwright test --config playwright.production.config.ts"
   },
@@ -35,12 +35,12 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.62.0",
+    "@twofold/oxlint-config": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "eslint": "^9.38.0",
-    "eslint-plugin-twofold": "workspace:*",
     "nodemon": "^3.1.14",
+    "oxlint": "catalog:",
     "prettier": "^3.8.5",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "catalog:"
