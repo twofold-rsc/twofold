@@ -23,7 +23,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "oxlint": ">=1.78.0"
+    "oxlint": "catalog:"
   },
   "devDependencies": {
     "oxlint": "catalog:"

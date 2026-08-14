@@ -1,18 +1,19 @@
 packages:
   - packages/*
+  - "!packages/eslint-plugin-twofold"
   - examples/*
   - sites/*
 
 catalog:
-  "@types/node": ^26.0.1
-  "@types/react": ^19.2.17
-  "@types/react-dom": ^19.2.3
-  esbuild: 0.28.1
+  "@types/node": ^26.2.0
+  "@types/react": ^19.2.18
+  "@types/react-dom": ^19.2.4
+  esbuild: 0.28.2
   oxlint: ^1.78.0
   react: 19.2.8
   react-dom: 19.2.8
   react-server-dom-webpack: 19.2.8
-  typescript: ^6.0.3
+  typescript: ^7.0.2
 
 minimumReleaseAge: 1440
 
