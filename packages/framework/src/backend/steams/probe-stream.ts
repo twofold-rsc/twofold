@@ -1,6 +1,22 @@
 export async function probeFirstChunk<T>(stream: ReadableStream<T>) {
   const reader = stream.getReader();
-  const first = await reader.read();
+  let first: ReadableStreamReadResult<T>;
+
+  try {
+    first = await reader.read();
+  } catch (error) {
+    reader.releaseLock();
+    throw error;
+  }
+
+  if (first.done) {
+    reader.releaseLock();
+    return new ReadableStream<T>({
+      start(controller) {
+        controller.close();
+      },
+    });
+  }
 
   let firstPending = !first.done;
 
@@ -9,9 +25,7 @@ export async function probeFirstChunk<T>(stream: ReadableStream<T>) {
       try {
         if (firstPending) {
           firstPending = false;
-          if (first.value) {
-            controller.enqueue(first.value);
-          }
+          controller.enqueue(first.value);
           return;
         }
 

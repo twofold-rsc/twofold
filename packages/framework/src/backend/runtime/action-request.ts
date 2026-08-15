@@ -150,7 +150,7 @@ export class ActionRequest {
       });
 
     if (redirect) {
-      stream.cancel();
+      await stream.cancel();
       return this.redirectResponse(redirect.url);
     }
 
