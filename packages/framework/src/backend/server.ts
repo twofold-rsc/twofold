@@ -189,6 +189,8 @@ async function createHandler(server: Server) {
     let pageRequest = runtime.pageRequest(request);
     let response = await pageRequest.rscResponse();
 
+    await response.body?.cancel();
+
     let headers = new Headers(response.headers);
     headers.delete("content-length");
     headers.delete("content-type");

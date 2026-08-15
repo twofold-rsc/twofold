@@ -3,6 +3,7 @@ packages:
   - "!packages/eslint-plugin-twofold"
   - examples/*
   - sites/*
+  - tools/*
 
 catalog:
   "@types/node": ^26.2.0

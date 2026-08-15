@@ -86,7 +86,7 @@ export class PageRequest {
       });
 
     if (redirect) {
-      stream.cancel();
+      await stream.cancel();
       return this.redirectResponse(redirect.status, redirect.url);
     }
 
