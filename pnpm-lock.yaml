@@ -41,6 +41,9 @@ importers:
       '@changesets/cli':
         specifier: ^3.0.0
         version: 3.0.0
+      prettier:
+        specifier: ^3.9.6
+        version: 3.9.6
       typescript:
         specifier: 'catalog:'
         version: 7.0.2

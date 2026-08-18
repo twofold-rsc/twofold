@@ -12,6 +12,7 @@
   "license": "ISC",
   "devDependencies": {
     "@changesets/cli": "^3.0.0",
+    "prettier": "^3.9.6",
     "typescript": "catalog:"
   }
 }
