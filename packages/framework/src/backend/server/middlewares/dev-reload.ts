@@ -5,13 +5,26 @@ import { DevelopmentBuild } from "../../build/build/development.js";
 type Connection = {
   connectionId: number;
   sink: ServerSentEventSink;
-  close: () => void;
 };
 
-let activeConnections: Connection[] = [];
-let id = 1;
+type ConnectionMode = "persistent" | "visibility";
 
 export function devReload(build: DevelopmentBuild): RouteHandler {
+  let activeConnections: Connection[] = [];
+  let id = 1;
+
+  function getConnectionMode(): ConnectionMode {
+    return activeConnections.length > 3 ? "visibility" : "persistent";
+  }
+
+  function broadcastMode(mode: ConnectionMode) {
+    let payload = JSON.stringify({ type: "mode", mode });
+
+    for (let connection of activeConnections) {
+      connection.sink.sendMessage(payload);
+    }
+  }
+
   return async ({ request }) => {
     let url = new URL(request.url);
     let pathname = url.pathname;
@@ -23,12 +36,7 @@ export function devReload(build: DevelopmentBuild): RouteHandler {
 
       return serverSentEvents({
         onOpen(sink) {
-          if (activeConnections.length > 8) {
-            let connection = activeConnections.shift();
-            if (connection) {
-              connection.close();
-            }
-          }
+          let previousMode = getConnectionMode();
 
           onBuildComplete = () => {
             let payload = build.error
@@ -45,31 +53,39 @@ export function devReload(build: DevelopmentBuild): RouteHandler {
             sink.sendMessage(JSON.stringify(payload));
           };
 
-          let close = () => {
-            sink.close();
-            build.events.off("complete", onBuildComplete);
-          };
-
           activeConnections.push({
             connectionId,
-            close,
             sink,
           });
+
+          let mode = getConnectionMode();
 
           const welcomeMessage = {
             type: "welcome",
             key: build.key,
+            mode,
           };
 
           sink.sendMessage(JSON.stringify(welcomeMessage));
 
+          if (mode !== previousMode) {
+            broadcastMode(mode);
+          }
+
           build.events.on("complete", onBuildComplete);
         },
         onClose() {
+          let previousMode = getConnectionMode();
+
           activeConnections = activeConnections.filter(
             (connection) => connection.connectionId !== connectionId,
           );
           build.events.off("complete", onBuildComplete);
+
+          let mode = getConnectionMode();
+          if (mode !== previousMode) {
+            broadcastMode(mode);
+          }
         },
       });
     }

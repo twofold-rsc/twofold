@@ -1,8 +1,8 @@
 "use client";
 
-import { startTransition, useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
+import { useDevReload } from "../hooks/use-dev-reload";
 import { useRouter } from "../hooks/use-router";
-import * as z from "zod";
 
 declare global {
   interface Window {
@@ -13,45 +13,7 @@ declare global {
   }
 }
 
-let messagesSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("error"),
-    key: z.string(),
-    message: z.string(),
-  }),
-  z.object({
-    type: z.literal("welcome"),
-    key: z.string(),
-  }),
-  z.object({
-    type: z.literal("changes"),
-    key: z.string(),
-    changes: z.object({
-      rscFiles: z.object({
-        added: z.array(z.string()),
-      }),
-      chunkFiles: z.object({
-        added: z.array(z.string()),
-      }),
-      chunkIds: z.object({
-        added: z.array(z.string()),
-      }),
-      cssFiles: z.object({
-        added: z.array(z.string()),
-        removed: z.array(z.string()),
-      }),
-    }),
-  }),
-]);
-
-type Message = z.infer<typeof messagesSchema>;
-type ChangesMessage = Extract<Message, { type: "changes" }>;
-type ErrorMessage = Extract<Message, { type: "error" }>;
-type WelcomeMessage = Extract<Message, { type: "welcome" }>;
-
 export default function DevReload() {
-  let key = useRef<string>(null);
-
   let [cssToCleanup, setCSSToCleanup] = useState<string[]>([]);
 
   let { refresh } = useRouter();
@@ -65,28 +27,13 @@ export default function DevReload() {
     }
   }, [cssToCleanup]);
 
-  useEffect(() => {
-    let eventSource = new EventSource("/__dev/reload");
-
-    async function handleWelcome(message: WelcomeMessage) {
-      if (key.current && key.current !== message.key) {
-        // we got disconnected and the version has changed
-        key.current = message.key;
-        refresh();
-      }
-    }
-
-    async function handleError(message: ErrorMessage) {
-      key.current = message.key;
-
+  useDevReload(async (message) => {
+    if (message.type === "error") {
       startTransition(async () => {
         refresh();
       });
-    }
-
-    async function handleChanges(message: ChangesMessage) {
+    } else {
       let changes = message.changes;
-      key.current = message.key;
 
       const hasClientChanges =
         changes.chunkFiles.added.length > 0 ||
@@ -124,35 +71,7 @@ export default function DevReload() {
         refresh();
       }
     }
-
-    eventSource.onmessage = (event) => {
-      let data = JSON.parse(event.data);
-      let result = messagesSchema.safeParse(data);
-
-      if (result.error) {
-        console.warn("Could not parse dev reload message", result.error);
-        return;
-      }
-
-      let message = result.data;
-
-      if (message.type === "error") {
-        handleError(message);
-      } else if (message.type === "changes") {
-        handleChanges(message);
-      } else if (message.type === "welcome") {
-        handleWelcome(message);
-      }
-    };
-
-    eventSource.onerror = (_error) => {
-      // ignore
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, [refresh]);
+  });
 
   return null;
 }
