@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import type { Page } from "@playwright/test";
 
 import { expect, test } from "../test";
 
@@ -131,3 +132,92 @@ test(
     }
   },
 );
+
+test(
+  "reloads a hidden page when it becomes visible",
+  { tag: "@build" },
+  async ({ context, page }) => {
+    let serverComponentUrl = new URL(
+      "../../../app/pages/build/dev-reload/server-component.tsx",
+      import.meta.url,
+    );
+    let source = await readFile(serverComponentUrl, "utf8");
+    let initialContent =
+      "This page is a server component and editing it causes the RSC to re-render.";
+    let updatedContent = `Updated hidden page content ${crypto.randomUUID()}`;
+    let pages = [page];
+
+    try {
+      await page.goto("/build/dev-reload");
+
+      for (let i = 0; i < 3; i++) {
+        let extraPage = await context.newPage();
+        pages.push(extraPage);
+        await extraPage.goto("/build/dev-reload");
+        await extraPage.waitForFunction(
+          () => window.__twofold?.clientAppIsInteractive === true,
+        );
+      }
+
+      let hiddenPage = pages[3];
+      if (!hiddenPage) {
+        throw new Error("Expected a fourth page");
+      }
+
+      await setPageVisibility(hiddenPage, "hidden");
+      await hiddenPage.waitForTimeout(3_500);
+
+      await writeFile(
+        serverComponentUrl,
+        source.replace(
+          /This page is a server component and editing it causes the RSC to\s+re-render\./,
+          updatedContent,
+        ),
+      );
+
+      await Promise.all(
+        pages
+          .slice(0, 3)
+          .map((visiblePage) =>
+            expect(visiblePage.getByTestId("updatable-content")).toHaveText(
+              updatedContent,
+              { timeout: 15_000 },
+            ),
+          ),
+      );
+
+      await hiddenPage.waitForTimeout(500);
+      await expect(hiddenPage.getByTestId("updatable-content")).toHaveText(
+        initialContent,
+      );
+
+      await setPageVisibility(hiddenPage, "visible");
+      await expect(hiddenPage.getByTestId("updatable-content")).toHaveText(
+        updatedContent,
+        { timeout: 15_000 },
+      );
+    } finally {
+      await writeFile(serverComponentUrl, source);
+      await Promise.all(pages.slice(1).map((extraPage) => extraPage.close()));
+    }
+  },
+);
+
+async function setPageVisibility(
+  page: Page,
+  visibilityState: DocumentVisibilityState,
+) {
+  await page.evaluate((state) => {
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      get: () => state,
+    });
+
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => state === "hidden",
+    });
+
+    document.dispatchEvent(new Event("visibilitychange"));
+  }, visibilityState);
+}

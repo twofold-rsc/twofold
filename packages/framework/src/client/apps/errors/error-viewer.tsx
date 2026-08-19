@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useDevReload } from "../../hooks/use-dev-reload";
 
 export function ErrorViewer({ error }: { error: unknown }) {
   return (
@@ -33,20 +33,11 @@ export function ErrorViewer({ error }: { error: unknown }) {
 }
 
 function Reload() {
-  useEffect(() => {
-    let eventSource = new EventSource("/__dev/reload");
-
-    eventSource.onmessage = (e) => {
-      let data = JSON.parse(e.data);
-      if (data.type === "changes") {
-        window.location.reload();
-      }
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
+  useDevReload((message) => {
+    if (message.type === "changes") {
+      window.location.reload();
+    }
+  });
 
   return null;
 }
