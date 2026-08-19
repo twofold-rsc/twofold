@@ -49,7 +49,7 @@ export function useDevReload(onMessage: (message: ReloadMessage) => void) {
   let key = useRef<string>(null);
   let messageHandler = useRef(onMessage);
 
-  // Replace this ref with useEffectEvent once React 19.1 support is dropped.
+  // replace this ref with useEffectEvent when we drop react 19.1 support
   useLayoutEffect(() => {
     messageHandler.current = onMessage;
   }, [onMessage]);
@@ -68,8 +68,10 @@ export function useDevReload(onMessage: (message: ReloadMessage) => void) {
 
     function disconnect() {
       clearDisconnectTimer();
-      eventSource?.close();
-      eventSource = undefined;
+      if (eventSource) {
+        eventSource.close();
+        eventSource = undefined;
+      }
     }
 
     function updateConnection() {
