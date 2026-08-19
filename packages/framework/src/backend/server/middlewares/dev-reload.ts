@@ -17,13 +17,11 @@ export function devReload(build: DevelopmentBuild): RouteHandler {
     return activeConnections.length > 3 ? "visibility" : "persistent";
   }
 
-  function broadcastMode(mode: ConnectionMode, exceptConnectionId?: number) {
+  function broadcastMode(mode: ConnectionMode) {
     let payload = JSON.stringify({ type: "mode", mode });
 
     for (let connection of activeConnections) {
-      if (connection.connectionId !== exceptConnectionId) {
-        connection.sink.sendMessage(payload);
-      }
+      connection.sink.sendMessage(payload);
     }
   }
 
@@ -71,7 +69,7 @@ export function devReload(build: DevelopmentBuild): RouteHandler {
           sink.sendMessage(JSON.stringify(welcomeMessage));
 
           if (mode !== previousMode) {
-            broadcastMode(mode, connectionId);
+            broadcastMode(mode);
           }
 
           build.events.on("complete", onBuildComplete);
