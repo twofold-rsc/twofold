@@ -20,6 +20,5 @@ export default defineConfig({
     "no-unused-private-class-members": "off",
     "typescript/no-unused-vars": "off",
     "typescript/no-this-alias": "off",
-    "react/react-compiler": "error",
   },
 });
