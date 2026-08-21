@@ -731,10 +731,6 @@ function createReactOxcPlugin({
               ],
             },
             async handler(code, id) {
-              // let filename = path.basename(id);
-              // console.log("id", id);
-              // console.log("filename", filename);
-
               let compiled = await oxcTransformReact(id, code, {
                 reactCompiler: compilerEnabled,
                 jsx: {
