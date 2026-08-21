@@ -15,18 +15,26 @@ function enableLintErrors(source: string) {
 test(
   "reports lint errors in React components",
   { tag: "@build" },
-  async () => {
+  async ({ page }) => {
     let fileUrl = new URL(
       "../../../app/pages/react/lint/client.tsx",
       import.meta.url,
     );
     let source = await readFile(fileUrl, "utf8");
     let brokenSource = enableLintErrors(source);
+    let sourceChanged = false;
 
     expect(brokenSource).not.toBe(source);
 
+    await page.goto("/react/lint");
+    let lintOutput = page.getByTestId("lint-output");
+    await expect(lintOutput).toHaveText("hello world");
+
     try {
       await writeFile(fileUrl, brokenSource);
+      sourceChanged = true;
+
+      await expect(lintOutput).toHaveText("1", { timeout: 15_000 });
 
       let lintError = await execFileAsync("pnpm", ["lint"]).catch(
         (error) => error,
@@ -39,6 +47,11 @@ test(
       expect(lintError.stdout).toContain("react-hooks(exhaustive-deps)");
     } finally {
       await writeFile(fileUrl, source);
+      if (sourceChanged) {
+        await expect(lintOutput).toHaveText("hello world", {
+          timeout: 15_000,
+        });
+      }
     }
   },
 );

@@ -14,7 +14,7 @@ export function Component() {
   let thingRef = useRef(1);
 
   // lint-error-on
-  // return <div>{thingRef.current}</div>;
+  // return <div data-testid="lint-output">{thingRef.current}</div>;
   // lint-error-off
-  return <div>hello world</div>;
+  return <div data-testid="lint-output">hello world</div>;
 }

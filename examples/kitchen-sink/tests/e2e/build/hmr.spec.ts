@@ -32,11 +32,13 @@ test("updates HMR A", { tag: "@build" }, async ({ page }) => {
   );
   let source = await readFile(hmrAUrl, "utf8");
   let updatedContent = `Updated HMR A ${crypto.randomUUID()}`;
+  let sourceChanged = false;
 
   await page.goto("/build/hmr");
 
   try {
     await writeFile(hmrAUrl, source.replace("HMR A", updatedContent));
+    sourceChanged = true;
 
     await expect(page.getByText(updatedContent, { exact: true })).toBeVisible({
       timeout: 15_000,
@@ -44,6 +46,11 @@ test("updates HMR A", { tag: "@build" }, async ({ page }) => {
     await expect(page.getByText("HMR B", { exact: true })).toBeVisible();
   } finally {
     await writeFile(hmrAUrl, source);
+    if (sourceChanged) {
+      await expect(page.getByText("HMR A", { exact: true })).toBeVisible({
+        timeout: 15_000,
+      });
+    }
   }
 });
 
@@ -54,11 +61,13 @@ test("updates HMR B", { tag: "@build" }, async ({ page }) => {
   );
   let source = await readFile(hmrBUrl, "utf8");
   let updatedContent = `Updated HMR B ${crypto.randomUUID()}`;
+  let sourceChanged = false;
 
   await page.goto("/build/hmr");
 
   try {
     await writeFile(hmrBUrl, source.replace("HMR B", updatedContent));
+    sourceChanged = true;
 
     await expect(page.getByText(updatedContent, { exact: true })).toBeVisible({
       timeout: 15_000,
@@ -66,6 +75,11 @@ test("updates HMR B", { tag: "@build" }, async ({ page }) => {
     await expect(page.getByText("HMR A", { exact: true })).toBeVisible();
   } finally {
     await writeFile(hmrBUrl, source);
+    if (sourceChanged) {
+      await expect(page.getByText("HMR B", { exact: true })).toBeVisible({
+        timeout: 15_000,
+      });
+    }
   }
 });
 
@@ -79,6 +93,7 @@ test(
     );
     let source = await readFile(sharedComponentUrl, "utf8");
     let updatedContent = `Updated shared component ${crypto.randomUUID()}`;
+    let sourceChanged = false;
 
     await page.goto("/build/hmr");
 
@@ -87,6 +102,7 @@ test(
         sharedComponentUrl,
         source.replace("Shared component", updatedContent),
       );
+      sourceChanged = true;
 
       await expect(page.getByText(updatedContent, { exact: true })).toHaveCount(
         2,
@@ -96,6 +112,11 @@ test(
       );
     } finally {
       await writeFile(sharedComponentUrl, source);
+      if (sourceChanged) {
+        await expect(
+          page.getByText("Shared component", { exact: true }),
+        ).toHaveCount(2, { timeout: 15_000 });
+      }
     }
   },
 );
