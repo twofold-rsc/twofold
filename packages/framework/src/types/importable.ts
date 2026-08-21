@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-export type PageProps<T extends string | never = never> = {
+export type PageProps<T extends string = never> = {
   params: Record<T, string>;
   searchParams: URLSearchParams;
   url: URL;
@@ -22,7 +22,7 @@ export type ErrorProps = {
   reset: () => void;
 };
 
-export type APIProps<T extends string | never = never> = {
+export type APIProps<T extends string = never> = {
   params: Record<T, string>;
   searchParams: URLSearchParams;
   url: URL;

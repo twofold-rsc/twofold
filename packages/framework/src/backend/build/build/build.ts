@@ -256,7 +256,9 @@ export abstract class Build {
   }
 
   async warm() {
-    let promises = this.#builders.map((builder) => builder.warm());
+    let promises = this.#builders.map((builder) =>
+      Promise.resolve(builder.warm()),
+    );
     await Promise.all(promises);
   }
 }

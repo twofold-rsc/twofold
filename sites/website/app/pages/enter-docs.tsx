@@ -61,7 +61,7 @@ export function EnterDocs({
     ]);
 
     let promise = new Promise<"homepage-exited">((resolve) => {
-      controls.then(() => {
+      void controls.then(() => {
         resolve("homepage-exited");
       });
     });

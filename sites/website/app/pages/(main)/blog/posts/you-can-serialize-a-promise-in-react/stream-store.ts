@@ -56,7 +56,7 @@ export function addStream(stream: ReadableStream, options: Options = {}) {
     }
   });
 
-  (async () => {
+  void (async () => {
     for await (const chunk of stream) {
       const newMap = new Map(streamMap);
       const data = newMap.get(id);

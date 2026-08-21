@@ -254,7 +254,7 @@ export class Runtime {
       // this can happen async, we just want to signal that we no longer
       // are interested
       if (rscReader) {
-        rscReader.cancel();
+        void rscReader.cancel();
       }
     }
 
@@ -309,7 +309,7 @@ export class Runtime {
         } else if (data.status === "DONE") {
           finish();
         } else {
-          cancel();
+          void cancel();
         }
       } else if (data instanceof Uint8Array) {
         if (isHtmlStreamActive && htmlController) {
@@ -320,7 +320,7 @@ export class Runtime {
           }
         }
       } else {
-        cancel();
+        void cancel();
       }
     }
 

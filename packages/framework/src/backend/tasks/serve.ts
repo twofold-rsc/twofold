@@ -32,7 +32,7 @@ export class ServeTask {
 
     process.on("SIGTERM", () => {
       console.log("Received SIGTERM, shutting down gracefully");
-      this.stop();
+      void this.stop();
     });
 
     console.log(

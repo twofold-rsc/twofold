@@ -35,7 +35,7 @@ test(
       expect(lintError).toMatchObject({
         code: 1,
       });
-      expect(lintError.stdout).toContain("react(react-compiler)");
+      expect(lintError.stdout).toContain("react(refs)");
       expect(lintError.stdout).toContain("react-hooks(exhaustive-deps)");
     } finally {
       await writeFile(fileUrl, source);

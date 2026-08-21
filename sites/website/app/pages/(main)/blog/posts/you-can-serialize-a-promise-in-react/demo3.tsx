@@ -54,10 +54,10 @@ function deserializePromise(stream: ReadableStream) {
       resolver(result);
     }
 
-    readStream();
+    void readStream();
   }
 
-  readStream();
+  void readStream();
 
   return lockUntilReady;
 }

@@ -9,7 +9,7 @@ async function action() {
 
 export default function Page() {
   if (shouldNotFoundInRender) {
-    // oxlint-disable-next-line react-compiler
+    // oxlint-disable-next-line react/globals
     shouldNotFoundInRender = false;
     notFound();
   }

@@ -31,7 +31,7 @@ export class StaticFilesBuilder extends Builder {
       this.clear();
       let files = await statsUnderPath(fileURLToPath(this.#staticUrl));
       for (let file of files) {
-        this.addFile(file);
+        void this.addFile(file);
       }
     }
   }
@@ -80,7 +80,7 @@ async function statsUnderPath(dir: string): Promise<File[]> {
   let dirContents = await readdir(dir);
   let files: File[] = [];
 
-  for await (let item of dirContents) {
+  for (let item of dirContents) {
     let itemPath = path.join(dir, item);
     let itemStat = await stat(itemPath);
     if (itemStat.isDirectory()) {

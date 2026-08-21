@@ -9,11 +9,7 @@ import {
 } from "react";
 
 export type JSONValue =
-  | string
-  | number
-  | boolean
-  | { [x: string]: JSONValue }
-  | Array<JSONValue>;
+  string | number | boolean | { [x: string]: JSONValue } | Array<JSONValue>;
 
 export type Message<T = JSONValue> = {
   id: string;
@@ -74,13 +70,13 @@ export function FlashProvider({
   let removeMessageById = useCallback((id: string) => {
     setRemovedIds((c) => [...c, id]);
     setClientMessagesWithId((c) => c.filter((m) => m.id !== id));
-    deleteCookie(`_tf_flash_${id}`);
+    void deleteCookie(`_tf_flash_${id}`);
   }, []);
 
   let addMessage = useCallback((content: JSONValue) => {
     let id = Math.random().toString(36).slice(2);
     setClientMessagesWithId((c) => [...c, { id, content }]);
-    addCookie(`_tf_flash_${id}`, JSON.stringify(content));
+    void addCookie(`_tf_flash_${id}`, JSON.stringify(content));
   }, []);
 
   useEffect(() => {

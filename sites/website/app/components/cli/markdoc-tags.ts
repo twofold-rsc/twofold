@@ -3,7 +3,7 @@ import { Schema, Tag } from "@markdoc/markdoc";
 export const CLIMarkdocTags: Record<string, Schema> = {
   "cli-command": {
     render: "CLICommand",
-    children: ["tool"],
+    children: ["tag"],
     attributes: {
       selectable: {
         type: Boolean,
@@ -28,7 +28,7 @@ export const CLIMarkdocTags: Record<string, Schema> = {
     },
   },
   "cli-tool": {
-    children: ["paragraph", "text", "raw"],
+    children: ["paragraph", "text"],
     attributes: {
       name: { type: String, required: true },
     },
@@ -38,8 +38,18 @@ export const CLIMarkdocTags: Record<string, Schema> = {
 
       let command = children
         .map((child) =>
-          typeof child === "object" && child !== null && "children" in child
-            ? child.children
+          typeof child === "object" &&
+          child !== null &&
+          "children" in child &&
+          child.children !== null
+            ? Array.isArray(child.children)
+              ? child.children
+                  .reduce<string>(
+                    (command, child) =>
+                      typeof child === "string" ? command + child : command,
+                    "",
+                  )
+              : ""
             : "",
         )
         .join("");

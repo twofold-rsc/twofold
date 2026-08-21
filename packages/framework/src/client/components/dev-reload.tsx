@@ -22,7 +22,7 @@ export default function DevReload() {
     cssToCleanup.forEach((file) => removeCSSFile(file));
     if (cssToCleanup.length > 0) {
       // i really need to find a better way to express this...
-      // oxlint-disable-next-line react/react-compiler
+      // oxlint-disable-next-line react/set-state-in-effect
       setCSSToCleanup([]);
     }
   }, [cssToCleanup]);

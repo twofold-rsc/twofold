@@ -206,7 +206,7 @@ export const loadContent = cache(async (slug: string) => {
 
               child.name = "CodeTabsFence";
               child.attributes = {
-                ...attributes,
+                ...(Array.isArray(attributes) ? {} : attributes),
                 file,
                 isFirst: files.length === 1,
               };

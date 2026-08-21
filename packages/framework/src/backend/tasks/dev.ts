@@ -44,7 +44,7 @@ export class DevTask {
       `Visit ${kleur.cyan(`${this.#server.baseUrl}/`)} to see your app!`,
     );
 
-    this.watch();
+    void this.watch();
 
     process.on("SIGINT", () => {
       console.log("Exiting");

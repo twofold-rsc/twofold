@@ -23,7 +23,7 @@
     "react-dom": "catalog:",
     "react-server-dom-webpack": "catalog:",
     "server-only": "^0.0.1",
-    "tailwindcss": "^4.3.1",
+    "tailwindcss": "^4.3.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -32,8 +32,8 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "oxlint": "catalog:",
-    "prettier": "^3.8.5",
-    "prettier-plugin-tailwindcss": "^0.8.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "catalog:"
   }
 }

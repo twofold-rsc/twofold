@@ -12,7 +12,7 @@ export function Demo2({ children }: { children: ReactNode }) {
           async start(controller) {
             await new Promise((resolve) => setTimeout(resolve, 1_000));
 
-            const promise = new Promise((resolve) => {
+            const promise = new Promise<string>((resolve) => {
               setTimeout(() => resolve("Hello!"), 1_500);
             });
 

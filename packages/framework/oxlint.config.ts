@@ -12,6 +12,8 @@ export default defineConfig({
   },
   ignorePatterns: ["dist/"],
   options: {
+    typeAware: true,
+    typeCheck: true,
     reportUnusedDisableDirectives: "warn",
   },
   rules: {
@@ -20,6 +22,5 @@ export default defineConfig({
     "no-unused-private-class-members": "off",
     "typescript/no-unused-vars": "off",
     "typescript/no-this-alias": "off",
-    "react/react-compiler": "error",
   },
 });

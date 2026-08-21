@@ -275,11 +275,10 @@ export class ActionRequest {
   private get requestToRender() {
     let url = new URL(this.#request.url);
     let requestUrl = new URL(this.#action.renderPath, url);
+
     let requestToRender = new Request(requestUrl, {
-      ...this.#request,
       headers: this.#request.headers,
       method: "GET",
-      body: null,
     });
 
     return requestToRender;

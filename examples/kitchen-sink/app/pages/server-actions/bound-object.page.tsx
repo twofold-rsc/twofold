@@ -38,7 +38,7 @@ export default function Page() {
             database.record.name = name as string;
             database.record.updatedAt = new Date();
 
-            log = `Name changed from ${record.name} to ${name}. It was created ${record.createdAt}.`;
+            log = `Name changed from ${record.name} to ${typeof name === "string" ? name : "unknown"}. It was created ${record.createdAt.toString()}.`;
           }}
           className="mt-1 flex items-center"
         >

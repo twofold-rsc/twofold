@@ -9,7 +9,7 @@ async function action() {
 
 export default function Page() {
   if (shouldRedirectInRender) {
-    // oxlint-disable-next-line react-compiler
+    // oxlint-disable-next-line react/globals
     shouldRedirectInRender = false;
     redirect("/routing/redirects/ending");
   }
