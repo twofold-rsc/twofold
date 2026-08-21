@@ -12,10 +12,10 @@ export default function Page() {
 
       <p className="mt-3">
         The value on the server is{" "}
-          <span
-            data-testid="server-value"
-            className="bg-purple-50 px-1.5 py-0.5 font-medium text-purple-900"
-          >
+        <span
+          data-testid="server-value"
+          className="bg-purple-50 px-1.5 py-0.5 font-medium text-purple-900"
+        >
           {serverValue}
         </span>
       </p>
@@ -38,7 +38,7 @@ function FormComponent({ name, formId }: { name: string; formId: string }) {
         action={async (formData: FormData) => {
           "use server";
           let name = formData.get("name");
-          serverValue = `Name is ${name}, set by form #${formId}`;
+          serverValue = `Name is ${typeof name === "string" ? name : "unknown"}, set by form #${formId}`;
         }}
         className="mt-1 flex items-center space-x-2"
       >

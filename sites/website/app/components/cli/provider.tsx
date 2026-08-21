@@ -1,6 +1,11 @@
 "use client";
 
-import { createContext, ReactNode, useOptimistic, useTransition } from "react";
+import {
+  createContext,
+  ReactNode,
+  startTransition,
+  useOptimistic,
+} from "react";
 import { rememberCliCommand } from "./actions";
 
 type Data = {
@@ -21,12 +26,11 @@ export function CLIProvider({
   children: ReactNode;
 }) {
   let [optimisticCommand, setOptimisticCommand] = useOptimistic(command);
-  let [isPending, startTransition] = useTransition();
 
   function setCommand(newCommand: string) {
-    startTransition(() => {
+    startTransition(async () => {
       setOptimisticCommand(newCommand);
-      rememberCliCommand(newCommand);
+      await rememberCliCommand(newCommand);
     });
   }
 

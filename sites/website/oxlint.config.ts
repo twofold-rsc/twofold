@@ -9,6 +9,8 @@ export default defineConfig({
   },
   ignorePatterns: [".twofold/"],
   options: {
+    typeAware: true,
+    typeCheck: true,
     reportUnusedDisableDirectives: "warn",
   },
   rules: {

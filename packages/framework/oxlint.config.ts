@@ -12,6 +12,8 @@ export default defineConfig({
   },
   ignorePatterns: ["dist/"],
   options: {
+    typeAware: true,
+    typeCheck: true,
     reportUnusedDisableDirectives: "warn",
   },
   rules: {

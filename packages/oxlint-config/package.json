@@ -23,9 +23,11 @@
     "access": "public"
   },
   "peerDependencies": {
-    "oxlint": "catalog:"
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "^7.0.2001"
   },
   "devDependencies": {
-    "oxlint": "catalog:"
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "^7.0.2001"
   }
 }

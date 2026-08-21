@@ -143,7 +143,7 @@ export async function render({
     );
 
     // at this point we can cancel the error stream since we don't need it
-    inlineRscErrorStream.cancel();
+    void inlineRscErrorStream.cancel();
   } catch (e: unknown) {
     // the ssr stream crashed before it started streaming. we'll create a
     // new ssr stream that renders the client app with the rsc stream inline.

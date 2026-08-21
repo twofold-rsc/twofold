@@ -24,7 +24,7 @@ export async function getDemo1() {
 
 async function SlowCheckmark() {
   // we want impurity here for the sake of demoing randomly streaming components
-  // oxlint-disable-next-line react/react-compiler
+  // oxlint-disable-next-line react/purity
   const delay = Math.floor(Math.random() * 2500) + 250;
   await new Promise((resolve) => setTimeout(resolve, delay));
   return (

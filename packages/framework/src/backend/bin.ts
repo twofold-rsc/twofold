@@ -47,7 +47,7 @@ program
     let port = parseInt(options.port, 10) || 3000;
 
     let task = new DevTask({ build, port });
-    task.start();
+    await task.start();
   });
 
 program
@@ -83,7 +83,7 @@ program
     let port = parseInt(options.port, 10) || 3000;
 
     let task = new ServeTask({ build, port });
-    task.start();
+    await task.start();
   });
 
 program.parse();

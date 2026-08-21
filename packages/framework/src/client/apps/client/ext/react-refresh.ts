@@ -15,13 +15,11 @@ declare global {
 
 if (process.env.NODE_ENV !== "production") {
   if (typeof window !== "undefined") {
+    let refresh = RefreshRuntime.performReactRefresh.bind(RefreshRuntime);
     window.$RefreshRuntime$ = RefreshRuntime;
-    let refresh = window.$RefreshRuntime$.performReactRefresh;
 
     window.$RefreshRuntime$.performReactRefresh = createDebouncedFunction(
-      () => {
-        refresh();
-      },
+      () => refresh(),
       30,
     );
 

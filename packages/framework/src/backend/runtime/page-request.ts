@@ -290,10 +290,10 @@ export function componentsToTree<T extends object>(
   }
 }
 
-let { h64Raw } = await xxhash();
+let xx = await xxhash();
 function hash(str: string) {
   let encoder = new TextEncoder();
   let data = encoder.encode(str);
-  let hash = h64Raw(data);
+  let hash = xx.h64Raw(data);
   return hash.toString(16);
 }
