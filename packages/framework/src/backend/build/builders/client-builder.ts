@@ -9,6 +9,7 @@ import {
 import { Build } from "../build/build.js";
 import { Builder } from "./builder.js";
 import { build, OutputAsset, OutputChunk, Plugin } from "rolldown";
+import { transform as oxcTransformReact } from "oxc-transform-react";
 import path, { dirname, relative, sep } from "path";
 import { readFile } from "fs/promises";
 import { transform as serverFunctionTransform } from "@twofold/server-function-transforms";
@@ -17,7 +18,6 @@ import { getModuleId } from "../helpers/module.js";
 import * as mime from "mime-types";
 import { fileURLToEscapedPath, hashFile } from "../helpers/file.js";
 import { transform } from "esbuild";
-import { PluginItem, transformAsync } from "@babel/core";
 import { EntriesBuilder } from "./entries-builder.js";
 
 export class ClientBuilder extends Builder {
@@ -229,7 +229,7 @@ export class ClientBuilder extends Builder {
             },
           },
 
-          createReactBabelPlugin({
+          createReactOxcPlugin({
             refreshEnabled,
             compilerEnabled,
           }),
@@ -702,31 +702,20 @@ function createImagesPlugin({
   };
 }
 
-function createReactBabelPlugin({
+function createReactOxcPlugin({
   refreshEnabled,
   compilerEnabled,
 }: {
   refreshEnabled: boolean;
   compilerEnabled: boolean;
 }): Plugin {
-  let shouldRunBabel = refreshEnabled || compilerEnabled;
-
+  let shouldRunOxc = refreshEnabled || compilerEnabled;
   let appAppPath = fileURLToPath(appAppDir);
 
-  let plugins: PluginItem[] = [];
-
-  if (compilerEnabled) {
-    plugins.push(["babel-plugin-react-compiler", { sources: null }]);
-  }
-
-  if (refreshEnabled) {
-    plugins.push("react-refresh/babel");
-  }
-
   return {
-    name: "react-babel-transforms",
+    name: "react-oxc-transforms",
 
-    ...(shouldRunBabel
+    ...(shouldRunOxc
       ? {
           transform: {
             filter: {
@@ -742,23 +731,27 @@ function createReactBabelPlugin({
               ],
             },
             async handler(code, id) {
-              const language = pathToLanguage(id);
-
-              // strip types and add jsx
-              let transformed = await transform(code, {
-                loader: language,
-                format: "esm",
-                jsx: "automatic",
+              let compiled = await oxcTransformReact(id, code, {
+                reactCompiler: compilerEnabled,
+                jsx: {
+                  refresh: refreshEnabled,
+                },
               });
 
-              // babel transform
-              let result = await transformAsync(transformed.code, {
-                plugins,
-                configFile: false,
-                babelrc: false,
-              });
+              if (compiled.fatal) {
+                let diagnostic = compiled.errors[0];
 
-              let newCode = result?.code;
+                throw new Error(
+                  diagnostic
+                    ? [diagnostic.message, diagnostic.codeframe]
+                        .filter(Boolean)
+                        .join("\n")
+                    : `Failed to transform ${id}`,
+                  { cause: diagnostic },
+                );
+              }
+
+              let newCode = compiled.code;
 
               if (
                 refreshEnabled &&
@@ -767,7 +760,7 @@ function createReactBabelPlugin({
               ) {
                 let moduleName = id
                   .slice(appAppPath.length)
-                  .replace(/\.(tsx|jsx|js|jsx)$/, "");
+                  .replace(/\.(tsx|ts|jsx|js)$/, "");
 
                 let start = `
                   let prevRefreshReg = undefined;
@@ -782,23 +775,21 @@ function createReactBabelPlugin({
                       window.$RefreshRuntime$.register(type, registerId);
                     };
                     window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
-                  }
-                `;
+                  }`;
 
                 let end = `
                   if (typeof window !== 'undefined') {
                     window.$RefreshReg$ = prevRefreshReg;
                     window.$RefreshSig$ = prevRefreshSig;
-                  }
-                `;
+                  }`;
+
                 newCode = `${start}\n${newCode}\n${end}`;
               }
 
               if (newCode) {
                 return {
                   code: newCode,
-                  moduleType:
-                    language === "tsx" || language === "jsx" ? "jsx" : "js",
+                  moduleType: "js",
                 };
               }
             },

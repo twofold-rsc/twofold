@@ -1,6 +1,6 @@
 ## Linting
 
-Run `pnpm lint` and `pnpm tsc --noEmit` to verify linting.
+Run `pnpm lint` to verify linting.
 
 ## E2E Tests
 

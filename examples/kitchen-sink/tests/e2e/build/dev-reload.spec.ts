@@ -47,6 +47,7 @@ test(
     let initialContent =
       "This page is a server component and editing it causes the RSC to re-render.";
     let updatedContent = `Updated server component content ${crypto.randomUUID()}`;
+    let sourceChanged = false;
 
     await page.goto("/build/dev-reload");
 
@@ -62,6 +63,7 @@ test(
           updatedContent,
         ),
       );
+      sourceChanged = true;
 
       await expect(page.getByTestId("updatable-content")).toHaveText(
         updatedContent,
@@ -69,6 +71,12 @@ test(
       );
     } finally {
       await writeFile(serverComponentUrl, source);
+      if (sourceChanged) {
+        await expect(page.getByTestId("updatable-content")).toHaveText(
+          initialContent,
+          { timeout: 15_000 },
+        );
+      }
     }
   },
 );
@@ -82,6 +90,7 @@ test(
       import.meta.url,
     );
     let source = await readFile(clientComponentUrl, "utf8");
+    let sourceChanged = false;
 
     await page.goto("/build/dev-reload");
 
@@ -95,6 +104,7 @@ test(
           'data-testid="updatable-button-label">ADD 1',
         ),
       );
+      sourceChanged = true;
 
       await expect(page.getByTestId("updatable-button-label")).toHaveText(
         "ADD 1",
@@ -102,6 +112,12 @@ test(
       );
     } finally {
       await writeFile(clientComponentUrl, source);
+      if (sourceChanged) {
+        await expect(page.getByTestId("updatable-button-label")).toHaveText(
+          "+",
+          { timeout: 15_000 },
+        );
+      }
     }
   },
 );
@@ -116,11 +132,13 @@ test(
     );
     let source = await readFile(markdownUrl, "utf8");
     let updatedContent = `Updated markdown content ${crypto.randomUUID()}`;
+    let sourceChanged = false;
 
     await page.goto("/build/dev-reload");
 
     try {
       await writeFile(markdownUrl, `${source}\n\n${updatedContent}\n`);
+      sourceChanged = true;
 
       await expect(page.getByText(updatedContent, { exact: true })).toBeVisible(
         {
@@ -129,6 +147,11 @@ test(
       );
     } finally {
       await writeFile(markdownUrl, source);
+      if (sourceChanged) {
+        await expect(
+          page.getByText(updatedContent, { exact: true }),
+        ).toHaveCount(0, { timeout: 15_000 });
+      }
     }
   },
 );
@@ -146,6 +169,7 @@ test(
       "This page is a server component and editing it causes the RSC to re-render.";
     let updatedContent = `Updated hidden page content ${crypto.randomUUID()}`;
     let pages = [page];
+    let sourceChanged = false;
 
     try {
       await page.goto("/build/dev-reload");
@@ -174,6 +198,7 @@ test(
           updatedContent,
         ),
       );
+      sourceChanged = true;
 
       await Promise.all(
         pages
@@ -198,6 +223,12 @@ test(
       );
     } finally {
       await writeFile(serverComponentUrl, source);
+      if (sourceChanged) {
+        await expect(page.getByTestId("updatable-content")).toHaveText(
+          initialContent,
+          { timeout: 15_000 },
+        );
+      }
       await Promise.all(pages.slice(1).map((extraPage) => extraPage.close()));
     }
   },
