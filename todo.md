@@ -1,9 +1,6 @@
 # TODO
 
-- [ ] prod build should build to a different directory, so prod and dev server can run at same time.
-
 - [ ] can we serialize redirect
-- [ ] do we ever render json/error (check router hooks)
 
 - [ ] rsc build output class
 
@@ -79,18 +76,12 @@
 - components
 - Link with transition helpers
 
-- error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
-  - i think this is done
-
 - prefix encrypted cookie with app name
 
 - taint secret key (needs experimental react)
 - production build should live reload in dev. live reload is really about the task, not the build environment
 
 - perf tracking: <https://github.com/facebook/react/pull/31729>
-
-- live reload should reconnect when disconnected
-  - i think this is done
 
 - rename api handlers
 - only allow async function exports from server modules. you dont want to import a non function call server on the client
