@@ -18,6 +18,7 @@ function App() {
     typeof window !== "undefined" && "__error" in window
       ? deserializeError(window.__error)
       : new Error("Unknown error");
+  let initialBuildKey = document.documentElement.dataset.buildKey ?? null;
 
   useEffect(() => {
     let onPopState = () => {
@@ -31,7 +32,7 @@ function App() {
     };
   });
 
-  return <ErrorViewer error={error} />;
+  return <ErrorViewer error={error} initialBuildKey={initialBuildKey} />;
 }
 
 main();

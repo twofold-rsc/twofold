@@ -31,7 +31,7 @@ export default function DevReload({
     }
   }, [cssToCleanup]);
 
-  useDevReload(async (message) => {
+  useDevReload(initialBuildKey, async (message) => {
     if (message.type === "error") {
       startTransition(async () => {
         refresh();
@@ -75,7 +75,7 @@ export default function DevReload({
         refresh();
       }
     }
-  }, initialBuildKey);
+  });
 
   return null;
 }

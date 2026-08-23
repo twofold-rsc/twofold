@@ -46,8 +46,8 @@ type ReloadMessage = Extract<Message, { type: "changes" | "error" }>;
 type ConnectionMode = z.infer<typeof connectionModeSchema>;
 
 export function useDevReload(
+  initialBuildKey: string | null,
   onMessage: (message: ReloadMessage) => void,
-  initialBuildKey: string | null = null,
 ) {
   let key = useRef<string>(initialBuildKey);
   let messageHandler = useRef(onMessage);
