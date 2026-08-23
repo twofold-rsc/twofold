@@ -133,7 +133,6 @@ kitchen sink
 ## Routing
 
 - [ ] don't allow two dynamic routes with the same dynamic identifier ($id)
-- [ ] slug matching $an-id needs to be $[an-id]
 
 ## Build
 
