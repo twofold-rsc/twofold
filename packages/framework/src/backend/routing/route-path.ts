@@ -215,7 +215,7 @@ function segmentMatches(segment: Segment, realSegment: string) {
   );
 }
 
-function parseMatcher(segment: string): Matcher | undefined {
+function parseMatcher(segment: string) {
   let isWildcard = segment.startsWith("$$");
   let prefixLength = isWildcard ? 2 : segment.startsWith("$") ? 1 : 0;
 
