@@ -2,8 +2,6 @@
 
 - [ ] prod build should build to a different directory, so prod and dev server can run at same time.
 
-- [ ] rsc stream renderer shouldnt check the stream for errors, remove buffer
-      take a look at runtime rsc render to see
 - [ ] can we serialize redirect
 - [ ] do we ever render json/error (check router hooks)
 
@@ -82,6 +80,7 @@
 - Link with transition helpers
 
 - error handling: if an RSC errors we should still capture and serialize the error into the stream so that it can be handled by the client app.
+  - i think this is done
 
 - prefix encrypted cookie with app name
 
@@ -91,6 +90,7 @@
 - perf tracking: <https://github.com/facebook/react/pull/31729>
 
 - live reload should reconnect when disconnected
+  - i think this is done
 
 - rename api handlers
 - only allow async function exports from server modules. you dont want to import a non function call server on the client
@@ -133,10 +133,10 @@ kitchen sink
 ## Routing
 
 - [ ] don't allow two dynamic routes with the same dynamic identifier ($id)
+- [ ] slug matching $an-id needs to be $[an-id]
 
 ## Build
 
-- Adding many files (unzip something)
 - create runnable bundles for RSC/SSR
 - check if middleware export default is a function
 

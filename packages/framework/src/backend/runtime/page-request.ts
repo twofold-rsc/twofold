@@ -8,7 +8,6 @@ import {
   redirectErrorInfo,
 } from "./helpers/errors.js";
 import { ComponentType, createElement, ReactElement } from "react";
-import { applyPathParams } from "./helpers/routing.js";
 import xxhash from "xxhash-wasm";
 import { invariant } from "../utils/invariant.js";
 
@@ -139,9 +138,7 @@ export class PageRequest {
 
   private get dynamicParams() {
     let url = new URL(this.#request.url);
-    let execPattern = this.#page.pattern.exec(url);
-    let params = execPattern?.pathname.groups ?? {};
-    return params;
+    return this.#page.routePath.params(url);
   }
 
   async routeStack() {
@@ -151,10 +148,7 @@ export class PageRequest {
     let props = this.props;
 
     let stack = segments.map((segment) => {
-      let segmentKey = `${segment.path}:${applyPathParams(
-        segment.path,
-        params,
-      )}`;
+      let segmentKey = `${segment.path}:${segment.routePath.apply(params)}`;
 
       // we hash the key because if they "look" like urls or paths
       // certain bots will try to crawl them

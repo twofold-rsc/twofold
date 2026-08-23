@@ -20,7 +20,6 @@ import { DevelopmentBuild } from "./build/build/development.js";
 import { ActionRequest } from "./runtime/action-request.js";
 import { injectResolver } from "./monkey-patch.js";
 import { partition } from "./utils/partition.js";
-import { pathMatches } from "./runtime/helpers/routing.js";
 import { invariant } from "./utils/invariant.js";
 import { readStream } from "./steams/read-stream.js";
 import { combineBatch, createBatchStream } from "./steams/batch-stream.js";
@@ -61,9 +60,9 @@ export class Runtime {
     );
 
     let api =
-      staticApis.find((api) => pathMatches(api.path, realPath)) ??
-      dynamicApisInOrder.find((api) => pathMatches(api.path, realPath)) ??
-      catchAllApis.find((api) => pathMatches(api.path, realPath));
+      staticApis.find((api) => api.routePath.matches(realPath)) ??
+      dynamicApisInOrder.find((api) => api.routePath.matches(realPath)) ??
+      catchAllApis.find((api) => api.routePath.matches(realPath));
 
     if (api) {
       return new APIRequest({ api, request, runtime: this });

@@ -1,7 +1,3 @@
-import {
-  pathMatches,
-  pathPartialMatches,
-} from "../../runtime/helpers/routing.js";
 import { partition } from "../../utils/partition.js";
 import { CatchBoundary } from "./catch-boundary.js";
 import { ErrorTemplate } from "./error-template.js";
@@ -164,18 +160,20 @@ export class TreeNode {
     let dynamicPagesInOrder = dynamicPages.toSorted(sortBy);
 
     let page =
-      staticPages.find((page) => pathMatches(page.path, realPath)) ??
-      dynamicPagesInOrder.find((page) => pathMatches(page.path, realPath)) ??
+      staticPages.find((page) => page.routePath.matches(realPath)) ??
+      dynamicPagesInOrder.find((page) => page.routePath.matches(realPath)) ??
       // this should really be DFS
       childValues
         .filter((value) => {
-          let holdsPages =
-            value instanceof Layout || value instanceof CatchBoundary;
-          return holdsPages && pathPartialMatches(value.path, realPath);
+          if (value instanceof Layout || value instanceof CatchBoundary) {
+            return value.routePath.partiallyMatches(realPath);
+          }
+
+          return false;
         })
         .map((value) => value.tree.findPageForPath(realPath))
         .find(Boolean) ??
-      catchAllPages.find((page) => pathMatches(page.path, realPath));
+      catchAllPages.find((page) => page.routePath.matches(realPath));
 
     return page;
   }
