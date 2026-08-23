@@ -63,6 +63,26 @@ test.describe("navigation", () => {
     ).toBeVisible();
   });
 
+  test("routes dashed parameter links", async ({ page }) => {
+    await page.goto("/routing/dynamic");
+
+    await page.getByRole("link", { name: "Dashed parameter" }).click();
+    await expect(page).toHaveURL("/routing/dynamic/dashed/hello-world");
+    await expect(
+      page.getByText('{params["a-slug"]} is: hello-world'),
+    ).toBeVisible();
+  });
+
+  test("routes dashed catch-all links", async ({ page }) => {
+    await page.goto("/routing/dynamic");
+
+    await page.getByRole("link", { name: "Dashed catch all" }).click();
+    await expect(page).toHaveURL("/routing/dynamic/dashed/one/two");
+    await expect(
+      page.getByText('{params["all-things"]} is: one/two'),
+    ).toBeVisible();
+  });
+
   test("routes nested folder/file links", async ({ page }) => {
     await page.goto("/routing/dynamic");
 
@@ -150,6 +170,30 @@ test.describe("direct access", () => {
 
     await expect(
       page.getByText("{params.wildcard} is: slug/doesnt-exist"),
+    ).toBeVisible();
+    verifyNoErrors();
+  });
+
+  test("server-renders the dashed parameter route", async ({
+    page,
+    verifyNoErrors,
+  }) => {
+    await page.goto("/routing/dynamic/dashed/hello-world");
+
+    await expect(
+      page.getByText('{params["a-slug"]} is: hello-world'),
+    ).toBeVisible();
+    verifyNoErrors();
+  });
+
+  test("server-renders the dashed catch-all route", async ({
+    page,
+    verifyNoErrors,
+  }) => {
+    await page.goto("/routing/dynamic/dashed/one/two");
+
+    await expect(
+      page.getByText('{params["all-things"]} is: one/two'),
     ).toBeVisible();
     verifyNoErrors();
   });

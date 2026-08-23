@@ -56,6 +56,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           </li>
           <li>
             <Link
+              href="/http/api/dynamic-dashed"
+              className="text-blue-500 underline"
+            >
+              Dashed dynamic
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/http/api/missing-file"
               className="text-blue-500 underline"
             >
