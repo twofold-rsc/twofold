@@ -13,7 +13,11 @@ declare global {
   }
 }
 
-export default function DevReload() {
+export default function DevReload({
+  initialBuildKey,
+}: {
+  initialBuildKey: string;
+}) {
   let [cssToCleanup, setCSSToCleanup] = useState<string[]>([]);
 
   let { refresh } = useRouter();
@@ -71,7 +75,7 @@ export default function DevReload() {
         refresh();
       }
     }
-  });
+  }, initialBuildKey);
 
   return null;
 }

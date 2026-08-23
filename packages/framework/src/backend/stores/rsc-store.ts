@@ -11,6 +11,7 @@ type JSONValue =
 export type Store = {
   reqId: number;
   build: "development" | "production";
+  buildKey: string;
   canReload: boolean;
   cookies: {
     all: () => Record<string, string | undefined>;
