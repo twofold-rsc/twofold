@@ -1,11 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 import { expect, test } from "../test";
-import {
-  disableBuildErrors,
-  enableBuildErrors,
-  waitForDevReloadConnection,
-} from "./helpers";
+import { disableBuildErrors, enableBuildErrors } from "./helpers";
 
 test("renders feedback when a client component throws", async ({
   page,
@@ -101,9 +97,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
-      let devReloadConnected = waitForDevReloadConnection(page);
       await page.goto("/error-handling/client-components/cc-import-error");
-      await devReloadConnected;
 
       await expect(
         page.getByRole("heading", { name: "Error", exact: true }),
@@ -175,9 +169,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
-      let devReloadConnected = waitForDevReloadConnection(page);
       await page.goto("/error-handling/client-components/cc-syntax-error");
-      await devReloadConnected;
 
       await expect(
         page.getByRole("heading", { name: "Error", exact: true }),

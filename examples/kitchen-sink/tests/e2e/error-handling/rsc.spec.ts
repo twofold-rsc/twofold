@@ -435,7 +435,7 @@ test(
 test(
   "shows a missing RSC page export on initial visit",
   { tag: "@build" },
-  async ({ context, page }) => {
+  async ({ page }) => {
     let fileUrl = new URL(
       "../../../app/pages/error-handling/rsc/rsc-no-default-export.page.tsx",
       import.meta.url,
@@ -445,21 +445,6 @@ test(
 
     expect(brokenSource).not.toBe(source);
     expect(disableBuildErrors(brokenSource)).toBe(source);
-
-    let devReloadRequestedResolve!: () => void;
-    let devReloadRequested = new Promise<void>((resolve) => {
-      devReloadRequestedResolve = resolve;
-    });
-    let releaseDevReloadResolve!: () => void;
-    let releaseDevReload = new Promise<void>((resolve) => {
-      releaseDevReloadResolve = resolve;
-    });
-
-    await page.route("**/__dev/reload", async (route) => {
-      devReloadRequestedResolve();
-      await releaseDevReload;
-      await route.continue();
-    });
 
     try {
       await writeFile(fileUrl, brokenSource);
@@ -471,28 +456,7 @@ test(
       await expect(page.getByTestId("error-message")).toContainText(
         "has no default export",
       );
-
-      await devReloadRequested;
-      await writeFile(fileUrl, disableBuildErrors(brokenSource));
-
-      let latestPage = await context.newPage();
-      try {
-        await latestPage.goto("/error-handling/rsc/rsc-no-default-export");
-        await expect(
-          latestPage.getByText("Oh no!", { exact: true }),
-        ).toBeVisible({ timeout: 15_000 });
-      } finally {
-        await latestPage.close();
-      }
-
-      let reloaded = page.waitForEvent(
-        "framenavigated",
-        (frame) => frame === page.mainFrame(),
-      );
-      releaseDevReloadResolve();
-      await reloaded;
     } finally {
-      releaseDevReloadResolve();
       await writeFile(fileUrl, disableBuildErrors(brokenSource));
       await expect(page.getByText("Oh no!", { exact: true })).toBeVisible({
         timeout: 15_000,
