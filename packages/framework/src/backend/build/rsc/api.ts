@@ -1,4 +1,4 @@
-import { RoutePath } from "../../routing/route-path.js";
+import { RoutePath } from "./route-path.js";
 
 export class API {
   #fileUrl: URL;

@@ -1,7 +1,7 @@
 import { Generic } from "./generic.js";
 import { Node, TreeNode, Treeable } from "./tree-node.js";
 import { Wrapper } from "./wrapper.js";
-import { RoutePath } from "../../routing/route-path.js";
+import { RoutePath } from "./route-path.js";
 
 export class Layout implements Treeable {
   #css?: string | undefined;

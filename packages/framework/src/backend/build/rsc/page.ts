@@ -1,7 +1,7 @@
 import { Layout } from "./layout.js";
 import { Treeable, TreeNode } from "./tree-node.js";
 import { CatchBoundary } from "./catch-boundary.js";
-import { RoutePath } from "../../routing/route-path.js";
+import { RoutePath } from "./route-path.js";
 
 export class Page implements Treeable {
   #css?: string | undefined;

@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { RoutePath } from "../../../src/backend/routing/route-path.ts";
+import { RoutePath } from "../../../src/backend/build/rsc/route-path.ts";
 
 describe("RoutePath validation", () => {
   test.each([
