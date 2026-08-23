@@ -1,7 +1,3 @@
-import "urlpattern-polyfill";
-
-export type RouteParams = Record<string, string | undefined>;
-
 type Matcher = {
   isWildcard: boolean;
   name: string;
@@ -89,7 +85,7 @@ export class RoutePath {
     return this.#compare(pathname, "partial");
   }
 
-  apply(params: RouteParams) {
+  apply(params: Record<string, string | undefined>) {
     return this.#templateSegments
       .map((segment) => {
         if (!segment.matcher) {
