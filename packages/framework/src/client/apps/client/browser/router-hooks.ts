@@ -1,5 +1,4 @@
 import { use, useEffect, useReducer } from "react";
-import { deserializeError } from "serialize-error";
 import {
   createFromReadableStream,
   // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client'.
@@ -332,17 +331,6 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
       if (contentType === "text/x-component") {
         let payload = await createFromReadableStream(response.body, rscOptions);
         stack = payload.stack;
-      } else if (contentType === "text/x-serialized-error") {
-        // i don't think this is used anymore. router now serializes errors
-        // as rsc stream
-        let json = await response.json();
-        let error = deserializeError(json);
-        stack = [
-          {
-            type: "error",
-            error,
-          },
-        ];
       } else if (contentType === "application/json") {
         // should get rid of this type of response
         let json = await response.json();
