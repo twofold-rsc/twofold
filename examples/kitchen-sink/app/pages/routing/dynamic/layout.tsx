@@ -60,6 +60,22 @@ export default function DynamicLayout({
           </li>
           <li>
             <Link
+              href="/routing/dynamic/dashed/hello-world"
+              className={`text-blue-500 ${pathname === "/routing/dynamic/dashed/hello-world" ? "underline" : ""} whitespace-nowrap`}
+            >
+              Dashed parameter
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/routing/dynamic/dashed/one/two"
+              className={`text-blue-500 ${pathname === "/routing/dynamic/dashed/one/two" ? "underline" : ""} whitespace-nowrap`}
+            >
+              Dashed catch all
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/routing/dynamic/nested/folder/file"
               className={`text-blue-500 ${params.folder === "folder" && params.file === "file" ? "underline" : ""} whitespace-nowrap`}
             >

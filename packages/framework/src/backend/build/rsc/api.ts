@@ -1,43 +1,36 @@
+import { RoutePath } from "./route-path.js";
+
 export class API {
-  #path: string;
   #fileUrl: URL;
+  #routePath: RoutePath;
 
   constructor({ path, fileUrl }: { path: string; fileUrl: URL }) {
-    this.#path = path;
+    this.#routePath = new RoutePath(path);
     this.#fileUrl = fileUrl;
   }
 
   get path() {
-    return this.#path;
+    return this.#routePath.template;
+  }
+
+  get routePath() {
+    return this.#routePath;
   }
 
   get isDynamic() {
-    return this.#path.includes("$");
+    return this.#routePath.isDynamic;
   }
 
   get isCatchAll() {
-    return this.#path.includes("$$");
+    return this.#routePath.isCatchAll;
   }
 
   get dynamicSegments() {
-    return this.#path.match(/(?<!\$)\$([^/]+)/g) ?? [];
+    return this.#routePath.dynamicSegments;
   }
 
   get catchAllSegments() {
-    return this.#path.match(/\$\$([^/]+)/g) ?? [];
-  }
-
-  get pattern() {
-    let pathname = this.#path
-      .replace(/\/\(.*\)\//g, "/")
-      .replace(/\/\$\$(\w+)/g, "/:$1(.*)")
-      .replace(/\/\$/g, "/:");
-
-    return new URLPattern({
-      protocol: "http{s}?",
-      hostname: "*",
-      pathname,
-    });
+    return this.#routePath.catchAllSegments;
   }
 
   async loadModule() {

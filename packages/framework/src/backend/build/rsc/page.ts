@@ -1,12 +1,12 @@
 import { Layout } from "./layout.js";
-import "urlpattern-polyfill";
 import { Treeable, TreeNode } from "./tree-node.js";
 import { CatchBoundary } from "./catch-boundary.js";
+import { RoutePath } from "./route-path.js";
 
 export class Page implements Treeable {
-  #path: string;
   #css?: string | undefined;
   #fileUrl: URL;
+  #routePath: RoutePath;
 
   tree: TreeNode;
 
@@ -19,7 +19,7 @@ export class Page implements Treeable {
     css?: string | undefined;
     fileUrl: URL;
   }) {
-    this.#path = path;
+    this.#routePath = new RoutePath(path);
     this.#css = css;
     this.#fileUrl = fileUrl;
 
@@ -52,7 +52,11 @@ export class Page implements Treeable {
   // }
 
   get path() {
-    return this.#path;
+    return this.#routePath.template;
+  }
+
+  get routePath() {
+    return this.#routePath;
   }
 
   get css() {
@@ -60,32 +64,19 @@ export class Page implements Treeable {
   }
 
   get isDynamic() {
-    return this.#path.includes("$");
+    return this.#routePath.isDynamic;
   }
 
   get isCatchAll() {
-    return this.#path.includes("$$");
+    return this.#routePath.isCatchAll;
   }
 
   get dynamicSegments() {
-    return this.#path.match(/(?<!\$)\$([^/]+)/g) ?? [];
+    return this.#routePath.dynamicSegments;
   }
 
   get catchAllSegments() {
-    return this.#path.match(/\$\$([^/]+)/g) ?? [];
-  }
-
-  get pattern() {
-    let pathname = this.#path
-      .replace(/\/\(.*\)\//g, "/")
-      .replace(/\/\$\$(\w+)/g, "/:$1(.*)")
-      .replace(/\/\$/g, "/:");
-
-    return new URLPattern({
-      protocol: "http{s}?",
-      hostname: "*",
-      pathname,
-    });
+    return this.#routePath.catchAllSegments;
   }
 
   get parents() {
@@ -113,6 +104,7 @@ export class Page implements Treeable {
         let components = await parent.components();
         return {
           path: parent.path,
+          routePath: parent.routePath,
           components,
         };
       });
@@ -121,7 +113,8 @@ export class Page implements Treeable {
 
     let components = await this.components();
     let pageSegment = {
-      path: this.#path,
+      path: this.path,
+      routePath: this.#routePath,
       components,
     };
 

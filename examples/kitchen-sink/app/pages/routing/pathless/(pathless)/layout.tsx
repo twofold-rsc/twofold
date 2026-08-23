@@ -47,6 +47,15 @@ export default function PathlessLayout({ children }: LayoutProps) {
 
           <div>
             <Link
+              href="/routing/pathless/dashed/hello-world"
+              className="text-blue-500 hover:underline"
+            >
+              Dashed dynamic
+            </Link>
+          </div>
+
+          <div>
+            <Link
               href="/routing/pathless/api"
               className="text-blue-500 hover:underline"
             >

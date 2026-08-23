@@ -2,10 +2,11 @@ import { ErrorTemplate } from "./error-template.js";
 import { Generic } from "./generic.js";
 import { Layout } from "./layout.js";
 import { Node, Treeable, TreeNode } from "./tree-node.js";
+import { RoutePath } from "./route-path.js";
 
 export class CatchBoundary implements Treeable {
-  #path;
   #fileUrl: URL;
+  #routePath: RoutePath;
   #routeStackPlaceholder: Generic;
 
   tree: TreeNode;
@@ -19,7 +20,7 @@ export class CatchBoundary implements Treeable {
     fileUrl: URL;
     routeStackPlaceholder: Generic;
   }) {
-    this.#path = path;
+    this.#routePath = new RoutePath(path);
     this.#fileUrl = fileUrl;
     this.#routeStackPlaceholder = routeStackPlaceholder;
 
@@ -27,7 +28,11 @@ export class CatchBoundary implements Treeable {
   }
 
   get path() {
-    return this.#path;
+    return this.#routePath.template;
+  }
+
+  get routePath() {
+    return this.#routePath;
   }
 
   addChild(node: Node) {
@@ -112,7 +117,7 @@ export class CatchBoundary implements Treeable {
     let routeStackPlaceholderModule = await routeStackPlaceholder.loadModule();
     if (!routeStackPlaceholderModule.default) {
       throw new Error(
-        `Route placeholder for ${this.#path}/ has no default export.`,
+        `Route placeholder for ${this.path}/ has no default export.`,
       );
     }
 

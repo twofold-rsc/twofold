@@ -1,12 +1,13 @@
 import { Generic } from "./generic.js";
 import { Node, TreeNode, Treeable } from "./tree-node.js";
 import { Wrapper } from "./wrapper.js";
+import { RoutePath } from "./route-path.js";
 
 export class Layout implements Treeable {
-  #path: string;
   #css?: string | undefined;
   #fileUrl: URL;
 
+  #routePath: RoutePath;
   #routeStackPlaceholder: Generic;
   #wrappers: Wrapper[] = [];
 
@@ -23,7 +24,7 @@ export class Layout implements Treeable {
     fileUrl: URL;
     routeStackPlaceholder: Generic;
   }) {
-    this.#path = path;
+    this.#routePath = new RoutePath(path);
     this.#fileUrl = fileUrl;
     this.#css = css;
     this.#routeStackPlaceholder = routeStackPlaceholder;
@@ -32,7 +33,11 @@ export class Layout implements Treeable {
   }
 
   get path() {
-    return this.#path;
+    return this.#routePath.template;
+  }
+
+  get routePath() {
+    return this.#routePath;
   }
 
   get css() {
@@ -92,7 +97,7 @@ export class Layout implements Treeable {
     let module = await routeStackPlaceholder.loadModule();
     if (!module.default) {
       throw new Error(
-        `Route placeholder for ${this.#path} has no default export.`,
+        `Route placeholder for ${this.path} has no default export.`,
       );
     }
 

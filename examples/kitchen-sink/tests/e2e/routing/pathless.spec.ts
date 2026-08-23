@@ -54,6 +54,16 @@ test.describe("navigation", () => {
     ).toBeVisible();
   });
 
+  test("routes dashed dynamic links", async ({ page }) => {
+    await page.goto("/routing/pathless");
+
+    await page.getByRole("link", { name: "Dashed dynamic" }).click();
+    await expect(page).toHaveURL("/routing/pathless/dashed/hello-world");
+    await expect(
+      page.getByText("Dashed dynamic page: hello-world", { exact: true }),
+    ).toBeVisible();
+  });
+
   test("calls an API nested under a pathless route from the page", async ({
     page,
   }) => {
@@ -152,6 +162,18 @@ test.describe("direct access", () => {
 
     await expect(
       page.getByText("Dynamic page: 2", { exact: true }),
+    ).toBeVisible();
+    verifyNoErrors();
+  });
+
+  test("server-renders the dashed dynamic route", async ({
+    page,
+    verifyNoErrors,
+  }) => {
+    await page.goto("/routing/pathless/dashed/hello-world");
+
+    await expect(
+      page.getByText("Dashed dynamic page: hello-world", { exact: true }),
     ).toBeVisible();
     verifyNoErrors();
   });

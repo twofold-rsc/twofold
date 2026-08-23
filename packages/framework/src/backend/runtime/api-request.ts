@@ -74,8 +74,7 @@ export class APIRequest {
 
   private get props() {
     let url = new URL(this.#request.url);
-    let execPattern = this.#api.pattern.exec(url);
-    let params = execPattern?.pathname.groups ?? {};
+    let params = this.#api.routePath.params(url);
     let searchParams = url.searchParams;
     let request = this.#request;
 
