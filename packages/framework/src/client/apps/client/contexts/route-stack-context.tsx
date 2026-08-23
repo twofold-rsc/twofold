@@ -12,7 +12,13 @@ type ErrorEntry = {
   error: Error;
 };
 
-export type RouteStackEntry = TreeEntry | ErrorEntry;
+type RedirectEntry = {
+  type: "redirect";
+  status: number;
+  url: string;
+};
+
+export type RouteStackEntry = TreeEntry | ErrorEntry | RedirectEntry;
 
 type ContextShape = {
   stack: RouteStackEntry[];

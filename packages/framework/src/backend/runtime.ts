@@ -130,6 +130,10 @@ export class Runtime {
 
   // renders
 
+  createFlightStream(data: unknown) {
+    return renderToReadableStream(data, {});
+  }
+
   async renderRSCStream(
     data: any,
     options: { temporaryReferences?: unknown } = {},

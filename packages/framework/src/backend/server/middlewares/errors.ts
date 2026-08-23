@@ -1,15 +1,13 @@
 import { RouteHandler } from "@hattip/router";
 import { serializeError } from "serialize-error";
-import { Build } from "../../build/build/build.js";
 import { readFile } from "fs/promises";
 import { appCompiledDir } from "../../files.js";
 import { parseHeaderValue } from "@hattip/headers";
-import {
-  renderToReadableStream,
-  // @ts-expect-error: TypeScript cannot find type declarations for this module
-} from "react-server-dom-webpack/server.edge";
+import type { Runtime } from "../../runtime.js";
 
-export function errors(build: Build): RouteHandler {
+export function errors(runtime: Runtime): RouteHandler {
+  let build = runtime.build;
+
   return async (ctx) => {
     ctx.handleError = async (e: unknown) => {
       let request = ctx.request;
@@ -28,18 +26,15 @@ export function errors(build: Build): RouteHandler {
           : 500;
 
       if (isRSCFetch) {
-        // maybe let the runtime own this?
-        let stream = renderToReadableStream(
-          {
-            stack: [
-              {
-                type: "error",
-                error: error,
-              },
-            ],
-          },
-          {},
-        );
+        let stream = runtime.createFlightStream({
+          stack: [
+            {
+              type: "error",
+              error: error,
+            },
+          ],
+        });
+
         return new Response(stream, {
           status,
           headers: {
