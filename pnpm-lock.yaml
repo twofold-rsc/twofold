@@ -400,6 +400,9 @@ importers:
       oxlint-tsgolint:
         specifier: ^7.0.2001
         version: 7.0.2001
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
 
   packages/server-function-transforms:
     dependencies:
