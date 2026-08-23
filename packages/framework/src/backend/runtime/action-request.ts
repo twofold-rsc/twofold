@@ -340,15 +340,16 @@ export class ActionRequest {
     } else {
       // we could not return a redirect to a page with an rsc payload, so lets
       // let the action on the browser know it needs to handle this redirect
-      let payload = JSON.stringify({
-        type: "twofold-offsite-redirect",
-        url,
+      let stream = this.#runtime.createFlightStream({
+        redirect: {
+          url,
+        },
       });
 
-      return new Response(payload, {
+      return new Response(stream, {
         status: 200,
         headers: {
-          "content-type": "application/json",
+          "content-type": "text/x-component",
         },
       });
     }

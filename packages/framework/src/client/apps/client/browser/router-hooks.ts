@@ -4,7 +4,6 @@ import {
   // @ts-expect-error: Could not find a declaration file for module 'react-server-dom-webpack/client'.
 } from "react-server-dom-webpack/client";
 import { callServer } from "../actions/call-server";
-import { RedirectError } from "../../../errors/redirect-error";
 import { RouteStackEntry } from "../contexts/route-stack-context";
 
 type State = {
@@ -331,19 +330,6 @@ function fetchRSCPayload(path: string, options: FetchOptions = {}) {
       if (contentType === "text/x-component") {
         let payload = await createFromReadableStream(response.body, rscOptions);
         stack = payload.stack;
-      } else if (contentType === "application/json") {
-        // should get rid of this type of response
-        let json = await response.json();
-        let error =
-          json.type === "twofold-offsite-redirect"
-            ? new RedirectError(307, json.url)
-            : new Error("Unexpected response");
-        stack = [
-          {
-            type: "error",
-            error,
-          },
-        ];
       } else if (!response.ok) {
         let error = new Error(response.statusText);
         stack = [

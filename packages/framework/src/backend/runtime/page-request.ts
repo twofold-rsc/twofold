@@ -253,15 +253,20 @@ export class PageRequest {
     } else {
       // this is a csr request, but the redirect is to a non-csr page
       // lets ask the browser to handle it
-      let payload = JSON.stringify({
-        type: "twofold-offsite-redirect",
-        url,
-        status,
+      let stream = this.#runtime.createFlightStream({
+        stack: [
+          {
+            type: "redirect",
+            status,
+            url,
+          },
+        ],
       });
-      return new Response(payload, {
+
+      return new Response(stream, {
         status: 200,
         headers: {
-          "content-type": "application/json",
+          "content-type": "text/x-component",
         },
       });
     }

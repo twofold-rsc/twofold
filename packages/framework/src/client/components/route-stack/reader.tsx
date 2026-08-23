@@ -6,6 +6,7 @@ import {
   RouteStack,
   RouteStackEntry,
 } from "../../apps/client/contexts/route-stack-context";
+import { RedirectError } from "../../errors/redirect-error";
 import { RedirectBoundary } from "../boundaries/redirect-boundary";
 
 export function Reader() {
@@ -24,6 +25,10 @@ export function Reader() {
 function Entry({ entry }: { entry: RouteStackEntry }) {
   if (entry.type === "error") {
     throw entry.error;
+  }
+
+  if (entry.type === "redirect") {
+    throw new RedirectError(entry.status, entry.url);
   }
 
   return entry.type === "tree" ? entry.tree : null;

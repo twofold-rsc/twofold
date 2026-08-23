@@ -42,7 +42,7 @@ async function createHandler(server: Server) {
     app.use(devReload(build));
   }
 
-  app.use(errors(build));
+  app.use(errors(runtime));
 
   // every request below here should use the store
   app.use(requestStore(runtime));

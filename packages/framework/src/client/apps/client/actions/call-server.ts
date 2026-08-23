@@ -58,6 +58,10 @@ export function callServer(id: string, args: any) {
           temporaryReferences,
         });
 
+        if (streams.redirect) {
+          window.location.href = streams.redirect.url;
+        }
+
         stack = streams.stack;
         let action = streams.action ?? { type: "undefined", result: undefined };
 
@@ -79,11 +83,6 @@ export function callServer(id: string, args: any) {
           result = createFromReadableStream(stream, {
             callServer,
           });
-        }
-      } else if (contentType === "application/json") {
-        let json = await response.json();
-        if (json.type === "twofold-offsite-redirect") {
-          window.location.href = json.url;
         }
       } else if (!response.ok) {
         let error = new Error(response.statusText);
