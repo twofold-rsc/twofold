@@ -95,18 +95,12 @@ test(
     let updatedContent = `Updated disconnected page content ${crypto.randomUUID()}`;
     let sourceChanged = false;
 
-    let devReloadRequestedResolve!: () => void;
-    let devReloadRequested = new Promise<void>((resolve) => {
-      devReloadRequestedResolve = resolve;
-    });
-    let releaseDevReloadResolve!: () => void;
-    let releaseDevReload = new Promise<void>((resolve) => {
-      releaseDevReloadResolve = resolve;
-    });
+    let devReloadRequested = Promise.withResolvers<void>();
+    let releaseDevReload = Promise.withResolvers<void>();
 
     await page.route("**/__dev/reload", async (route) => {
-      devReloadRequestedResolve();
-      await releaseDevReload;
+      devReloadRequested.resolve();
+      await releaseDevReload.promise;
       await route.continue();
     });
 
@@ -114,7 +108,7 @@ test(
     await expect(page.getByTestId("updatable-content")).toHaveText(
       initialContent,
     );
-    await devReloadRequested;
+    await devReloadRequested.promise;
 
     try {
       await writeFile(
@@ -141,14 +135,14 @@ test(
         "framenavigated",
         (frame) => frame === page.mainFrame(),
       );
-      releaseDevReloadResolve();
+      releaseDevReload.resolve();
       await reloaded;
 
       await expect(page.getByTestId("updatable-content")).toHaveText(
         updatedContent,
       );
     } finally {
-      releaseDevReloadResolve();
+      releaseDevReload.resolve();
       await writeFile(serverComponentUrl, source);
       if (sourceChanged) {
         await expect(page.getByTestId("updatable-content")).toHaveText(
