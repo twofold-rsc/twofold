@@ -20,6 +20,7 @@ export function requestStore(runtime: Runtime): RouteHandler {
     let store: Store = {
       reqId,
       build: build.name,
+      buildKey: build.key,
       canReload: build.canReload,
       cookies: {
         all: () => {

@@ -45,8 +45,11 @@ type Message = z.infer<typeof messagesSchema>;
 type ReloadMessage = Extract<Message, { type: "changes" | "error" }>;
 type ConnectionMode = z.infer<typeof connectionModeSchema>;
 
-export function useDevReload(onMessage: (message: ReloadMessage) => void) {
-  let key = useRef<string>(null);
+export function useDevReload(
+  initialBuildKey: string | null,
+  onMessage: (message: ReloadMessage) => void,
+) {
+  let key = useRef<string>(initialBuildKey);
   let messageHandler = useRef(onMessage);
 
   // replace this ref with useEffectEvent when we drop react 19.1 support

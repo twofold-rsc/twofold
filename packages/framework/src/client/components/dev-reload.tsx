@@ -13,7 +13,11 @@ declare global {
   }
 }
 
-export default function DevReload() {
+export default function DevReload({
+  initialBuildKey,
+}: {
+  initialBuildKey: string;
+}) {
   let [cssToCleanup, setCSSToCleanup] = useState<string[]>([]);
 
   let { refresh } = useRouter();
@@ -27,7 +31,7 @@ export default function DevReload() {
     }
   }, [cssToCleanup]);
 
-  useDevReload(async (message) => {
+  useDevReload(initialBuildKey, async (message) => {
     if (message.type === "error") {
       startTransition(async () => {
         refresh();

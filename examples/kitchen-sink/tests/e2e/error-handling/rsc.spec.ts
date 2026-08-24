@@ -1,11 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 import { expect, test } from "../test";
-import {
-  disableBuildErrors,
-  enableBuildErrors,
-  waitForDevReloadConnection,
-} from "./helpers";
+import { disableBuildErrors, enableBuildErrors } from "./helpers";
 
 test("shows an error when an RSC throws", async ({ page }, testInfo) => {
   await page.goto("/error-handling/rsc/rsc-throw");
@@ -240,9 +236,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
-      let devReloadConnected = waitForDevReloadConnection(page);
       await page.goto("/error-handling/rsc/rsc-missing-import");
-      await devReloadConnected;
 
       await expect(
         page.getByRole("heading", { name: "Error", exact: true }),
@@ -314,9 +308,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
-      let devReloadConnected = waitForDevReloadConnection(page);
       await page.goto("/error-handling/rsc/rsc-missing-image");
-      await devReloadConnected;
 
       await expect(
         page.getByRole("heading", { name: "Error", exact: true }),
@@ -386,9 +378,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
-      let devReloadConnected = waitForDevReloadConnection(page);
       await page.goto("/error-handling/rsc/rsc-syntax-error");
-      await devReloadConnected;
 
       await expect(
         page.getByRole("heading", { name: "Error", exact: true }),
@@ -458,9 +448,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
-      let devReloadConnected = waitForDevReloadConnection(page);
       await page.goto("/error-handling/rsc/rsc-no-default-export");
-      await devReloadConnected;
 
       await expect(
         page.getByRole("heading", { name: "Error", exact: true }),
@@ -530,9 +518,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
-      let devReloadConnected = waitForDevReloadConnection(page);
       await page.goto("/error-handling/rsc/rsc-layout-no-default-export");
-      await devReloadConnected;
 
       await expect(
         page.getByRole("heading", { name: "Error", exact: true }),

@@ -82,6 +82,79 @@ test(
 );
 
 test(
+  "reloads when the build changes before dev reload connects",
+  { tag: "@build" },
+  async ({ context, page }) => {
+    let serverComponentUrl = new URL(
+      "../../../app/pages/build/dev-reload/server-component.tsx",
+      import.meta.url,
+    );
+    let source = await readFile(serverComponentUrl, "utf8");
+    let initialContent =
+      "This page is a server component and editing it causes the RSC to re-render.";
+    let updatedContent = `Updated disconnected page content ${crypto.randomUUID()}`;
+    let sourceChanged = false;
+
+    let devReloadRequested = Promise.withResolvers<void>();
+    let releaseDevReload = Promise.withResolvers<void>();
+
+    await page.route("**/__dev/reload", async (route) => {
+      devReloadRequested.resolve();
+      await releaseDevReload.promise;
+      await route.continue();
+    });
+
+    await page.goto("/build/dev-reload");
+    await expect(page.getByTestId("updatable-content")).toHaveText(
+      initialContent,
+    );
+    await devReloadRequested.promise;
+
+    try {
+      await writeFile(
+        serverComponentUrl,
+        source.replace(
+          /This page is a server component and editing it causes the RSC to\s+re-render\./,
+          updatedContent,
+        ),
+      );
+      sourceChanged = true;
+
+      let latestPage = await context.newPage();
+      try {
+        await latestPage.goto("/build/dev-reload");
+        await expect(latestPage.getByTestId("updatable-content")).toHaveText(
+          updatedContent,
+          { timeout: 15_000 },
+        );
+      } finally {
+        await latestPage.close();
+      }
+
+      let reloaded = page.waitForEvent(
+        "framenavigated",
+        (frame) => frame === page.mainFrame(),
+      );
+      releaseDevReload.resolve();
+      await reloaded;
+
+      await expect(page.getByTestId("updatable-content")).toHaveText(
+        updatedContent,
+      );
+    } finally {
+      releaseDevReload.resolve();
+      await writeFile(serverComponentUrl, source);
+      if (sourceChanged) {
+        await expect(page.getByTestId("updatable-content")).toHaveText(
+          initialContent,
+          { timeout: 15_000 },
+        );
+      }
+    }
+  },
+);
+
+test(
   "reloads when the client component changes",
   { tag: "@build" },
   async ({ page }) => {

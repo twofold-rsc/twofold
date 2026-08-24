@@ -1,6 +1,12 @@
 import { useDevReload } from "../../hooks/use-dev-reload";
 
-export function ErrorViewer({ error }: { error: unknown }) {
+export function ErrorViewer({
+  error,
+  buildKey,
+}: {
+  error: unknown;
+  buildKey?: string | null;
+}) {
   return (
     <div className="bg-red-50 h-full">
       <div className="p-6 max-w-7xl mx-auto h-full">
@@ -27,13 +33,13 @@ export function ErrorViewer({ error }: { error: unknown }) {
         </div>
       </div>
 
-      <Reload />
+      <Reload initialBuildKey={buildKey ?? null} />
     </div>
   );
 }
 
-function Reload() {
-  useDevReload((message) => {
+function Reload({ initialBuildKey }: { initialBuildKey: string | null }) {
+  useDevReload(initialBuildKey, (message) => {
     if (message.type === "changes") {
       window.location.reload();
     }
