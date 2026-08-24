@@ -2,10 +2,10 @@ import { useDevReload } from "../../hooks/use-dev-reload";
 
 export function ErrorViewer({
   error,
-  initialBuildKey = null,
+  buildKey,
 }: {
   error: unknown;
-  initialBuildKey?: string | null;
+  buildKey?: string | null;
 }) {
   return (
     <div className="bg-red-50 h-full">
@@ -33,7 +33,7 @@ export function ErrorViewer({
         </div>
       </div>
 
-      <Reload initialBuildKey={initialBuildKey} />
+      <Reload initialBuildKey={buildKey ?? null} />
     </div>
   );
 }

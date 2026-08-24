@@ -97,7 +97,7 @@ export function errors(runtime: Runtime): RouteHandler {
   };
 }
 
-export async function errorPage(error: Error, buildKey: string) {
+async function errorPage(error: Error, buildKey: string) {
   let htmlFile = new URL("./server-files/error.html", appCompiledDir);
   let contents = await readFile(htmlFile, "utf-8");
 

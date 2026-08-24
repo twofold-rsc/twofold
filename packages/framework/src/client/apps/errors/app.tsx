@@ -10,16 +10,20 @@ function main() {
   if (!root) {
     throw new Error("Root element not found");
   }
-  createRoot(root).render(<App />);
-}
 
-function App() {
   let error =
     typeof window !== "undefined" && "__error" in window
       ? deserializeError(window.__error)
       : new Error("Unknown error");
-  let initialBuildKey = document.documentElement.dataset.buildKey ?? null;
+  let buildKey =
+    typeof document !== "undefined"
+      ? (document.documentElement.dataset.buildKey ?? null)
+      : null;
 
+  createRoot(root).render(<App error={error} buildKey={buildKey} />);
+}
+
+function App({ error, buildKey }: { error: Error; buildKey: string | null }) {
   useEffect(() => {
     let onPopState = () => {
       window.location.reload();
@@ -30,9 +34,9 @@ function App() {
     return () => {
       window.removeEventListener("popstate", onPopState);
     };
-  });
+  }, []);
 
-  return <ErrorViewer error={error} initialBuildKey={initialBuildKey} />;
+  return <ErrorViewer error={error} buildKey={buildKey} />;
 }
 
 main();
