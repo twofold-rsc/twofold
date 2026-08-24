@@ -44,7 +44,7 @@ export function errors(runtime: Runtime): RouteHandler {
           },
         });
       } else if (isHTMLFetch) {
-        let html = await errorPage(error, requestBuildKey);
+        let html = await errorPage({ error, buildKey: requestBuildKey });
         return new Response(html, {
           status,
           headers: {
@@ -97,7 +97,13 @@ export function errors(runtime: Runtime): RouteHandler {
   };
 }
 
-async function errorPage(error: Error, buildKey: string) {
+async function errorPage({
+  error,
+  buildKey,
+}: {
+  error: Error;
+  buildKey: string;
+}) {
   let htmlFile = new URL("./server-files/error.html", appCompiledDir);
   let contents = await readFile(htmlFile, "utf-8");
 
