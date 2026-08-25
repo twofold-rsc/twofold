@@ -1,11 +1,9 @@
 # TODO
 
-- [ ] can we serialize redirect
-
 - [ ] rsc build output class
 
 - [ ] pages/layouts can use client
-  - [ ] route stack placeholder should be client component only
+- [ ] route stack placeholder should be client component only
 
 - errors v2
   - [ ] call notFound and unauthorized from client components
@@ -18,6 +16,10 @@
 - endpoints
 - tests
 - db
+
+- bun
+- deployment
+- docs
 
 - pass a client component to a server action
 - pass a server action to a server action

@@ -4,9 +4,8 @@ import path from "path";
 import { createRequire } from "module";
 import { fileExists } from "../helpers/file.js";
 
-let require = createRequire(import.meta.url);
-
 export async function findExternals(root: URL, ignore: string[]) {
+  let require = createRequire(new URL("./package.json", root));
   let dependencies = await getAppDependencies(root);
   let ignoredPackages = new Set([
     ...ignore,
@@ -19,7 +18,7 @@ export async function findExternals(root: URL, ignore: string[]) {
     .filter((dep) => !ignoredPackages.has(dep));
 
   let checkPackagesPromise = possibleExternals.map(async (dep) => {
-    let needsReact = await dependsOnReact(dep);
+    let needsReact = await dependsOnReact(dep, require);
     return {
       dep,
       isExternal: !needsReact,
@@ -51,8 +50,8 @@ async function getAppDependencies(root: URL) {
   }
 }
 
-async function dependsOnReact(dep: string) {
-  let packageJson = await getDependencyPackageJson(dep);
+async function dependsOnReact(dep: string, require: NodeJS.Require) {
+  let packageJson = await getDependencyPackageJson(dep, require);
   let nameMatches = packageJson.name === dep;
   let hasReact =
     packageJson.dependencies?.react || packageJson.peerDependencies?.react;
@@ -60,7 +59,7 @@ async function dependsOnReact(dep: string) {
   return answer;
 }
 
-async function getDependencyPackageJson(dep: string) {
+async function getDependencyPackageJson(dep: string, require: NodeJS.Require) {
   try {
     let entry = require.resolve(dep);
     let currentDir = path.dirname(entry);
