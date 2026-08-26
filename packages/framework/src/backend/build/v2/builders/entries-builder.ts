@@ -180,7 +180,7 @@ export class EntriesBuilder extends Builder<
   }
 }
 
-class EntriesOutput {
+export class EntriesOutput {
   readonly clientComponentEntryMap: ReadonlyMap<string, Entry>;
   readonly serverActionEntryMap: ReadonlyMap<string, Entry>;
   readonly externalPackages: readonly string[];
