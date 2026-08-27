@@ -6,16 +6,18 @@ import * as mime from "mime-types";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import { Builder } from "./builder.js";
+import type { EntriesOutput } from "./entries-builder.js";
 
 type StaticFilesBuilderInput = {
-  readonly publicRoot: URL;
+  readonly entries: EntriesOutput;
 };
 
 export class StaticFilesBuilder extends Builder<
   StaticFilesBuilderInput,
   StaticFilesOutput
 > {
-  async build({ publicRoot }: StaticFilesBuilderInput) {
+  async build({ entries }: StaticFilesBuilderInput) {
+    let publicRoot = new URL("./public/", entries.sourceRoot);
     let fileMap = new Map<string, ReadOnlyFile>();
 
     try {

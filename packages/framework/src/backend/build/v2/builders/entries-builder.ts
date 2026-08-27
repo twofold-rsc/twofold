@@ -1,6 +1,6 @@
 import { glob } from "fs/promises";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { check as checkClientModule } from "@twofold/client-component-transforms";
 import { check as checkServerModule } from "@twofold/server-function-transforms";
 import { scan } from "rolldown/experimental";
@@ -19,7 +19,7 @@ let excludedPackageSet = new Set(excludePackages);
 let bundledPackageSet = new Set(predefinedBundlePackages);
 
 type EntriesBuilderInput = {
-  readonly root: URL;
+  readonly sourceRoot: URL;
   readonly config: Config;
 };
 
@@ -27,7 +27,8 @@ export class EntriesBuilder extends Builder<
   EntriesBuilderInput,
   EntriesOutput
 > {
-  async build({ root, config }: EntriesBuilderInput) {
+  async build({ sourceRoot, config }: EntriesBuilderInput) {
+    let normalizedSourceRoot = normalizeSourceRoot(sourceRoot);
     let clientComponentEntryMap = new Map<string, Entry>();
     let serverActionEntryMap = new Map<string, Entry>();
 
@@ -57,10 +58,11 @@ export class EntriesBuilder extends Builder<
       }
     }
 
-    let discoveredExternalPackages = await findExternals(root, [
+    let discoveredExternalPackages = await findExternals(normalizedSourceRoot, [
       ...configuredExternalPackages,
       ...configuredBundlePackages,
     ]);
+
     let externalPackages = Array.from(
       new Set([
         ...excludePackages,
@@ -69,7 +71,7 @@ export class EntriesBuilder extends Builder<
       ]),
     );
 
-    let rootPath = fileURLToPath(root);
+    let rootPath = fileURLToPath(normalizedSourceRoot);
     let frameworkComponentsUrl = new URL(
       "./client/components/",
       frameworkSrcDir,
@@ -163,6 +165,7 @@ export class EntriesBuilder extends Builder<
     });
 
     return new EntriesOutput({
+      sourceRoot: normalizedSourceRoot,
       clientComponentEntryMap,
       serverActionEntryMap,
       externalPackages,
@@ -171,6 +174,7 @@ export class EntriesBuilder extends Builder<
 
   load(data: ReturnType<EntriesOutput["serialize"]>) {
     return new EntriesOutput({
+      sourceRoot: new URL(data.sourceRoot),
       clientComponentEntryMap: new Map(
         Object.entries(data.clientComponentEntryMap),
       ),
@@ -181,19 +185,23 @@ export class EntriesBuilder extends Builder<
 }
 
 export class EntriesOutput {
+  readonly sourceRoot: URL;
   readonly clientComponentEntryMap: ReadonlyMap<string, Entry>;
   readonly serverActionEntryMap: ReadonlyMap<string, Entry>;
   readonly externalPackages: readonly string[];
 
   constructor({
+    sourceRoot,
     clientComponentEntryMap,
     serverActionEntryMap,
     externalPackages,
   }: {
+    sourceRoot: URL;
     clientComponentEntryMap: ReadonlyMap<string, Entry>;
     serverActionEntryMap: ReadonlyMap<string, Entry>;
     externalPackages: readonly string[];
   }) {
+    this.sourceRoot = normalizeSourceRoot(sourceRoot);
     this.clientComponentEntryMap = clientComponentEntryMap;
     this.serverActionEntryMap = serverActionEntryMap;
     this.externalPackages = externalPackages;
@@ -201,6 +209,7 @@ export class EntriesOutput {
 
   serialize() {
     return {
+      sourceRoot: this.sourceRoot.href,
       clientComponentEntryMap: Object.fromEntries(
         this.clientComponentEntryMap.entries(),
       ),
@@ -224,4 +233,13 @@ function pathToEntry(path: string): Entry {
     moduleId: getModuleId(path),
     path,
   };
+}
+
+function normalizeSourceRoot(sourceRoot: URL) {
+  let sourceRootPath = fileURLToPath(sourceRoot);
+  return pathToFileURL(
+    sourceRootPath.endsWith(path.sep)
+      ? sourceRootPath
+      : `${sourceRootPath}${path.sep}`,
+  );
 }

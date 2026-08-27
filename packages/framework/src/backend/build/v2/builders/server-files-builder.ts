@@ -1,4 +1,5 @@
 import { copyFile, mkdir } from "fs/promises";
+import { fileURLToPath } from "url";
 import { appCompiledDir, frameworkSrcDir } from "../../../files.js";
 import { Builder } from "./builder.js";
 
@@ -16,21 +17,34 @@ export class ServerFilesBuilder extends Builder<
   async build({ environment }: ServerFilesBuilderInput) {
     let dir = new URL("./server-files/", appCompiledDir);
     let errorFile = environment === "development" ? devFile : prodFile;
+    let errorHtmlUrl = new URL("./error.html", dir);
 
     await mkdir(dir, { recursive: true });
-    await copyFile(errorFile, new URL("./error.html", dir));
+    await copyFile(errorFile, errorHtmlUrl);
 
-    return new ServerFilesOutput();
+    return new ServerFilesOutput({
+      errorHtmlPath: fileURLToPath(errorHtmlUrl),
+    });
   }
 
-  load(_data: ReturnType<ServerFilesOutput["serialize"]>) {
-    return new ServerFilesOutput();
+  load(data: ReturnType<ServerFilesOutput["serialize"]>) {
+    return new ServerFilesOutput({
+      errorHtmlPath: data.errorHtmlPath,
+    });
   }
 }
 
-class ServerFilesOutput {
+export class ServerFilesOutput {
+  readonly errorHtmlPath: string;
+
+  constructor({ errorHtmlPath }: { errorHtmlPath: string }) {
+    this.errorHtmlPath = errorHtmlPath;
+  }
+
   serialize() {
-    return {};
+    return {
+      errorHtmlPath: this.errorHtmlPath,
+    };
   }
 
   warm() {}

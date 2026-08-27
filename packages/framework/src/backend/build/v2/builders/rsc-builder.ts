@@ -14,7 +14,11 @@ import { readFile } from "fs/promises";
 import * as mime from "mime-types";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
-import { frameworkCompiledDir, frameworkSrcDir } from "../../../files.js";
+import {
+  appCompiledDir,
+  frameworkCompiledDir,
+  frameworkSrcDir,
+} from "../../../files.js";
 import {
   shouldIgnoreUseClient,
   shouldIgnoreUseServer,
@@ -65,7 +69,6 @@ type ServerAction = {
 };
 
 type RSCBuilderInput = {
-  readonly root: URL;
   readonly environment: "development" | "production";
   readonly entries: EntriesOutput;
 };
@@ -84,10 +87,10 @@ type ServerManifest = Readonly<
 >;
 
 export class RSCBuilder extends Builder<RSCBuilderInput, RSCOutput> {
-  async build({ root, environment, entries }: RSCBuilderInput) {
-    root = normalizeRoot(root);
-    let rootPath = fileURLToPath(root);
-    let srcPaths = sourcePathsForRoot(root);
+  async build({ environment, entries }: RSCBuilderInput) {
+    let sourceRoot = entries.sourceRoot;
+    let rootPath = fileURLToPath(sourceRoot);
+    let srcPaths = sourcePathsForRoot(sourceRoot);
     let hasMiddleware = await fileExists(srcPaths.app.globalMiddleware);
     let middlewareEntry = hasMiddleware ? [srcPaths.app.globalMiddleware] : [];
     let notFoundTemplateEntry = (await fileExists(srcPaths.app.notFound))
@@ -129,7 +132,7 @@ export class RSCBuilder extends Builder<RSCBuilderInput, RSCOutput> {
         srcPaths.framework.routeStackPlaceholder,
         srcPaths.framework.catchBoundary,
       ],
-      outdir: "./.twofold/rsc/",
+      outdir: fileURLToPath(rscCompiledDir),
       outbase: "app",
       entryNames: "[ext]/[name]-[hash]",
       external: [...entries.externalPackages],
@@ -140,9 +143,9 @@ export class RSCBuilder extends Builder<RSCBuilderInput, RSCOutput> {
       metafile: true,
       plugins: [
         clientComponentProxyPlugin(),
-        serverActionsPlugin({ root, serverActionMap }),
+        serverActionsPlugin({ sourceRoot, serverActionMap }),
         esbuildPluginTailwind({
-          base: fileURLToPath(new URL("./app/", root)),
+          base: fileURLToPath(new URL("./app/", sourceRoot)),
           minify: environment === "production",
         }),
         imagesPlugin({
@@ -150,15 +153,15 @@ export class RSCBuilder extends Builder<RSCBuilderInput, RSCOutput> {
           prefixPath: "/__tf/assets/images",
         }),
         fontsPlugin({
-          root,
+          root: sourceRoot,
           fontsMap,
           prefixPath: "/__tf/assets/fonts",
         }),
         storesPlugin(),
         errorTemplatesPlugin({
-          root,
+          root: sourceRoot,
           entries,
-          pagesDir: new URL("./app/pages", root),
+          pagesDir: new URL("./app/pages", sourceRoot),
         }),
       ],
     });
@@ -168,7 +171,7 @@ export class RSCBuilder extends Builder<RSCBuilderInput, RSCOutput> {
     }
 
     return new RSCOutput({
-      root,
+      sourceRoot,
       metafile: result.metafile,
       serverActionMap,
       imagesMap,
@@ -178,7 +181,7 @@ export class RSCBuilder extends Builder<RSCBuilderInput, RSCOutput> {
 
   load(data: ReturnType<RSCOutput["serialize"]>) {
     return new RSCOutput({
-      root: new URL(data.root),
+      sourceRoot: new URL(data.sourceRoot),
       metafile: data.metafile,
       serverActionMap: new Map(Object.entries(data.serverActionMap)),
       imagesMap: new Map(Object.entries(data.imagesMap)),
@@ -193,27 +196,26 @@ export class RSCOutput {
   readonly imagesMap: ReadonlyMap<string, Image>;
   readonly fontsMap: ReadonlyMap<string, Font>;
 
-  readonly #root: URL;
+  readonly #sourceRoot: URL;
   readonly #metafile: Metafile;
   readonly #srcPaths: SourcePaths;
 
   constructor({
-    root,
+    sourceRoot,
     metafile,
     serverActionMap,
     imagesMap,
     fontsMap,
   }: {
-    root: URL;
+    sourceRoot: URL;
     metafile: Metafile;
     serverActionMap: ReadonlyMap<string, CompiledAction>;
     imagesMap: ReadonlyMap<string, Image>;
     fontsMap: ReadonlyMap<string, Font>;
   }) {
-    root = normalizeRoot(root);
-    this.#root = root;
+    this.#sourceRoot = sourceRoot;
     this.#metafile = metafile;
-    this.#srcPaths = sourcePathsForRoot(root);
+    this.#srcPaths = sourcePathsForRoot(sourceRoot);
     this.files = Object.keys(this.#metafile.outputs);
     this.serverActionMap = serverActionMap;
     this.imagesMap = imagesMap;
@@ -226,6 +228,7 @@ export class RSCOutput {
         fileUrl: pathToFileURL(this.routeStackPlaceholderPath),
       }),
   );
+
   readonly #pages = new LazyValue(() => this.#metafileToPages());
   readonly #layouts = new LazyValue(() => this.#metafileToLayouts());
   readonly #errorTemplates = new LazyValue(() =>
@@ -234,6 +237,7 @@ export class RSCOutput {
   readonly #catchBoundaries = new LazyValue(() =>
     this.#createCatchBoundaries(),
   );
+
   readonly #notFoundPage = new LazyValue(
     () =>
       new Page({
@@ -243,6 +247,7 @@ export class RSCOutput {
         ),
       }),
   );
+
   readonly #unauthorizedPage = new LazyValue(
     () =>
       new Page({
@@ -254,6 +259,7 @@ export class RSCOutput {
         ),
       }),
   );
+
   readonly #outerRootWrapper = new LazyValue(
     () =>
       new Wrapper({
@@ -263,17 +269,22 @@ export class RSCOutput {
         ),
       }),
   );
+
   readonly #routeRoot = new LazyValue(() => this.#buildRouteRoot());
+
   readonly #apiEndpoints = new LazyValue(() => this.#metafileToApiEndpoints());
+
   readonly #css = new LazyValue(() =>
     [
       ...this.#layouts.value.map((layout) => layout.css),
       ...this.#pages.value.map((page) => page.css),
     ].filter((file) => file !== undefined),
   );
+
   readonly #middlewarePath = new LazyValue(() =>
     this.#compiledPathForEntry(this.#srcPaths.app.globalMiddleware),
   );
+
   readonly #serverManifest = new LazyValue<ServerManifest>(() =>
     Object.fromEntries(
       Array.from(this.serverActionMap.values(), (action) => [
@@ -286,6 +297,7 @@ export class RSCOutput {
       ]),
     ),
   );
+
   readonly #serverActionModuleMap: LazyValue<
     Readonly<Record<string, { readonly path: string } | undefined>>
   > = new LazyValue(() =>
@@ -333,7 +345,7 @@ export class RSCOutput {
 
   serialize() {
     return {
-      root: this.#root.href,
+      sourceRoot: this.#sourceRoot.href,
       metafile: this.#metafile,
       serverActionMap: Object.fromEntries(this.serverActionMap.entries()),
       imagesMap: Object.fromEntries(this.imagesMap.entries()),
@@ -388,7 +400,6 @@ export class RSCOutput {
     let outputs = this.#metafile.outputs;
     let prefix = "app/pages/";
     let suffix = ".page.tsx";
-    let cssPrefix = this.#cssOutputPrefix();
 
     return Object.entries(outputs)
       .filter(
@@ -413,9 +424,9 @@ export class RSCOutput {
         return new Page({
           path: `/${routePath}`,
           css: output.cssBundle
-            ? output.cssBundle.slice(cssPrefix.length)
+            ? this.#cssFileName(output.cssBundle)
             : undefined,
-          fileUrl: new URL(outputPath, this.#root),
+          fileUrl: pathToFileURL(this.#compiledOutputPath(outputPath)),
         });
       });
   }
@@ -424,7 +435,6 @@ export class RSCOutput {
     let outputs = this.#metafile.outputs;
     let prefix = "app/pages/";
     let suffix = "/layout.tsx";
-    let cssPrefix = this.#cssOutputPrefix();
 
     return Object.entries(outputs)
       .filter(
@@ -446,9 +456,9 @@ export class RSCOutput {
         return new Layout({
           path: `/${routePath}`,
           css: output.cssBundle
-            ? output.cssBundle.slice(cssPrefix.length)
+            ? this.#cssFileName(output.cssBundle)
             : undefined,
-          fileUrl: new URL(outputPath, this.#root),
+          fileUrl: pathToFileURL(this.#compiledOutputPath(outputPath)),
           routeStackPlaceholder: this.#routeStackPlaceholder.value,
         });
       });
@@ -478,7 +488,7 @@ export class RSCOutput {
         return new ErrorTemplate({
           tag: templatePath.split("/").at(-1) ?? "unknown",
           path: templatePath,
-          fileUrl: new URL(outputPath, this.#root),
+          fileUrl: pathToFileURL(this.#compiledOutputPath(outputPath)),
         });
       });
 
@@ -585,21 +595,26 @@ export class RSCOutput {
 
         return new API({
           path: `/${routePath}`,
-          fileUrl: new URL(outputPath, this.#root),
+          fileUrl: pathToFileURL(this.#compiledOutputPath(outputPath)),
         });
       });
   }
 
-  #cssOutputPrefix() {
-    let rootPath = fileURLToPath(this.#root);
-    let cssPath = fileURLToPath(
-      new URL("./.twofold/rsc/css/", this.#root),
-    );
-    return `${path.relative(rootPath, cssPath)}${path.sep}`;
+  #cssFileName(outputPath: string) {
+    let cssPath = fileURLToPath(new URL("./css/", rscCompiledDir));
+    return path.relative(cssPath, this.#compiledOutputPath(outputPath));
+  }
+
+  #compiledOutputPath(outputPath: string) {
+    return resolveCompiledOutputPath({
+      sourceRoot: this.#sourceRoot,
+      outputDir: rscCompiledDir,
+      outputPath,
+    });
   }
 
   #hasCompiledEntry(entryPath: string) {
-    let rootPath = fileURLToPath(this.#root);
+    let rootPath = fileURLToPath(this.#sourceRoot);
     return Object.values(this.#metafile.outputs).some((output) =>
       output.entryPoint
         ? path.resolve(rootPath, output.entryPoint) === entryPath
@@ -608,7 +623,7 @@ export class RSCOutput {
   }
 
   #compiledPathForEntry(entryPath: string) {
-    let rootPath = fileURLToPath(this.#root);
+    let rootPath = fileURLToPath(this.#sourceRoot);
     let outputPath = Object.entries(this.#metafile.outputs).find(
       ([, output]) =>
         output.entryPoint &&
@@ -619,7 +634,7 @@ export class RSCOutput {
       throw new Error(`Failed to get compiled entry point: ${entryPath}`);
     }
 
-    return path.resolve(rootPath, outputPath);
+    return this.#compiledOutputPath(outputPath);
   }
 }
 
@@ -659,10 +674,10 @@ function clientComponentProxyPlugin(): Plugin {
 }
 
 function serverActionsPlugin({
-  root,
+  sourceRoot,
   serverActionMap,
 }: {
-  root: URL;
+  sourceRoot: URL;
   serverActionMap: Map<string, CompiledAction>;
 }): Plugin {
   return {
@@ -670,7 +685,7 @@ function serverActionsPlugin({
     setup(build) {
       build.initialOptions.metafile = true;
       let serverActions = new Set<ServerAction>();
-      let rootPath = fileURLToPath(root);
+      let rootPath = fileURLToPath(sourceRoot);
 
       function getPathActions(filePath: string) {
         return Array.from(serverActions).filter(
@@ -741,7 +756,11 @@ function serverActionsPlugin({
               id: action.id,
               moduleId: action.moduleId,
               hash,
-              path: path.resolve(rootPath, outputFile),
+              path: resolveCompiledOutputPath({
+                sourceRoot,
+                outputDir: rscCompiledDir,
+                outputPath: outputFile,
+              }),
               export: action.export,
             });
           }
@@ -1010,9 +1029,28 @@ function sourcePathsForRoot(root: URL) {
   };
 }
 
-function normalizeRoot(root: URL) {
-  let rootPath = fileURLToPath(root);
-  return pathToFileURL(
-    rootPath.endsWith(path.sep) ? rootPath : `${rootPath}${path.sep}`,
-  );
+let rscCompiledDir = new URL("./rsc/", appCompiledDir);
+
+function resolveCompiledOutputPath({
+  sourceRoot,
+  outputDir,
+  outputPath,
+}: {
+  sourceRoot: URL;
+  outputDir: URL;
+  outputPath: string;
+}) {
+  let compiledPath = path.resolve(fileURLToPath(sourceRoot), outputPath);
+  let outputDirPath = fileURLToPath(outputDir);
+  let relativePath = path.relative(outputDirPath, compiledPath);
+
+  if (
+    relativePath === ".." ||
+    relativePath.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativePath)
+  ) {
+    throw new Error(`Compiled output is outside appCompiledDir: ${outputPath}`);
+  }
+
+  return compiledPath;
 }
