@@ -68,7 +68,7 @@ type ServerAction = {
   readonly export: string;
 };
 
-type RSCBuilderInput = {
+export type RSCBuilderInput = {
   readonly environment: "development" | "production";
   readonly entries: EntriesOutput;
 };

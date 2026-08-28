@@ -18,7 +18,7 @@ import { Builder } from "./builder.js";
 let excludedPackageSet = new Set(excludePackages);
 let bundledPackageSet = new Set(predefinedBundlePackages);
 
-type EntriesBuilderInput = {
+export type EntriesBuilderInput = {
   readonly sourceRoot: URL;
   readonly config: Config;
 };

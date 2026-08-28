@@ -6,7 +6,7 @@ import { Builder } from "./builder.js";
 let devFile = new URL("./client/apps/errors/index.html", frameworkSrcDir);
 let prodFile = new URL("./backend/server/internal-error.html", frameworkSrcDir);
 
-type ServerFilesBuilderInput = {
+export type ServerFilesBuilderInput = {
   readonly environment: "development" | "production";
 };
 

@@ -22,7 +22,7 @@ import { Builder } from "./builder.js";
 import type { EntriesOutput } from "./entries-builder.js";
 import type { ServerFilesOutput } from "./server-files-builder.js";
 
-type ClientBuilderInput = {
+export type ClientBuilderInput = {
   readonly environment: "development" | "production";
   readonly config: Config;
   readonly entries: EntriesOutput;

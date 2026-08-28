@@ -50,7 +50,7 @@ export class DevErrorPageBuilder extends Builder<
   }
 }
 
-class DevErrorPageOutput {
+export class DevErrorPageOutput {
   readonly #metafile: Metafile;
   readonly #assets: LazyValue<ErrorPageAssets>;
   readonly #js: LazyValue<Promise<string>>;

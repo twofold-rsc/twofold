@@ -9,7 +9,7 @@ import { Builder } from "./builder.js";
 import type { ClientOutput } from "./client-builder.js";
 import type { RSCOutput } from "./rsc-builder.js";
 
-type AssetsBuilderInput = {
+export type AssetsBuilderInput = {
   readonly environment: "development" | "production";
   readonly rsc: RSCOutput;
   readonly client: ClientOutput;

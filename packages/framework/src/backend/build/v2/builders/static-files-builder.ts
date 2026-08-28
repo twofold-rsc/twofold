@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 import { Builder } from "./builder.js";
 import type { EntriesOutput } from "./entries-builder.js";
 
-type StaticFilesBuilderInput = {
+export type StaticFilesBuilderInput = {
   readonly entries: EntriesOutput;
 };
 
@@ -49,7 +49,7 @@ export class StaticFilesBuilder extends Builder<
   }
 }
 
-class StaticFilesOutput {
+export class StaticFilesOutput {
   readonly fileMap: ReadonlyMap<string, ReadOnlyFile>;
 
   constructor(fileMap: ReadonlyMap<string, ReadOnlyFile>) {

@@ -1,9 +1,9 @@
-type BuilderOutput = {
+export type BuilderOutput = {
   serialize(): unknown;
   warm(): void | Promise<void>;
 };
 
-type SerializedOutput<Output extends BuilderOutput> = ReturnType<
+export type SerializedOutput<Output extends BuilderOutput> = ReturnType<
   Output["serialize"]
 >;
 
