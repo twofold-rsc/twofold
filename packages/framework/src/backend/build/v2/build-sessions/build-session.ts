@@ -78,7 +78,7 @@ export type BuilderRegistry = {
   readonly assets?: AssetsBuilder;
 };
 
-export type SuccessfulBuildResult<Outputs> = {
+export type BuildSuccess<Outputs> = {
   readonly key: string;
   readonly status: "success";
   readonly outputs: Outputs;
@@ -86,7 +86,7 @@ export type SuccessfulBuildResult<Outputs> = {
   readonly duration: number;
 };
 
-export type FailedBuildResult = {
+export type BuildFailure = {
   readonly key: string;
   readonly status: "error";
   readonly error: Error;
@@ -94,8 +94,7 @@ export type FailedBuildResult = {
   readonly duration: number;
 };
 
-export type BuildResult<Outputs> =
-  SuccessfulBuildResult<Outputs> | FailedBuildResult;
+export type BuildResult<Outputs> = BuildSuccess<Outputs> | BuildFailure;
 
 type BuildEvents<Outputs> = {
   readonly complete: BuildResult<Outputs>;
@@ -261,7 +260,7 @@ export class BuildAttempt {
   }
 }
 
-export abstract class Build<
+export abstract class BuildSession<
   Outputs extends Record<keyof Outputs, BuilderOutput> & {
     readonly rsc: RSCOutput;
     readonly client: ClientOutput;
@@ -275,8 +274,8 @@ export abstract class Build<
 
   #appConfig?: Required<Config> | undefined;
   #lock?: Promise<BuildResult<Outputs>> | undefined;
-  #result?: BuildResult<Outputs> | undefined;
-  #successfulResult?: SuccessfulBuildResult<Outputs> | undefined;
+  #latestResult?: BuildResult<Outputs> | undefined;
+  #latestSuccessfulResult?: BuildSuccess<Outputs> | undefined;
 
   protected constructor(kind: BuildKind, builders: BuilderRegistry) {
     this.kind = kind;
@@ -293,8 +292,12 @@ export abstract class Build<
     return this.#lock;
   }
 
-  get result() {
-    return this.#result;
+  get latestResult() {
+    return this.#latestResult;
+  }
+
+  get latestSuccessfulResult() {
+    return this.#latestSuccessfulResult;
   }
 
   get events() {
@@ -302,7 +305,9 @@ export abstract class Build<
   }
 
   get error() {
-    return this.#result?.status === "error" ? this.#result.error : undefined;
+    return this.#latestResult?.status === "error"
+      ? this.#latestResult.error
+      : undefined;
   }
 
   async getAppConfig(): Promise<Required<Config>> {
@@ -327,13 +332,13 @@ export abstract class Build<
 
   async setup() {
     this.#appConfig = undefined;
-    this.#result = undefined;
-    this.#successfulResult = undefined;
+    this.#latestResult = undefined;
+    this.#latestSuccessfulResult = undefined;
     await rm(appCompiledDir, { recursive: true, force: true });
   }
 
   async save() {
-    let result = this.#result;
+    let result = this.#latestResult;
 
     if (!result) {
       throw new Error("Cannot save build that has not completed");
@@ -362,7 +367,7 @@ export abstract class Build<
     await writeFile(jsonUrl, JSON.stringify(data, null, 2), "utf-8");
   }
 
-  async load(): Promise<SuccessfulBuildResult<Outputs>> {
+  async load(): Promise<BuildSuccess<Outputs>> {
     let startTime = performance.now();
     let jsonUrl = new URL("./build.json", appCompiledDir);
     let json = await readFile(jsonUrl, "utf-8");
@@ -390,7 +395,7 @@ export abstract class Build<
     // shitty boundary hack. would love to parse this but not sure how
     let loadedOutputs = outputs as Outputs;
 
-    let result: SuccessfulBuildResult<Outputs> = {
+    let result: BuildSuccess<Outputs> = {
       key: data.key,
       status: "success",
       outputs: loadedOutputs,
@@ -398,14 +403,14 @@ export abstract class Build<
       duration: performance.now() - startTime,
     };
 
-    this.#result = result;
-    this.#successfulResult = result;
+    this.#latestResult = result;
+    this.#latestSuccessfulResult = result;
 
     return result;
   }
 
   async warm() {
-    let result = this.#result;
+    let result = this.#latestResult;
 
     if (!result) {
       throw new Error("Cannot warm build that has not completed");
@@ -429,13 +434,13 @@ export abstract class Build<
       return await this.#lock;
     }
 
-    let build = this.#performBuild(fn);
-    this.#lock = build;
+    let buildPromise = this.#performBuild(fn);
+    this.#lock = buildPromise;
 
     try {
-      return await build;
+      return await buildPromise;
     } finally {
-      if (this.#lock === build) {
+      if (this.#lock === buildPromise) {
         this.#lock = undefined;
       }
     }
@@ -445,7 +450,7 @@ export abstract class Build<
     fn: (context: BuildContext<Outputs>) => Promise<Outputs | undefined>,
   ): Promise<BuildResult<Outputs>> {
     let startTime = performance.now();
-    let previous = this.#result;
+    let previous = this.#latestResult;
     let attempt = new BuildAttempt(this.#builders, previous);
     let outputs: Outputs | undefined;
 
@@ -479,15 +484,18 @@ export abstract class Build<
         key: randomBytes(6).toString("hex"),
         status: "success",
         outputs,
-        changes: getBuildChanges(this.#successfulResult?.outputs, outputs),
+        changes: getBuildChanges(
+          this.#latestSuccessfulResult?.outputs,
+          outputs,
+        ),
         duration: performance.now() - startTime,
       };
     }
 
-    this.#result = result;
+    this.#latestResult = result;
 
     if (result.status === "success") {
-      this.#successfulResult = result;
+      this.#latestSuccessfulResult = result;
     }
 
     this.#events.emit("complete", result);

@@ -74,8 +74,7 @@ This work is opaque and should be done after the v2 build system is in place.
 
 ## To figure out
 
-- Are names of classes in this system even correct
-- Explain setup
+- Review new class names and file names
 
 ## Build orchestration
 
@@ -99,3 +98,9 @@ This work is opaque and should be done after the v2 build system is in place.
 
 - Changes are currently calculated as part of completing a successful build. Consider making this calculation lazy if its cost becomes significant.
 - Production one-shot calculates changes
+
+## Runtime notes
+
+- Runtime should get passed a build result and operate on that.
+- Runtime owns the worker (like it does now)
+- RuntimeHost? (seems bad) that coordinates live reloads as builds change?

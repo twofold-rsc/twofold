@@ -23,7 +23,7 @@ import {
   StaticFilesBuilder,
   type StaticFilesOutput,
 } from "../builders/static-files-builder.js";
-import { Build } from "./build.js";
+import { BuildSession } from "./build-session.js";
 
 type DevelopmentOutputs = {
   readonly entries: EntriesOutput;
@@ -35,7 +35,7 @@ type DevelopmentOutputs = {
   readonly assets: AssetsOutput;
 };
 
-export class DevelopmentBuild extends Build<DevelopmentOutputs> {
+export class DevelopmentBuildSession extends BuildSession<DevelopmentOutputs> {
   constructor() {
     super("development", {
       entries: new EntriesBuilder(),

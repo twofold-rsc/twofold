@@ -19,7 +19,7 @@ import {
   StaticFilesBuilder,
   type StaticFilesOutput,
 } from "../builders/static-files-builder.js";
-import { Build } from "./build.js";
+import { BuildSession } from "./build-session.js";
 
 type ProductionOutputs = {
   readonly entries: EntriesOutput;
@@ -30,7 +30,7 @@ type ProductionOutputs = {
   readonly assets: AssetsOutput;
 };
 
-export class ProductionBuild extends Build<ProductionOutputs> {
+export class ProductionBuildSession extends BuildSession<ProductionOutputs> {
   constructor() {
     super("production", {
       entries: new EntriesBuilder(),
