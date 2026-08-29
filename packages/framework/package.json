@@ -58,7 +58,7 @@
     "oxlint": "catalog:",
     "oxlint-tsgolint": "^7.0.2001",
     "typescript": "catalog:",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "peerDependencies": {
     "react": "catalog:",
@@ -94,8 +94,8 @@
     "jiti": "^2.7.0",
     "kleur": "^4.1.5",
     "mime-types": "^3.0.2",
-    "oxc-transform-react": "^0.145.0",
-    "picomatch": "^4.0.5",
+    "oxc-transform-react": "^0.147.0",
+    "picomatch": "^4.0.7",
     "react-refresh": "^0.18.0",
     "rolldown": "1.2.4",
     "serialize-error": "^13.0.1",
