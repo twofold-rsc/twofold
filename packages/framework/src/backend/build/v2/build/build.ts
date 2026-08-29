@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { rm } from "fs/promises";
+import { readFile, rm, writeFile } from "fs/promises";
 import { createJiti } from "jiti";
 import * as z from "zod";
 import type { Config } from "../../../../types/importable.js";
@@ -78,34 +78,36 @@ export type BuilderRegistry = {
   readonly assets?: AssetsBuilder;
 };
 
+export type SuccessfulBuildResult<Outputs> = {
+  readonly key: string;
+  readonly status: "success";
+  readonly outputs: Outputs;
+  readonly changes: BuildChanges;
+  readonly duration: number;
+};
+
+export type FailedBuildResult = {
+  readonly key: string;
+  readonly status: "error";
+  readonly error: Error;
+  readonly outputs: Partial<BuilderOutputs>;
+  readonly duration: number;
+};
+
 export type BuildResult<Outputs> =
-  | {
-      readonly key: string;
-      readonly status: "success";
-      readonly outputs: Outputs;
-      readonly changes: BuildChanges;
-      readonly duration: number;
-    }
-  | {
-      readonly key: string;
-      readonly status: "error";
-      readonly error: Error;
-      readonly outputs: Partial<BuilderOutputs>;
-      readonly duration: number;
-    };
-
-export type SuccessfulBuildResult<Outputs> = Extract<
-  BuildResult<Outputs>,
-  { status: "success" }
->;
-
-export type FailedBuildResult<Outputs> = Extract<
-  BuildResult<Outputs>,
-  { status: "error" }
->;
+  SuccessfulBuildResult<Outputs> | FailedBuildResult;
 
 type BuildEvents<Outputs> = {
   readonly complete: BuildResult<Outputs>;
+};
+
+export type BuildKind = "development" | "production";
+
+type SerializedBuild = {
+  readonly version: 2;
+  readonly kind: BuildKind;
+  readonly key: string;
+  readonly outputs: Record<string, unknown>;
 };
 
 type BuildContext<Outputs> = {
@@ -260,19 +262,26 @@ export class BuildAttempt {
 }
 
 export abstract class Build<
-  Outputs extends {
+  Outputs extends Record<keyof Outputs, BuilderOutput> & {
     readonly rsc: RSCOutput;
     readonly client: ClientOutput;
   },
 > {
   readonly sourceRoot = cwdUrl;
+  readonly kind: BuildKind;
 
   readonly #events = new Bus<BuildEvents<Outputs>>(0);
+  readonly #builders: BuilderRegistry;
 
   #appConfig?: Required<Config> | undefined;
   #lock?: Promise<BuildResult<Outputs>> | undefined;
   #result?: BuildResult<Outputs> | undefined;
   #successfulResult?: SuccessfulBuildResult<Outputs> | undefined;
+
+  protected constructor(kind: BuildKind, builders: BuilderRegistry) {
+    this.kind = kind;
+    this.#builders = builders;
+  }
 
   abstract build(): Promise<BuildResult<Outputs>>;
 
@@ -323,15 +332,104 @@ export abstract class Build<
     await rm(appCompiledDir, { recursive: true, force: true });
   }
 
+  async save() {
+    let result = this.#result;
+
+    if (!result) {
+      throw new Error("Cannot save build that has not completed");
+    }
+
+    if (result.status === "error") {
+      throw new Error("Cannot save build with error", { cause: result.error });
+    }
+
+    let outputs = Object.fromEntries(
+      Object.entries(result.outputs).map(([name, output]) => [
+        name,
+        output.serialize(),
+      ]),
+    );
+
+    let data: SerializedBuild = {
+      version: 2,
+      kind: this.kind,
+      key: result.key,
+      outputs,
+    };
+
+    let jsonUrl = new URL("./build.json", appCompiledDir);
+
+    await writeFile(jsonUrl, JSON.stringify(data, null, 2), "utf-8");
+  }
+
+  async load(): Promise<SuccessfulBuildResult<Outputs>> {
+    let startTime = performance.now();
+    let jsonUrl = new URL("./build.json", appCompiledDir);
+    let json = await readFile(jsonUrl, "utf-8");
+    let data: SerializedBuild = JSON.parse(json);
+
+    if (data.version !== 2) {
+      throw new Error(`Unsupported build version: ${String(data.version)}`);
+    }
+
+    if (data.kind !== this.kind) {
+      throw new Error(`Cannot load ${data.kind} build as ${this.kind} build`);
+    }
+
+    let outputs: Record<string, BuilderOutput> = {};
+
+    for (let [name, builder] of Object.entries(this.#builders)) {
+      if (builder) {
+        // hacky, we need some sort of validation/parsing here because
+        // we are just ripping the build json in here. this is clearly
+        // a boundary that needs parsing
+        outputs[name] = builder.load(data.outputs[name] as never);
+      }
+    }
+
+    // shitty boundary hack. would love to parse this but not sure how
+    let loadedOutputs = outputs as Outputs;
+
+    let result: SuccessfulBuildResult<Outputs> = {
+      key: data.key,
+      status: "success",
+      outputs: loadedOutputs,
+      changes: getBuildChanges(undefined, loadedOutputs),
+      duration: performance.now() - startTime,
+    };
+
+    this.#result = result;
+    this.#successfulResult = result;
+
+    return result;
+  }
+
+  async warm() {
+    let result = this.#result;
+
+    if (!result) {
+      throw new Error("Cannot warm build that has not completed");
+    }
+
+    if (result.status === "error") {
+      throw new Error("Cannot warm build with error", { cause: result.error });
+    }
+
+    await Promise.all(
+      Object.values(result.outputs).map((output) =>
+        Promise.resolve(output.warm()),
+      ),
+    );
+  }
+
   protected async createNewBuild(
-    builders: BuilderRegistry,
     fn: (context: BuildContext<Outputs>) => Promise<Outputs | undefined>,
   ) {
     if (this.#lock) {
       return await this.#lock;
     }
 
-    let build = this.#performBuild(builders, fn);
+    let build = this.#performBuild(fn);
     this.#lock = build;
 
     try {
@@ -344,12 +442,11 @@ export abstract class Build<
   }
 
   async #performBuild(
-    builders: BuilderRegistry,
     fn: (context: BuildContext<Outputs>) => Promise<Outputs | undefined>,
   ): Promise<BuildResult<Outputs>> {
     let startTime = performance.now();
     let previous = this.#result;
-    let attempt = new BuildAttempt(builders, previous);
+    let attempt = new BuildAttempt(this.#builders, previous);
     let outputs: Outputs | undefined;
 
     try {

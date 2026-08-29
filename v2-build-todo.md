@@ -64,16 +64,25 @@ During integration, the development lifecycle will stop the runtime, run the bui
 
 Keep the build completion event scoped to build completion. The development orchestrator should notify live-reload consumers only after both the build has completed and the runtime is ready to serve the new result.
 
+## Config should live in entries
+
+Entries is the "source" for the build, and if we have different sources we could have different configs. In this case I think it makes sense to let entries load the config.
+
+An added benefit is you can serialize the config and reload it. On top of that we get to drop the capture block.
+
+This work is opaque and should be done after the v2 build system is in place.
+
+## To figure out
+
+- Are names of classes in this system even correct
+- Explain setup
+
 ## Build orchestration
 
 ### Persistence
 
-- Add versioned aggregate serialization.
-- Add save() for successful builds.
-- Add load() using each registered builder’s load() method.
-- Add warm() across loaded outputs.
-- Decide whether partial errored builds can ever be serialized. Probably not.
-- Reject old build JSON rather than accidentally loading it as v2.
+- Run build and verify that output json is sane
+- Some sort of load validation
 
 ### Lifecycle
 
