@@ -10,7 +10,6 @@ import { assets } from "./server/middlewares/assets.js";
 import { pathNormalization } from "./server/middlewares/path-normalization.js";
 import { globalMiddleware } from "./server/middlewares/global-middleware.js";
 import { requestStore } from "./server/middlewares/request-store.js";
-import { waitForBuild } from "./server/middlewares/wait-for-build.js";
 import { waitForSSR } from "./server/middlewares/wait-for-ssr-worker.js";
 import { Server as NodeHttpServer } from "http";
 import { Runtime } from "./runtime.js";
@@ -18,30 +17,256 @@ import { filterRequests } from "./server/middlewares/filter-requests.js";
 import { gzip } from "./server/middlewares/gzip.js";
 import kleur from "kleur";
 import { Socket } from "net";
+import { waitForServerState } from "./server/middlewares/wait-for-server-state.js";
+import { Bus } from "./bus.js";
+import { BuildFailure } from "./build/v2/build-sessions/build-session.js";
 
-async function createHandler(server: Server) {
-  let runtime = server.runtime;
-  let build = server.build;
+type Options = {
+  address: string;
+  port: number;
+  enableDevReload: boolean;
+};
 
+type ServerState =
+  | { status: "pending" }
+  | { status: "ready"; runtime: Runtime }
+  | { status: "error"; buildResult: BuildFailure };
+
+type ServerEvents = {
+  serverStateInstalled: ServerState;
+};
+
+export class Server {
+  #address: string;
+  #port: number;
+  #enableDevReload: boolean;
+
+  #server: NodeHttpServer | undefined;
+  #activeSockets: Map<Socket, number> | undefined;
+  #events = new Bus<ServerEvents>();
+
+  #state: ServerState;
+
+  #buildWaitControl: PromiseWithResolvers<void> = Promise.withResolvers<void>();
+
+  constructor(options: Options) {
+    this.#address = options.address;
+    this.#port = options.port;
+    this.#enableDevReload = options.enableDevReload;
+    this.#state = { status: "pending" };
+  }
+
+  get baseUrl() {
+    let domain = this.#address === "0.0.0.0" ? "localhost" : this.#address;
+    return `http://${domain}:${this.#port}`;
+  }
+
+  get address() {
+    return this.#address;
+  }
+
+  get port() {
+    return this.#port;
+  }
+
+  get events() {
+    return this.#events;
+  }
+
+  get enableDevReload() {
+    return this.#enableDevReload;
+  }
+
+  async start({ trustProxy }: { trustProxy: boolean }) {
+    if (!this.#server && !this.#activeSockets) {
+      // let handler = await createHandler(this);
+
+      let server = createServer(createHandler(this), {
+        trustProxy,
+      });
+
+      let activeSockets = new Map();
+
+      server
+        .on("connection", (socket) => {
+          activeSockets.set(socket, 0);
+          socket.on("close", () => activeSockets.delete(socket));
+        })
+        .on("request", (req, res) => {
+          let socket = req.socket;
+          activeSockets.set(socket, (activeSockets.get(socket) || 0) + 1);
+          res.once("close", () => {
+            const n = activeSockets.get(socket) || 0;
+            if (n > 1) {
+              activeSockets.set(socket, n - 1);
+            } else {
+              activeSockets.delete(socket);
+            }
+          });
+        });
+
+      this.#server = server;
+      this.#activeSockets = activeSockets;
+
+      return new Promise<void>((resolve) => {
+        server.listen(this.#port, this.#address, () => {
+          resolve();
+        });
+      });
+    } else {
+      throw new Error("Server is already running");
+    }
+  }
+
+  // replace this with a wrapper fn that installs a runtime or error
+  buildStarted() {
+    if (this.#state.status !== "pending") {
+      this.#state = { status: "pending" };
+      this.#buildWaitControl = Promise.withResolvers<void>();
+    }
+  }
+
+  // there is a race condition here in that if we start 2 builds, they both
+  // call buildStarted and then the first finishes installing an obsolute first
+  install(state: ServerState) {
+    this.#state = state;
+    this.#buildWaitControl.resolve();
+    this.#events.emit("serverStateInstalled", state);
+  }
+
+  async waitForServerState() {
+    if (this.#state.status === "pending") {
+      await this.#buildWaitControl.promise;
+    }
+
+    return this.#state;
+  }
+
+  async gracefulShutdown() {
+    return new Promise<void>((resolve, reject) => {
+      let server = this.#server;
+      let activeSockets = this.#activeSockets;
+
+      if (!server && !activeSockets) {
+        resolve();
+        return;
+      }
+
+      if (server && !server.listening) {
+        reject(new Error("Shutdown called on a server that is not listening."));
+        return;
+      }
+
+      if (!server || !activeSockets) {
+        reject(new Error("Shutdown error: Server is in an invalid state."));
+        return;
+      }
+
+      // max timeout so poll function can't run forever
+      let continuePolling = true;
+      const timeout = setTimeout(() => {
+        continuePolling = false;
+      }, 60_000);
+
+      let poll = () => {
+        if (!continuePolling) {
+          reject(new Error("Shutdown error: Timed out."));
+        } else if (server && !server.listening && activeSockets.size === 0) {
+          clearTimeout(timeout);
+          this.#server = undefined;
+          this.#activeSockets = undefined;
+          server.removeAllListeners();
+          resolve();
+        } else if (server && !server.listening) {
+          for (let [socket, count] of activeSockets) {
+            if (count === 0) {
+              socket.destroy();
+            }
+          }
+          setImmediate(poll);
+        } else {
+          setTimeout(poll, 30);
+        }
+      };
+
+      server.close((err) => {
+        if (err) {
+          reject(err);
+        }
+      });
+
+      poll();
+    });
+  }
+
+  async hardStop() {
+    return new Promise<void>((resolve, reject) => {
+      let server = this.#server;
+      let activeSockets = this.#activeSockets;
+
+      if (!server && !activeSockets) {
+        resolve();
+        return;
+      }
+
+      if (server && !server.listening) {
+        reject(new Error("Shutdown called on a server that is not listening."));
+        return;
+      }
+
+      if (!server || !activeSockets) {
+        reject(new Error("Shutdown error: Server is in an invalid state."));
+        return;
+      }
+
+      server.close((err) => {
+        this.#server = undefined;
+        this.#activeSockets = undefined;
+        server.removeAllListeners();
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+
+      for (let socket of activeSockets.keys()) {
+        socket.destroy();
+      }
+      server.closeAllConnections();
+    });
+  }
+}
+
+declare module "@hattip/compose" {
+  interface RequestContextExtensions {
+    runtime?: Runtime | undefined;
+    buildFailure?: BuildFailure | undefined;
+  }
+}
+
+function createHandler(server: Server) {
   let app = createRouter();
 
   app.use(pathNormalization());
 
   app.use(cookie());
 
-  app.use(waitForBuild(runtime));
+  // TODO: wait for state
+  app.use(waitForServerState(server));
 
-  app.use(globalMiddleware(build));
-  app.use(assets(build));
-  app.use(gzip(build));
-  app.use(staticFiles(build));
+  app.use(globalMiddleware());
+  app.use(assets());
+  app.use(gzip());
+  app.use(staticFiles());
 
   app.use(filterRequests());
 
-  if (build.canReload) {
-    app.use(devReload(build));
+  if (server.enableDevReload) {
+    app.use(devReload(server));
   }
 
+  // TODO: this can add back the throw
   app.use(errors(runtime));
 
   // every request below here should use the store
@@ -231,181 +456,4 @@ function log(
   color: "green" | "red" | "cyan" | "magenta",
 ) {
   console.log(`${kleur[color](`[${label}]`)} ${info}`);
-}
-
-type Options = {
-  hostname: string;
-  port: number;
-};
-
-export class Server {
-  #hostname: string;
-  #port: number;
-  #runtime: Runtime;
-  #server: NodeHttpServer | undefined;
-  #activeSockets: Map<Socket, number> | undefined;
-
-  constructor(runtime: Runtime, options: Options) {
-    this.#runtime = runtime;
-    this.#hostname = options.hostname;
-    this.#port = options.port;
-  }
-
-  get baseUrl() {
-    let domain = this.hostname === "0.0.0.0" ? "localhost" : this.hostname;
-    return `http://${domain}:${this.port}`;
-  }
-
-  get hostname() {
-    return this.#hostname;
-  }
-
-  get port() {
-    return this.#port;
-  }
-
-  get build() {
-    return this.#runtime.build;
-  }
-
-  get runtime() {
-    return this.#runtime;
-  }
-
-  async start() {
-    if (!this.#server && !this.#activeSockets) {
-      let handler = await createHandler(this);
-      let config = await this.build.getAppConfig();
-
-      let server = createServer(handler, {
-        trustProxy: config.trustProxy ?? false,
-      });
-
-      let activeSockets = new Map();
-
-      server
-        .on("connection", (socket) => {
-          activeSockets.set(socket, 0);
-          socket.on("close", () => activeSockets.delete(socket));
-        })
-        .on("request", (req, res) => {
-          let socket = req.socket;
-          activeSockets.set(socket, (activeSockets.get(socket) || 0) + 1);
-          res.once("close", () => {
-            const n = activeSockets.get(socket) || 0;
-            if (n > 1) {
-              activeSockets.set(socket, n - 1);
-            } else {
-              activeSockets.delete(socket);
-            }
-          });
-        });
-
-      this.#server = server;
-      this.#activeSockets = activeSockets;
-
-      return new Promise<void>((resolve) => {
-        server.listen(this.#port, this.#hostname, () => {
-          resolve();
-        });
-      });
-    } else {
-      throw new Error("Server is already running");
-    }
-  }
-
-  async gracefulShutdown() {
-    return new Promise<void>((resolve, reject) => {
-      let server = this.#server;
-      let activeSockets = this.#activeSockets;
-
-      if (!server && !activeSockets) {
-        resolve();
-        return;
-      }
-
-      if (server && !server.listening) {
-        reject(new Error("Shutdown called on a server that is not listening."));
-        return;
-      }
-
-      if (!server || !activeSockets) {
-        reject(new Error("Shutdown error: Server is in an invalid state."));
-        return;
-      }
-
-      // max timeout so poll function can't run forever
-      let continuePolling = true;
-      const timeout = setTimeout(() => {
-        continuePolling = false;
-      }, 60_000);
-
-      let poll = () => {
-        if (!continuePolling) {
-          reject(new Error("Shutdown error: Timed out."));
-        } else if (server && !server.listening && activeSockets.size === 0) {
-          clearTimeout(timeout);
-          this.#server = undefined;
-          this.#activeSockets = undefined;
-          server.removeAllListeners();
-          resolve();
-        } else if (server && !server.listening) {
-          for (let [socket, count] of activeSockets) {
-            if (count === 0) {
-              socket.destroy();
-            }
-          }
-          setImmediate(poll);
-        } else {
-          setTimeout(poll, 30);
-        }
-      };
-
-      server.close((err) => {
-        if (err) {
-          reject(err);
-        }
-      });
-
-      poll();
-    });
-  }
-
-  async hardStop() {
-    return new Promise<void>((resolve, reject) => {
-      let server = this.#server;
-      let activeSockets = this.#activeSockets;
-
-      if (!server && !activeSockets) {
-        resolve();
-        return;
-      }
-
-      if (server && !server.listening) {
-        reject(new Error("Shutdown called on a server that is not listening."));
-        return;
-      }
-
-      if (!server || !activeSockets) {
-        reject(new Error("Shutdown error: Server is in an invalid state."));
-        return;
-      }
-
-      server.close((err) => {
-        this.#server = undefined;
-        this.#activeSockets = undefined;
-        server.removeAllListeners();
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-
-      for (let socket of activeSockets.keys()) {
-        socket.destroy();
-      }
-      server.closeAllConnections();
-    });
-  }
 }

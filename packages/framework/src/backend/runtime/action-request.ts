@@ -20,17 +20,19 @@ import { getStore } from "../stores/rsc-store.js";
 import { serializeError } from "serialize-error";
 import { randomUUID } from "crypto";
 
-type ServerManifest = Record<
-  string,
-  | {
-      id: string;
-      name: string;
-      chunks: string[];
-    }
-  | undefined
+type ServerManifest = Readonly<
+  Record<
+    string,
+    | {
+        id: string;
+        name: string;
+        chunks: readonly string[];
+      }
+    | undefined
+  >
 >;
 
-type ServerActionMap = Map<string, CompiledAction>;
+type ServerActionMap = ReadonlyMap<string, CompiledAction>;
 
 type Result =
   | {

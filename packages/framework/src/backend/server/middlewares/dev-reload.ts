@@ -1,6 +1,6 @@
 import { RouteHandler } from "@hattip/router";
 import { ServerSentEventSink, serverSentEvents } from "@hattip/response";
-import { DevelopmentBuild } from "../../build/build/development.js";
+import { Server } from "../../server.js";
 
 type Connection = {
   connectionId: number;
@@ -9,7 +9,7 @@ type Connection = {
 
 type ConnectionMode = "persistent" | "visibility";
 
-export function devReload(build: DevelopmentBuild): RouteHandler {
+export function devReload(server: Server): RouteHandler {
   let activeConnections: Connection[] = [];
   let id = 1;
 
@@ -25,33 +25,18 @@ export function devReload(build: DevelopmentBuild): RouteHandler {
     }
   }
 
-  return async ({ request }) => {
+  return async ({ request, runtime }) => {
     let url = new URL(request.url);
     let pathname = url.pathname;
     let method = request.method;
 
     if (method === "GET" && pathname === "/__dev/reload") {
       let connectionId = id++;
-      let onBuildComplete: () => void;
+      let unsubscribeFromServerStateInstalled: () => void;
 
       return serverSentEvents({
         onOpen(sink) {
           let previousMode = getConnectionMode();
-
-          onBuildComplete = () => {
-            let payload = build.error
-              ? {
-                  type: "error",
-                  key: build.key,
-                  message: build.error.message,
-                }
-              : {
-                  type: "changes",
-                  key: build.key,
-                  changes: build.changes,
-                };
-            sink.sendMessage(JSON.stringify(payload));
-          };
 
           activeConnections.push({
             connectionId,
@@ -60,19 +45,47 @@ export function devReload(build: DevelopmentBuild): RouteHandler {
 
           let mode = getConnectionMode();
 
-          const welcomeMessage = {
-            type: "welcome",
-            key: build.key,
-            mode,
-          };
+          unsubscribeFromServerStateInstalled = server.events.on(
+            "serverStateInstalled",
+            (serverState) => {
+              if (serverState.status === "ready") {
+                sink.sendMessage(
+                  JSON.stringify({
+                    type: "changes",
+                    key: serverState.runtime.buildResult.key,
+                    changes: serverState.runtime.buildResult.changes,
+                  }),
+                );
+              } else if (serverState.status === "error") {
+                JSON.stringify({
+                  type: "error",
+                  key: serverState.buildResult.key,
+                  message: serverState.buildResult.error.message,
+                });
+              }
+            },
+          );
 
-          sink.sendMessage(JSON.stringify(welcomeMessage));
+          if (runtime) {
+            let welcomeMessage = {
+              type: "welcome",
+              key: runtime.buildResult.key,
+              mode,
+            };
+
+            sink.sendMessage(JSON.stringify(welcomeMessage));
+          } else if (mode === previousMode) {
+            sink.sendMessage(
+              JSON.stringify({
+                type: "mode",
+                mode,
+              }),
+            );
+          }
 
           if (mode !== previousMode) {
             broadcastMode(mode);
           }
-
-          build.events.on("complete", onBuildComplete);
         },
         onClose() {
           let previousMode = getConnectionMode();
@@ -80,7 +93,10 @@ export function devReload(build: DevelopmentBuild): RouteHandler {
           activeConnections = activeConnections.filter(
             (connection) => connection.connectionId !== connectionId,
           );
-          build.events.off("complete", onBuildComplete);
+
+          if (unsubscribeFromServerStateInstalled) {
+            unsubscribeFromServerStateInstalled();
+          }
 
           let mode = getConnectionMode();
           if (mode !== previousMode) {

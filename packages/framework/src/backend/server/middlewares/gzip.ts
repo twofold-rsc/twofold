@@ -1,13 +1,17 @@
 import { RouteHandler } from "@hattip/router";
 import { parseHeaderValue } from "@hattip/headers";
-import { Build } from "../../build/build/build.js";
 import { createGzip, constants as zlibConstants } from "node:zlib";
 import { Readable } from "node:stream";
 import { ReadableStream } from "node:stream/web";
 
-export function gzip(build: Build): RouteHandler {
+export function gzip(): RouteHandler {
   return async (ctx) => {
-    let buildSupportsCompression = build.name === "production";
+    if (!ctx.runtime) {
+      return;
+    }
+
+    let buildSupportsCompression =
+      ctx.runtime.buildResult.kind === "production";
 
     let encodings = parseHeaderValue(
       ctx.request.headers.get("accept-encoding"),

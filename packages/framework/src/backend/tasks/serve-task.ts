@@ -1,34 +1,39 @@
 import { Runtime } from "../runtime.js";
 import { Server } from "../server.js";
-import { ProductionBuild } from "../build/build/production.js";
-import { DevelopmentBuild } from "../build/build/development.js";
-
-type Build = DevelopmentBuild | ProductionBuild;
+import { BuildSession } from "../build/v2/build-sessions/build-session.js";
 
 export class ServeTask {
-  #build: Build;
-  #runtime: Runtime;
+  #buildSession: BuildSession<"development" | "production">;
+  // #runtime: Runtime;
   #server: Server;
 
-  constructor({ build, port }: { build: Build; port: number }) {
-    this.#build = build;
-    this.#runtime = new Runtime(build);
-    this.#server = new Server(this.#runtime, {
-      hostname: "0.0.0.0",
+  constructor({
+    buildSession,
+    port,
+  }: {
+    buildSession: BuildSession<"development" | "production">;
+    port: number;
+  }) {
+    this.#buildSession = buildSession;
+    this.#server = new Server({
+      address: "0.0.0.0",
       port,
+      enableDevReload: false,
     });
   }
 
   async start() {
     this.verifyEnv();
 
-    await this.#build.load();
-    await this.#build.warm();
+    const buildResult = await this.#buildSession.load();
 
-    console.log(`Loaded build [version: ${this.#build.key}]`);
+    await buildResult.warm();
 
-    await this.#server.start();
-    await this.#runtime.start();
+    console.log(`Loaded build [version: ${buildResult.key}]`);
+
+    // TODO: figured out
+    // await this.#server.start();
+    // await this.#runtime.start();
 
     process.on("SIGTERM", () => {
       console.log("Received SIGTERM, shutting down gracefully");
@@ -36,7 +41,7 @@ export class ServeTask {
     });
 
     console.log(
-      `Server started on ${this.#server.hostname}:${this.#server.port}`,
+      `Server started on ${this.#server.address}:${this.#server.port}`,
     );
   }
 

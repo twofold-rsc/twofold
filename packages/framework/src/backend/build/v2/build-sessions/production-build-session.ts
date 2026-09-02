@@ -1,36 +1,12 @@
-import {
-  AssetsBuilder,
-  type AssetsOutput,
-} from "../builders/assets-builder.js";
-import {
-  ClientBuilder,
-  type ClientOutput,
-} from "../builders/client-builder.js";
-import {
-  EntriesBuilder,
-  type EntriesOutput,
-} from "../builders/entries-builder.js";
-import { RSCBuilder, type RSCOutput } from "../builders/rsc-builder.js";
-import {
-  ServerFilesBuilder,
-  type ServerFilesOutput,
-} from "../builders/server-files-builder.js";
-import {
-  StaticFilesBuilder,
-  type StaticFilesOutput,
-} from "../builders/static-files-builder.js";
+import { AssetsBuilder } from "../builders/assets-builder.js";
+import { ClientBuilder } from "../builders/client-builder.js";
+import { EntriesBuilder } from "../builders/entries-builder.js";
+import { RSCBuilder } from "../builders/rsc-builder.js";
+import { ServerFilesBuilder } from "../builders/server-files-builder.js";
+import { StaticFilesBuilder } from "../builders/static-files-builder.js";
 import { BuildSession } from "./build-session.js";
 
-type ProductionOutputs = {
-  readonly entries: EntriesOutput;
-  readonly serverFiles: ServerFilesOutput;
-  readonly staticFiles: StaticFilesOutput;
-  readonly rsc: RSCOutput;
-  readonly client: ClientOutput;
-  readonly assets: AssetsOutput;
-};
-
-export class ProductionBuildSession extends BuildSession<ProductionOutputs> {
+export class ProductionBuildSession extends BuildSession<"production"> {
   constructor() {
     super("production", {
       entries: new EntriesBuilder(),

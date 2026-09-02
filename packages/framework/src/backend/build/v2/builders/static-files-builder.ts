@@ -50,9 +50,9 @@ export class StaticFilesBuilder extends Builder<
 }
 
 export class StaticFilesOutput {
-  readonly fileMap: ReadonlyMap<string, ReadOnlyFile>;
+  readonly fileMap: Map<string, ReadOnlyFile>;
 
-  constructor(fileMap: ReadonlyMap<string, ReadOnlyFile>) {
+  constructor(fileMap: Map<string, ReadOnlyFile>) {
     this.fileMap = fileMap;
   }
 

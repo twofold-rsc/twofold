@@ -1,41 +1,13 @@
-import {
-  AssetsBuilder,
-  type AssetsOutput,
-} from "../builders/assets-builder.js";
-import {
-  ClientBuilder,
-  type ClientOutput,
-} from "../builders/client-builder.js";
-import {
-  DevErrorPageBuilder,
-  type DevErrorPageOutput,
-} from "../builders/dev-error-page-builder.js";
-import {
-  EntriesBuilder,
-  type EntriesOutput,
-} from "../builders/entries-builder.js";
-import { RSCBuilder, type RSCOutput } from "../builders/rsc-builder.js";
-import {
-  ServerFilesBuilder,
-  type ServerFilesOutput,
-} from "../builders/server-files-builder.js";
-import {
-  StaticFilesBuilder,
-  type StaticFilesOutput,
-} from "../builders/static-files-builder.js";
+import { AssetsBuilder } from "../builders/assets-builder.js";
+import { ClientBuilder } from "../builders/client-builder.js";
+import { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
+import { EntriesBuilder } from "../builders/entries-builder.js";
+import { RSCBuilder } from "../builders/rsc-builder.js";
+import { ServerFilesBuilder } from "../builders/server-files-builder.js";
+import { StaticFilesBuilder } from "../builders/static-files-builder.js";
 import { BuildSession } from "./build-session.js";
 
-type DevelopmentOutputs = {
-  readonly entries: EntriesOutput;
-  readonly devErrorPage: DevErrorPageOutput;
-  readonly serverFiles: ServerFilesOutput;
-  readonly staticFiles: StaticFilesOutput;
-  readonly rsc: RSCOutput;
-  readonly client: ClientOutput;
-  readonly assets: AssetsOutput;
-};
-
-export class DevelopmentBuildSession extends BuildSession<DevelopmentOutputs> {
+export class DevelopmentBuildSession extends BuildSession<"development"> {
   constructor() {
     super("development", {
       entries: new EntriesBuilder(),

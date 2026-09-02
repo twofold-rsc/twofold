@@ -5,11 +5,13 @@ import { appCompiledDir } from "../../files.js";
 import { parseHeaderValue } from "@hattip/headers";
 import type { Runtime } from "../../runtime.js";
 
-export function errors(runtime: Runtime): RouteHandler {
-  let build = runtime.build;
-
+export function errors(): RouteHandler {
   return async (ctx) => {
-    let requestBuildKey = build.key;
+    let requestBuildKey = ctx.runtime
+      ? ctx.runtime.buildResult.key
+      : ctx.buildFailure
+        ? ctx.buildFailure.key
+        : "unknown";
 
     ctx.handleError = async (e: unknown) => {
       let request = ctx.request;
@@ -62,7 +64,7 @@ export function errors(runtime: Runtime): RouteHandler {
       }
     };
 
-    if (build.name === "development") {
+    if (runtime.buildResult.kind === "development") {
       let request = ctx.request;
       let url = new URL(request.url);
 
@@ -70,7 +72,7 @@ export function errors(runtime: Runtime): RouteHandler {
         request.method === "GET" &&
         url.pathname === "/_twofold/errors/app.js"
       ) {
-        let contents = await build.getBuilder("dev-error-page").js();
+        let contents = await runtime.buildResult.outputs.devErrorPage.js();
         return new Response(contents, {
           headers: {
             "content-type": "application/javascript",
@@ -82,17 +84,13 @@ export function errors(runtime: Runtime): RouteHandler {
         request.method === "GET" &&
         url.pathname === "/_twofold/errors/app.css"
       ) {
-        let contents = await build.getBuilder("dev-error-page").css();
+        let contents = await runtime.buildResult.outputs.devErrorPage.css();
         return new Response(contents, {
           headers: {
             "content-type": "text/css",
           },
         });
       }
-    }
-
-    if (build.error) {
-      throw build.error;
     }
   };
 }

@@ -8,8 +8,6 @@ import { randomBytes } from "crypto";
 let reqId = 0;
 
 export function requestStore(runtime: Runtime): RouteHandler {
-  let build = runtime.build;
-
   return async (ctx) => {
     reqId = reqId + 1;
 
@@ -19,9 +17,10 @@ export function requestStore(runtime: Runtime): RouteHandler {
 
     let store: Store = {
       reqId,
-      build: build.name,
-      buildKey: build.key,
-      canReload: build.canReload,
+      build: runtime.buildResult.kind,
+      buildKey: runtime.buildResult.key,
+      // get rid of this, its dumb
+      canReload: runtime.buildResult.kind === "development",
       cookies: {
         all: () => {
           return ctx.cookie;

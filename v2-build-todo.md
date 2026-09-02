@@ -72,9 +72,39 @@ An added benefit is you can serialize the config and reload it. On top of that w
 
 This work is opaque and should be done after the v2 build system is in place.
 
+## Runtime should run the global middleware
+
+Right now all global middleware is handled by the middleware plugin, but this exposes knowledge of the buildResult. The plugin is useful, but it should delegate running the middleware to the runtime (like how we delegate rendering pages to the runtime)
+
 ## To figure out
 
-- Review new class names and file names
+- how build errors get threaded into the server
+  - error middleware (add back throw)
+- Need to review dev task, lots of imperative crap here
+- runtime stop is really runtime dispose
+- SSR worker shutting down / starting up. how to communicate
+- dev reload needs to outlive server runtimes
+
+## Serving build errors
+
+When build result is an error the server needs to throw it, so we can go into error handling middlewarre.
+
+This worked in v1 but i removed in v2. The idea in v2 is that theres a handler specifically for build error states:
+
+```ts
+function createFailureHandler(failure: BuildFailure) {
+  let app = createRouter();
+
+  // Install build-failure error rendering.
+  app.use(buildFailureErrors(failure));
+
+  app.use(() => {
+    throw failure.error;
+  });
+
+  return app.buildHandler();
+}
+```
 
 ## Build orchestration
 

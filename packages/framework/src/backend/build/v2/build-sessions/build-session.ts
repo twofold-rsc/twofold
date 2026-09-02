@@ -6,40 +6,13 @@ import type { Config } from "../../../../types/importable.js";
 import { Bus } from "../../../bus.js";
 import { appCompiledDir, cwdUrl } from "../../../files.js";
 import type { Builder, BuilderOutput } from "../builders/builder.js";
-import type {
-  AssetsBuilder,
-  AssetsBuilderInput,
-  AssetsOutput,
-} from "../builders/assets-builder.js";
-import type {
-  ClientBuilder,
-  ClientBuilderInput,
-  ClientOutput,
-} from "../builders/client-builder.js";
-import type {
-  DevErrorPageBuilder,
-  DevErrorPageOutput,
-} from "../builders/dev-error-page-builder.js";
-import type {
-  EntriesBuilder,
-  EntriesBuilderInput,
-  EntriesOutput,
-} from "../builders/entries-builder.js";
-import type {
-  RSCBuilder,
-  RSCBuilderInput,
-  RSCOutput,
-} from "../builders/rsc-builder.js";
-import type {
-  ServerFilesBuilder,
-  ServerFilesBuilderInput,
-  ServerFilesOutput,
-} from "../builders/server-files-builder.js";
-import type {
-  StaticFilesBuilder,
-  StaticFilesBuilderInput,
-  StaticFilesOutput,
-} from "../builders/static-files-builder.js";
+import type { AssetsBuilder } from "../builders/assets-builder.js";
+import type { ClientBuilder } from "../builders/client-builder.js";
+import type { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
+import type { EntriesBuilder } from "../builders/entries-builder.js";
+import type { RSCBuilder } from "../builders/rsc-builder.js";
+import type { ServerFilesBuilder } from "../builders/server-files-builder.js";
+import type { StaticFilesBuilder } from "../builders/static-files-builder.js";
 import { getBuildChanges, type BuildChanges } from "./changes.js";
 
 let jiti = createJiti(import.meta.url, {
@@ -54,53 +27,134 @@ let configSchema = z.object({
   trustProxy: z.boolean().optional(),
 });
 
-export type BuilderResult<Output> =
+export type BuilderRegistry = {
+  readonly entries: EntriesBuilder;
+  readonly devErrorPage: DevErrorPageBuilder;
+  readonly serverFiles: ServerFilesBuilder;
+  readonly staticFiles: StaticFilesBuilder;
+  readonly rsc: RSCBuilder;
+  readonly client: ClientBuilder;
+  readonly assets: AssetsBuilder;
+};
+
+type OutputsFor<Registry> = {
+  readonly [Name in keyof Registry]: Registry[Name] extends Builder<
+    infer _Input,
+    infer Output
+  >
+    ? Output
+    : never;
+};
+
+export type BuilderOutputs = OutputsFor<BuilderRegistry>;
+
+export type BuilderRegistryByKind = {
+  development: BuilderRegistry;
+  production: Omit<BuilderRegistry, "devErrorPage">;
+};
+
+export type BuildKind = keyof BuilderOutputsByKind;
+
+export type BuilderOutputsByKind = {
+  readonly [Kind in keyof BuilderRegistryByKind]: OutputsFor<
+    BuilderRegistryByKind[Kind]
+  >;
+};
+
+type BuilderArguments<
+  Kind extends BuildKind,
+  Name extends keyof BuilderRegistryByKind[Kind],
+> = BuilderRegistryByKind[Kind][Name] extends {
+  build(...args: infer Arguments): unknown;
+}
+  ? Arguments
+  : never;
+
+type BuilderResult<Output> =
   | { readonly status: "success"; readonly output: Output }
   | { readonly status: "error"; readonly error: Error };
 
-export type BuilderOutputs = {
-  readonly entries: EntriesOutput;
-  readonly devErrorPage: DevErrorPageOutput;
-  readonly serverFiles: ServerFilesOutput;
-  readonly staticFiles: StaticFilesOutput;
-  readonly rsc: RSCOutput;
-  readonly client: ClientOutput;
-  readonly assets: AssetsOutput;
-};
-
-export type BuilderRegistry = {
-  readonly entries?: EntriesBuilder;
-  readonly devErrorPage?: DevErrorPageBuilder;
-  readonly serverFiles?: ServerFilesBuilder;
-  readonly staticFiles?: StaticFilesBuilder;
-  readonly rsc?: RSCBuilder;
-  readonly client?: ClientBuilder;
-  readonly assets?: AssetsBuilder;
-};
-
-export type BuildSuccess<Outputs> = {
+type BuildShared<Kind extends BuildKind> = {
   readonly key: string;
-  readonly status: "success";
-  readonly outputs: Outputs;
+  readonly kind: Kind;
+  readonly duration: number;
+};
+
+type BuildSuccessOptions<Kind extends BuildKind> = BuildShared<Kind> & {
+  readonly outputs: BuilderOutputsByKind[Kind];
   readonly changes: BuildChanges;
-  readonly duration: number;
 };
 
-export type BuildFailure = {
+export class BuildSuccess<Kind extends BuildKind = BuildKind> {
+  readonly status = "success";
   readonly key: string;
-  readonly status: "error";
-  readonly error: Error;
-  readonly outputs: Partial<BuilderOutputs>;
+  readonly kind: Kind;
   readonly duration: number;
+  readonly outputs: BuilderOutputsByKind[Kind];
+  readonly changes: BuildChanges;
+
+  constructor({
+    key,
+    kind,
+    duration,
+    outputs,
+    changes,
+  }: BuildSuccessOptions<Kind>) {
+    this.key = key;
+    this.kind = kind;
+    this.duration = duration;
+    this.outputs = outputs;
+    this.changes = changes;
+  }
+
+  async save() {
+    let outputs = Object.fromEntries(
+      Object.entries(this.outputs).map(([name, output]) => [
+        name,
+        output.serialize(),
+      ]),
+    );
+
+    let data: SerializedBuild = {
+      version: 2,
+      kind: this.kind,
+      key: this.key,
+      outputs,
+    };
+
+    let jsonUrl = new URL("./build.json", appCompiledDir);
+
+    await writeFile(jsonUrl, JSON.stringify(data, null, 2), "utf-8");
+  }
+
+  async warm() {
+    await Promise.all(
+      Object.values(this.outputs).map((output) =>
+        Promise.resolve(output.warm()),
+      ),
+    );
+  }
+}
+
+export type BuildSuccessByKind = {
+  readonly [Kind in BuildKind]: BuildSuccess<Kind>;
 };
 
-export type BuildResult<Outputs> = BuildSuccess<Outputs> | BuildFailure;
+export type BuildFailure<Kind extends BuildKind = BuildKind> = {
+  [K in Kind]: BuildShared<K> & {
+    readonly status: "error";
+    readonly error: Error;
+    readonly outputs: Partial<BuilderOutputsByKind[K]>;
+  };
+}[Kind];
 
-type BuildEvents<Outputs> = {
-  readonly complete: BuildResult<Outputs>;
+export type BuildResult<Kind extends BuildKind = BuildKind> = {
+  [K in Kind]: BuildSuccess<K> | BuildFailure<K>;
+}[Kind];
+
+type BuildEvents<Kind extends BuildKind> = {
+  readonly complete: BuildResult<Kind>;
 };
-
-export type BuildKind = "development" | "production";
 
 type SerializedBuild = {
   readonly version: 2;
@@ -109,35 +163,27 @@ type SerializedBuild = {
   readonly outputs: Record<string, unknown>;
 };
 
-type BuildContext<Outputs> = {
-  readonly attempt: BuildAttempt;
-  readonly previous: BuildResult<Outputs> | undefined;
+type BuildContext<Kind extends BuildKind> = {
+  readonly attempt: BuildAttempt<Kind>;
+  readonly previous: BuildResult<Kind> | undefined;
 };
 
-type RunArguments =
-  | readonly ["entries", EntriesBuilderInput]
-  | readonly ["devErrorPage"]
-  | readonly ["serverFiles", ServerFilesBuilderInput]
-  | readonly ["staticFiles", StaticFilesBuilderInput]
-  | readonly ["rsc", RSCBuilderInput]
-  | readonly ["client", ClientBuilderInput]
-  | readonly ["assets", AssetsBuilderInput];
-
-export class BuildAttempt {
-  readonly #outputs: Partial<BuilderOutputs> = {};
+export class BuildAttempt<Kind extends BuildKind> {
+  readonly #outputs: Partial<BuilderOutputsByKind[Kind]> = {};
   readonly #errors: Error[] = [];
-  readonly #previousOutputs: Partial<BuilderOutputs>;
-  readonly #builders: BuilderRegistry;
+  readonly #previousOutputs: Partial<BuilderOutputsByKind[Kind]>;
+  readonly #builders: BuilderRegistryByKind[Kind];
 
   constructor(
-    builders: BuilderRegistry,
-    previous: { readonly outputs: Partial<BuilderOutputs> } | undefined,
+    builders: BuilderRegistryByKind[Kind],
+    previous:
+      { readonly outputs: Partial<BuilderOutputsByKind[Kind]> } | undefined,
   ) {
     this.#builders = builders;
     this.#previousOutputs = previous?.outputs ?? {};
   }
 
-  get outputs(): Partial<BuilderOutputs> {
+  get outputs() {
     return this.#outputs;
   }
 
@@ -145,98 +191,47 @@ export class BuildAttempt {
     return this.#errors;
   }
 
-  #keep<Key extends keyof BuilderOutputs>(
-    key: Key,
-    output: BuilderOutputs[Key],
-  ): BuilderResult<BuilderOutputs[Key]> {
-    this.#outputs[key] = output;
+  #keep<Name extends keyof BuilderOutputsByKind[Kind]>(
+    name: Name,
+    output: BuilderOutputsByKind[Kind][Name],
+  ): BuilderResult<BuilderOutputsByKind[Kind][Name]> {
+    this.#outputs[name] = output;
     return { status: "success", output };
   }
 
-  keep<Key extends keyof BuilderOutputs>(
-    key: Key,
-  ): BuilderResult<BuilderOutputs[Key]> {
-    let output = this.#previousOutputs[key];
+  keep<Name extends keyof BuilderRegistryByKind[Kind]>(name: Name) {
+    let output = this.#previousOutputs[name];
 
     if (output === undefined) {
-      throw new Error(`Previous build has no output for "${String(key)}"`);
+      throw new Error(`Previous build has no output for "${String(name)}"`);
     }
 
-    return this.#keep(key, output);
+    return this.#keep(name, output);
   }
 
-  async run(
-    name: "entries",
-    input: EntriesBuilderInput,
-  ): Promise<BuilderResult<EntriesOutput>>;
-  async run(name: "devErrorPage"): Promise<BuilderResult<DevErrorPageOutput>>;
-  async run(
-    name: "serverFiles",
-    input: ServerFilesBuilderInput,
-  ): Promise<BuilderResult<ServerFilesOutput>>;
-  async run(
-    name: "staticFiles",
-    input: StaticFilesBuilderInput,
-  ): Promise<BuilderResult<StaticFilesOutput>>;
-  async run(
-    name: "rsc",
-    input: RSCBuilderInput,
-  ): Promise<BuilderResult<RSCOutput>>;
-  async run(
-    name: "client",
-    input: ClientBuilderInput,
-  ): Promise<BuilderResult<ClientOutput>>;
-  async run(
-    name: "assets",
-    input: AssetsBuilderInput,
-  ): Promise<BuilderResult<AssetsOutput>>;
-  async run(...args: RunArguments): Promise<BuilderResult<BuilderOutput>> {
-    switch (args[0]) {
-      case "entries":
-        return await this.#run("entries", this.#builders.entries, args[1]);
-      case "devErrorPage":
-        return await this.#run(
-          "devErrorPage",
-          this.#builders.devErrorPage,
-          undefined,
-        );
-      case "serverFiles":
-        return await this.#run(
-          "serverFiles",
-          this.#builders.serverFiles,
-          args[1],
-        );
-      case "staticFiles":
-        return await this.#run(
-          "staticFiles",
-          this.#builders.staticFiles,
-          args[1],
-        );
-      case "rsc":
-        return await this.#run("rsc", this.#builders.rsc, args[1]);
-      case "client":
-        return await this.#run("client", this.#builders.client, args[1]);
-      case "assets":
-        return await this.#run("assets", this.#builders.assets, args[1]);
-    }
-  }
+  async run<Name extends keyof BuilderRegistryByKind[Kind]>(
+    name: Name,
+    ...args: BuilderArguments<Kind, Name>
+  ): Promise<BuilderResult<BuilderOutputsByKind[Kind][Name]>> {
+    // need this as because builder gets lost. would love to fix,
+    // but dont know how
+    let builder = this.#builders[name] as {
+      build(
+        ...args: BuilderArguments<Kind, Name>
+      ): Promise<BuilderOutputsByKind[Kind][Name]>;
+    };
 
-  async #run<Key extends keyof BuilderOutputs, Input>(
-    key: Key,
-    builder: Builder<Input, BuilderOutputs[Key]> | undefined,
-    input: Input,
-  ): Promise<BuilderResult<BuilderOutputs[Key]>> {
     try {
-      if (!builder) {
-        throw new Error(`Builder "${key}" is not registered`);
-      }
-
-      let output = await builder.build(input);
-      return this.#keep(key, output);
+      let output = await builder.build(...args);
+      return this.#keep(name, output);
     } catch (thrown) {
       let error = normalizeError(thrown);
       this.#errors.push(error);
-      return { status: "error", error };
+
+      return {
+        status: "error",
+        error,
+      };
     }
   }
 
@@ -260,29 +255,24 @@ export class BuildAttempt {
   }
 }
 
-export abstract class BuildSession<
-  Outputs extends Record<keyof Outputs, BuilderOutput> & {
-    readonly rsc: RSCOutput;
-    readonly client: ClientOutput;
-  },
-> {
+export abstract class BuildSession<Kind extends BuildKind> {
   readonly sourceRoot = cwdUrl;
-  readonly kind: BuildKind;
+  readonly kind: Kind;
 
-  readonly #events = new Bus<BuildEvents<Outputs>>(0);
-  readonly #builders: BuilderRegistry;
+  readonly #events = new Bus<BuildEvents<Kind>>(0);
+  readonly #builders: BuilderRegistryByKind[Kind];
 
   #appConfig?: Required<Config> | undefined;
-  #lock?: Promise<BuildResult<Outputs>> | undefined;
-  #latestResult?: BuildResult<Outputs> | undefined;
-  #latestSuccessfulResult?: BuildSuccess<Outputs> | undefined;
+  #lock?: Promise<BuildResult<Kind>> | undefined;
+  #latestResult?: BuildResult<Kind> | undefined;
+  #latestSuccessfulResult?: BuildSuccess<Kind> | undefined;
 
-  protected constructor(kind: BuildKind, builders: BuilderRegistry) {
+  protected constructor(kind: Kind, builders: BuilderRegistryByKind[Kind]) {
     this.kind = kind;
     this.#builders = builders;
   }
 
-  abstract build(): Promise<BuildResult<Outputs>>;
+  abstract build(): Promise<BuildResult<Kind>>;
 
   get isBuilding() {
     return this.#lock !== undefined;
@@ -337,37 +327,7 @@ export abstract class BuildSession<
     await rm(appCompiledDir, { recursive: true, force: true });
   }
 
-  async save() {
-    let result = this.#latestResult;
-
-    if (!result) {
-      throw new Error("Cannot save build that has not completed");
-    }
-
-    if (result.status === "error") {
-      throw new Error("Cannot save build with error", { cause: result.error });
-    }
-
-    let outputs = Object.fromEntries(
-      Object.entries(result.outputs).map(([name, output]) => [
-        name,
-        output.serialize(),
-      ]),
-    );
-
-    let data: SerializedBuild = {
-      version: 2,
-      kind: this.kind,
-      key: result.key,
-      outputs,
-    };
-
-    let jsonUrl = new URL("./build.json", appCompiledDir);
-
-    await writeFile(jsonUrl, JSON.stringify(data, null, 2), "utf-8");
-  }
-
-  async load(): Promise<BuildSuccess<Outputs>> {
+  async load(): Promise<BuildSuccess<Kind>> {
     let startTime = performance.now();
     let jsonUrl = new URL("./build.json", appCompiledDir);
     let json = await readFile(jsonUrl, "utf-8");
@@ -393,15 +353,15 @@ export abstract class BuildSession<
     }
 
     // shitty boundary hack. would love to parse this but not sure how
-    let loadedOutputs = outputs as Outputs;
+    let loadedOutputs = outputs as BuilderOutputsByKind[Kind];
 
-    let result: BuildSuccess<Outputs> = {
+    let result = new BuildSuccess({
+      kind: this.kind,
       key: data.key,
-      status: "success",
       outputs: loadedOutputs,
       changes: getBuildChanges(undefined, loadedOutputs),
       duration: performance.now() - startTime,
-    };
+    });
 
     this.#latestResult = result;
     this.#latestSuccessfulResult = result;
@@ -409,26 +369,10 @@ export abstract class BuildSession<
     return result;
   }
 
-  async warm() {
-    let result = this.#latestResult;
-
-    if (!result) {
-      throw new Error("Cannot warm build that has not completed");
-    }
-
-    if (result.status === "error") {
-      throw new Error("Cannot warm build with error", { cause: result.error });
-    }
-
-    await Promise.all(
-      Object.values(result.outputs).map((output) =>
-        Promise.resolve(output.warm()),
-      ),
-    );
-  }
-
   protected async createNewBuild(
-    fn: (context: BuildContext<Outputs>) => Promise<Outputs | undefined>,
+    fn: (
+      context: BuildContext<Kind>,
+    ) => Promise<BuilderOutputsByKind[Kind] | undefined>,
   ) {
     if (this.#lock) {
       return await this.#lock;
@@ -447,12 +391,14 @@ export abstract class BuildSession<
   }
 
   async #performBuild(
-    fn: (context: BuildContext<Outputs>) => Promise<Outputs | undefined>,
-  ): Promise<BuildResult<Outputs>> {
+    fn: (
+      context: BuildContext<Kind>,
+    ) => Promise<BuilderOutputsByKind[Kind] | undefined>,
+  ): Promise<BuildResult<Kind>> {
     let startTime = performance.now();
     let previous = this.#latestResult;
     let attempt = new BuildAttempt(this.#builders, previous);
-    let outputs: Outputs | undefined;
+    let outputs: BuilderOutputsByKind[Kind] | undefined;
 
     try {
       outputs = await fn({ attempt, previous });
@@ -464,11 +410,12 @@ export abstract class BuildSession<
       attempt.fail(new Error("Build did not produce output"));
     }
 
-    let result: BuildResult<Outputs>;
+    let result: BuildResult<Kind>;
 
     if (attempt.errors.length > 0) {
       let error = buildError(attempt.errors);
       result = {
+        kind: this.kind,
         key: randomBytes(6).toString("hex"),
         status: "error",
         error,
@@ -480,16 +427,16 @@ export abstract class BuildSession<
         throw new Error("Build completed without output or an error");
       }
 
-      result = {
+      result = new BuildSuccess({
+        kind: this.kind,
         key: randomBytes(6).toString("hex"),
-        status: "success",
         outputs,
         changes: getBuildChanges(
           this.#latestSuccessfulResult?.outputs,
           outputs,
         ),
         duration: performance.now() - startTime,
-      };
+      });
     }
 
     this.#latestResult = result;
