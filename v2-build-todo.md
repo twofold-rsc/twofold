@@ -58,28 +58,10 @@ This work is opaque and should be done after the v2 build system is in place.
 
 Right now all global middleware is handled by the middleware plugin, but this exposes knowledge of the buildResult. The plugin is useful, but it should delegate running the middleware to the runtime (like how we delegate rendering pages to the runtime)
 
-## To figure out
-
-- Need to review dev task, lots of imperative crap here
-- runtime stop is really runtime dispose. review cleanup is correct
-
 ## Build orchestration
 
-### Persistence
-
-- Run build and verify that output json is sane
-- Some sort of load validation
-
-### Lifecycle
-
-- During runtime integration, pass the environment explicitly and keep reload capability in the runtime/server layer.
-- Add any cleanup only if future builders acquire persistent resources. Current one-shot v2 builders do not need the old stop() lifecycle.
-
-### Configuration
-
-- Eventually extract the duplicated runtime config schema into a neutral module shared by old and v2 builds.
-- Keep the exported Config type and runtime schema aligned.
-- Decide how configuration cache invalidation should work during development. The old system clears it during setup, not each rebuild.
+- cli: dev, build, serve when we have an existing error
+- some sort of build load validation when running serve
 
 ### Build changes
 

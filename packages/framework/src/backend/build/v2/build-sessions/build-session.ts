@@ -282,22 +282,8 @@ export abstract class BuildSession<Kind extends BuildKind> {
     return this.#lock;
   }
 
-  get latestResult() {
-    return this.#latestResult;
-  }
-
-  get latestSuccessfulResult() {
-    return this.#latestSuccessfulResult;
-  }
-
   get events() {
     return this.#events;
-  }
-
-  get error() {
-    return this.#latestResult?.status === "error"
-      ? this.#latestResult.error
-      : undefined;
   }
 
   async getAppConfig(): Promise<Required<Config>> {

@@ -27,13 +27,20 @@ type Options = {
   enableDevReload: boolean;
 };
 
-type ServerState =
-  | { status: "pending" }
+type PendingServerState = {
+  status: "pending";
+  generation: symbol;
+  waitControl: PromiseWithResolvers<void>;
+};
+
+type InstalledServerState =
   | { status: "ready"; runtime: Runtime }
   | { status: "error"; buildResult: BuildFailure };
 
+type ServerState = PendingServerState | InstalledServerState;
+
 type ServerEvents = {
-  serverStateInstalled: ServerState;
+  serverStateInstalled: InstalledServerState;
 };
 
 export class Server {
@@ -47,13 +54,15 @@ export class Server {
 
   #state: ServerState;
 
-  #buildWaitControl: PromiseWithResolvers<void> = Promise.withResolvers<void>();
-
   constructor(options: Options) {
     this.#address = options.address;
     this.#port = options.port;
     this.#enableDevReload = options.enableDevReload;
-    this.#state = { status: "pending" };
+    this.#state = {
+      status: "pending",
+      generation: Symbol(),
+      waitControl: Promise.withResolvers<void>(),
+    };
   }
 
   get baseUrl() {
@@ -118,36 +127,62 @@ export class Server {
     }
   }
 
-  // replace this with a wrapper fn that installs a runtime or error
-  buildStarted() {
-    if (this.#state.status !== "pending") {
-      this.#state = { status: "pending" };
-      this.#buildWaitControl = Promise.withResolvers<void>();
+  createGeneration() {
+    let generation = Symbol();
+    let server = this;
+
+    if (this.#state.status === "pending") {
+      this.#state = {
+        ...this.#state,
+        generation,
+      };
+    } else {
+      this.#state = {
+        status: "pending",
+        generation,
+        waitControl: Promise.withResolvers<void>(),
+      };
     }
+
+    return {
+      get canInstall() {
+        let state = server.#state;
+        return state.status === "pending" && state.generation === generation;
+      },
+      installRuntime: (runtime: Runtime) => {
+        this.#install(generation, { status: "ready", runtime });
+      },
+      installBuildFailure: (buildResult: BuildFailure) => {
+        this.#install(generation, { status: "error", buildResult });
+      },
+    };
   }
 
-  installRuntime(runtime: Runtime) {
-    this.#install({ status: "ready", runtime });
-  }
+  #install(generation: symbol, state: InstalledServerState) {
+    let currentState = this.#state;
 
-  installBuildFailure(buildResult: BuildFailure) {
-    this.#install({ status: "error", buildResult });
-  }
+    if (
+      currentState.status !== "pending" ||
+      currentState.generation !== generation
+    ) {
+      return;
+    }
 
-  // there is a race condition here in that if we start 2 builds, they both
-  // call buildStarted and then the first finishes installing an obsolute first
-  #install(state: ServerState) {
     this.#state = state;
-    this.#buildWaitControl.resolve();
+    currentState.waitControl.resolve();
     this.#events.emit("serverStateInstalled", state);
   }
 
   async waitForServerState() {
-    if (this.#state.status === "pending") {
-      await this.#buildWaitControl.promise;
-    }
+    // needs loop because state could change after proimse resolves
+    while (true) {
+      let state = this.#state;
+      if (state.status !== "pending") {
+        return state;
+      }
 
-    return this.#state;
+      await state.waitControl.promise;
+    }
   }
 
   async gracefulShutdown() {
@@ -245,6 +280,8 @@ export class Server {
     });
   }
 }
+
+export type BuildGeneration = ReturnType<Server["createGeneration"]>;
 
 declare module "@hattip/compose" {
   interface RequestContextExtensions {

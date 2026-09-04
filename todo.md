@@ -17,6 +17,8 @@
 - tests
 - db
 
+- injectResolver is this global thing, anyway to simplify?
+
 - bun
 - deployment
 - docs

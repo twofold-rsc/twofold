@@ -3,7 +3,7 @@ import { Server } from "../server.js";
 import { BuildSession } from "../build/v2/build-sessions/build-session.js";
 
 export class ServeTask {
-  #buildSession: BuildSession<"development" | "production">;
+  #buildSession: BuildSession<"development"> | BuildSession<"production">;
   // #runtime: Runtime;
   #server: Server;
 
@@ -11,7 +11,7 @@ export class ServeTask {
     buildSession,
     port,
   }: {
-    buildSession: BuildSession<"development" | "production">;
+    buildSession: BuildSession<"development"> | BuildSession<"production">;
     port: number;
   }) {
     this.#buildSession = buildSession;
@@ -25,15 +25,21 @@ export class ServeTask {
   async start() {
     this.verifyEnv();
 
-    const buildResult = await this.#buildSession.load();
-
+    let buildResult = await this.#buildSession.load();
     await buildResult.warm();
 
     console.log(`Loaded build [version: ${buildResult.key}]`);
 
-    // TODO: figured out
-    // await this.#server.start();
-    // await this.#runtime.start();
+    let generation = this.#server.createGeneration();
+    let config = await this.#buildSession.getAppConfig();
+
+    await this.#server.start({
+      trustProxy: config.trustProxy,
+    });
+
+    let runtime = new Runtime(buildResult);
+    await runtime.start();
+    generation.installRuntime(runtime);
 
     process.on("SIGTERM", () => {
       console.log("Received SIGTERM, shutting down gracefully");
