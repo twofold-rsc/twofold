@@ -3,15 +3,20 @@ import { serializeError } from "serialize-error";
 import { readFile } from "fs/promises";
 import { appCompiledDir } from "../../files.js";
 import { parseHeaderValue } from "@hattip/headers";
-import type { Runtime } from "../../runtime.js";
+import { createFlightStream } from "../../runtime.js";
 
 export function errors(): RouteHandler {
   return async (ctx) => {
-    let requestBuildKey = ctx.runtime
-      ? ctx.runtime.buildResult.key
+    let build = ctx.runtime
+      ? ctx.runtime.buildResult
       : ctx.buildFailure
-        ? ctx.buildFailure.key
-        : "unknown";
+        ? ctx.buildFailure
+        : null;
+
+    let devErrorPage =
+      build?.kind === "development" && build.outputs.devErrorPage;
+
+    let requestBuildKey = build?.key ?? "unknown";
 
     ctx.handleError = async (e: unknown) => {
       let request = ctx.request;
@@ -30,7 +35,7 @@ export function errors(): RouteHandler {
           : 500;
 
       if (isRSCFetch) {
-        let stream = runtime.createFlightStream({
+        let stream = createFlightStream({
           stack: [
             {
               type: "error",
@@ -64,7 +69,7 @@ export function errors(): RouteHandler {
       }
     };
 
-    if (runtime.buildResult.kind === "development") {
+    if (devErrorPage) {
       let request = ctx.request;
       let url = new URL(request.url);
 
@@ -72,7 +77,7 @@ export function errors(): RouteHandler {
         request.method === "GET" &&
         url.pathname === "/_twofold/errors/app.js"
       ) {
-        let contents = await runtime.buildResult.outputs.devErrorPage.js();
+        let contents = await devErrorPage.js();
         return new Response(contents, {
           headers: {
             "content-type": "application/javascript",
@@ -84,13 +89,17 @@ export function errors(): RouteHandler {
         request.method === "GET" &&
         url.pathname === "/_twofold/errors/app.css"
       ) {
-        let contents = await runtime.buildResult.outputs.devErrorPage.css();
+        let contents = await devErrorPage.css();
         return new Response(contents, {
           headers: {
             "content-type": "text/css",
           },
         });
       }
+    }
+
+    if (ctx.buildFailure) {
+      throw ctx.buildFailure.error;
     }
   };
 }

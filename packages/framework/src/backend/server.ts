@@ -126,9 +126,17 @@ export class Server {
     }
   }
 
+  installRuntime(runtime: Runtime) {
+    this.#install({ status: "ready", runtime });
+  }
+
+  installBuildFailure(buildResult: BuildFailure) {
+    this.#install({ status: "error", buildResult });
+  }
+
   // there is a race condition here in that if we start 2 builds, they both
   // call buildStarted and then the first finishes installing an obsolute first
-  install(state: ServerState) {
+  #install(state: ServerState) {
     this.#state = state;
     this.#buildWaitControl.resolve();
     this.#events.emit("serverStateInstalled", state);
@@ -252,7 +260,6 @@ function createHandler(server: Server) {
 
   app.use(cookie());
 
-  // TODO: wait for state
   app.use(waitForServerState(server));
 
   app.use(globalMiddleware());
@@ -266,13 +273,16 @@ function createHandler(server: Server) {
     app.use(devReload(server));
   }
 
-  // TODO: this can add back the throw
-  app.use(errors(runtime));
+  app.use(errors());
 
   // every request below here should use the store
-  app.use(requestStore(runtime));
+  app.use(requestStore(server));
 
   app.get("/__rsc/page", async (ctx) => {
+    if (!ctx.runtime) {
+      return;
+    }
+
     let url = new URL(ctx.request.url);
     let path = url.searchParams.get("path");
 
@@ -282,7 +292,7 @@ function createHandler(server: Server) {
 
     let requestUrl = new URL(path, url);
     let request = new Request(requestUrl, ctx.request);
-    let pageRequest = runtime.pageRequest(request);
+    let pageRequest = ctx.runtime.pageRequest(request);
     let response = await pageRequest.rscResponse();
 
     let initiator = ctx.request.headers.get("x-twofold-initiator");
@@ -309,13 +319,17 @@ function createHandler(server: Server) {
   });
 
   app.post("/__rsc/action/:id", async (ctx) => {
+    if (!ctx.runtime) {
+      return;
+    }
+
     let request = ctx.request;
 
-    let actionRequest = runtime.actionRequest(request);
+    let actionRequest = ctx.runtime.actionRequest(request);
 
     if (!actionRequest) {
       log("Not found", "Unknown action", "red");
-      return runtime.notFoundPageRequest(request).rscResponse();
+      return ctx.runtime.notFoundPageRequest(request).rscResponse();
     }
 
     let response = await actionRequest.rscResponse();
@@ -341,15 +355,19 @@ function createHandler(server: Server) {
     return response;
   });
 
-  app.use(waitForSSR(runtime));
+  app.use(waitForSSR());
 
   app.use("/**/*", async (ctx) => {
+    if (!ctx.runtime) {
+      return;
+    }
+
     let request = ctx.request;
     let requestUrl = new URL(request.url);
 
-    let apiRequest = runtime.apiRequest(request);
+    let apiRequest = ctx.runtime.apiRequest(request);
     if (apiRequest) {
-      let pageRequest = runtime.pageRequest(request);
+      let pageRequest = ctx.runtime.pageRequest(request);
 
       let pageExists = !pageRequest.isNotFound;
       let accepts = parseHeaderValue(request.headers.get("accept"));
@@ -387,9 +405,13 @@ function createHandler(server: Server) {
 
   // mpa actions
   app.post("/**/*", async (ctx) => {
+    if (!ctx.runtime) {
+      return;
+    }
+
     let request = ctx.request;
 
-    let actionRequest = runtime.actionRequest(request);
+    let actionRequest = ctx.runtime.actionRequest(request);
     if (actionRequest) {
       let response = await actionRequest.ssrResponse();
       let name = await actionRequest.name();
@@ -410,8 +432,12 @@ function createHandler(server: Server) {
   });
 
   app.head("/**/*", async (ctx) => {
+    if (!ctx.runtime) {
+      return;
+    }
+
     let request = ctx.request;
-    let pageRequest = runtime.pageRequest(request);
+    let pageRequest = ctx.runtime.pageRequest(request);
     let response = await pageRequest.rscResponse();
 
     await response.body?.cancel();
@@ -427,10 +453,14 @@ function createHandler(server: Server) {
   });
 
   app.get("/**/*", async (ctx) => {
+    if (!ctx.runtime) {
+      return;
+    }
+
     let url = new URL(ctx.request.url);
     let request = ctx.request;
 
-    let pageRequest = runtime.pageRequest(request);
+    let pageRequest = ctx.runtime.pageRequest(request);
     let response = await pageRequest.ssrResponse();
 
     if (response.status === 404) {

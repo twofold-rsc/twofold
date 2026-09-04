@@ -132,7 +132,7 @@ export class Runtime {
   // renders
 
   createFlightStream(data: unknown) {
-    return renderToReadableStream(data, {});
+    return createFlightStream(data);
   }
 
   async renderRSCStream(
@@ -421,4 +421,9 @@ export class Runtime {
       },
     });
   }
+}
+
+// not sure where this should live
+export function createFlightStream(data: unknown) {
+  return renderToReadableStream(data, {});
 }

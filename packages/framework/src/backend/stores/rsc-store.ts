@@ -2,17 +2,13 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { SerializeOptions } from "cookie";
 
 type JSONValue =
-  | string
-  | number
-  | boolean
-  | { [x: string]: JSONValue }
-  | Array<JSONValue>;
+  string | number | boolean | { [x: string]: JSONValue } | Array<JSONValue>;
 
 export type Store = {
   reqId: number;
   build: "development" | "production";
   buildKey: string;
-  canReload: boolean;
+  enableDevReload: boolean;
   cookies: {
     all: () => Record<string, string | undefined>;
     get: (key: string) => string | undefined;

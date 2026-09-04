@@ -1,14 +1,18 @@
 import { RouteHandler } from "@hattip/router";
 import { SerializeOptions } from "cookie";
 import { Store, runStore } from "../../stores/rsc-store.js";
-import { Runtime } from "../../runtime.js";
 import { encrypt, decrypt } from "../../encryption.js";
 import { randomBytes } from "crypto";
+import { Server } from "../../server.js";
 
 let reqId = 0;
 
-export function requestStore(runtime: Runtime): RouteHandler {
+export function requestStore(server: Server): RouteHandler {
   return async (ctx) => {
+    if (!ctx.runtime) {
+      return;
+    }
+
     reqId = reqId + 1;
 
     let defaultCookieOptions: SerializeOptions = {
@@ -17,10 +21,9 @@ export function requestStore(runtime: Runtime): RouteHandler {
 
     let store: Store = {
       reqId,
-      build: runtime.buildResult.kind,
-      buildKey: runtime.buildResult.key,
-      // get rid of this, its dumb
-      canReload: runtime.buildResult.kind === "development",
+      build: ctx.runtime.buildResult.kind,
+      buildKey: ctx.runtime.buildResult.key,
+      enableDevReload: server.enableDevReload,
       cookies: {
         all: () => {
           return ctx.cookie;

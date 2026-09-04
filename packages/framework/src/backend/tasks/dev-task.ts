@@ -33,13 +33,7 @@ export class DevTask {
 
     this.#server.buildStarted();
 
-    await this.#buildSession.setup();
-
-    let config = await this.#buildSession.getAppConfig();
-
-    await this.#server.start({
-      trustProxy: config.trustProxy,
-    });
+    await this.startServer();
 
     console.log(
       `Server started on ${this.#server.address}:${this.#server.port}`,
@@ -48,18 +42,7 @@ export class DevTask {
       `Visit ${kleur.cyan(`${this.#server.baseUrl}/`)} to see your app!`,
     );
 
-    let buildResult = await this.#buildSession.build();
-
-    console.log(
-      `Built app in ${kleur.green(`${buildResult.duration.toFixed(2)}ms`)} [version: ${kleur.yellow(buildResult.key)}]`,
-    );
-
-    if (buildResult.status === "success") {
-      this.#runtime = new Runtime(buildResult);
-      await this.#runtime.start();
-
-      this.#server.installRuntime(this.#runtime);
-    }
+    await this.buildAndInstall();
 
     void this.watch();
 
@@ -81,40 +64,18 @@ export class DevTask {
   }
 
   private async restart() {
-    // TODO: i think we should stop listening for changes, or something. we cant build here.
-
     this.#server.buildStarted();
 
     await this.#runtime?.stop();
     await this.#server.hardStop();
 
-    // start rebuilding...
-    // this is very similar to start, can we invoke start again?
-
-    await this.#buildSession.setup();
-
-    let config = await this.#buildSession.getAppConfig();
-
-    await this.#server.start({
-      trustProxy: config.trustProxy,
-    });
+    await this.startServer();
 
     console.log(
       `Server restarted on ${this.#server.address}:${this.#server.port}`,
     );
 
-    let buildResult = await this.#buildSession.build();
-
-    console.log(
-      `Built app in ${kleur.green(`${buildResult.duration.toFixed(2)}ms`)} [version: ${kleur.yellow(buildResult.key)}]`,
-    );
-
-    if (buildResult.status === "success") {
-      this.#runtime = new Runtime(buildResult);
-      await this.#runtime.start();
-
-      this.#server.installRuntime(this.#runtime);
-    }
+    await this.buildAndInstall();
   }
 
   private async rebuild() {
@@ -122,17 +83,7 @@ export class DevTask {
 
     await this.#runtime?.stop();
 
-    let buildResult = await this.#buildSession.build();
-    console.log(
-      `Built app in ${kleur.green(`${buildResult.duration.toFixed(2)}ms`)} [version: ${kleur.yellow(buildResult.key)}]`,
-    );
-
-    if (buildResult.status === "success") {
-      this.#runtime = new Runtime(buildResult);
-      await this.#runtime.start();
-
-      this.#server.installRuntime(this.#runtime);
-    }
+    await this.buildAndInstall();
   }
 
   private async reloadEnv() {
@@ -145,9 +96,24 @@ export class DevTask {
       quiet: true,
     });
 
+    console.log("Reloaded environment variables");
+
+    await this.buildAndInstall();
+  }
+
+  private async startServer() {
+    await this.#buildSession.setup();
+
+    let config = await this.#buildSession.getAppConfig();
+
+    await this.#server.start({
+      trustProxy: config.trustProxy,
+    });
+  }
+
+  private async buildAndInstall() {
     let buildResult = await this.#buildSession.build();
 
-    console.log("Reloaded environment variables");
     console.log(
       `Built app in ${kleur.green(`${buildResult.duration.toFixed(2)}ms`)} [version: ${kleur.yellow(buildResult.key)}]`,
     );
@@ -157,6 +123,8 @@ export class DevTask {
       await this.#runtime.start();
 
       this.#server.installRuntime(this.#runtime);
+    } else if (buildResult.status === "error") {
+      this.#server.installBuildFailure(buildResult);
     }
   }
 

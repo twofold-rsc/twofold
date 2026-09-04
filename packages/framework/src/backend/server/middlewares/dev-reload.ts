@@ -57,11 +57,13 @@ export function devReload(server: Server): RouteHandler {
                   }),
                 );
               } else if (serverState.status === "error") {
-                JSON.stringify({
-                  type: "error",
-                  key: serverState.buildResult.key,
-                  message: serverState.buildResult.error.message,
-                });
+                sink.sendMessage(
+                  JSON.stringify({
+                    type: "error",
+                    key: serverState.buildResult.key,
+                    message: serverState.buildResult.error.message,
+                  }),
+                );
               }
             },
           );
