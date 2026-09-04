@@ -1,6 +1,5 @@
 # TODO
 
-- test error html (see current diff)
 - clean up old build stuff
 - put new build files in place
 - try starting and building an app with errors
@@ -30,8 +29,6 @@
 - bun
 - deployment
 - docs
-
-- entries should own the config. two reasons: shareable with other builders, and then serializable and reloadable.
 
 - cli: dev, build, serve when we have an existing error. write tests
 

@@ -81,6 +81,7 @@ type BuildShared<Kind extends BuildKind> = {
 };
 
 type BuildSuccessOptions<Kind extends BuildKind> = BuildShared<Kind> & {
+  readonly config: Required<Config>;
   readonly outputs: BuilderOutputsByKind[Kind];
   readonly changes: BuildChanges;
 };
@@ -90,6 +91,7 @@ export class BuildSuccess<Kind extends BuildKind = BuildKind> {
   readonly key: string;
   readonly kind: Kind;
   readonly duration: number;
+  readonly config: Required<Config>;
   readonly outputs: BuilderOutputsByKind[Kind];
   readonly changes: BuildChanges;
 
@@ -97,12 +99,14 @@ export class BuildSuccess<Kind extends BuildKind = BuildKind> {
     key,
     kind,
     duration,
+    config,
     outputs,
     changes,
   }: BuildSuccessOptions<Kind>) {
     this.key = key;
     this.kind = kind;
     this.duration = duration;
+    this.config = config;
     this.outputs = outputs;
     this.changes = changes;
   }
@@ -119,6 +123,7 @@ export class BuildSuccess<Kind extends BuildKind = BuildKind> {
       version: 2,
       kind: this.kind,
       key: this.key,
+      config: this.config,
       outputs,
     };
 
@@ -160,12 +165,14 @@ type SerializedBuild = {
   readonly version: 2;
   readonly kind: BuildKind;
   readonly key: string;
+  readonly config: Required<Config>;
   readonly outputs: Record<string, unknown>;
 };
 
 type BuildContext<Kind extends BuildKind> = {
   readonly attempt: BuildAttempt<Kind>;
   readonly previous: BuildResult<Kind> | undefined;
+  readonly config: Required<Config>;
 };
 
 export class BuildAttempt<Kind extends BuildKind> {
@@ -235,21 +242,6 @@ export class BuildAttempt<Kind extends BuildKind> {
     }
   }
 
-  async capture<Value>(
-    fn: () => Value | Promise<Value>,
-  ): Promise<BuilderResult<Value>> {
-    try {
-      return {
-        status: "success",
-        output: await fn(),
-      };
-    } catch (thrown) {
-      let error = normalizeError(thrown);
-      this.#errors.push(error);
-      return { status: "error", error };
-    }
-  }
-
   fail(thrown: unknown) {
     this.#errors.push(normalizeError(thrown));
   }
@@ -295,12 +287,7 @@ export abstract class BuildSession<Kind extends BuildKind> {
         throw new Error("Invalid configuration: config/application.ts");
       }
 
-      this.#appConfig = {
-        externalPackages: parsedConfig.data.externalPackages ?? [],
-        bundlePackages: parsedConfig.data.bundlePackages ?? [],
-        reactCompiler: parsedConfig.data.reactCompiler ?? false,
-        trustProxy: parsedConfig.data.trustProxy ?? false,
-      };
+      this.#appConfig = normalizeConfig(parsedConfig.data);
     }
 
     return this.#appConfig;
@@ -327,6 +314,15 @@ export abstract class BuildSession<Kind extends BuildKind> {
       throw new Error(`Cannot load ${data.kind} build as ${this.kind} build`);
     }
 
+    let parsedConfig = configSchema.safeParse(data.config);
+
+    if (parsedConfig.error) {
+      throw new Error("Invalid configuration in build artifact");
+    }
+
+    let config = normalizeConfig(parsedConfig.data);
+    this.#appConfig = config;
+
     let outputs: Record<string, BuilderOutput> = {};
 
     for (let [name, builder] of Object.entries(this.#builders)) {
@@ -344,6 +340,7 @@ export abstract class BuildSession<Kind extends BuildKind> {
     let result = new BuildSuccess({
       kind: this.kind,
       key: data.key,
+      config,
       outputs: loadedOutputs,
       changes: getBuildChanges(undefined, loadedOutputs),
       duration: performance.now() - startTime,
@@ -384,15 +381,17 @@ export abstract class BuildSession<Kind extends BuildKind> {
     let startTime = performance.now();
     let previous = this.#latestResult;
     let attempt = new BuildAttempt(this.#builders, previous);
+    let config: Required<Config> | undefined;
     let outputs: BuilderOutputsByKind[Kind] | undefined;
 
     try {
-      outputs = await fn({ attempt, previous });
+      config = await this.getAppConfig();
+      outputs = await fn({ attempt, previous, config });
     } catch (thrown) {
       attempt.fail(thrown);
     }
 
-    if (!outputs && attempt.errors.length === 0) {
+    if ((!config || !outputs) && attempt.errors.length === 0) {
       attempt.fail(new Error("Build did not produce output"));
     }
 
@@ -409,13 +408,15 @@ export abstract class BuildSession<Kind extends BuildKind> {
         duration: performance.now() - startTime,
       };
     } else {
-      if (!outputs) {
-        throw new Error("Build completed without output or an error");
+      // not really passive, invariant
+      if (!config || !outputs) {
+        throw new Error("Build completed without config, output, or an error");
       }
 
       result = new BuildSuccess({
         kind: this.kind,
         key: randomBytes(6).toString("hex"),
+        config,
         outputs,
         changes: getBuildChanges(
           this.#latestSuccessfulResult?.outputs,
@@ -450,6 +451,17 @@ export abstract class BuildSession<Kind extends BuildKind> {
 
     return {};
   }
+}
+
+function normalizeConfig(
+  config: z.infer<typeof configSchema>,
+): Required<Config> {
+  return {
+    externalPackages: config.externalPackages ?? [],
+    bundlePackages: config.bundlePackages ?? [],
+    reactCompiler: config.reactCompiler ?? false,
+    trustProxy: config.trustProxy ?? false,
+  };
 }
 
 function normalizeError(thrown: unknown) {

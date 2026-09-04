@@ -31,10 +31,9 @@ export class ServeTask {
     console.log(`Loaded build [version: ${buildResult.key}]`);
 
     let generation = this.#server.createGeneration();
-    let config = await this.#buildSession.getAppConfig();
 
     await this.#server.start({
-      trustProxy: config.trustProxy,
+      trustProxy: buildResult.config.trustProxy,
     });
 
     let runtime = new Runtime(buildResult);

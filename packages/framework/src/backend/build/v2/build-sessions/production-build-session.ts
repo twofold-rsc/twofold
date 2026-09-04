@@ -19,26 +19,20 @@ export class ProductionBuildSession extends BuildSession<"production"> {
   }
 
   async build() {
-    return await this.createNewBuild(async ({ attempt, previous }) => {
-      let [serverFilesResult, configResult] = await Promise.all([
-        previous?.outputs.serverFiles
-          ? attempt.keep("serverFiles")
-          : attempt.run("serverFiles", {
-              environment: "production",
-            }),
-        attempt.capture(() => this.getAppConfig()),
-      ]);
+    return await this.createNewBuild(async ({ attempt, previous, config }) => {
+      let serverFilesResult = previous?.outputs.serverFiles
+        ? attempt.keep("serverFiles")
+        : await attempt.run("serverFiles", {
+            environment: "production",
+          });
 
-      if (
-        serverFilesResult.status === "error" ||
-        configResult.status === "error"
-      ) {
+      if (serverFilesResult.status === "error") {
         return;
       }
 
       let entriesResult = await attempt.run("entries", {
         sourceRoot: this.sourceRoot,
-        config: configResult.output,
+        config,
       });
 
       if (entriesResult.status === "error") {
@@ -55,7 +49,7 @@ export class ProductionBuildSession extends BuildSession<"production"> {
         }),
         attempt.run("client", {
           environment: "production",
-          config: configResult.output,
+          config,
           entries: entriesResult.output,
           serverFiles: serverFilesResult.output,
         }),

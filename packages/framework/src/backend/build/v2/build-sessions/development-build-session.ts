@@ -21,31 +21,28 @@ export class DevelopmentBuildSession extends BuildSession<"development"> {
   }
 
   async build() {
-    return await this.createNewBuild(async ({ attempt, previous }) => {
-      let [errorPageResult, serverFilesResult, configResult] =
-        await Promise.all([
-          previous?.outputs.devErrorPage
-            ? attempt.keep("devErrorPage")
-            : attempt.run("devErrorPage"),
-          previous?.outputs.serverFiles
-            ? attempt.keep("serverFiles")
-            : attempt.run("serverFiles", {
-                environment: "development",
-              }),
-          attempt.capture(() => this.getAppConfig()),
-        ]);
+    return await this.createNewBuild(async ({ attempt, previous, config }) => {
+      let [errorPageResult, serverFilesResult] = await Promise.all([
+        previous?.outputs.devErrorPage
+          ? attempt.keep("devErrorPage")
+          : attempt.run("devErrorPage"),
+        previous?.outputs.serverFiles
+          ? attempt.keep("serverFiles")
+          : attempt.run("serverFiles", {
+              environment: "development",
+            }),
+      ]);
 
       if (
         errorPageResult.status === "error" ||
-        serverFilesResult.status === "error" ||
-        configResult.status === "error"
+        serverFilesResult.status === "error"
       ) {
         return;
       }
 
       let entriesResult = await attempt.run("entries", {
         sourceRoot: this.sourceRoot,
-        config: configResult.output,
+        config,
       });
 
       if (entriesResult.status === "error") {
@@ -62,7 +59,7 @@ export class DevelopmentBuildSession extends BuildSession<"development"> {
         }),
         attempt.run("client", {
           environment: "development",
-          config: configResult.output,
+          config,
           entries: entriesResult.output,
           serverFiles: serverFilesResult.output,
         }),
