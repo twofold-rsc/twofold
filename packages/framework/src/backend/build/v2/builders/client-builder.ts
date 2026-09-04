@@ -155,11 +155,9 @@ export class ClientBuilder extends Builder<ClientBuilderInput, ClientOutput> {
       treeshake: true,
       preserveEntrySignatures: "allow-extension",
       plugins: [
-        environment === "production"
-          ? createProdErrorHtmlPlugin({
-              errorHtmlPath: serverFiles.errorHtmlPath,
-            })
-          : null,
+        createErrorHtmlPlugin({
+          errorHtmlPath: serverFiles.errorHtmlPath,
+        }),
         {
           name: "server-actions",
           transform: {
@@ -586,28 +584,30 @@ function sourceSSRAppPath() {
   );
 }
 
-function createProdErrorHtmlPlugin({
+function createErrorHtmlPlugin({
   errorHtmlPath,
 }: {
   errorHtmlPath: string;
 }): Plugin {
+  let moduleId = "twofold:error-html";
+  let resolvedModuleId = `\0${moduleId}`;
+
   return {
-    name: "prod-error-html",
-    async options(options) {
+    name: "error-html",
+    resolveId(source) {
+      return source === moduleId ? resolvedModuleId : null;
+    },
+    async load(id) {
+      if (id !== resolvedModuleId) {
+        return null;
+      }
+
       let errorHtml = await readFile(errorHtmlPath, "utf-8");
-      let encodedHtml = JSON.stringify(errorHtml);
-      let currentTransform = options.transform ?? {};
-      let currentDefine = currentTransform.define ?? {};
 
-      options.transform = {
-        ...currentTransform,
-        define: {
-          ...currentDefine,
-          "process.env.TWOFOLD_PROD_ERROR_HTML": encodedHtml,
-        },
+      return {
+        code: `export default ${JSON.stringify(errorHtml)};`,
+        moduleType: "js",
       };
-
-      return options;
     },
   };
 }
