@@ -33,9 +33,7 @@ export default function DevReload({
 
   useDevReload(initialBuildKey, async (message) => {
     if (message.type === "error") {
-      startTransition(async () => {
-        refresh();
-      });
+      startTransition(refresh);
     } else {
       let changes = message.changes;
 

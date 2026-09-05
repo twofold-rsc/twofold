@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import "./monkey-patch.js";
 import "dotenv/config";
-import { DevelopmentBuild } from "./build/build/development.js";
-import { ProductionBuild } from "./build/build/production.js";
 import { Command } from "commander";
-import { DevTask } from "./tasks/dev.js";
-import { ServeTask } from "./tasks/serve.js";
+import { DevTask } from "./tasks/dev-task.js";
+import { ServeTask } from "./tasks/serve-task.js";
+import { DevelopmentBuildSession } from "./build/build-sessions/development-build-session.js";
+import { ProductionBuildSession } from "./build/build-sessions/production-build-session.js";
 
 let nodeVersion = process.versions.node.split(".").map(Number);
 
@@ -41,12 +41,18 @@ program
   )
   .description("Run the development server")
   .action(async (options) => {
-    let build =
-      nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
+    let buildSession =
+      nodeEnv === "production"
+        ? new ProductionBuildSession()
+        : new DevelopmentBuildSession();
 
     let port = parseInt(options.port, 10) || 3000;
 
-    let task = new DevTask({ build, port });
+    let task = new DevTask({
+      buildSession,
+      port,
+    });
+
     await task.start();
   });
 
@@ -54,17 +60,23 @@ program
   .command("build")
   .description("Build the project for production")
   .action(async () => {
-    let build =
-      nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
+    let buildSession =
+      nodeEnv === "production"
+        ? new ProductionBuildSession()
+        : new DevelopmentBuildSession();
 
     // build
-    await build.setup();
-    let { time, key } = await build.build();
-    console.log(`Build complete in ${time.toFixed(2)}ms [version: ${key}]`);
-    await build.stop();
+    await buildSession.setup();
+    let result = await buildSession.build();
+    console.log(
+      `Build complete in ${result.duration.toFixed(2)}ms [version: ${result.key}]`,
+    );
 
-    // stash the build
-    await build.save();
+    if (result.status === "success") {
+      await result.save();
+    } else if (result.status === "error") {
+      throw result.error;
+    }
   });
 
 program
@@ -77,12 +89,14 @@ program
   .alias("start")
   .description("Serve a production build")
   .action(async (options) => {
-    let build =
-      nodeEnv === "production" ? new ProductionBuild() : new DevelopmentBuild();
+    let buildSession =
+      nodeEnv === "production"
+        ? new ProductionBuildSession()
+        : new DevelopmentBuildSession();
 
     let port = parseInt(options.port, 10) || 3000;
 
-    let task = new ServeTask({ build, port });
+    let task = new ServeTask({ buildSession, port });
     await task.start();
   });
 

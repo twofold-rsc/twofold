@@ -1,26 +1,28 @@
 import { RouteHandler, createRouter } from "@hattip/router";
 import { stat } from "fs/promises";
-import { Build } from "../../build/build/build.js";
 import { createReadStream } from "fs";
 import { Readable } from "stream";
 import { parseHeaderValue } from "@hattip/headers";
 
-export function assets(build: Build): RouteHandler {
+export function assets(): RouteHandler {
   let router = createRouter();
-
-  const cacheControlHeader =
-    build.name === "production"
-      ? "public, max-age=31536000, immutable"
-      : "no-store, no-cache, must-revalidate, proxy-revalidate";
-  // : "public, max-age=300, immutable";
 
   let allowedMethods = ["GET", "HEAD"];
 
-  router.use("/__tf/assets/**/*", async ({ request }) => {
+  router.use("/__tf/assets/**/*", async ({ request, runtime }) => {
+    if (!runtime) {
+      return;
+    }
+
+    const cacheControlHeader =
+      runtime.buildResult.kind === "production"
+        ? "public, max-age=31536000, immutable"
+        : "no-store, no-cache, must-revalidate, proxy-revalidate";
+
     if (allowedMethods.includes(request.method)) {
       let { pathname } = new URL(request.url);
       let id = pathname.replace(/^\/__tf\/assets\//, "");
-      let asset = build.getBuilder("assets").assetMap.get(id);
+      let asset = runtime.buildResult.outputs.assets.assetMap.get(id);
 
       if (asset) {
         let encodings = parseHeaderValue(

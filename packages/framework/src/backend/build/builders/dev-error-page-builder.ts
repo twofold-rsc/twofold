@@ -1,51 +1,73 @@
-import { BuildContext, Metafile, context } from "esbuild";
-import * as path from "path";
-import { fileURLToPath } from "url";
-import { cwdUrl, frameworkSrcDir } from "../../files.js";
 import { esbuildPluginTailwind } from "@ryanto/esbuild-plugin-tailwind";
+import { build as esbuildBuild, type Metafile } from "esbuild";
 import { readFile } from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+import { appCompiledDir, cwdUrl, frameworkSrcDir } from "../../files.js";
+import { LazyValue } from "../helpers/lazy-value.js";
 import { Builder } from "./builder.js";
 
-export class DevErrorPageBuilder extends Builder {
-  readonly name = "dev-error-page";
+type ErrorPageAssets = {
+  readonly jsPath: string;
+  readonly cssPath: string;
+};
 
-  #metafile?: Metafile | undefined;
-  #context?: BuildContext;
+let appPath = fileURLToPath(
+  new URL("./client/apps/errors/app.tsx", frameworkSrcDir),
+);
 
-  async setup() {
-    this.#context = await context({
+export class DevErrorPageBuilder extends Builder<void, DevErrorPageOutput> {
+  async build() {
+    let outdir = fileURLToPath(new URL("./error-app/", appCompiledDir));
+
+    let result = await esbuildBuild({
       bundle: true,
       format: "esm",
       jsx: "automatic",
       logLevel: "error",
-      entryPoints: [this.appPath],
+      entryPoints: [appPath],
       entryNames: "entries/[name]-[hash]",
-      outdir: "./.twofold/error-app/",
+      outdir,
       outbase: "src",
       splitting: true,
       chunkNames: "chunks/[name]-[hash]",
       metafile: true,
       plugins: [
         esbuildPluginTailwind({
-          base: path.dirname(this.appPath),
+          base: path.dirname(appPath),
         }),
       ],
     });
+
+    return new DevErrorPageOutput(result.metafile);
   }
 
-  async build() {
-    let shouldBuild = !this.#metafile;
+  load(data: ReturnType<DevErrorPageOutput["serialize"]>) {
+    return new DevErrorPageOutput(data.metafile);
+  }
+}
 
-    if (shouldBuild) {
-      this.#metafile = undefined;
-      let results = await this.#context?.rebuild();
-      this.#metafile = results?.metafile;
-    }
+export class DevErrorPageOutput {
+  readonly #metafile: Metafile;
+  readonly #assets: LazyValue<ErrorPageAssets>;
+  readonly #js: LazyValue<Promise<string>>;
+  readonly #css: LazyValue<Promise<string>>;
+
+  constructor(metafile: Metafile) {
+    this.#metafile = metafile;
+    this.#assets = new LazyValue(() => this.#metafileToAssets());
+    this.#js = new LazyValue(() => readFile(this.#assets.value.jsPath, "utf8"));
+    this.#css = new LazyValue(() =>
+      readFile(this.#assets.value.cssPath, "utf8"),
+    );
   }
 
-  async stop() {
-    this.#metafile = undefined;
-    await this.#context?.dispose();
+  js() {
+    return this.#js.value;
+  }
+
+  css() {
+    return this.#css.value;
   }
 
   serialize() {
@@ -54,67 +76,31 @@ export class DevErrorPageBuilder extends Builder {
     };
   }
 
-  load(data: any) {
-    this.#metafile = data.metafile;
+  async warm() {
+    await Promise.all([this.#js.value, this.#css.value]);
   }
 
-  warm() {}
-
-  private get appPath() {
-    let appPath = fileURLToPath(
-      new URL("./client/apps/errors/app.tsx", frameworkSrcDir),
-    );
-    return appPath;
-  }
-
-  private get metafile() {
-    if (!this.#metafile) {
-      throw new Error("Failed to get metafile");
-    }
-
-    return this.#metafile;
-  }
-
-  async cleanup() {}
-
-  private get appBootstrap() {
-    let outputs = this.metafile.outputs;
-    let outputFiles = Object.keys(outputs);
-
-    let file = outputFiles.find((outputFile) => {
-      let entryPoint = outputs[outputFile]?.entryPoint;
-      if (entryPoint) {
-        let fullEntryPointPath = path.join(process.cwd(), entryPoint);
-        return fullEntryPointPath === this.appPath;
-      }
+  #metafileToAssets() {
+    let rootPath = fileURLToPath(cwdUrl);
+    let outputs = this.#metafile.outputs;
+    let jsPath = Object.keys(outputs).find((outputPath) => {
+      let entryPoint = outputs[outputPath]?.entryPoint;
+      return entryPoint && path.resolve(rootPath, entryPoint) === appPath;
     });
 
-    if (!file) {
-      throw new Error("Failed to get bootstrap module");
+    if (!jsPath) {
+      throw new Error("Failed to get error page JavaScript asset");
     }
 
-    let cssFile = outputs[file]?.cssBundle;
+    let cssPath = outputs[jsPath]?.cssBundle;
 
-    if (!cssFile) {
-      throw new Error("Failed to get css bundle");
+    if (!cssPath) {
+      throw new Error("Failed to get error page CSS bundle");
     }
-
-    let jsPath = fileURLToPath(new URL(file, cwdUrl));
-    let cssPath = fileURLToPath(new URL(cssFile, cwdUrl));
 
     return {
-      jsPath,
-      cssPath,
+      jsPath: path.resolve(rootPath, jsPath),
+      cssPath: path.resolve(rootPath, cssPath),
     };
-  }
-
-  async js() {
-    let contents = await readFile(this.appBootstrap.jsPath, "utf8");
-    return contents;
-  }
-
-  async css() {
-    let contents = await readFile(this.appBootstrap.cssPath, "utf8");
-    return contents;
   }
 }

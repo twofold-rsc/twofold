@@ -1,11 +1,9 @@
 # TODO
 
-- [ ] can we serialize redirect
-
-- [ ] rsc build output class
+- visit streaming page and reload while streaming, we get console error
 
 - [ ] pages/layouts can use client
-  - [ ] route stack placeholder should be client component only
+- [ ] route stack placeholder should be client component only
 
 - errors v2
   - [ ] call notFound and unauthorized from client components
@@ -18,6 +16,23 @@
 - endpoints
 - tests
 - db
+
+- make build result changes lazy? this somewhat feels like cheating a benchmark
+- changes are currently calculated as part of completing a successful build. make this calculation lazy.
+- first thing is to benchmark/time it
+
+- try starting and building an app with errors
+- cli: dev, build, serve when we have an existing error. write tests
+
+- injectResolver is this global thing, anyway to simplify?
+
+- bun
+- deployment
+- docs
+
+- production build calculates changes (it never uses them)
+
+- runtime should run the global middleware, similar to how to runs pages
 
 - pass a client component to a server action
 - pass a server action to a server action

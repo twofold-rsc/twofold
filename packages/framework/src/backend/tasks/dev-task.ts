@@ -1,48 +1,48 @@
 import dotenv from "dotenv";
 import { Runtime } from "../runtime.js";
-import { Server } from "../server.js";
-import { ProductionBuild } from "../build/build/production.js";
-import { DevelopmentBuild } from "../build/build/development.js";
+import { Server, type BuildGeneration } from "../server.js";
 import { randomBytes } from "crypto";
 import kleur from "kleur";
 import { Watcher } from "../build/watcher.js";
-
-type Build = DevelopmentBuild | ProductionBuild;
+import { BuildSession } from "../build/build-sessions/build-session.js";
 
 export class DevTask {
-  #build: Build;
-  #runtime: Runtime;
+  #buildSession: BuildSession<"development" | "production">;
+
+  #runtime: Runtime | undefined;
   #server: Server;
 
-  constructor({ build, port }: { build: Build; port: number }) {
-    this.#build = build;
-    this.#runtime = new Runtime(build);
-    this.#server = new Server(this.#runtime, {
-      hostname: "0.0.0.0",
+  constructor({
+    buildSession,
+    port,
+  }: {
+    buildSession: BuildSession<"development" | "production">;
+    port: number;
+  }) {
+    this.#buildSession = buildSession;
+
+    this.#server = new Server({
+      address: "0.0.0.0",
       port,
+      enableDevReload: true,
     });
   }
 
   async start() {
     this.verifyEnv();
 
-    await this.#build.setup();
-    await this.#server.start();
+    let generation = this.#server.createGeneration();
+
+    await this.startServer();
 
     console.log(
-      `Server started on ${this.#server.hostname}:${this.#server.port}`,
+      `Server started on ${this.#server.address}:${this.#server.port}`,
     );
-
-    let build = await this.#build.build();
-    console.log(
-      `Built app in ${kleur.green(`${build.time.toFixed(2)}ms`)} [version: ${kleur.yellow(build.key)}]`,
-    );
-
-    await this.#runtime.start();
-
     console.log(
       `Visit ${kleur.cyan(`${this.#server.baseUrl}/`)} to see your app!`,
     );
+
+    await this.build(generation);
 
     void this.watch();
 
@@ -64,46 +64,73 @@ export class DevTask {
   }
 
   private async restart() {
-    await this.#runtime.stop();
-    await this.#build.stop();
+    let generation = this.#server.createGeneration();
+
+    await this.#runtime?.stop();
     await this.#server.hardStop();
 
-    await this.#build.setup();
-    await this.#server.start();
+    await this.startServer();
 
     console.log(
-      `Server restarted on ${this.#server.hostname}:${this.#server.port}`,
+      `Server restarted on ${this.#server.address}:${this.#server.port}`,
     );
 
-    let build = await this.#build.build();
-    console.log(
-      `Built app in ${kleur.green(`${build.time.toFixed(2)}ms`)} [version: ${kleur.yellow(build.key)}]`,
-    );
-
-    await this.#runtime.start();
+    await this.build(generation);
   }
 
   private async rebuild() {
-    await this.#runtime.stop();
+    let generation = this.#server.createGeneration();
 
-    let build = await this.#build.build();
-    console.log(
-      `Built app in ${kleur.green(`${build.time.toFixed(2)}ms`)} [version: ${kleur.yellow(build.key)}]`,
-    );
+    await this.#runtime?.stop();
 
-    await this.#runtime.start();
+    await this.build(generation);
   }
 
   private async reloadEnv() {
-    await this.#runtime.stop();
+    let generation = this.#server.createGeneration();
+
+    await this.#runtime?.stop();
+
     dotenv.config({
       override: true,
       quiet: true,
     });
-    await this.#build.build();
-    await this.#runtime.start();
 
     console.log("Reloaded environment variables");
+
+    await this.build(generation);
+  }
+
+  private async startServer() {
+    await this.#buildSession.setup();
+
+    let config = await this.#buildSession.getAppConfig();
+
+    await this.#server.start({
+      trustProxy: config.trustProxy,
+    });
+  }
+
+  private async build(generation: BuildGeneration) {
+    let buildResult = await this.#buildSession.build();
+
+    console.log(
+      `Built app in ${kleur.green(`${buildResult.duration.toFixed(2)}ms`)} [version: ${kleur.yellow(buildResult.key)}]`,
+    );
+
+    if (buildResult.status === "success") {
+      let runtime = new Runtime(buildResult);
+      await runtime.start();
+
+      if (generation.canInstall) {
+        this.#runtime = runtime;
+        generation.installRuntime(runtime);
+      } else {
+        await runtime.stop();
+      }
+    } else if (buildResult.status === "error") {
+      generation.installBuildFailure(buildResult);
+    }
   }
 
   private async watch() {

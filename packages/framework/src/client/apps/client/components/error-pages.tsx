@@ -1,3 +1,5 @@
+import errorHtml from "twofold:error-html";
+
 import { Stylesheet } from "./stylesheet";
 import { ErrorViewer } from "../../errors/error-viewer";
 
@@ -23,7 +25,7 @@ export function ProdErrorPage({ error }: { error: unknown }) {
       ? error.digest
       : "";
 
-  let html = `${process.env.TWOFOLD_PROD_ERROR_HTML}`
+  let html = errorHtml
     .replace("$digest-class", digest ? "" : "hidden")
     .replace("$digest", digest);
 

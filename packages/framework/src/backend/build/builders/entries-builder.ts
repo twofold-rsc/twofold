@@ -1,199 +1,245 @@
 import { glob } from "fs/promises";
-import { cwdUrl, frameworkSrcDir } from "../../files.js";
-import { fileURLToPath } from "url";
-import { Builder } from "./builder.js";
-import { Build } from "../build/build.js";
-import { getModuleId } from "../helpers/module.js";
+import path from "path";
+import { fileURLToPath, pathToFileURL } from "url";
 import { check as checkClientModule } from "@twofold/client-component-transforms";
 import { check as checkServerModule } from "@twofold/server-function-transforms";
-import { pathToLanguage } from "../helpers/languages.js";
-import { findExternals } from "../externals/find.js";
-import { excludePackages } from "../externals/predefined-externals.js";
 import { scan } from "rolldown/experimental";
+import type { Config } from "../../../types/importable.js";
+import { frameworkSrcDir } from "../../files.js";
+import { findExternals } from "../externals/find.js";
+import {
+  bundlePackages as predefinedBundlePackages,
+  excludePackages,
+} from "../externals/predefined-externals.js";
+import { pathToLanguage } from "../helpers/languages.js";
+import { getModuleId } from "../helpers/module.js";
+import { Builder } from "./builder.js";
 
-type Entry = {
-  moduleId: string;
-  path: string;
+let excludedPackageSet = new Set(excludePackages);
+let bundledPackageSet = new Set(predefinedBundlePackages);
+
+export type EntriesBuilderInput = {
+  readonly sourceRoot: URL;
+  readonly config: Config;
 };
 
-export class EntriesBuilder extends Builder {
-  readonly name = "entries";
+export class EntriesBuilder extends Builder<
+  EntriesBuilderInput,
+  EntriesOutput
+> {
+  async build({ sourceRoot, config }: EntriesBuilderInput) {
+    let normalizedSourceRoot = normalizeSourceRoot(sourceRoot);
+    let clientComponentEntryMap = new Map<string, Entry>();
+    let serverActionEntryMap = new Map<string, Entry>();
 
-  #build: Build;
+    let configuredExternalPackages = config.externalPackages ?? [];
+    let configuredBundlePackages = config.bundlePackages ?? [];
+    let configuredExternalPackageSet = new Set(configuredExternalPackages);
 
-  #clientComponentEntryMap = new Map<string, Entry>();
-  #serverActionEntryMap = new Map<string, Entry>();
-  #discoveredExternals: string[] = [];
+    for (let packageName of configuredBundlePackages) {
+      if (configuredExternalPackageSet.has(packageName)) {
+        throw new Error(
+          `Package "${packageName}" cannot be both external and bundled`,
+        );
+      }
 
-  constructor({ build }: { build: Build }) {
-    super();
-    this.#build = build;
-  }
+      if (excludedPackageSet.has(packageName)) {
+        throw new Error(
+          `Package "${packageName}" cannot be bundled because it is a predefined external`,
+        );
+      }
+    }
 
-  get clientComponentEntryMap() {
-    return this.#clientComponentEntryMap;
-  }
+    for (let packageName of configuredExternalPackages) {
+      if (bundledPackageSet.has(packageName)) {
+        throw new Error(
+          `Package "${packageName}" cannot be external because it is a predefined bundle`,
+        );
+      }
+    }
 
-  get serverActionEntryMap() {
-    return this.#serverActionEntryMap;
-  }
+    let discoveredExternalPackages = await findExternals(normalizedSourceRoot, [
+      ...configuredExternalPackages,
+      ...configuredBundlePackages,
+    ]);
 
-  get discoveredExternals() {
-    return this.#discoveredExternals;
-  }
+    let externalPackages = Array.from(
+      new Set([
+        ...excludePackages,
+        ...configuredExternalPackages,
+        ...discoveredExternalPackages,
+      ]),
+    );
 
-  async setup() {}
-
-  async build() {
-    this.clearError();
-
-    this.#clientComponentEntryMap = new Map();
-    this.#serverActionEntryMap = new Map();
-
+    let rootPath = fileURLToPath(normalizedSourceRoot);
     let frameworkComponentsUrl = new URL(
       "./client/components/",
       frameworkSrcDir,
     );
     let frameworkComponentsPath = fileURLToPath(frameworkComponentsUrl);
 
-    let appConfig = await this.#build.getAppConfig();
-    let userDefinedExternalPackages = appConfig.externalPackages ?? [];
-
-    let discoveredExternals = await findExternals(
-      cwdUrl,
-      userDefinedExternalPackages,
-    );
-    this.#discoveredExternals = discoveredExternals;
-
     let appFiles = await Array.fromAsync(
-      glob("app/pages/**/*.{ts,tsx,js,jsx}"),
+      glob("app/pages/**/*.{ts,tsx,js,jsx}", { cwd: rootPath }),
     );
     let frameworkFiles = await Array.fromAsync(
-      glob(`${frameworkComponentsPath}/**/*.tsx`),
+      glob("**/*.tsx", { cwd: frameworkComponentsPath }),
+    );
+    let frameworkInputs = frameworkFiles.map((file) =>
+      path.resolve(frameworkComponentsPath, file),
     );
 
-    let builder = this;
-
-    try {
-      await scan({
-        cwd: fileURLToPath(cwdUrl),
-        tsconfig: true,
-        input: [...appFiles, ...frameworkFiles],
-        platform: "node",
-        external: [
-          ...excludePackages,
-          ...userDefinedExternalPackages,
-          ...discoveredExternals,
-        ],
-        plugins: [
-          {
-            name: "empties",
-            load: {
-              filter: {
-                id: [
-                  /\.(css)$/i,
-                  /\.(jpe?g|png|gif|webp|avif|svg)$/i,
-                  /\.(woff2)$/i,
-                ],
-              },
-              handler() {
-                return {
-                  code: "",
-                  moduleType: "js",
-                };
-              },
+    await scan({
+      cwd: rootPath,
+      tsconfig: true,
+      input: [...appFiles, ...frameworkInputs],
+      platform: "node",
+      external: externalPackages,
+      plugins: [
+        {
+          name: "empties",
+          load: {
+            filter: {
+              id: [
+                /\.(css)$/i,
+                /\.(jpe?g|png|gif|webp|avif|svg)$/i,
+                /\.(woff2)$/i,
+              ],
+            },
+            handler() {
+              return {
+                code: "",
+                moduleType: "js",
+              };
             },
           },
-          {
-            name: "find-server-entries",
-            transform: {
-              filter: {
-                code: /["']use server["']/,
-                moduleType: ["ts", "tsx", "js", "jsx"],
-              },
-              async handler(code, id) {
-                let moduleId = getModuleId(id);
-                let language = pathToLanguage(id);
-                let isServerModule = await checkServerModule({
-                  input: {
-                    code,
-                    language,
-                  },
-                  moduleId,
-                });
+        },
+        {
+          name: "find-server-entries",
+          transform: {
+            filter: {
+              code: /["']use server["']/,
+              moduleType: ["ts", "tsx", "js", "jsx"],
+            },
+            async handler(code, id) {
+              let moduleId = getModuleId(id);
+              let language = pathToLanguage(id);
+              let isServerModule = await checkServerModule({
+                input: {
+                  code,
+                  language,
+                },
+                moduleId,
+              });
 
-                if (isServerModule) {
-                  let module = await pathToEntry(id);
-                  builder.#serverActionEntryMap.set(id, module);
-                }
-              },
+              if (isServerModule) {
+                serverActionEntryMap.set(id, pathToEntry(id));
+              }
             },
           },
-          {
-            name: "find-client-entries",
-            transform: {
-              filter: {
-                code: /["']use client["']/,
-                moduleType: ["ts", "tsx", "js", "jsx"],
-              },
-              async handler(code, id) {
-                let moduleId = getModuleId(id);
-                let language = pathToLanguage(id);
-                let isClientModule = await checkClientModule({
-                  input: {
-                    code,
-                    language,
-                  },
-                  moduleId,
-                });
+        },
+        {
+          name: "find-client-entries",
+          transform: {
+            filter: {
+              code: /["']use client["']/,
+              moduleType: ["ts", "tsx", "js", "jsx"],
+            },
+            async handler(code, id) {
+              let moduleId = getModuleId(id);
+              let language = pathToLanguage(id);
+              let isClientModule = await checkClientModule({
+                input: {
+                  code,
+                  language,
+                },
+                moduleId,
+              });
 
-                if (isClientModule) {
-                  let module = await pathToEntry(id);
-                  builder.#clientComponentEntryMap.set(id, module);
-                }
-              },
+              if (isClientModule) {
+                clientComponentEntryMap.set(id, pathToEntry(id));
+              }
             },
           },
-        ],
-      });
-    } catch (error: unknown) {
-      console.error(error);
-      this.reportError(error);
-    }
+        },
+      ],
+    });
+
+    return new EntriesOutput({
+      sourceRoot: normalizedSourceRoot,
+      clientComponentEntryMap,
+      serverActionEntryMap,
+      externalPackages,
+    });
   }
 
-  async stop() {}
+  load(data: ReturnType<EntriesOutput["serialize"]>) {
+    return new EntriesOutput({
+      sourceRoot: new URL(data.sourceRoot),
+      clientComponentEntryMap: new Map(
+        Object.entries(data.clientComponentEntryMap),
+      ),
+      serverActionEntryMap: new Map(Object.entries(data.serverActionEntryMap)),
+      externalPackages: data.externalPackages,
+    });
+  }
+}
+
+export class EntriesOutput {
+  readonly sourceRoot: URL;
+  readonly clientComponentEntryMap: ReadonlyMap<string, Entry>;
+  readonly serverActionEntryMap: ReadonlyMap<string, Entry>;
+  readonly externalPackages: readonly string[];
+
+  constructor({
+    sourceRoot,
+    clientComponentEntryMap,
+    serverActionEntryMap,
+    externalPackages,
+  }: {
+    sourceRoot: URL;
+    clientComponentEntryMap: ReadonlyMap<string, Entry>;
+    serverActionEntryMap: ReadonlyMap<string, Entry>;
+    externalPackages: readonly string[];
+  }) {
+    this.sourceRoot = normalizeSourceRoot(sourceRoot);
+    this.clientComponentEntryMap = clientComponentEntryMap;
+    this.serverActionEntryMap = serverActionEntryMap;
+    this.externalPackages = externalPackages;
+  }
 
   serialize() {
     return {
+      sourceRoot: this.sourceRoot.href,
       clientComponentEntryMap: Object.fromEntries(
-        this.#clientComponentEntryMap.entries(),
+        this.clientComponentEntryMap.entries(),
       ),
       serverActionEntryMap: Object.fromEntries(
-        this.#serverActionEntryMap.entries(),
+        this.serverActionEntryMap.entries(),
       ),
-      discoveredExternals: this.#discoveredExternals,
+      externalPackages: this.externalPackages,
     };
-  }
-
-  load(data: any) {
-    this.#clientComponentEntryMap = new Map(
-      Object.entries(data.clientComponentEntryMap),
-    );
-    this.#serverActionEntryMap = new Map(
-      Object.entries(data.serverActionEntryMap),
-    );
-    this.#discoveredExternals = data.discoveredExternals;
   }
 
   warm() {}
 }
 
-async function pathToEntry(path: string) {
-  let moduleId = getModuleId(path);
+type Entry = {
+  readonly moduleId: string;
+  readonly path: string;
+};
 
+function pathToEntry(path: string): Entry {
   return {
-    moduleId,
+    moduleId: getModuleId(path),
     path,
   };
+}
+
+function normalizeSourceRoot(sourceRoot: URL) {
+  let sourceRootPath = fileURLToPath(sourceRoot);
+  return pathToFileURL(
+    sourceRootPath.endsWith(path.sep)
+      ? sourceRootPath
+      : `${sourceRootPath}${path.sep}`,
+  );
 }
