@@ -1,45 +1,51 @@
 import { copyFile, mkdir } from "fs/promises";
+import { fileURLToPath } from "url";
 import { appCompiledDir, frameworkSrcDir } from "../../files.js";
 import { Builder } from "./builder.js";
-import { Build } from "../build/build.js";
 
 let devFile = new URL("./client/apps/errors/index.html", frameworkSrcDir);
 let prodFile = new URL("./backend/server/internal-error.html", frameworkSrcDir);
 
-export class ServerFilesBuilder extends Builder {
-  readonly name = "server-files";
+export type ServerFilesBuilderInput = {
+  readonly environment: "development" | "production";
+};
 
-  #build: Build;
-
-  constructor({ build }: { build: Build }) {
-    super();
-    this.#build = build;
-  }
-
-  get #env() {
-    return this.#build.name;
-  }
-
-  async setup() {
+export class ServerFilesBuilder extends Builder<
+  ServerFilesBuilderInput,
+  ServerFilesOutput
+> {
+  async build({ environment }: ServerFilesBuilderInput) {
     let dir = new URL("./server-files/", appCompiledDir);
+    let errorFile = environment === "development" ? devFile : prodFile;
+    let errorHtmlUrl = new URL("./error.html", dir);
+
     await mkdir(dir, { recursive: true });
+    await copyFile(errorFile, errorHtmlUrl);
+
+    return new ServerFilesOutput({
+      errorHtmlPath: fileURLToPath(errorHtmlUrl),
+    });
   }
 
-  async build() {
-    let errorFile = this.#env === "development" ? devFile : prodFile;
-    await copyFile(
-      errorFile,
-      new URL("./server-files/error.html", appCompiledDir),
-    );
+  load(data: ReturnType<ServerFilesOutput["serialize"]>) {
+    return new ServerFilesOutput({
+      errorHtmlPath: data.errorHtmlPath,
+    });
   }
+}
 
-  async stop() {}
+export class ServerFilesOutput {
+  readonly errorHtmlPath: string;
+
+  constructor({ errorHtmlPath }: { errorHtmlPath: string }) {
+    this.errorHtmlPath = errorHtmlPath;
+  }
 
   serialize() {
-    return {};
+    return {
+      errorHtmlPath: this.errorHtmlPath,
+    };
   }
-
-  load(data: any) {}
 
   warm() {}
 }

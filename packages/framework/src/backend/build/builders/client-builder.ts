@@ -1,93 +1,116 @@
+import { transform as serverFunctionTransform } from "@twofold/server-function-transforms";
+import { transform } from "esbuild";
+import { readFile } from "fs/promises";
+import * as mime from "mime-types";
 import { createRequire } from "module";
-import { fileURLToPath } from "url";
-import {
-  appAppDir,
-  appCompiledDir,
-  cwdUrl,
-  frameworkSrcDir,
-} from "../../files.js";
-import { Build } from "../build/build.js";
-import { Builder } from "./builder.js";
-import { build, OutputAsset, OutputChunk, Plugin } from "rolldown";
 import { transform as oxcTransformReact } from "oxc-transform-react";
 import path, { dirname, relative, sep } from "path";
-import { readFile } from "fs/promises";
-import { transform as serverFunctionTransform } from "@twofold/server-function-transforms";
+import {
+  build as rolldownBuild,
+  type OutputAsset,
+  type OutputChunk,
+  type Plugin,
+} from "rolldown";
+import { fileURLToPath } from "url";
+import type { Config } from "../../../types/importable.js";
+import { appCompiledDir, frameworkSrcDir } from "../../files.js";
+import { fileURLToEscapedPath, hashFile } from "../helpers/file.js";
 import { pathToLanguage } from "../helpers/languages.js";
 import { getModuleId } from "../helpers/module.js";
-import * as mime from "mime-types";
-import { fileURLToEscapedPath, hashFile } from "../helpers/file.js";
-import { transform } from "esbuild";
-import { EntriesBuilder } from "./entries-builder.js";
+import { LazyValue } from "../helpers/lazy-value.js";
+import { Builder } from "./builder.js";
+import type { EntriesOutput } from "./entries-builder.js";
+import type { ServerFilesOutput } from "./server-files-builder.js";
 
-export class ClientBuilder extends Builder {
-  readonly name = "client";
+export type ClientBuilderInput = {
+  readonly environment: "development" | "production";
+  readonly config: Config;
+  readonly entries: EntriesOutput;
+  readonly serverFiles: ServerFilesOutput;
+};
 
-  #build: Build;
-  #entriesBuilder: EntriesBuilder;
-  #outputs?: Output[] | undefined;
+type Entry = {
+  readonly moduleId: string;
+  readonly path: string;
+};
 
-  #imagesMap = new Map<string, Image>();
+type Image = {
+  readonly id: string;
+  readonly type: string;
+  readonly path: string;
+};
 
-  constructor({
-    build,
-    entriesBuilder,
-  }: {
-    build: Build;
-    entriesBuilder: EntriesBuilder;
-  }) {
-    super();
-    this.#build = build;
-    this.#entriesBuilder = entriesBuilder;
-  }
+type Output = {
+  readonly fileName: OutputChunk["fileName"];
+  readonly facadeModuleId: OutputChunk["facadeModuleId"];
+  readonly exports: readonly string[];
+};
 
-  get clientEntryPoints() {
-    let files = Array.from(this.#entriesBuilder.clientComponentEntryMap.keys());
+type ClientComponentModuleMap = Readonly<
+  Record<string, { readonly path: string }>
+>;
 
-    // entry point order matters for deterministic builds
-    return files.sort();
-  }
+type ClientComponentMap = Readonly<
+  Record<
+    string,
+    {
+      readonly id: string;
+      readonly chunks: readonly string[];
+      readonly name: string;
+      readonly async: false;
+    }
+  >
+>;
 
-  get #env() {
-    return this.#build.name;
-  }
+type SSRManifestModuleMap = Readonly<
+  Record<
+    string,
+    Readonly<
+      Record<
+        string,
+        {
+          readonly id: string;
+          readonly chunks: readonly string[];
+          readonly name: string;
+        }
+      >
+    >
+  >
+>;
 
-  get imagesMap() {
-    return this.#imagesMap;
-  }
+type Chunk = {
+  readonly hash: string;
+  readonly file: string;
+  readonly path: string;
+};
 
-  async setup() {}
+export class ClientBuilder extends Builder<ClientBuilderInput, ClientOutput> {
+  async build({
+    environment,
+    config,
+    entries,
+    serverFiles,
+  }: ClientBuilderInput) {
+    let sourceRoot = entries.sourceRoot;
+    let rootPath = fileURLToPath(sourceRoot);
+    let appAppDir = new URL("./app/", sourceRoot);
+    let appAppPath = fileURLToPath(appAppDir);
+    let imagesMap = new Map<string, Image>();
 
-  async build() {
-    this.clearError();
-
-    this.#outputs = [];
-
-    // server actions plugin
-    let callServerUrl = new URL(
-      "./client/apps/client/actions/call-server.ts",
-      frameworkSrcDir,
+    let callServerPath = fileURLToPath(
+      new URL("./client/apps/client/actions/call-server.ts", frameworkSrcDir),
     );
-    let callServerPath = fileURLToPath(callServerUrl);
-
-    // images plugin
-    this.#imagesMap = new Map();
-
-    // rsdw plugin
-    let loadersUrl = new URL(
-      "./client/apps/client/ext/webpack-loaders.ts",
-      frameworkSrcDir,
+    let loadersPath = fileURLToPath(
+      new URL("./client/apps/client/ext/webpack-loaders.ts", frameworkSrcDir),
     );
-    let loadersPath = fileURLToPath(loadersUrl);
     let loadersContents = await readFile(loadersPath, "utf-8");
-
     let rsdwPatch = await transform(loadersContents, {
       loader: "ts",
       format: "cjs",
     });
     let rsdwHeader = rsdwPatch.code;
     let appRequire = createRequire(
-      fileURLToPath(new URL("./package.json", cwdUrl)),
+      fileURLToPath(new URL("./package.json", sourceRoot)),
     );
     let rsdwPackageJsonPath = appRequire.resolve(
       "react-server-dom-webpack/package.json",
@@ -95,429 +118,328 @@ export class ClientBuilder extends Builder {
     let rsdwPackageDir = dirname(rsdwPackageJsonPath);
     let rsdwClientBrowserPath = path.join(rsdwPackageDir, "client.browser.js");
     let rsdwClientEdgePath = path.join(rsdwPackageDir, "client.edge.js");
-
-    // react babel plugin
-    let appConfig = await this.#build.getAppConfig();
     let refreshEnabled =
-      this.#env === "development" && process.env.NODE_ENV !== "production";
-    let compilerEnabled = appConfig.reactCompiler ?? false;
+      environment === "development" && process.env.NODE_ENV !== "production";
+    let compilerEnabled = config.reactCompiler ?? false;
+    let initializeBrowserPath = sourceInitializeBrowserPath();
+    let srcSSRAppPath = sourceSSRAppPath();
 
-    // route chunks
-    let appAppPath = fileURLToPath(appAppDir);
+    // entry point order affects output hashes, so keep client builds deterministic.
+    let clientEntryPoints = Array.from(
+      entries.clientComponentEntryMap.keys(),
+    ).sort();
 
-    try {
-      let result = await build({
-        // platform: "browser",
-        input: [
-          this.initializeBrowserPath,
-          this.srcSSRAppPath,
-          ...this.clientEntryPoints,
-        ],
-        resolve: {
-          alias: {
-            "react-server-dom-webpack/client": rsdwClientBrowserPath,
-            "react-server-dom-webpack/client.edge": rsdwClientEdgePath,
-            "react-server-dom-webpack/client.browser": rsdwClientBrowserPath,
-          },
+    let result = await rolldownBuild({
+      cwd: rootPath,
+      input: [initializeBrowserPath, srcSSRAppPath, ...clientEntryPoints],
+      resolve: {
+        alias: {
+          "react-server-dom-webpack/client": rsdwClientBrowserPath,
+          "react-server-dom-webpack/client.edge": rsdwClientEdgePath,
+          "react-server-dom-webpack/client.browser": rsdwClientBrowserPath,
         },
-        transform: {
-          define: {
-            "process.env.NODE_ENV": `"${this.#env}"`,
-          },
+      },
+      transform: {
+        define: {
+          "process.env.NODE_ENV": `"${environment}"`,
         },
-        onLog(_level, log) {
-          // Rolldown will treat some errors (like module not found) as warnings.
-          // The idea is that if rolldown can't resolve the module it will treat it
-          // as a global and let the runtime try to resolve it. From our point of view
-          // this is a bug in the app and we need to stop the build and tell the user.
-          //
-          // Right now it's hard to stop the build when this happens, the best way
-          // to do this today is hook into the logs and throw if you see an unresolved
-          // import error.
-          if (log.code === "UNRESOLVED_IMPORT") {
-            throw new Error(
-              `Could not resolve import "${log.exporter}" in ${log.id}`,
-            );
-          }
-        },
-        treeshake: true,
-        preserveEntrySignatures: "allow-extension",
-        plugins: [
-          this.#env === "production" ? createProdErrorHtmlPlugin() : null,
-          {
-            name: "server-actions",
-            transform: {
-              filter: {
-                id: /^(?!.*react-server-dom-webpack[\\/].*[\\/]react-server-dom-webpack-client\.(edge|browser)\..*\.js$).*\.(js|ts|jsx|tsx|mjs)$/,
-                code: /["']use server["']/,
-                moduleType: ["ts", "tsx", "js", "jsx"],
-              },
-              async handler(code, id) {
-                let moduleId = getModuleId(id);
-                let language = pathToLanguage(id);
-                let path = id;
+      },
+      onLog(_level, log) {
+        // Unresolved imports otherwise become globals and fail later at runtime.
+        if (log.code === "UNRESOLVED_IMPORT") {
+          throw new Error(
+            `Could not resolve import "${log.exporter}" in ${log.id}`,
+          );
+        }
+      },
+      treeshake: true,
+      preserveEntrySignatures: "allow-extension",
+      plugins: [
+        createErrorHtmlPlugin({
+          errorHtmlPath: serverFiles.errorHtmlPath,
+        }),
+        {
+          name: "server-actions",
+          transform: {
+            filter: {
+              id: /^(?!.*react-server-dom-webpack[\\/].*[\\/]react-server-dom-webpack-client\.(edge|browser)\..*\.js$).*\.(js|ts|jsx|tsx|mjs)$/,
+              code: /["']use server["']/,
+              moduleType: ["ts", "tsx", "js", "jsx"],
+            },
+            async handler(code, id) {
+              let moduleId = getModuleId(id);
+              let language = pathToLanguage(id);
+              let dir = dirname(id);
+              let relativeCallServerPath = relative(dir, callServerPath);
+              let callServerImportPath = relativeCallServerPath
+                .split(sep)
+                .join("/")
+                .replace(/\.ts$/, "");
+              let transformed = await serverFunctionTransform({
+                input: { code, language },
+                moduleId,
+                client: {
+                  callServerModule: callServerImportPath,
+                },
+              });
 
-                let dir = dirname(path);
-                let relativeCallServerPath = relative(dir, callServerPath);
-                let callServerImportPath = relativeCallServerPath
-                  .split(sep)
-                  .join("/")
-                  .replace(/\.ts$/, "");
-
-                let transformed = await serverFunctionTransform({
-                  input: {
-                    code,
-                    language,
-                  },
-                  moduleId,
-                  client: {
-                    callServerModule: callServerImportPath,
-                  },
-                });
-
-                let hasServerFunctions = transformed.serverFunctions.length > 0;
-                return hasServerFunctions
-                  ? {
-                      code: transformed.code,
-                      moduleType: "js",
-                    }
-                  : null;
-              },
+              return transformed.serverFunctions.length > 0
+                ? {
+                    code: transformed.code,
+                    moduleType: "js",
+                  }
+                : null;
             },
           },
-
-          {
-            name: "add-webpack-loaders-to-rsdw-client",
-            transform: {
-              filter: {
-                id: /[\\/]node_modules[\\/]react-server-dom-webpack[\\/]client/,
-              },
-              handler(code) {
-                let newCode = `${rsdwHeader}\n\n${code}`;
-                return {
-                  code: newCode,
-                  moduleType: "js",
-                };
-              },
+        },
+        {
+          name: "add-webpack-loaders-to-rsdw-client",
+          transform: {
+            filter: {
+              id: /[\\/]node_modules[\\/]react-server-dom-webpack[\\/]client/,
+            },
+            handler(code) {
+              return {
+                code: `${rsdwHeader}\n\n${code}`,
+                moduleType: "js",
+              };
             },
           },
-
-          createImagesPlugin({
-            prefixPath: "/__tf/assets/images",
-            onImage: (image) => this.#imagesMap.set(image.id, image),
-          }),
-
-          {
-            name: "react-refresh-ext-loader",
-            load: {
-              filter: {
-                id: fileURLToPath(
-                  new URL(
-                    "./client/apps/client/ext/react-refresh.ts",
-                    frameworkSrcDir,
-                  ),
+        },
+        createImagesPlugin({
+          prefixPath: "/__tf/assets/images",
+          onImage: (image) => imagesMap.set(image.id, image),
+        }),
+        {
+          name: "react-refresh-ext-loader",
+          load: {
+            filter: {
+              id: fileURLToPath(
+                new URL(
+                  "./client/apps/client/ext/react-refresh.ts",
+                  frameworkSrcDir,
                 ),
-              },
-              handler() {
-                return refreshEnabled
-                  ? null
-                  : {
-                      code: "",
-                      moduleType: "js",
-                    };
-              },
+              ),
+            },
+            handler() {
+              return refreshEnabled
+                ? null
+                : {
+                    code: "",
+                    moduleType: "js",
+                  };
             },
           },
-
-          createReactOxcPlugin({
-            refreshEnabled,
-            compilerEnabled,
-          }),
-        ],
-
-        output: {
-          dir: "./.twofold/client/",
-          hashCharacters: "base36",
-          entryFileNames: "entries/[name]-[hash].js",
-          chunkFileNames: "chunks/chunk-[hash].js",
-          minify: this.#env === "production",
-          format: "esm",
-          cleanDir: true,
-
-          codeSplitting: {
-            groups: [
-              {
-                name: "react-vendor",
-                test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-refresh|react-server-dom-webpack)[\\/](?!.*(server|edge))/,
-                priority: 999,
-              },
-              {
-                name: "call-server",
-                test: `^${fileURLToEscapedPath(
-                  new URL(
-                    "./client/apps/client/actions/call-server",
-                    frameworkSrcDir,
-                  ),
+        },
+        createReactOxcPlugin({
+          appAppDir,
+          refreshEnabled,
+          compilerEnabled,
+        }),
+      ],
+      output: {
+        dir: fileURLToPath(new URL("./client/", appCompiledDir)),
+        hashCharacters: "base36",
+        entryFileNames: "entries/[name]-[hash].js",
+        chunkFileNames: "chunks/chunk-[hash].js",
+        minify: environment === "production",
+        format: "esm",
+        cleanDir: true,
+        codeSplitting: {
+          groups: [
+            {
+              name: "react-vendor",
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-refresh|react-server-dom-webpack)[\\/](?!.*(server|edge))/,
+              priority: 999,
+            },
+            {
+              name: "call-server",
+              test: `^${fileURLToEscapedPath(
+                new URL(
+                  "./client/apps/client/actions/call-server",
+                  frameworkSrcDir,
+                ),
+              )}`,
+              priority: 998,
+            },
+            {
+              name: "contexts",
+              test: new RegExp(
+                `^${fileURLToEscapedPath(
+                  new URL("./client/apps/client/contexts/", frameworkSrcDir),
                 )}`,
-                priority: 998,
+              ),
+              priority: 997,
+            },
+            {
+              name: "client-browser-app",
+              test: new RegExp(
+                `^${fileURLToEscapedPath(
+                  new URL("./client/apps/client/browser/", frameworkSrcDir),
+                )}`,
+              ),
+              priority: 990,
+            },
+            {
+              name: "client-ssr-app",
+              test: new RegExp(
+                `^${fileURLToEscapedPath(
+                  new URL("./client/apps/client/ssr/", frameworkSrcDir),
+                )}`,
+              ),
+              priority: 980,
+            },
+            {
+              name: "twofold-client-pieces",
+              test: new RegExp(
+                `^${fileURLToEscapedPath(new URL("./client/", frameworkSrcDir))}(components|hooks|actions|contexts)[\\/]`,
+              ),
+              priority: 970,
+              minShareCount: 2,
+            },
+            {
+              name: "twofold-error-pieces",
+              test: new RegExp(
+                `^${fileURLToEscapedPath(new URL("./client/components/", frameworkSrcDir))}(boundaries|error-templates)[\\/]`,
+              ),
+              priority: 960,
+            },
+            {
+              name: (id) => {
+                let modulePath = id.split(/[\\/]node_modules[\\/]/).at(-1);
+                if (!modulePath) return null;
+                let pkg = modulePath.startsWith("@")
+                  ? modulePath.split(/[\\/]/).slice(0, 2).join("__")
+                  : modulePath.split(/[\\/]/)[0];
+                return `vendor-${pkg}`;
               },
-              {
-                name: "contexts",
-                test: new RegExp(
-                  `^${fileURLToEscapedPath(
-                    new URL("./client/apps/client/contexts/", frameworkSrcDir),
-                  )}`,
-                ),
-                priority: 997,
-              },
-              {
-                name: "client-browser-app",
-                test: new RegExp(
-                  `^${fileURLToEscapedPath(
-                    new URL("./client/apps/client/browser/", frameworkSrcDir),
-                  )}`,
-                ),
-                priority: 990,
-              },
-              {
-                name: "client-ssr-app",
-                test: new RegExp(
-                  `^${fileURLToEscapedPath(
-                    new URL("./client/apps/client/ssr/", frameworkSrcDir),
-                  )}`,
-                ),
-                priority: 980,
-              },
-              {
-                name: "twofold-client-pieces",
-                test: new RegExp(
-                  `^${fileURLToEscapedPath(new URL("./client/", frameworkSrcDir))}(components|hooks|actions|contexts)[\\/]`,
-                ),
-                priority: 970,
-                minShareCount: 2,
-              },
-              // this puts the catch boundary and default templates into their own bundle since these are always
-              // used together.
-              {
-                name: "twofold-error-pieces",
-                test: new RegExp(
-                  `^${fileURLToEscapedPath(new URL("./client/components/", frameworkSrcDir))}(boundaries|error-templates)[\\/]`,
-                ),
-                priority: 960,
-              },
-              {
-                // vendor libs get their own chunk for now
-                // eventually move to hash bucket approach?
-                name: (id) => {
-                  let modulePath = id.split(/[\\/]node_modules[\\/]/).at(-1);
-                  if (!modulePath) return null;
-                  let pkg = modulePath.startsWith("@")
-                    ? modulePath.split(/[\\/]/).slice(0, 2).join("__")
-                    : modulePath.split(/[\\/]/)[0];
-                  return `vendor-${pkg}`;
-                },
-                test: /[\\/]node_modules[\\/]/,
-                priority: 950,
-                minSize: 15 * 1024,
-                minShareCount: 2,
-                // i want this, but it causes some circular dep/import issues rn
-                // maxSize: 200 * 1024,
-              },
-              {
-                name: "vendor-small",
-                test: /[\\/]node_modules[\\/]/,
-                priority: 940,
-                minSize: 0,
-                maxSize: 220 * 1024,
-                minShareCount: 2,
-              },
-              {
-                // splitting for shared components under app/
-                name: (id) => {
-                  // if the module id is in a single directory under app, then
-                  // we chunk by the directory name + filename, otherwise we chunk
-                  // by the directory name.
-                  //
-                  // example:
-                  //   components/spinner.tsx => components/spinner
-                  //   components/dropdown/menu.tsx => components/dropdown
-                  let dir = dirname(id);
-                  let relativeDirPath = dir.substring(appAppPath.length);
-                  let extension = path.extname(id);
-                  let relativeFilePath = id
-                    .substring(appAppPath.length)
-                    .slice(0, -extension.length);
+              test: /[\\/]node_modules[\\/]/,
+              priority: 950,
+              minSize: 15 * 1024,
+              minShareCount: 2,
+            },
+            {
+              name: "vendor-small",
+              test: /[\\/]node_modules[\\/]/,
+              priority: 940,
+              minSize: 0,
+              maxSize: 220 * 1024,
+              minShareCount: 2,
+            },
+            {
+              name: (id) => {
+                let dir = dirname(id);
+                let relativeDirPath = dir.substring(appAppPath.length);
+                let extension = path.extname(id);
+                let relativeFilePath = id
+                  .substring(appAppPath.length)
+                  .slice(0, -extension.length);
 
-                  let name = relativeDirPath.match(/[\\/]/)
-                    ? relativeDirPath
-                    : relativeFilePath;
-
-                  return name;
-                },
-                test: new RegExp(`^${fileURLToEscapedPath(appAppDir)}`),
-                priority: 890,
-                minSize: 0,
-                minShareCount: 2,
-                // would be good but need to figure out circular deps comment above
-                // maxSize: 220 * 1024,
+                return relativeDirPath.match(/[\\/]/)
+                  ? relativeDirPath
+                  : relativeFilePath;
               },
-              {
-                // route splitting for components under app/pages/
-                name: (id) => {
-                  let dir = dirname(id);
-                  let relativeDirPath = dir.substring(appAppPath.length);
-                  return relativeDirPath;
-                },
-                test: new RegExp(
-                  `^${fileURLToEscapedPath(new URL("./pages/", appAppDir))}`,
-                ),
-                priority: 880,
-                minSize: 0,
-                // would be good but need to figure out circular deps comment above
-                // maxSize: 220 * 1024,
+              test: new RegExp(`^${fileURLToEscapedPath(appAppDir)}`),
+              priority: 890,
+              minSize: 0,
+              minShareCount: 2,
+            },
+            {
+              name: (id) => {
+                let dir = dirname(id);
+                return dir.substring(appAppPath.length);
               },
-            ],
-          },
+              test: new RegExp(
+                `^${fileURLToEscapedPath(new URL("./pages/", appAppDir))}`,
+              ),
+              priority: 880,
+              minSize: 0,
+            },
+          ],
         },
-      });
+      },
+    });
 
-      this.#outputs = trimRolldownOutput(result.output);
-    } catch (error) {
-      console.error(error);
-      this.reportError(error);
-    }
+    return new ClientOutput({
+      outputs: trimRolldownOutput(result.output),
+      clientComponentEntryMap: entries.clientComponentEntryMap,
+      imagesMap,
+    });
   }
 
-  async stop() {}
-
-  serialize() {
-    return {
-      outputs: this.#outputs,
-      imagesMap: Object.fromEntries(this.#imagesMap.entries()),
-    };
-  }
-
-  load(data: any) {
-    this.#outputs = data.outputs;
-    this.#imagesMap = new Map(Object.entries(data.imagesMap));
-  }
-
-  warm() {}
-
-  private get initializeBrowserPath() {
-    let initializeBrowser = fileURLToPath(
-      new URL(
-        "./client/apps/client/browser/initialize-browser.tsx",
-        frameworkSrcDir,
+  load(data: ReturnType<ClientOutput["serialize"]>) {
+    return new ClientOutput({
+      outputs: data.outputs,
+      clientComponentEntryMap: new Map(
+        Object.entries(data.clientComponentEntryMap),
       ),
-    );
+      imagesMap: new Map(Object.entries(data.imagesMap)),
+    });
+  }
+}
 
-    return initializeBrowser;
+export class ClientOutput {
+  readonly #outputs: readonly Output[];
+  readonly #clientComponentEntryMap: ReadonlyMap<string, Entry>;
+
+  readonly imagesMap: ReadonlyMap<string, Image>;
+
+  constructor({
+    outputs,
+    clientComponentEntryMap,
+    imagesMap,
+  }: {
+    outputs: readonly Output[];
+    clientComponentEntryMap: ReadonlyMap<string, Entry>;
+    imagesMap: ReadonlyMap<string, Image>;
+  }) {
+    this.#outputs = outputs;
+    this.#clientComponentEntryMap = clientComponentEntryMap;
+    this.imagesMap = imagesMap;
   }
 
-  private get srcSSRAppPath() {
-    let initializeSSR = fileURLToPath(
-      new URL("./client/apps/client/ssr/ssr-app.tsx", frameworkSrcDir),
-    );
+  readonly #bootstrapPath = new LazyValue(() =>
+    getCompiledEntrypoint(this.#outputs, sourceInitializeBrowserPath()),
+  );
 
-    return initializeSSR;
-  }
+  readonly #SSRAppPath = new LazyValue(() =>
+    getCompiledEntrypoint(this.#outputs, sourceSSRAppPath()),
+  );
 
-  get bootstrapPath() {
-    if (!this.#outputs) {
-      throw new Error("Chunks missing");
-    }
+  readonly #clientComponentModuleMap = new LazyValue<ClientComponentModuleMap>(
+    () =>
+      Object.fromEntries(
+        Array.from(this.#clientComponentEntryMap.values(), (entry) => [
+          entry.moduleId,
+          {
+            path: getCompiledEntrypoint(this.#outputs, entry.path),
+          },
+        ]),
+      ),
+  );
 
-    return getCompiledEntrypoint(this.#outputs, this.initializeBrowserPath);
-  }
-
-  get SSRAppPath() {
-    if (!this.#outputs) {
-      throw new Error("Chunks missing");
-    }
-
-    return getCompiledEntrypoint(this.#outputs, this.srcSSRAppPath);
-  }
-
-  get clientComponentModuleMap() {
-    // moduleId -> {
-    //   path: outputFile
-    // }
-
-    if (!this.#outputs) {
-      return {};
-    }
-
-    let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentEntryMap.values(),
-    );
-    let clientComponentModuleMap = new Map<
-      string,
-      {
-        path: string;
-      }
-    >();
-
-    for (let clientComponentInput of clientComponents) {
-      clientComponentModuleMap.set(clientComponentInput.moduleId, {
-        path: getCompiledEntrypoint(this.#outputs, clientComponentInput.path),
-      });
-    }
-
-    return Object.fromEntries(clientComponentModuleMap.entries());
-  }
-
-  get clientComponentMap() {
-    // `${moduleId}#${exportName}` -> {
-    //    id,
-    //    chunks: [chunk1, chunk2]
-    //    name: exportName,
-    //    async: false
-    // }
-
-    if (!this.#outputs) {
-      return {};
-    }
-
-    // clientComponentMap.set(id, {
-    //   id,
-    //   chunks: [chunk1, chunk2],
-    //   name: exportName,
-    //   async: false,
-    // });
-
-    // let outputMap = this.#clientComponentOutputMap;
-    // if (!outputMap) {
-    //   return {};
-    // }
-
-    let clientComponents = Array.from(
-      this.#entriesBuilder.clientComponentEntryMap.values(),
-    );
+  readonly #clientComponentMap = new LazyValue<ClientComponentMap>(() => {
     let clientComponentMap = new Map<
       string,
       {
-        id: string;
-        chunks: string[];
-        name: string;
-        async: false;
+        readonly id: string;
+        readonly chunks: readonly string[];
+        readonly name: string;
+        readonly async: false;
       }
     >();
 
-    for (let clientComponent of clientComponents) {
+    for (let clientComponent of this.#clientComponentEntryMap.values()) {
       let { moduleId } = clientComponent;
       let chunk = getOutput(this.#outputs, clientComponent.path);
       let fileName = chunk.fileName;
       let name = getNameFromChunkFileName(fileName);
       let hash = getHashFromChunkFileName(fileName);
-
-      // [moduleId:name:hash]
       let chunk1 = `${moduleId}:${name}:${hash}`;
-      let chunk2 = `${fileName}`; // actual chunk
+      let chunk2 = fileName;
 
       for (let exportName of chunk.exports) {
         let id = `${moduleId}#${exportName}`;
-
         clientComponentMap.set(id, {
           id,
           chunks: [chunk1, chunk2],
@@ -528,89 +450,109 @@ export class ClientBuilder extends Builder {
     }
 
     return Object.fromEntries(clientComponentMap.entries());
+  });
+
+  readonly #ssrManifestModuleMap = new LazyValue<SSRManifestModuleMap>(() =>
+    Object.fromEntries(
+      Object.entries(this.clientComponentMap).map(([id, clientComponent]) => [
+        id,
+        {
+          [clientComponent.name]: {
+            id,
+            chunks: clientComponent.chunks,
+            name: clientComponent.name,
+          },
+        },
+      ]),
+    ),
+  );
+
+  readonly #chunks = new LazyValue<readonly Chunk[]>(() => {
+    let appCompiledPath = fileURLToPath(appCompiledDir);
+
+    return this.#outputs
+      .filter((output) =>
+        /chunks\/chunk-[a-zA-Z0-9]+\.js$/.test(output.fileName),
+      )
+      .map((chunk) => {
+        let file = path.basename(chunk.fileName);
+        let nameWithoutExtension = file.split(".")[0] ?? file;
+        let parts = nameWithoutExtension.split("-");
+        let hash = parts.at(-1) ?? "";
+        return {
+          hash,
+          file,
+          path: path.join(appCompiledPath, "client", chunk.fileName),
+        };
+      });
+  });
+
+  get bootstrapPath() {
+    return this.#bootstrapPath.value;
+  }
+
+  get SSRAppPath() {
+    return this.#SSRAppPath.value;
+  }
+
+  get clientComponentModuleMap() {
+    return this.#clientComponentModuleMap.value;
+  }
+
+  get clientComponentMap() {
+    return this.#clientComponentMap.value;
   }
 
   get ssrManifestModuleMap() {
-    let ssrManifestModuleMap = new Map<
-      string,
-      {
-        [exportName: string]: {
-          id: string;
-          chunks: string[];
-          name: string;
-        };
-      }
-    >();
-
-    for (let [id, clientComponent] of Object.entries(this.clientComponentMap)) {
-      ssrManifestModuleMap.set(id, {
-        [clientComponent.name]: {
-          id,
-          chunks: clientComponent.chunks,
-          name: clientComponent.name,
-        },
-      });
-    }
-
-    return Object.fromEntries(ssrManifestModuleMap.entries());
+    return this.#ssrManifestModuleMap.value;
   }
 
   get chunks() {
-    let outputs = this.#outputs;
+    return this.#chunks.value;
+  }
 
-    if (!outputs) {
-      return [];
-    }
+  serialize() {
+    return {
+      outputs: this.#outputs,
+      clientComponentEntryMap: Object.fromEntries(
+        this.#clientComponentEntryMap.entries(),
+      ),
+      imagesMap: Object.fromEntries(this.imagesMap.entries()),
+    };
+  }
 
-    let chunkFiles = outputs.filter((output) => {
-      return /chunks\/chunk-[a-zA-Z0-9]+\.js$/.test(output.fileName);
-    });
-
-    let appCompiledPath = fileURLToPath(appCompiledDir);
-
-    return chunkFiles.map((chunk) => {
-      let file = path.basename(chunk.fileName);
-      let nameWithoutExtension = file.split(".")[0] ?? file;
-      let parts = nameWithoutExtension.split("-");
-      let hash = parts.at(-1) ?? "";
-      return {
-        hash,
-        file,
-        path: path.join(appCompiledPath, "client", chunk.fileName),
-      };
-    });
+  warm() {
+    void this.#bootstrapPath.value;
+    void this.#SSRAppPath.value;
+    void this.#clientComponentModuleMap.value;
+    void this.#clientComponentMap.value;
+    void this.#ssrManifestModuleMap.value;
+    void this.#chunks.value;
   }
 }
 
-type Output = {
-  fileName: OutputChunk["fileName"];
-  facadeModuleId: OutputChunk["facadeModuleId"];
-  exports: OutputChunk["exports"];
-};
-
-function trimRolldownOutput(outputs: (OutputChunk | OutputAsset)[]): Output[] {
+function trimRolldownOutput(
+  outputs: readonly (OutputChunk | OutputAsset)[],
+): Output[] {
   return outputs
-    .filter((o) => o.type === "chunk")
-    .map((o) => ({
-      fileName: o.fileName,
-      facadeModuleId: o.facadeModuleId,
-      exports: o.exports,
+    .filter((output) => output.type === "chunk")
+    .map((output) => ({
+      fileName: output.fileName,
+      facadeModuleId: output.facadeModuleId,
+      exports: output.exports,
     }));
 }
 
-function getOutput(outputs: Output[], id: string): Output {
-  let output = outputs.find((o) => o.facadeModuleId === id);
-
+function getOutput(outputs: readonly Output[], id: string): Output {
+  let output = outputs.find((candidate) => candidate.facadeModuleId === id);
   if (!output) {
     throw new Error(`Failed to get chunk from id: ${id}`);
   }
-
   return output;
 }
 
 function getNameFromChunkFileName(fileName: string) {
-  const dropLast = fileName.split("-").slice(0, -1).join("-");
-  return dropLast;
+  return fileName.split("-").slice(0, -1).join("-");
 }
 
 function getHashFromChunkFileName(fileName: string) {
@@ -622,55 +564,60 @@ function getHashFromChunkFileName(fileName: string) {
   return hash;
 }
 
-function getCompiledEntrypoint(outputs: Output[], id: string) {
+function getCompiledEntrypoint(outputs: readonly Output[], id: string) {
   let chunk = getOutput(outputs, id);
-  let baseUrl = new URL("./client/", appCompiledDir);
-  let basePath = fileURLToPath(baseUrl);
-
-  return path.join(basePath, chunk.fileName);
+  return fileURLToPath(new URL(`./client/${chunk.fileName}`, appCompiledDir));
 }
 
-// prod error html
+function sourceInitializeBrowserPath() {
+  return fileURLToPath(
+    new URL(
+      "./client/apps/client/browser/initialize-browser.tsx",
+      frameworkSrcDir,
+    ),
+  );
+}
 
-function createProdErrorHtmlPlugin(): Plugin {
+function sourceSSRAppPath() {
+  return fileURLToPath(
+    new URL("./client/apps/client/ssr/ssr-app.tsx", frameworkSrcDir),
+  );
+}
+
+function createErrorHtmlPlugin({
+  errorHtmlPath,
+}: {
+  errorHtmlPath: string;
+}): Plugin {
+  let moduleId = "twofold:error-html";
+  let resolvedModuleId = `\0${moduleId}`;
+
   return {
-    name: "prod-error-html",
-    async options(options) {
-      let errorHtml = await readFile(
-        new URL("./server-files/error.html", appCompiledDir),
-        "utf-8",
-      );
+    name: "error-html",
+    resolveId(source) {
+      return source === moduleId ? resolvedModuleId : null;
+    },
+    async load(id) {
+      if (id !== resolvedModuleId) {
+        return null;
+      }
 
-      let encodedHtml = JSON.stringify(errorHtml);
-      let currentTransform = options.transform ?? {};
-      let currentDefine = currentTransform.define ?? {};
+      let errorHtml = await readFile(errorHtmlPath, "utf-8");
 
-      options.transform = {
-        ...currentTransform,
-        define: {
-          ...currentDefine,
-          "process.env.TWOFOLD_PROD_ERROR_HTML": encodedHtml,
-        },
+      return {
+        code: `export default ${JSON.stringify(errorHtml)};`,
+        moduleType: "js",
       };
-
-      return options;
     },
   };
 }
-
-// images plugin
-type Image = {
-  id: string;
-  type: string;
-  path: string;
-};
 
 function createImagesPlugin({
   prefixPath,
   onImage,
 }: {
   prefixPath: string;
-  onImage: (i: Image) => void;
+  onImage: (image: Image) => void;
 }): Plugin {
   return {
     name: "images",
@@ -679,19 +626,14 @@ function createImagesPlugin({
         id: /\.(jpe?g|png|gif|webp|avif|svg)$/i,
       },
       async handler(id) {
-        let filePath = id;
-        let ext = path.extname(filePath);
-        let name = path.basename(filePath, ext);
-        let hash = await hashFile(filePath);
+        let ext = path.extname(id);
+        let name = path.basename(id, ext);
+        let hash = await hashFile(id);
         let imageId = `${name}-${hash}${ext}`;
         let type = mime.contentType(ext) || "";
         let publicUrl = `${prefixPath}/${imageId}`;
 
-        onImage({
-          id: imageId,
-          type,
-          path: filePath,
-        });
+        onImage({ id: imageId, type, path: id });
 
         return {
           code: `export default ${JSON.stringify(publicUrl)};`,
@@ -703,9 +645,11 @@ function createImagesPlugin({
 }
 
 function createReactOxcPlugin({
+  appAppDir,
   refreshEnabled,
   compilerEnabled,
 }: {
+  appAppDir: URL;
   refreshEnabled: boolean;
   compilerEnabled: boolean;
 }): Plugin {
@@ -714,7 +658,6 @@ function createReactOxcPlugin({
 
   return {
     name: "react-oxc-transforms",
-
     ...(shouldRunOxc
       ? {
           transform: {
@@ -723,10 +666,9 @@ function createReactOxcPlugin({
                 `^${fileURLToEscapedPath(appAppDir)}.*\\.(js|ts|jsx|tsx)$`,
               ),
               code: [
-                // maybe get some tests for this?
                 /<\s*\/?\s*(?!>)(?:[A-Z][A-Za-z0-9]*(?:\.[A-Za-z0-9_]+)?|[a-z][a-z0-9]*)(?:\s+[^<>]*?)?\s*\/?>/,
                 /<\/?>/,
-                /(?:useState|useEffect|useRef|useReducer|useContext|useLayoutEffect|useId|useTransition|useDeferredValue|useSyncExternalStore|use[A-Z][A-Za-z0-9_]*)\s*\(/,
+                /(?:useState|useEffect|useEffectEvent|useRef|useReducer|useContext|useLayoutEffect|useId|useTransition|useDeferredValue|useSyncExternalStore|use[A-Z][A-Za-z0-9_]*)\s*\(/,
                 /import\s+[^;]*from\s+['"]react['"]/,
               ],
             },
@@ -740,7 +682,6 @@ function createReactOxcPlugin({
 
               if (compiled.fatal) {
                 let diagnostic = compiled.errors[0];
-
                 throw new Error(
                   diagnostic
                     ? [diagnostic.message, diagnostic.codeframe]
@@ -752,7 +693,6 @@ function createReactOxcPlugin({
               }
 
               let newCode = compiled.code;
-
               if (
                 refreshEnabled &&
                 newCode &&
@@ -761,7 +701,6 @@ function createReactOxcPlugin({
                 let moduleName = id
                   .slice(appAppPath.length)
                   .replace(/\.(tsx|ts|jsx|js)$/, "");
-
                 let start = `
                   let prevRefreshReg = undefined;
                   let prevRefreshSig = undefined;
@@ -769,20 +708,16 @@ function createReactOxcPlugin({
                     prevRefreshReg = window.$RefreshReg$;
                     prevRefreshSig = window.$RefreshSig$;
                     window.$RefreshReg$ = (type, refreshId) => {
-                      let registerId = \`${encodeURIComponent(
-                        moduleName,
-                      )} \${refreshId}\`;
+                      let registerId = \`${encodeURIComponent(moduleName)} \${refreshId}\`;
                       window.$RefreshRuntime$.register(type, registerId);
                     };
                     window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
                   }`;
-
                 let end = `
                   if (typeof window !== 'undefined') {
                     window.$RefreshReg$ = prevRefreshReg;
                     window.$RefreshSig$ = prevRefreshSig;
                   }`;
-
                 newCode = `${start}\n${newCode}\n${end}`;
               }
 

@@ -1,74 +1,68 @@
-import { ReadOnlyFile } from "@hattip/static";
-import { access, readdir, stat } from "fs/promises";
-import * as path from "path";
-import { cwdUrl } from "../../files.js";
-import { fileURLToPath } from "url";
-import { Stats } from "fs";
-import * as mime from "mime-types";
+import type { ReadOnlyFile } from "@hattip/static";
 import etag from "etag";
+import type { Stats } from "fs";
+import { access, readdir, stat } from "fs/promises";
+import * as mime from "mime-types";
+import * as path from "path";
+import { fileURLToPath } from "url";
 import { Builder } from "./builder.js";
+import type { EntriesOutput } from "./entries-builder.js";
 
-export class StaticFilesBuilder extends Builder {
-  readonly name = "static-files";
+export type StaticFilesBuilderInput = {
+  readonly entries: EntriesOutput;
+};
 
-  #staticUrl = new URL("./public", cwdUrl);
-  #fileMap: Map<string, ReadOnlyFile> = new Map();
+export class StaticFilesBuilder extends Builder<
+  StaticFilesBuilderInput,
+  StaticFilesOutput
+> {
+  async build({ entries }: StaticFilesBuilderInput) {
+    let publicRoot = new URL("./public/", entries.sourceRoot);
+    let fileMap = new Map<string, ReadOnlyFile>();
 
-  async exists() {
     try {
-      await access(this.#staticUrl);
-      return true;
+      await access(publicRoot);
     } catch (_error) {
-      return false;
+      return new StaticFilesOutput(fileMap);
     }
+
+    let rootPath = path.resolve(fileURLToPath(publicRoot));
+    let files = await statsUnderPath(rootPath);
+
+    for (let file of files) {
+      let filePath = file.path.slice(rootPath.length);
+      let httpPath = filePath.split(path.sep).join("/");
+
+      fileMap.set(httpPath, {
+        path: filePath,
+        type: mime.contentType(path.extname(file.path)) || "",
+        size: file.stats.size,
+        etag: etag(file.stats),
+      });
+    }
+
+    return new StaticFilesOutput(fileMap);
   }
 
-  async setup() {}
-
-  async build() {
-    let exists = await this.exists();
-    if (exists) {
-      this.clear();
-      let files = await statsUnderPath(fileURLToPath(this.#staticUrl));
-      for (let file of files) {
-        void this.addFile(file);
-      }
-    }
+  load(data: ReturnType<StaticFilesOutput["serialize"]>) {
+    return new StaticFilesOutput(new Map(Object.entries(data.fileMap)));
   }
+}
 
-  async stop() {}
+export class StaticFilesOutput {
+  readonly fileMap: Map<string, ReadOnlyFile>;
+
+  constructor(fileMap: Map<string, ReadOnlyFile>) {
+    this.fileMap = fileMap;
+  }
 
   serialize() {
     return {
-      fileMap: Object.fromEntries(this.#fileMap.entries()),
+      fileMap: Object.fromEntries(this.fileMap.entries()),
     };
   }
 
-  load(data: any) {
-    this.#fileMap = new Map(Object.entries(data.fileMap));
-  }
-
   warm() {}
-
-  async addFile(file: File) {
-    let filePath = file.path.slice(fileURLToPath(this.#staticUrl).length);
-    let httpPath = filePath.split(path.sep).join("/");
-
-    this.#fileMap.set(httpPath, {
-      path: filePath,
-      type: mime.contentType(path.extname(file.path)) || "",
-      size: file.stats.size,
-      etag: etag(file.stats),
-    });
-  }
-
-  get fileMap() {
-    return this.#fileMap;
-  }
-
-  clear() {
-    this.#fileMap.clear();
-  }
 }
 
 type File = {
@@ -83,6 +77,7 @@ async function statsUnderPath(dir: string): Promise<File[]> {
   for (let item of dirContents) {
     let itemPath = path.join(dir, item);
     let itemStat = await stat(itemPath);
+
     if (itemStat.isDirectory()) {
       let subDirItems = await statsUnderPath(itemPath);
       files = [...files, ...subDirItems];

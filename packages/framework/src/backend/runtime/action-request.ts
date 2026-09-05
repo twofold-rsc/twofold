@@ -1,5 +1,6 @@
 import { parseHeaderValue } from "@hattip/headers";
 import { Runtime } from "../runtime.js";
+import { CompiledAction } from "../build/builders/rsc-builder.js";
 import {
   decodeReply,
   decodeAction,
@@ -14,7 +15,6 @@ import {
   NotFoundError,
   redirectErrorInfo,
 } from "./helpers/errors.js";
-import { CompiledAction } from "../build/builders/rsc-builder.js";
 import { pathToFileURL } from "url";
 import { getStore } from "../stores/rsc-store.js";
 import { serializeError } from "serialize-error";

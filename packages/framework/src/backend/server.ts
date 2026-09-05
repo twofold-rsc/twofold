@@ -19,7 +19,7 @@ import kleur from "kleur";
 import { Socket } from "net";
 import { waitForServerState } from "./server/middlewares/wait-for-server-state.js";
 import { Bus } from "./bus.js";
-import { BuildFailure } from "./build/v2/build-sessions/build-session.js";
+import { BuildFailure } from "./build/build-sessions/build-session.js";
 
 type Options = {
   address: string;

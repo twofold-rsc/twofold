@@ -25,7 +25,7 @@ import { probeFirstChunk } from "./steams/probe-stream.js";
 import type {
   BuildKind,
   BuildSuccessByKind,
-} from "./build/v2/build-sessions/build-session.js";
+} from "./build/build-sessions/build-session.js";
 
 export class Runtime {
   readonly #buildResult: BuildSuccessByKind[BuildKind];

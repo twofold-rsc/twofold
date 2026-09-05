@@ -4,7 +4,7 @@ import { Server, type BuildGeneration } from "../server.js";
 import { randomBytes } from "crypto";
 import kleur from "kleur";
 import { Watcher } from "../build/watcher.js";
-import { BuildSession } from "../build/v2/build-sessions/build-session.js";
+import { BuildSession } from "../build/build-sessions/build-session.js";
 
 export class DevTask {
   #buildSession: BuildSession<"development" | "production">;

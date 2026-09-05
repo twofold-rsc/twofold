@@ -1,6 +1,5 @@
 # TODO
 
-- clean up old build stuff
 - put new build files in place
 - try starting and building an app with errors
 

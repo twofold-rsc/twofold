@@ -4,8 +4,8 @@ import "dotenv/config";
 import { Command } from "commander";
 import { DevTask } from "./tasks/dev-task.js";
 import { ServeTask } from "./tasks/serve-task.js";
-import { DevelopmentBuildSession } from "./build/v2/build-sessions/development-build-session.js";
-import { ProductionBuildSession } from "./build/v2/build-sessions/production-build-session.js";
+import { DevelopmentBuildSession } from "./build/build-sessions/development-build-session.js";
+import { ProductionBuildSession } from "./build/build-sessions/production-build-session.js";
 
 let nodeVersion = process.versions.node.split(".").map(Number);
 

@@ -1,24 +1,13 @@
-export abstract class Builder {
-  abstract name: string;
-  abstract setup(): Promise<void>;
-  abstract build(): Promise<void>;
-  abstract stop(): Promise<void>;
-  abstract serialize(): Record<string, any>;
-  abstract load(data: any): void;
-  abstract warm(): Promise<void> | void;
+export type BuilderOutput = {
+  serialize(): unknown;
+  warm(): void | Promise<void>;
+};
 
-  #error: Error | null = null;
+export type SerializedOutput<Output extends BuilderOutput> = ReturnType<
+  Output["serialize"]
+>;
 
-  reportError(e: unknown) {
-    let error = e instanceof Error ? e : new Error("Unknown error");
-    this.#error = error;
-  }
-
-  clearError() {
-    this.#error = null;
-  }
-
-  get error() {
-    return this.#error;
-  }
+export abstract class Builder<Input, Output extends BuilderOutput> {
+  abstract build(input: Input): Promise<Output>;
+  abstract load(data: SerializedOutput<Output>): Output;
 }

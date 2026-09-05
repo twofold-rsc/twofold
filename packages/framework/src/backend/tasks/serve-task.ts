@@ -1,6 +1,6 @@
 import { Runtime } from "../runtime.js";
 import { Server } from "../server.js";
-import { BuildSession } from "../build/v2/build-sessions/build-session.js";
+import { BuildSession } from "../build/build-sessions/build-session.js";
 
 export class ServeTask {
   #buildSession: BuildSession<"development"> | BuildSession<"production">;
