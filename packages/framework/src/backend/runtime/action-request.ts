@@ -149,6 +149,7 @@ export class ActionRequest {
     let { stream, error, redirect, unauthorized, notFound } =
       await this.#runtime.renderRSCStream(data, {
         temporaryReferences: this.#temporaryReferences,
+        signal: this.#request.signal,
       });
 
     if (redirect) {
@@ -281,6 +282,7 @@ export class ActionRequest {
     let requestToRender = new Request(requestUrl, {
       headers: this.#request.headers,
       method: "GET",
+      signal: this.#request.signal,
     });
 
     return requestToRender;
