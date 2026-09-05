@@ -1,9 +1,12 @@
 # TODO
 
-- visit streaming page and reload while streaming, we get console error
-- pass through cancel reason
 - rsc render should get the abort signal, not error if its aborted
-- review gzip cancelation and make sure that is wired correctly
+
+- live reload might be too aggressively window.reloading.
+  verify:
+  - code changes
+  - markdown changes
+  - framework nodemon reload changes
 
 - [ ] pages/layouts can use client
 - [ ] route stack placeholder should be client component only
@@ -46,6 +49,8 @@
 - how can we bundle rsdw?
 
 - image: <https://takumi.kane.tw/>
+
+- page-request and action-request should pass request.signal to rsc render. current hattip bug prevents this. not a big deal, explore after h3
 
 - can the toast system accept mini schemas
 

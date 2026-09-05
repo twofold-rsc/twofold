@@ -80,14 +80,9 @@ export class PageRequest {
     let renderStack = await this.routeStack();
 
     let { stream, error, redirect, notFound, unauthorized } =
-      await this.#runtime.renderRSCStream(
-        {
-          stack: renderStack,
-        },
-        {
-          signal: this.#request.signal,
-        },
-      );
+      await this.#runtime.renderRSCStream({
+        stack: renderStack,
+      });
 
     if (redirect) {
       await stream.cancel();
