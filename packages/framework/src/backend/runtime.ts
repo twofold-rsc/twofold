@@ -372,7 +372,6 @@ export class Runtime {
     } catch (e: unknown) {
       // this is likely a worst case scenario since errors should be handled by the
       // worker. so if we get here something is really off.
-      //
       let error = deserializeError(e);
       cancelInput(error);
       finish();
