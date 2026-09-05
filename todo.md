@@ -1,6 +1,9 @@
 # TODO
 
 - visit streaming page and reload while streaming, we get console error
+- pass through cancel reason
+- rsc render should get the abort signal, not error if its aborted
+- review gzip cancelation and make sure that is wired correctly
 
 - [ ] pages/layouts can use client
 - [ ] route stack placeholder should be client component only
