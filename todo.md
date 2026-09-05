@@ -1,8 +1,5 @@
 # TODO
 
-- put new build files in place
-- try starting and building an app with errors
-
 - deploy test
 - load test
 
@@ -22,6 +19,9 @@
 - endpoints
 - tests
 - db
+
+- make changes lazy?
+- try starting and building an app with errors
 
 - injectResolver is this global thing, anyway to simplify?
 
