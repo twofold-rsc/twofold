@@ -1,8 +1,5 @@
 # TODO
 
-- deploy test
-- load test
-
 - visit streaming page and reload while streaming, we get console error
 
 - [ ] pages/layouts can use client
@@ -20,8 +17,12 @@
 - tests
 - db
 
-- make changes lazy?
+- make build result changes lazy? this somewhat feels like cheating a benchmark
+- changes are currently calculated as part of completing a successful build. make this calculation lazy.
+- first thing is to benchmark/time it
+
 - try starting and building an app with errors
+- cli: dev, build, serve when we have an existing error. write tests
 
 - injectResolver is this global thing, anyway to simplify?
 
@@ -29,11 +30,8 @@
 - deployment
 - docs
 
-- cli: dev, build, serve when we have an existing error. write tests
-
-- changes are currently calculated as part of completing a successful build. make this calculation lazy.
-
 - production build calculates changes (it never uses them)
+
 - runtime should run the global middleware, similar to how to runs pages
 
 - pass a client component to a server action
