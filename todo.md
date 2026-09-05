@@ -1,13 +1,5 @@
 # TODO
 
-- rsc render should get the abort signal, not error if its aborted
-
-- live reload might be too aggressively window.reloading.
-  verify:
-  - code changes
-  - markdown changes
-  - framework nodemon reload changes
-
 - [ ] pages/layouts can use client
 - [ ] route stack placeholder should be client component only
 
@@ -24,8 +16,8 @@
 - db
 
 - make build result changes lazy? this somewhat feels like cheating a benchmark
-- changes are currently calculated as part of completing a successful build. make this calculation lazy.
-- first thing is to benchmark/time it
+  - changes are currently calculated as part of completing a successful build. make this calculation lazy.
+  - first thing is to benchmark/time it
 
 - try starting and building an app with errors
 - cli: dev, build, serve when we have an existing error. write tests

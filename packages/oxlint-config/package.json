@@ -1,6 +1,6 @@
 {
   "name": "@twofold/oxlint-config",
-  "version": "0.0.83",
+  "version": "0.0.84",
   "description": "Shared Oxlint configuration for Twofold applications",
   "type": "module",
   "exports": {
