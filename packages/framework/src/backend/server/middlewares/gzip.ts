@@ -1,7 +1,7 @@
 import { RouteHandler } from "@hattip/router";
 import { parseHeaderValue } from "@hattip/headers";
 import { createGzip, constants as zlibConstants } from "node:zlib";
-import { Readable } from "node:stream";
+import { pipeline, Readable } from "node:stream";
 import { ReadableStream } from "node:stream/web";
 
 export function gzip(): RouteHandler {
@@ -46,13 +46,6 @@ export function gzip(): RouteHandler {
         return res;
       }
 
-      let nodeStream = Readable.fromWeb(res.body as ReadableStream);
-      let gzip = createGzip({
-        level: 6,
-        chunkSize: 4 * 1024,
-        flush: zlibConstants.Z_SYNC_FLUSH,
-      });
-
       let headers = new Headers(res.headers);
       headers.delete("Content-Length");
       headers.set("Content-Encoding", "gzip");
@@ -63,8 +56,15 @@ export function gzip(): RouteHandler {
         headers.set("ETag", `W/${etag}`);
       }
 
-      let compressedNodeStream = nodeStream.pipe(gzip);
-      let compressedWebStream = Readable.toWeb(compressedNodeStream);
+      let gzip = createGzip({
+        level: 6,
+        chunkSize: 4 * 1024,
+        flush: zlibConstants.Z_SYNC_FLUSH,
+      });
+
+      pipeline(res.body as ReadableStream, gzip, () => {});
+
+      let compressedWebStream = Readable.toWeb(gzip);
 
       return new Response(
         compressedWebStream as globalThis.ReadableStream<Uint8Array>,

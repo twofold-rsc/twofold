@@ -137,7 +137,10 @@ export class Runtime {
 
   async renderRSCStream(
     data: any,
-    options: { temporaryReferences?: unknown } = {},
+    options: {
+      temporaryReferences?: unknown;
+      signal?: AbortSignal;
+    } = {},
   ) {
     let clientComponentMap =
       this.#buildResult.outputs.client.clientComponentMap;
@@ -145,7 +148,16 @@ export class Runtime {
 
     let rscStream = renderToReadableStream(data, clientComponentMap, {
       temporaryReferences: options.temporaryReferences,
+      signal: options.signal,
       onError(err: unknown) {
+        let isCancellationError =
+          options.signal?.aborted && options.signal.reason === err;
+
+        if (isCancellationError) {
+          // no need to do anything here.
+          return;
+        }
+
         streamError = err;
 
         let isSafeError =
@@ -255,11 +267,11 @@ export class Runtime {
       }
     }
 
-    function cancelInput() {
+    function cancelInput(reason?: unknown) {
       // this can happen async, we just want to signal that we no longer
       // are interested
       if (rscReader) {
-        void rscReader.cancel();
+        void rscReader.cancel(reason);
       }
     }
 
@@ -279,14 +291,14 @@ export class Runtime {
       }
     }
 
-    async function cancel() {
+    async function cancel(reason?: unknown) {
       if (!isRequestActive) return;
 
       if (isHtmlStreamActive) {
         post({ status: "CANCEL" });
       }
 
-      cancelInput();
+      cancelInput(reason);
       finish();
     }
 
@@ -358,12 +370,11 @@ export class Runtime {
     try {
       await waitForStatus.promise;
     } catch (e: unknown) {
-      cancelInput();
-      finish();
-
       // this is likely a worst case scenario since errors should be handled by the
       // worker. so if we get here something is really off.
       let error = deserializeError(e);
+      cancelInput(error);
+      finish();
 
       // bubble this out and let the caller handle it
       throw error;
