@@ -30,3 +30,13 @@ test("server-normalizes a trailing slash and hydrates the canonical page", async
   await expect(page.getByRole("button", { name: "Routing" })).toBeVisible();
   verifyNoErrors();
 });
+
+test("preserves query params when normalizing a trailing slash", async ({
+  page,
+}) => {
+  await page.goto("/routing/path-normalization/?source=trailing-slash");
+
+  await expect(page).toHaveURL(
+    "/routing/path-normalization?source=trailing-slash",
+  );
+});
