@@ -7,7 +7,7 @@ export function pathNormalization(): RouteHandler {
       return new Response(null, {
         status: 307,
         headers: {
-          Location: url.pathname.slice(0, -1),
+          Location: `${url.pathname.slice(0, -1)}${url.search}`,
         },
       });
     }
