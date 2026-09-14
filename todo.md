@@ -1,5 +1,9 @@
 # TODO
 
+- upgrade base app deps
+- update template
+- add entangled actions example?
+
 - [ ] pages/layouts can use client
 - [ ] route stack placeholder should be client component only
 

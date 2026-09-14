@@ -33,7 +33,7 @@ test(
       "p@$$w0rd!",
     );
     await expect(page.getByTestId("error-message")).toHaveText(
-      /specific message is omitted in production builds/i,
+      /use the non-minified dev environment for full errors/i,
     );
     await expect(page.getByTestId("error-stack")).not.toContainText(
       "Could not connect to database",
