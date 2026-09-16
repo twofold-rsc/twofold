@@ -1,8 +1,5 @@
 # TODO
 
-- upgrade base app deps
-- update template
-
 - [ ] try out pnpm 12
 - [ ] try npm to create new app
 
