@@ -2,7 +2,9 @@
 
 - upgrade base app deps
 - update template
-- add entangled actions example?
+
+- [ ] try out pnpm 12
+- [ ] try npm to create new app
 
 - [ ] pages/layouts can use client
 - [ ] route stack placeholder should be client component only
