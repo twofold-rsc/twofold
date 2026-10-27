@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/k6": "^1.4.0",
+    "@types/k6": "^2.3.0",
     "typescript": "catalog:"
   }
 }

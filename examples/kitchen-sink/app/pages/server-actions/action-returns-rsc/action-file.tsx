@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 
 async function TimeComponent() {
   await new Promise((resolve) => setTimeout(resolve, 1000));
+  // oxlint-disable-next-line react/purity
   return <p>It is {new Date().toString()} on the server</p>;
 }
 

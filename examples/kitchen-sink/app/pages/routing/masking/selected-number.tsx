@@ -4,6 +4,7 @@ import { Random } from "./random";
 import { RefreshPage } from "./refresh-page";
 
 export function SelectedNumber({ number }: { number: number }) {
+  // oxlint-disable-next-line react/purity
   let now = new Date();
 
   return (

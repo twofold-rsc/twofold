@@ -14,16 +14,10 @@ type State = {
   serverFunctions: Set<string>;
 };
 
-export function ClientTransformPlugin(
-  babel: any,
-  options: object,
-): PluginObject {
+export function ClientTransformPlugin(babel: any, options: object): PluginObject {
   return {
     pre() {
-      invariant(
-        typeof options === "object" && options !== null,
-        "options must be an object",
-      );
+      invariant(typeof options === "object" && options !== null, "options must be an object");
       invariant("moduleId" in options, "moduleId is required");
       invariant("callServerModule" in options, "callServerModule is required");
 
@@ -31,10 +25,7 @@ export function ClientTransformPlugin(
       let callServerModule = options.callServerModule;
 
       invariant(typeof moduleId === "string", "moduleId must be a string");
-      invariant(
-        typeof callServerModule === "string",
-        "callServerModule must be a string",
-      );
+      invariant(typeof callServerModule === "string", "callServerModule must be a string");
 
       setState(this, "moduleId", moduleId);
       setState(this, "callServerModule", callServerModule);
@@ -50,12 +41,8 @@ export function ClientTransformPlugin(
           // we turn default into a specifier before running through babel,
           // so this should cover the export default case
           for (let specifier of specifiers) {
-            if (
-              t.isExportSpecifier(specifier) &&
-              t.isIdentifier(specifier.exported)
-            ) {
+            if (t.isExportSpecifier(specifier) && t.isIdentifier(specifier.exported)) {
               let exportName = specifier.exported.name;
-              let localName = specifier.local.name;
 
               getState(state, "serverFunctions").add(exportName);
             }
@@ -90,12 +77,7 @@ export function ClientTransformPlugin(
                 );
 
                 let callServerImport = t.importDeclaration(
-                  [
-                    t.importSpecifier(
-                      t.identifier("callServer"),
-                      t.identifier("callServer"),
-                    ),
-                  ],
+                  [t.importSpecifier(t.identifier("callServer"), t.identifier("callServer"))],
                   t.stringLiteral(callServerModule),
                 );
 
@@ -103,10 +85,7 @@ export function ClientTransformPlugin(
                 path.pushContainer("body", callServerImport);
 
                 for (let exported of serverFunctions) {
-                  let exportLine = createExportedServerReference(
-                    exported,
-                    moduleId,
-                  );
+                  let exportLine = createExportedServerReference(exported, moduleId);
 
                   path.pushContainer("body", exportLine);
                 }
@@ -129,11 +108,7 @@ export function ClientTransformPlugin(
   };
 }
 
-function setState<K extends keyof State>(
-  state: PluginPass,
-  key: K,
-  value: State[K],
-): void {
+function setState<K extends keyof State>(state: PluginPass, key: K, value: State[K]): void {
   state.set(key, value);
 }
 
@@ -147,9 +122,7 @@ function getState<K extends keyof State>(state: PluginPass, key: K): State[K] {
   return value;
 }
 
-function hasUseServerDirective(
-  block: t.BlockStatement | t.Program | undefined,
-) {
+function hasUseServerDirective(block: t.BlockStatement | t.Program | undefined) {
   if (!block || !block.directives) return false;
   return block.directives.some((directive) =>
     t.isDirectiveLiteral(directive.value, { value: "use server" }),
@@ -166,9 +139,7 @@ function createExportedServerReference(name: string, moduleId: string) {
   return name === "default"
     ? t.exportDefaultDeclaration(callExpression)
     : t.exportNamedDeclaration(
-        t.variableDeclaration("const", [
-          t.variableDeclarator(t.identifier(name), callExpression),
-        ]),
+        t.variableDeclaration("const", [t.variableDeclarator(t.identifier(name), callExpression)]),
         [],
       );
 }
