@@ -11,8 +11,8 @@
   "author": "Ryan Toronto",
   "license": "ISC",
   "devDependencies": {
-    "@changesets/cli": "^3.0.1",
-    "prettier": "^3.9.6",
+    "@changesets/cli": "^3.0.3",
+    "prettier": "^3.9.10",
     "typescript": "catalog:"
   }
 }

@@ -24,7 +24,7 @@
     "react-server-dom-webpack": "catalog:",
     "server-only": "^0.0.1",
     "tailwindcss": "^4.3.3",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@twofold/oxlint-config": "workspace:*",
@@ -32,7 +32,7 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "oxlint": "catalog:",
-    "prettier": "^3.9.6",
+    "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "catalog:"
   }

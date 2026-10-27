@@ -18,18 +18,12 @@ type State = {
   getUniqueFunctionName: (name: string) => string;
 };
 
-export function ServerTransformPlugin(
-  babel: any,
-  options: object,
-): PluginObject {
+export function ServerTransformPlugin(babel: any, options: object): PluginObject {
   return {
     pre() {
       let functionNameCounter = new Map<string, number>();
 
-      invariant(
-        typeof options === "object" && options !== null,
-        "options must be an object",
-      );
+      invariant(typeof options === "object" && options !== null, "options must be an object");
       invariant("moduleId" in options, "moduleId is required");
       invariant("encryption" in options, "encryption is required");
 
@@ -42,8 +36,7 @@ export function ServerTransformPlugin(
         "encryption must be an object",
       );
 
-      let encryptionModule =
-        "module" in encryption ? encryption.module : undefined;
+      let encryptionModule = "module" in encryption ? encryption.module : undefined;
       let encryptionKey = "key" in encryption ? encryption.key : undefined;
 
       invariant(
@@ -51,8 +44,7 @@ export function ServerTransformPlugin(
         "encryption.module must be a string",
       );
       invariant(
-        encryptionKey === undefined ||
-          (isNodeLike(encryptionKey) && t.isExpression(encryptionKey)),
+        encryptionKey === undefined || (isNodeLike(encryptionKey) && t.isExpression(encryptionKey)),
         "encryption.key must be an expression",
       );
 
@@ -85,11 +77,10 @@ export function ServerTransformPlugin(
 
         let name = path.node.id?.name;
         if (name && !getState(state, "serverFunctions").has(name)) {
-          let { functionDeclaration, functionName, capturedVariables } =
-            createServerFunction({
-              path,
-              state,
-            });
+          let { functionDeclaration, functionName, capturedVariables } = createServerFunction({
+            path,
+            state,
+          });
 
           let newFunctionPath = insertFunctionIntoProgram({
             functionDeclaration,
@@ -128,11 +119,10 @@ export function ServerTransformPlugin(
           return;
         }
 
-        let { functionDeclaration, functionName, capturedVariables } =
-          createServerFunction({
-            path,
-            state,
-          });
+        let { functionDeclaration, functionName, capturedVariables } = createServerFunction({
+          path,
+          state,
+        });
 
         let newFunctionPath = insertFunctionIntoProgram({
           path,
@@ -166,11 +156,10 @@ export function ServerTransformPlugin(
           return;
         }
 
-        let { functionDeclaration, functionName, capturedVariables } =
-          createServerFunction({
-            path,
-            state,
-          });
+        let { functionDeclaration, functionName, capturedVariables } = createServerFunction({
+          path,
+          state,
+        });
 
         let newFunction = insertFunctionIntoProgram({
           functionDeclaration,
@@ -197,11 +186,10 @@ export function ServerTransformPlugin(
           t.isBlockStatement(path.node.body) &&
           hasUseServerDirective(path.node.body)
         ) {
-          let { functionDeclaration, functionName, capturedVariables } =
-            createServerFunction({
-              path,
-              state,
-            });
+          let { functionDeclaration, functionName, capturedVariables } = createServerFunction({
+            path,
+            state,
+          });
 
           let newFunction = insertFunctionIntoProgram({
             functionDeclaration,
@@ -218,10 +206,7 @@ export function ServerTransformPlugin(
             state,
           });
 
-          let newProperty = t.objectProperty(
-            t.identifier(path.node.key.name),
-            binding,
-          );
+          let newProperty = t.objectProperty(t.identifier(path.node.key.name), binding);
 
           path.replaceWith(newProperty);
 
@@ -238,7 +223,8 @@ export function ServerTransformPlugin(
           for (let specifier of specifiers) {
             if (
               t.isExportSpecifier(specifier) &&
-              t.isIdentifier(specifier.exported)
+              t.isIdentifier(specifier.exported) &&
+              t.isIdentifier(specifier.local)
             ) {
               let exportName = specifier.exported.name;
               let localName = specifier.local.name;
@@ -292,14 +278,8 @@ export function ServerTransformPlugin(
           if (hasEncryptedVariables && key) {
             let importDeclaration = t.importDeclaration(
               [
-                t.importSpecifier(
-                  t.identifier("tf$encrypt"),
-                  t.identifier("encrypt"),
-                ),
-                t.importSpecifier(
-                  t.identifier("tf$decrypt"),
-                  t.identifier("decrypt"),
-                ),
+                t.importSpecifier(t.identifier("tf$encrypt"), t.identifier("encrypt")),
+                t.importSpecifier(t.identifier("tf$decrypt"), t.identifier("decrypt")),
               ],
               t.stringLiteral(encryptionModule),
             );
@@ -316,10 +296,7 @@ export function ServerTransformPlugin(
               let exportDeclaration = t.exportNamedDeclaration(
                 null,
                 exports.map((serverFunction) =>
-                  t.exportSpecifier(
-                    t.identifier(serverFunction),
-                    t.identifier(serverFunction),
-                  ),
+                  t.exportSpecifier(t.identifier(serverFunction), t.identifier(serverFunction)),
                 ),
               );
               path.pushContainer("body", exportDeclaration);
@@ -338,11 +315,7 @@ export function ServerTransformPlugin(
   };
 }
 
-function setState<K extends keyof State>(
-  state: PluginPass,
-  key: K,
-  value: State[K],
-): void {
+function setState<K extends keyof State>(state: PluginPass, key: K, value: State[K]): void {
   state.set(key, value);
 }
 
@@ -356,9 +329,7 @@ function getState<K extends keyof State>(state: PluginPass, key: K): State[K] {
   return value;
 }
 
-function hasUseServerDirective(
-  block: t.BlockStatement | t.Program | undefined,
-) {
+function hasUseServerDirective(block: t.BlockStatement | t.Program | undefined) {
   if (!block || !block.directives) return false;
   return block.directives.some((directive) =>
     t.isDirectiveLiteral(directive.value, { value: "use server" }),
@@ -367,10 +338,7 @@ function hasUseServerDirective(
 
 function isNodeLike(value: unknown): value is t.Node {
   return (
-    typeof value === "object" &&
-    value !== null &&
-    "type" in value &&
-    typeof value.type === "string"
+    typeof value === "object" && value !== null && "type" in value && typeof value.type === "string"
   );
 }
 
@@ -379,10 +347,7 @@ function createServerFunction({
   state,
 }: {
   path: NodePath<
-    | t.FunctionDeclaration
-    | t.FunctionExpression
-    | t.ArrowFunctionExpression
-    | t.ObjectMethod
+    t.FunctionDeclaration | t.FunctionExpression | t.ArrowFunctionExpression | t.ObjectMethod
   >;
   state: PluginPass;
 }) {
@@ -404,10 +369,7 @@ function createServerFunction({
     );
   }
 
-  let functionName = getState(
-    state,
-    "getUniqueFunctionName",
-  )(originalFunctionName);
+  let functionName = getState(state, "getUniqueFunctionName")(originalFunctionName);
   let params = path.node.params.map((param) => t.cloneNode(param));
   let newParams = [
     ...(capturedVariables.length > 0
@@ -425,12 +387,7 @@ function createServerFunction({
 
   if (capturedVariables.length > 0) {
     if (key) {
-      insertDecryptedVariables(
-        functionDeclaration,
-        functionName,
-        capturedVariables,
-        state,
-      );
+      insertDecryptedVariables(functionDeclaration, functionName, capturedVariables, state);
     } else {
       insertBoundVariables(functionDeclaration, capturedVariables);
     }
@@ -453,10 +410,7 @@ function insertFunctionIntoProgram({
 }: {
   functionDeclaration: t.FunctionDeclaration;
   path: NodePath<
-    | t.FunctionDeclaration
-    | t.FunctionExpression
-    | t.ArrowFunctionExpression
-    | t.ObjectMethod
+    t.FunctionDeclaration | t.FunctionExpression | t.ArrowFunctionExpression | t.ObjectMethod
   >;
 }) {
   let underProgramPath = findParentUnderProgram(path);
@@ -478,9 +432,7 @@ function findParentUnderProgram(path: NodePath) {
     return path;
   }
 
-  let underProgramPath = path.findParent(
-    (p) => p.parentPath?.isProgram() ?? false,
-  );
+  let underProgramPath = path.findParent((p) => p.parentPath?.isProgram() ?? false);
 
   return underProgramPath;
 }
@@ -525,10 +477,7 @@ function insertRegisterServerReference({
   name: string;
   state: PluginPass;
 }) {
-  let registeredServerReferences = getState(
-    state,
-    "registeredServerReferences",
-  );
+  let registeredServerReferences = getState(state, "registeredServerReferences");
 
   if (!registeredServerReferences.has(functionName)) {
     let callExpression = t.expressionStatement(
@@ -572,9 +521,7 @@ function createBinding({
               ]),
               key,
             ])
-          : t.arrayExpression(
-              capturedVariables.map((varName) => t.identifier(varName)),
-            ),
+          : t.arrayExpression(capturedVariables.map((varName) => t.identifier(varName))),
       ],
     );
     functionBinding = binding;
@@ -585,10 +532,7 @@ function createBinding({
   return functionBinding;
 }
 
-function insertBoundVariables(
-  node: t.FunctionDeclaration,
-  variables: string[],
-) {
+function insertBoundVariables(node: t.FunctionDeclaration, variables: string[]) {
   let body = node.body;
 
   if (!body || !body.directives) {
@@ -596,9 +540,7 @@ function insertBoundVariables(
   }
 
   let insertIndex = body.directives.findIndex(
-    (directive) =>
-      t.isDirectiveLiteral(directive.value) &&
-      directive.value.value === "use server",
+    (directive) => t.isDirectiveLiteral(directive.value) && directive.value.value === "use server",
   );
 
   if (insertIndex === -1) {
@@ -631,9 +573,7 @@ function insertDecryptedVariables(
   }
 
   let insertIndex = body.directives.findIndex(
-    (directive) =>
-      t.isDirectiveLiteral(directive.value) &&
-      directive.value.value === "use server",
+    (directive) => t.isDirectiveLiteral(directive.value) && directive.value.value === "use server",
   );
 
   if (insertIndex === -1) {
@@ -664,9 +604,7 @@ function insertDecryptedVariables(
     t.blockStatement([
       t.throwStatement(
         t.newExpression(t.identifier("Error"), [
-          t.stringLiteral(
-            "Server function could not be invoked: Signature mismatch",
-          ),
+          t.stringLiteral("Server function could not be invoked: Signature mismatch"),
         ]),
       ),
     ]),
@@ -683,10 +621,7 @@ function insertDecryptedVariables(
           ...variables.map((variable) =>
             t.objectProperty(t.identifier(variable), t.identifier(variable)),
           ),
-          t.objectProperty(
-            t.identifier("tf$encrypted$id"),
-            t.identifier("tf$encrypted$id"),
-          ),
+          t.objectProperty(t.identifier("tf$encrypted$id"), t.identifier("tf$encrypted$id")),
         ]),
       ]),
     );
@@ -697,10 +632,7 @@ function insertDecryptedVariables(
 
 function getFunctionName(
   path: NodePath<
-    | t.FunctionDeclaration
-    | t.FunctionExpression
-    | t.ArrowFunctionExpression
-    | t.ObjectMethod
+    t.FunctionDeclaration | t.FunctionExpression | t.ArrowFunctionExpression | t.ObjectMethod
   >,
 ) {
   if (t.isObjectMethod(path.node) && t.isIdentifier(path.node.key)) {
@@ -726,10 +658,7 @@ function getFunctionName(
 
 function getCapturedVariables(
   path: NodePath<
-    | t.FunctionDeclaration
-    | t.FunctionExpression
-    | t.ArrowFunctionExpression
-    | t.ObjectMethod
+    t.FunctionDeclaration | t.FunctionExpression | t.ArrowFunctionExpression | t.ObjectMethod
   >,
 ): string[] {
   const capturedVariables = new Set<string>();
@@ -764,29 +693,20 @@ function getCapturedVariables(
 
 function insertKeyCheck(path: NodePath<t.Program>, key: t.Expression) {
   let ifStatement = t.ifStatement(
-    t.binaryExpression(
-      "!==",
-      t.unaryExpression("typeof", key),
-      t.stringLiteral("string"),
-    ),
+    t.binaryExpression("!==", t.unaryExpression("typeof", key), t.stringLiteral("string")),
     t.blockStatement([
       t.throwStatement(
         t.newExpression(t.identifier("Error"), [
-          t.stringLiteral(
-            `Invalid key. Encryption key is missing or undefined.`,
-          ),
+          t.stringLiteral(`Invalid key. Encryption key is missing or undefined.`),
         ]),
       ),
     ]),
   );
 
   let body = path.get("body");
-  let firstNonImportIndex = body.findIndex(
-    (p) => !t.isImportDeclaration(p.node),
-  );
+  let firstNonImportIndex = body.findIndex((p) => !t.isImportDeclaration(p.node));
 
-  let insertPosition =
-    firstNonImportIndex === -1 ? body.length : firstNonImportIndex;
+  let insertPosition = firstNonImportIndex === -1 ? body.length : firstNonImportIndex;
 
   if (body[insertPosition]) {
     body[insertPosition].insertBefore(ifStatement);
@@ -794,9 +714,7 @@ function insertKeyCheck(path: NodePath<t.Program>, key: t.Expression) {
 }
 
 function isTopLevelFunction(
-  path: NodePath<
-    t.FunctionDeclaration | t.FunctionExpression | t.ArrowFunctionExpression
-  >,
+  path: NodePath<t.FunctionDeclaration | t.FunctionExpression | t.ArrowFunctionExpression>,
 ) {
   let parent = path.parentPath;
 
@@ -804,10 +722,7 @@ function isTopLevelFunction(
     return parent?.isProgram() || false;
   }
 
-  if (
-    t.isFunctionExpression(path.node) ||
-    t.isArrowFunctionExpression(path.node)
-  ) {
+  if (t.isFunctionExpression(path.node) || t.isArrowFunctionExpression(path.node)) {
     return (
       parent?.isProgram() ||
       (parent.isVariableDeclarator() &&

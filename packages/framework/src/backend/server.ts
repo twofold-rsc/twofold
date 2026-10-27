@@ -310,7 +310,7 @@ function createHandler(server: Server) {
     app.use(devReload(server));
   }
 
-  app.use(errors());
+  app.use(errors(server));
 
   // every request below here should use the store
   app.use(requestStore(server));

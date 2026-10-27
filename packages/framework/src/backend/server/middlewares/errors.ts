@@ -3,23 +3,33 @@ import { serializeError } from "serialize-error";
 import { readFile } from "fs/promises";
 import { appCompiledDir } from "../../files.js";
 import { parseHeaderValue } from "@hattip/headers";
-import { createFlightStream } from "../../runtime.js";
+import { createFlightStream, RuntimeStoppedError } from "../../runtime.js";
+import { Server } from "../../server.js";
 
-export function errors(): RouteHandler {
+export function errors(server: Server): RouteHandler {
   return async (ctx) => {
-    let build = ctx.runtime
-      ? ctx.runtime.buildResult
-      : ctx.buildFailure
-        ? ctx.buildFailure
-        : null;
+    let build = ctx.runtime ? ctx.runtime.buildResult : ctx.buildFailure ? ctx.buildFailure : null;
 
-    let devErrorPage =
-      build?.kind === "development" && build.outputs.devErrorPage;
+    let devErrorPage = build?.kind === "development" && build.outputs.devErrorPage;
 
     let requestBuildKey = build?.key ?? "unknown";
 
     ctx.handleError = async (e: unknown) => {
       let request = ctx.request;
+
+      if (e instanceof RuntimeStoppedError) {
+        let state = await server.waitForServerState();
+
+        if (state.status === "error") {
+          e = state.buildResult.error;
+          requestBuildKey = state.buildResult.key;
+        } else if (request.method === "GET" || request.method === "HEAD") {
+          return new Response(null, {
+            status: 307,
+            headers: { location: request.url },
+          });
+        }
+      }
 
       let accepts = parseHeaderValue(request.headers.get("accept"));
       let isRSCFetch = accepts.some((a) => a.value === "text/x-component");
@@ -73,10 +83,7 @@ export function errors(): RouteHandler {
       let request = ctx.request;
       let url = new URL(request.url);
 
-      if (
-        request.method === "GET" &&
-        url.pathname === "/_twofold/errors/app.js"
-      ) {
+      if (request.method === "GET" && url.pathname === "/_twofold/errors/app.js") {
         let contents = await devErrorPage.js();
         return new Response(contents, {
           headers: {
@@ -85,10 +92,7 @@ export function errors(): RouteHandler {
         });
       }
 
-      if (
-        request.method === "GET" &&
-        url.pathname === "/_twofold/errors/app.css"
-      ) {
+      if (request.method === "GET" && url.pathname === "/_twofold/errors/app.css") {
         let contents = await devErrorPage.css();
         return new Response(contents, {
           headers: {
@@ -104,13 +108,7 @@ export function errors(): RouteHandler {
   };
 }
 
-async function errorPage({
-  error,
-  buildKey,
-}: {
-  error: Error;
-  buildKey: string;
-}) {
+async function errorPage({ error, buildKey }: { error: Error; buildKey: string }) {
   let htmlFile = new URL("./server-files/error.html", appCompiledDir);
   let contents = await readFile(htmlFile, "utf-8");
 
@@ -121,9 +119,7 @@ async function errorPage({
   let stack = isProd ? "" : (error.stack ?? "");
 
   let digest =
-    error instanceof Error &&
-    "digest" in error &&
-    typeof error.digest === "string"
+    error instanceof Error && "digest" in error && typeof error.digest === "string"
       ? error.digest
       : "";
 

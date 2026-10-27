@@ -16,6 +16,7 @@ export default defineConfig({
   },
   webServer: {
     command: "pnpm dev",
+    stderr: "ignore",
     url: "http://127.0.0.1:3000",
     reuseExistingServer: !process.env.CI,
   },

@@ -21,12 +21,12 @@ async function ServerComponentTime() {
   return (
     <div>
       <p className="text-gray-900" data-testid="updatable-content">
-        This page is a server component and editing it causes the RSC to
-        re-render.
+        This page is a server component and editing it causes the RSC to re-render.
       </p>
       <p className="mt-3 text-gray-900">
         The current time is{" "}
         <span className="bg-purple-500 text-sm text-white">
+          {/* oxlint-disable-next-line react/purity */}
           {new Date().toISOString()}
         </span>
       </p>
