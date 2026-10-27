@@ -22,15 +22,21 @@ import { invariant } from "./utils/invariant.js";
 import { readStream } from "./steams/read-stream.js";
 import { combineBatch, createBatchStream } from "./steams/batch-stream.js";
 import { probeFirstChunk } from "./steams/probe-stream.js";
-import type {
-  BuildKind,
-  BuildSuccessByKind,
-} from "./build/build-sessions/build-session.js";
+import type { BuildKind, BuildSuccessByKind } from "./build/build-sessions/build-session.js";
+
+export class RuntimeStoppedError extends Error {
+  constructor() {
+    super("The runtime stopped during server rendering");
+    this.name = "RuntimeStoppedError";
+  }
+}
 
 export class Runtime {
   readonly #buildResult: BuildSuccessByKind[BuildKind];
 
   #ssrWorker?: Worker | undefined;
+  #stopped = false;
+  #pendingSSRRequests = new Set<(error: Error) => void>();
 
   constructor(buildResult: BuildSuccessByKind[BuildKind]) {
     this.#buildResult = buildResult;
@@ -47,14 +53,8 @@ export class Runtime {
     let realPath = url.pathname;
     let apiEndpoints = this.#buildResult.outputs.rsc.apiEndpoints;
 
-    let [staticAndDynamicApis, catchAllApis] = partition(
-      apiEndpoints,
-      (api) => !api.isCatchAll,
-    );
-    let [dynamicApis, staticApis] = partition(
-      staticAndDynamicApis,
-      (api) => api.isDynamic,
-    );
+    let [staticAndDynamicApis, catchAllApis] = partition(apiEndpoints, (api) => !api.isCatchAll);
+    let [dynamicApis, staticApis] = partition(staticAndDynamicApis, (api) => api.isDynamic);
 
     let dynamicApisInOrder = dynamicApis.toSorted(
       (a, b) => a.dynamicSegments.length - b.dynamicSegments.length,
@@ -84,9 +84,7 @@ export class Runtime {
   }
 
   notFoundPageRequest(request: Request) {
-    let page = this.#buildResult.outputs.rsc.findPageForPath(
-      "/__tf/errors/not-found",
-    );
+    let page = this.#buildResult.outputs.rsc.findPageForPath("/__tf/errors/not-found");
 
     invariant(page, "Could not find not-found page");
 
@@ -99,9 +97,7 @@ export class Runtime {
   }
 
   unauthorizedPageRequest(request: Request) {
-    let page = this.#buildResult.outputs.rsc.findPageForPath(
-      "/__tf/errors/unauthorized",
-    );
+    let page = this.#buildResult.outputs.rsc.findPageForPath("/__tf/errors/unauthorized");
 
     invariant(page, "Could not find unauthorized page");
 
@@ -142,16 +138,14 @@ export class Runtime {
       signal?: AbortSignal;
     } = {},
   ) {
-    let clientComponentMap =
-      this.#buildResult.outputs.client.clientComponentMap;
+    let clientComponentMap = this.#buildResult.outputs.client.clientComponentMap;
     let streamError: unknown;
 
     let rscStream = renderToReadableStream(data, clientComponentMap, {
       temporaryReferences: options.temporaryReferences,
       signal: options.signal,
       onError(err: unknown) {
-        let isCancellationError =
-          options.signal?.aborted && options.signal.reason === err;
+        let isCancellationError = options.signal?.aborted && options.signal.reason === err;
 
         if (isCancellationError) {
           // no need to do anything here.
@@ -160,10 +154,7 @@ export class Runtime {
 
         streamError = err;
 
-        let isSafeError =
-          isNotFoundError(err) ||
-          isRedirectError(err) ||
-          isUnauthorizedError(err);
+        let isSafeError = isNotFoundError(err) || isRedirectError(err) || isUnauthorizedError(err);
 
         if (
           isSafeError &&
@@ -173,8 +164,7 @@ export class Runtime {
         ) {
           return err.digest;
         } else if (err instanceof Error) {
-          let digest =
-            process.env.NODE_ENV === "production" ? randomUUID() : undefined;
+          let digest = process.env.NODE_ENV === "production" ? randomUUID() : undefined;
 
           if (digest) {
             console.log(`Error digest: ${digest}`);
@@ -228,6 +218,10 @@ export class Runtime {
     mode: "page",
     data: Record<string, any> = {},
   ) {
+    if (this.#stopped) {
+      throw new RuntimeStoppedError();
+    }
+
     if (!this.#ssrWorker) {
       throw new Error("Worker not available");
     }
@@ -275,10 +269,13 @@ export class Runtime {
       }
     }
 
+    let pendingSSRRequests = this.#pendingSSRRequests;
+
     function finish() {
       if (!isRequestActive) return;
 
       isRequestActive = false;
+      pendingSSRRequests.delete(interrupt);
 
       port1.off("message", handler);
 
@@ -312,13 +309,22 @@ export class Runtime {
 
     let waitForStatus = Promise.withResolvers<void>();
 
+    function interrupt(error: Error) {
+      waitForStatus.reject(error);
+      cancelInput(error);
+
+      if (isHtmlStreamActive && htmlController) {
+        isHtmlStreamActive = false;
+        htmlController.error(error);
+      }
+
+      finish();
+    }
+
+    pendingSSRRequests.add(interrupt);
+
     function handler(data: unknown) {
-      if (
-        data &&
-        typeof data === "object" &&
-        "status" in data &&
-        typeof data.status === "string"
-      ) {
+      if (data && typeof data === "object" && "status" in data && typeof data.status === "string") {
         if (data.status === "OK") {
           waitForStatus.resolve();
         } else if (data.status === "ERROR" && "serializedError" in data) {
@@ -370,9 +376,7 @@ export class Runtime {
     try {
       await waitForStatus.promise;
     } catch (e: unknown) {
-      // this is likely a worst case scenario since errors should be handled by the
-      // worker. so if we get here something is really off.
-      let error = deserializeError(e);
+      let error = e instanceof Error ? e : deserializeError(e);
       cancelInput(error);
       finish();
 
@@ -389,8 +393,7 @@ export class Runtime {
     // actions might try to load modules
     // there really needs to be an rsc worker
     injectResolver((moduleId) => {
-      let module =
-        this.#buildResult.outputs.rsc.serverActionModuleMap[moduleId];
+      let module = this.#buildResult.outputs.rsc.serverActionModuleMap[moduleId];
 
       if (!module) {
         throw new Error(`Failed to resolve module id ${moduleId}`);
@@ -402,6 +405,12 @@ export class Runtime {
   }
 
   async stop() {
+    this.#stopped = true;
+
+    for (let interrupt of this.#pendingSSRRequests) {
+      interrupt(new RuntimeStoppedError());
+    }
+
     if (this.#ssrWorker) {
       await this.#ssrWorker.terminate();
       this.#ssrWorker = undefined;
@@ -410,6 +419,10 @@ export class Runtime {
 
   get hasSSRWorker() {
     return !!this.#ssrWorker;
+  }
+
+  get stopped() {
+    return this.#stopped;
   }
 
   private async createSSRWorker() {
@@ -422,8 +435,7 @@ export class Runtime {
       workerData: {
         bootstrapUrl,
         appPath: this.#buildResult.outputs.client.SSRAppPath,
-        clientComponentModuleMap:
-          this.#buildResult.outputs.client.clientComponentModuleMap,
+        clientComponentModuleMap: this.#buildResult.outputs.client.clientComponentModuleMap,
       },
       execArgv: ["-C", "default"],
       env: {

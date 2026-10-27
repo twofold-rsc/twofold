@@ -85,7 +85,7 @@
     "@tailwindcss/oxide": "4.3.3",
     "@twofold/client-component-transforms": "workspace:*",
     "@twofold/server-function-transforms": "workspace:*",
-    "chokidar": "^5.0.0",
+    "chokidar": "^6.0.0",
     "client-only": "^0.0.1",
     "commander": "^15.0.0",
     "dotenv": "^17.4.2",
@@ -98,9 +98,9 @@
     "picomatch": "^4.0.7",
     "react-refresh": "^0.19.0",
     "rolldown": "1.2.4",
-    "serialize-error": "^13.0.1",
+    "serialize-error": "^13.0.2",
     "server-only": "^0.0.1",
     "xxhash-wasm": "^1.1.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   }
 }
