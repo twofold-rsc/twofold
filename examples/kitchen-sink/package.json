@@ -41,6 +41,7 @@
     "@types/react-dom": "catalog:",
     "nodemon": "^3.1.14",
     "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "catalog:"

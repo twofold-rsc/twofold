@@ -25,6 +25,7 @@ export default defineConfig({
       name: "app-build",
       grep: /@build/,
       metadata: { environment: "development" },
+      timeout: 10_000,
       workers: 1,
       use: { ...devices["Desktop Chrome"] },
     },

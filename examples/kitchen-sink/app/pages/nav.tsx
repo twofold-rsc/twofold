@@ -178,10 +178,7 @@ export default function Nav() {
                       />
                     </ExampleGroup>
 
-                    <ExampleGroup
-                      name="Client components"
-                      path="/client-components"
-                    >
+                    <ExampleGroup name="Client components" path="/client-components">
                       <ExampleLink
                         title="Client component"
                         description="A component that runs on the client."
@@ -460,9 +457,7 @@ function ExampleGroup({
         {name}
       </NavigationMenu.Trigger>
       <NavigationMenu.Content>
-        <ul className="grid grid-cols-2 gap-x-8 gap-y-5 pr-1 pb-2 pl-2">
-          {children}
-        </ul>
+        <ul className="grid grid-cols-2 gap-x-8 gap-y-5 pr-1 pb-2 pl-2">{children}</ul>
       </NavigationMenu.Content>
     </NavigationMenu.Item>
   );
