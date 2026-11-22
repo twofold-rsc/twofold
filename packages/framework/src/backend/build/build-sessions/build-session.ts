@@ -9,7 +9,7 @@ import type { Builder, BuilderOutput } from "../builders/builder.js";
 import type { AssetsBuilder } from "../builders/assets-builder.js";
 import type { ClientBuilder } from "../builders/client-builder.js";
 import type { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
-import type { EntriesBuilder } from "../builders/entries-builder.js";
+import type { EntriesQueueBuilder } from "../builders/entries-queue-builder.js";
 import type { RSCBuilder } from "../builders/rsc-builder.js";
 import type { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import type { StaticFilesBuilder } from "../builders/static-files-builder.js";
@@ -28,7 +28,7 @@ let configSchema = z.object({
 });
 
 export type BuilderRegistry = {
-  readonly entries: EntriesBuilder;
+  readonly entries: EntriesQueueBuilder;
   readonly devErrorPage: DevErrorPageBuilder;
   readonly serverFiles: ServerFilesBuilder;
   readonly staticFiles: StaticFilesBuilder;
