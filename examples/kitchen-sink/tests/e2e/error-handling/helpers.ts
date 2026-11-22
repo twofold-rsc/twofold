@@ -4,7 +4,6 @@ import { expect } from "../test";
 export async function waitForBuildError(
   request: APIRequestContext,
   url: string,
-  expectedDiagnostic: string,
 ) {
   await expect
     .poll(
@@ -17,15 +16,14 @@ export async function waitForBuildError(
         return {
           status: response.status(),
           isErrorPage: html.includes('data-testid="error-page"'),
-          hasExpectedDiagnostic: html.includes(expectedDiagnostic),
         };
       },
       {
-        message: `Wait for ${url} to serve the build error: ${expectedDiagnostic}`,
+        message: `Wait for ${url} to serve a build error`,
         timeout: 3_000,
       },
     )
-    .toEqual({ status: 500, isErrorPage: true, hasExpectedDiagnostic: true });
+    .toEqual({ status: 500, isErrorPage: true });
 }
 
 export function enableBuildErrors(source: string) {

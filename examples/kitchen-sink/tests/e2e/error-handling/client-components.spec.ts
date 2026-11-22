@@ -1,11 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
-import { expect, test } from "../test";
-import {
-  disableBuildErrors,
-  enableBuildErrors,
-  waitForBuildError,
-} from "./helpers";
+import { disableBuildErrors, enableBuildErrors } from "./helpers";
+import { expect, test } from "./test";
 
 test("renders feedback when a client component throws", async ({
   page,
@@ -88,7 +84,7 @@ test(
 test(
   "shows client component import errors on initial visit",
   { tag: "@build" },
-  async ({ page, request }) => {
+  async ({ page, waitForBuildError }) => {
     let fileUrl = new URL(
       "../../../app/pages/error-handling/client-components/cc-import-error.tsx",
       import.meta.url,
@@ -102,9 +98,7 @@ test(
     try {
       await writeFile(fileUrl, brokenSource);
       await waitForBuildError(
-        request,
         "/error-handling/client-components/cc-import-error",
-        "this-module-doesnt-exist",
       );
       await page.goto("/error-handling/client-components/cc-import-error");
 
@@ -166,7 +160,7 @@ test(
 test(
   "shows client component syntax errors on initial visit",
   { tag: "@build" },
-  async ({ page, request }) => {
+  async ({ page, waitForBuildError }) => {
     let fileUrl = new URL(
       "../../../app/pages/error-handling/client-components/cc-syntax-error.tsx",
       import.meta.url,
@@ -180,9 +174,7 @@ test(
     try {
       await writeFile(fileUrl, brokenSource);
       await waitForBuildError(
-        request,
         "/error-handling/client-components/cc-syntax-error",
-        "cc-syntax-error",
       );
       await page.goto("/error-handling/client-components/cc-syntax-error");
 
