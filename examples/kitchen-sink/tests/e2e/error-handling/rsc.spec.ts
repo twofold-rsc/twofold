@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
+import { expect, test } from "../test";
 import { disableBuildErrors, enableBuildErrors } from "./helpers";
-import { expect, test } from "./test";
 
 test("shows an error when an RSC throws", async ({ page }, testInfo) => {
   await page.goto("/error-handling/rsc/rsc-throw");

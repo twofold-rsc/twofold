@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
+import { expect, test } from "../test";
 import { disableBuildErrors, enableBuildErrors } from "./helpers";
-import { expect, test } from "./test";
 
 test("renders feedback when a client component throws", async ({
   page,

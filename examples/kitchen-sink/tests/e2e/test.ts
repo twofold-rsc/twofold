@@ -12,6 +12,7 @@ declare global {
 
 export let test = base.extend<{
   verifyNoErrors: () => void;
+  waitForBuildError: (url: string) => Promise<void>;
 }>({
   page: async ({ page, javaScriptEnabled }, provide) => {
     async function waitForClientApp() {
@@ -59,6 +60,29 @@ export let test = base.extend<{
       page.off("pageerror", onPageError);
       page.off("console", onConsole);
     }
+  },
+  waitForBuildError: async ({ request }, provide) => {
+    await provide(async (url) => {
+      await expect
+        .poll(
+          async () => {
+            let response = await request.get(url, {
+              headers: { Accept: "text/html" },
+              timeout: 1_500,
+            });
+            let html = await response.text();
+            return {
+              status: response.status(),
+              isErrorPage: html.includes('data-testid="error-page"'),
+            };
+          },
+          {
+            message: `Wait for ${url} to serve a build error`,
+            timeout: 3_000,
+          },
+        )
+        .toEqual({ status: 500, isErrorPage: true });
+    });
   },
 });
 
