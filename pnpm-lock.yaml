@@ -44,6 +44,9 @@ importers:
       '@changesets/cli':
         specifier: ^3.0.3
         version: 3.0.3
+      oxlint-tsgolint:
+        specifier: 'catalog:'
+        version: 7.0.2005
       prettier:
         specifier: ^3.9.10
         version: 3.9.10
@@ -93,9 +96,6 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.89.0(oxlint-tsgolint@7.0.2005)
-      oxlint-tsgolint:
-        specifier: 'catalog:'
-        version: 7.0.2005
       prettier:
         specifier: ^3.9.10
         version: 3.9.10
@@ -172,9 +172,6 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.89.0(oxlint-tsgolint@7.0.2005)
-      oxlint-tsgolint:
-        specifier: 'catalog:'
-        version: 7.0.2005
       prettier:
         specifier: ^3.9.10
         version: 3.9.10
@@ -549,9 +546,6 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.89.0(oxlint-tsgolint@7.0.2005)
-      oxlint-tsgolint:
-        specifier: 'catalog:'
-        version: 7.0.2005
       prettier:
         specifier: ^3.9.10
         version: 3.9.10
