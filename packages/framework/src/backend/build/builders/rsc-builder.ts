@@ -480,10 +480,12 @@ export class RSCOutput {
         let templatePath = `/${entryPoint
           .slice(prefix.length)
           .slice(0, -suffix.length)}`;
+        let isRootOverride =
+          templatePath === "/not-found" || templatePath === "/unauthorized";
 
         return new ErrorTemplate({
           tag: templatePath.split("/").at(-1) ?? "unknown",
-          path: templatePath,
+          path: isRootOverride ? "/" : templatePath,
           fileUrl: pathToFileURL(this.#compiledOutputPath(outputPath)),
         });
       });
@@ -1019,7 +1021,7 @@ function sourcePathsForRoot(root: URL) {
     },
     app: {
       globalMiddleware: path.join(appPath, "middleware.ts"),
-      notFound: path.join(appPath, "pages", "errors", "not-found.tsx"),
+      notFound: path.join(appPath, "pages", "not-found.error.tsx"),
       unauthorized: path.join(appPath, "pages", "unauthorized.error.tsx"),
     },
   };

@@ -302,7 +302,7 @@ async function getRscEntryRoots(sourceRoot: URL) {
     ),
   );
   let middleware = path.join(cwd, "app/middleware.ts");
-  let notFound = path.join(cwd, "app/pages/errors/not-found.tsx");
+  let notFound = path.join(cwd, "app/pages/not-found.error.tsx");
   let unauthorized = path.join(cwd, "app/pages/unauthorized.error.tsx");
 
   return [
