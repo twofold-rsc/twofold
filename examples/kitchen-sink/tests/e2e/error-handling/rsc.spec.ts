@@ -223,7 +223,7 @@ test(
 test(
   "shows RSC missing import errors on initial visit",
   { tag: "@build" },
-  async ({ page }) => {
+  async ({ page, waitForBuildError }) => {
     let fileUrl = new URL(
       "../../../app/pages/error-handling/rsc/rsc-missing-import.page.tsx",
       import.meta.url,
@@ -236,6 +236,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
+      await waitForBuildError("/error-handling/rsc/rsc-missing-import");
       await page.goto("/error-handling/rsc/rsc-missing-import");
 
       await expect(
@@ -246,11 +247,12 @@ test(
       );
     } finally {
       await writeFile(fileUrl, disableBuildErrors(brokenSource));
-      await expect(
-        page.getByText("You shouldn't see this", { exact: true }),
-      ).toBeVisible({ timeout: 15_000 });
-      await expect(page.getByTestId("error-message")).not.toBeVisible();
     }
+
+    await expect(
+      page.getByText("You shouldn't see this", { exact: true }),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId("error-message")).not.toBeVisible();
   },
 );
 
@@ -295,7 +297,7 @@ test(
 test(
   "shows RSC missing image errors on initial visit",
   { tag: "@build" },
-  async ({ page }) => {
+  async ({ page, waitForBuildError }) => {
     let fileUrl = new URL(
       "../../../app/pages/error-handling/rsc/rsc-missing-image.page.tsx",
       import.meta.url,
@@ -308,6 +310,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
+      await waitForBuildError("/error-handling/rsc/rsc-missing-image");
       await page.goto("/error-handling/rsc/rsc-missing-image");
 
       await expect(
@@ -318,11 +321,12 @@ test(
       );
     } finally {
       await writeFile(fileUrl, disableBuildErrors(brokenSource));
-      await expect(
-        page.getByText("You shouldn't see this missing image", { exact: true }),
-      ).toBeVisible({ timeout: 15_000 });
-      await expect(page.getByTestId("error-message")).not.toBeVisible();
     }
+
+    await expect(
+      page.getByText("You shouldn't see this missing image", { exact: true }),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId("error-message")).not.toBeVisible();
   },
 );
 
@@ -365,7 +369,7 @@ test(
 test(
   "shows RSC syntax errors on initial visit",
   { tag: "@build" },
-  async ({ page }) => {
+  async ({ page, waitForBuildError }) => {
     let fileUrl = new URL(
       "../../../app/pages/error-handling/rsc/rsc-syntax-error.page.tsx",
       import.meta.url,
@@ -378,6 +382,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
+      await waitForBuildError("/error-handling/rsc/rsc-syntax-error");
       await page.goto("/error-handling/rsc/rsc-syntax-error");
 
       await expect(
@@ -388,11 +393,12 @@ test(
       );
     } finally {
       await writeFile(fileUrl, disableBuildErrors(brokenSource));
-      await expect(page.getByText("1", { exact: true })).toBeVisible({
-        timeout: 15_000,
-      });
-      await expect(page.getByTestId("error-message")).not.toBeVisible();
     }
+
+    await expect(page.getByText("1", { exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("error-message")).not.toBeVisible();
   },
 );
 
@@ -435,7 +441,7 @@ test(
 test(
   "shows a missing RSC page export on initial visit",
   { tag: "@build" },
-  async ({ page }) => {
+  async ({ page, waitForBuildError }) => {
     let fileUrl = new URL(
       "../../../app/pages/error-handling/rsc/rsc-no-default-export.page.tsx",
       import.meta.url,
@@ -448,6 +454,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
+      await waitForBuildError("/error-handling/rsc/rsc-no-default-export");
       await page.goto("/error-handling/rsc/rsc-no-default-export");
 
       await expect(
@@ -458,11 +465,12 @@ test(
       );
     } finally {
       await writeFile(fileUrl, disableBuildErrors(brokenSource));
-      await expect(page.getByText("Oh no!", { exact: true })).toBeVisible({
-        timeout: 15_000,
-      });
-      await expect(page.getByTestId("error-message")).not.toBeVisible();
     }
+
+    await expect(page.getByText("Oh no!", { exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("error-message")).not.toBeVisible();
   },
 );
 
@@ -505,7 +513,7 @@ test(
 test(
   "shows a missing RSC layout export on initial visit",
   { tag: "@build" },
-  async ({ page }) => {
+  async ({ page, waitForBuildError }) => {
     let fileUrl = new URL(
       "../../../app/pages/error-handling/rsc/rsc-layout-no-default-export/layout.tsx",
       import.meta.url,
@@ -518,6 +526,7 @@ test(
 
     try {
       await writeFile(fileUrl, brokenSource);
+      await waitForBuildError("/error-handling/rsc/rsc-layout-no-default-export");
       await page.goto("/error-handling/rsc/rsc-layout-no-default-export");
 
       await expect(
@@ -528,10 +537,11 @@ test(
       );
     } finally {
       await writeFile(fileUrl, disableBuildErrors(brokenSource));
-      await expect(page.getByText("Hello world", { exact: true })).toBeVisible({
-        timeout: 15_000,
-      });
-      await expect(page.getByTestId("error-message")).not.toBeVisible();
     }
+
+    await expect(page.getByText("Hello world", { exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("error-message")).not.toBeVisible();
   },
 );

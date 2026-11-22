@@ -12,6 +12,7 @@
   "license": "ISC",
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
+    "oxlint-tsgolint": "catalog:",
     "prettier": "^3.9.10",
     "typescript": "catalog:"
   }

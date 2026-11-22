@@ -11,6 +11,7 @@ catalog:
   "@types/react-dom": ^19.3.0
   esbuild: 0.28.2
   oxlint: ^1.89.0
+  oxlint-tsgolint: ^7.0.2005
   react: 19.3.1
   react-dom: 19.3.1
   react-server-dom-webpack: 19.3.1
