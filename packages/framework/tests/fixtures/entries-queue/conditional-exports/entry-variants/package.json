@@ -1,0 +1,12 @@
+{
+  "name": "entry-variants",
+  "type": "module",
+  "exports": {
+    "react-server": "./rsc.js",
+    "browser": "./browser.js",
+    "default": "./default.js"
+  },
+  "peerDependencies": {
+    "react": "*"
+  }
+}

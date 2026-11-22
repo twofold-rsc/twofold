@@ -1,0 +1,7 @@
+{
+  "name": "entries-queue-conditional-exports-fixture",
+  "private": true,
+  "dependencies": {
+    "entry-variants": "0.0.0"
+  }
+}

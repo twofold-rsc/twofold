@@ -1,7 +1,7 @@
 import { AssetsBuilder } from "../builders/assets-builder.js";
 import { ClientBuilder } from "../builders/client-builder.js";
 import { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
-import { EntriesBuilder } from "../builders/entries-builder.js";
+import { EntriesQueueBuilder } from "../builders/entries-queue-builder.js";
 import { RSCBuilder } from "../builders/rsc-builder.js";
 import { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import { StaticFilesBuilder } from "../builders/static-files-builder.js";
@@ -10,7 +10,7 @@ import { BuildSession } from "./build-session.js";
 export class DevelopmentBuildSession extends BuildSession<"development"> {
   constructor() {
     super("development", {
-      entries: new EntriesBuilder(),
+      entries: new EntriesQueueBuilder(),
       devErrorPage: new DevErrorPageBuilder(),
       serverFiles: new ServerFilesBuilder(),
       staticFiles: new StaticFilesBuilder(),
