@@ -64,6 +64,7 @@
     "etag": "^1.8.1",
     "jiti": "^2.7.0",
     "kleur": "^4.1.5",
+    "lightningcss": "1.32.0",
     "mime-types": "^3.0.2",
     "oxc-transform-react": "^0.155.0",
     "picomatch": "^4.0.7",
