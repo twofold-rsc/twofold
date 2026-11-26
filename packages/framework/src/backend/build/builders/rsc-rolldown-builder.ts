@@ -10,11 +10,11 @@ import { transform as transformCss } from "lightningcss";
 import * as mime from "mime-types";
 import { build as rolldownBuild, type Plugin } from "rolldown";
 import { frameworkCompiledDir, frameworkSrcDir } from "../../files.js";
-import { shouldIgnoreUseClient, shouldIgnoreUseServer } from "../helpers/excluded.js";
 import { fileExists, hashFile } from "../helpers/file.js";
 import { pathToLanguage } from "../helpers/languages.js";
 import { LazyValue } from "../helpers/lazy-value.js";
 import { getModuleId } from "../helpers/module.js";
+import { getRscDirective } from "../helpers/rsc-directives.js";
 import { API } from "../rsc/api.js";
 import { CatchBoundary } from "../rsc/catch-boundary.js";
 import { ErrorTemplate } from "../rsc/error-template.js";
@@ -140,10 +140,12 @@ export class RSCRolldownBuilder extends Builder<BuilderInput, RSCRolldownOutput>
 
       preserveEntrySignatures: "strict",
 
-      onLog(_level, log) {
+      onLog(level, log, defaultHandler) {
         if (log.code === "UNRESOLVED_IMPORT") {
           throw new Error(`Could not resolve import "${log.exporter}" in ${log.id}`);
         }
+
+        defaultHandler(level, log);
       },
 
       plugins: [
@@ -504,7 +506,9 @@ function directivesPlugin(
           moduleId,
         };
 
-        if (code.includes("use client") && !shouldIgnoreUseClient(id)) {
+        let directive = await getRscDirective(id, options);
+
+        if (directive === "client") {
           let result = await clientComponentTransform({
             ...options,
             rscClientPath: "react-server-dom-webpack/server.edge",
@@ -516,7 +520,7 @@ function directivesPlugin(
           };
         }
 
-        if (code.includes("use server") && !shouldIgnoreUseServer(id)) {
+        if (directive === "server") {
           let result = await serverFunctionTransform({
             ...options,
             encryption: {

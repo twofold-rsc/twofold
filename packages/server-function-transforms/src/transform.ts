@@ -81,7 +81,13 @@ export async function transform({
       ? Array.from(codeAst.metadata.serverFunctions)
       : [];
 
-  if (serverFunctions.length === 0) {
+  let removedModuleDirective =
+    output === "server" &&
+    codeAst?.metadata &&
+    "isServerModule" in codeAst.metadata &&
+    codeAst.metadata.isServerModule === true;
+
+  if (serverFunctions.length === 0 && !removedModuleDirective) {
     return {
       code: esResult.code,
       serverFunctions,

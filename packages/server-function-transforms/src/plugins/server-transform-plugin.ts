@@ -260,6 +260,12 @@ export function ServerTransformPlugin(babel: any, options: object): PluginObject
           let hasEncryptedVariables = encryption.hasEncryptedVariables;
           let key = encryption.key;
 
+          if (getState(state, "isServerModule")) {
+            path.node.directives = path.node.directives.filter(
+              (directive) => !t.isDirectiveLiteral(directive.value, { value: "use server" }),
+            );
+          }
+
           // import registerServerReference
           if (hasServerFunction) {
             let importDeclaration = t.importDeclaration(
@@ -310,6 +316,7 @@ export function ServerTransformPlugin(babel: any, options: object): PluginObject
       file.metadata = file.metadata || {};
       file.metadata = {
         serverFunctions: getState(this, "serverFunctions"),
+        isServerModule: getState(this, "isServerModule"),
       };
     },
   };
