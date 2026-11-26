@@ -1,10 +1,7 @@
 import { compile, optimize } from "@tailwindcss/node";
 import { Scanner } from "@tailwindcss/oxide";
 import { transform as clientComponentTransform } from "@twofold/client-component-transforms";
-import {
-  envKey,
-  transform as serverFunctionTransform,
-} from "@twofold/server-function-transforms";
+import { envKey, transform as serverFunctionTransform } from "@twofold/server-function-transforms";
 import { createHash } from "node:crypto";
 import { glob, readFile } from "node:fs/promises";
 import path from "node:path";
@@ -13,10 +10,7 @@ import { transform as transformCss } from "lightningcss";
 import * as mime from "mime-types";
 import { build as rolldownBuild, type Plugin } from "rolldown";
 import { frameworkCompiledDir, frameworkSrcDir } from "../../files.js";
-import {
-  shouldIgnoreUseClient,
-  shouldIgnoreUseServer,
-} from "../helpers/excluded.js";
+import { shouldIgnoreUseClient, shouldIgnoreUseServer } from "../helpers/excluded.js";
 import { fileExists, hashFile } from "../helpers/file.js";
 import { pathToLanguage } from "../helpers/languages.js";
 import { LazyValue } from "../helpers/lazy-value.js";
@@ -41,13 +35,22 @@ type Asset = {
   readonly type: string;
   readonly path: string;
 };
+
 type Action = {
   readonly id: string;
   readonly moduleId: string;
   readonly export: string;
 };
-type CompiledAction = Action & { readonly path: string; readonly hash: string };
-type CompiledEntry = { readonly file: string; readonly css?: string };
+
+type CompiledAction = Action & {
+  readonly path: string;
+  readonly hash: string;
+};
+
+type CompiledEntry = {
+  readonly file: string;
+  readonly css?: string;
+};
 
 type OutputData = {
   readonly sourceRoot: string;
@@ -59,17 +62,14 @@ type OutputData = {
 };
 
 let frameworkRoot = fileURLToPath(frameworkSrcDir);
+
 let frameworkEntries = {
   notFound: frameworkFile("pages/not-found.tsx"),
   unauthorized: frameworkFile("pages/unauthorized.tsx"),
   notFoundTemplate: frameworkFile("components/error-templates/not-found.tsx"),
-  unauthorizedTemplate: frameworkFile(
-    "components/error-templates/unauthorized.tsx",
-  ),
+  unauthorizedTemplate: frameworkFile("components/error-templates/unauthorized.tsx"),
   outerRootWrapper: frameworkFile("components/outer-root-wrapper.tsx"),
-  routeStackPlaceholder: frameworkFile(
-    "components/route-stack/placeholder.tsx",
-  ),
+  routeStackPlaceholder: frameworkFile("components/route-stack/placeholder.tsx"),
   catchBoundary: frameworkFile("components/boundaries/catch-boundary.tsx"),
 };
 
@@ -77,15 +77,13 @@ function frameworkFile(file: string) {
   return fileURLToPath(new URL(`./client/${file}`, frameworkSrcDir));
 }
 
-export class RSCRolldownBuilder extends Builder<
-  BuilderInput,
-  RSCRolldownOutput
-> {
+export class RSCRolldownBuilder extends Builder<BuilderInput, RSCRolldownOutput> {
   async build({ environment, entries }: BuilderInput) {
     let cwd = fileURLToPath(entries.sourceRoot);
     let outputDir = path.join(cwd, ".twofold/rsc");
     let appDir = path.join(cwd, "app");
     let middleware = path.join(appDir, "middleware.ts");
+
     let routeFiles = await Array.fromAsync(
       glob(
         [
@@ -98,26 +96,24 @@ export class RSCRolldownBuilder extends Builder<
         { cwd },
       ),
     );
+
     let routes = new Set(routeFiles.map((file) => path.resolve(cwd, file)));
-    let {
-      notFoundTemplate,
-      unauthorizedTemplate,
-      ...requiredFrameworkEntries
-    } = frameworkEntries;
+
+    let { notFoundTemplate, unauthorizedTemplate, ...requiredFrameworkEntries } = frameworkEntries;
+
     let input = [
       ...new Set([
         ...routes,
         ...entries.serverActionEntryMap.keys(),
         ...((await fileExists(middleware)) ? [middleware] : []),
-        ...(!routes.has(path.join(appDir, "pages/not-found.error.tsx"))
-          ? [notFoundTemplate]
-          : []),
+        ...(!routes.has(path.join(appDir, "pages/not-found.error.tsx")) ? [notFoundTemplate] : []),
         ...(!routes.has(path.join(appDir, "pages/unauthorized.error.tsx"))
           ? [unauthorizedTemplate]
           : []),
         ...Object.values(requiredFrameworkEntries),
       ]),
     ].sort();
+
     let images = new Map<string, Asset>();
     let fonts = new Map<string, Asset>();
     let actions = new Map<string, Action[]>();
@@ -128,20 +124,28 @@ export class RSCRolldownBuilder extends Builder<
       input,
       platform: "node",
       tsconfig: true,
-      resolve: { conditionNames: ["react-server", "module"] },
-      transform: { jsx: { runtime: "automatic" } },
+
+      resolve: {
+        conditionNames: ["react-server", "module"],
+      },
+
+      transform: {
+        jsx: {
+          runtime: "automatic",
+        },
+      },
+
       external: (id) =>
-        entries.externalPackages.some(
-          (pkg) => id === pkg || id.startsWith(`${pkg}/`),
-        ),
+        entries.externalPackages.some((pkg) => id === pkg || id.startsWith(`${pkg}/`)),
+
       preserveEntrySignatures: "strict",
+
       onLog(_level, log) {
         if (log.code === "UNRESOLVED_IMPORT") {
-          throw new Error(
-            `Could not resolve import "${log.exporter}" in ${log.id}`,
-          );
+          throw new Error(`Could not resolve import "${log.exporter}" in ${log.id}`);
         }
       },
+
       plugins: [
         directivesPlugin(actions, entries.clientComponentEntryMap, routes),
         rscStorePlugin(),
@@ -154,6 +158,7 @@ export class RSCRolldownBuilder extends Builder<
           minify: environment === "production",
         }),
       ],
+
       output: {
         dir: outputDir,
         format: "esm",
@@ -165,22 +170,25 @@ export class RSCRolldownBuilder extends Builder<
 
     let compiledEntries = new Map<string, CompiledEntry>();
     let compiledActions = new Map<string, CompiledAction>();
+
     for (let chunk of result.output) {
-      if (chunk.type !== "chunk" || !chunk.isEntry || !chunk.facadeModuleId)
-        continue;
+      if (chunk.type !== "chunk" || !chunk.isEntry || !chunk.facadeModuleId) continue;
+
       let id = chunk.facadeModuleId;
       let css = routeCss.get(id);
+
       compiledEntries.set(id, {
         file: chunk.fileName,
         ...(css ? { css } : {}),
       });
+
       for (let action of actions.get(id) ?? []) {
         if (!chunk.exports.includes(action.export)) {
-          throw new Error(
-            `Missing server action export ${action.export} in ${id}`,
-          );
+          throw new Error(`Missing server action export ${action.export} in ${id}`);
         }
+
         let hash = path.basename(chunk.fileName, ".js").split("-").at(-1)!;
+
         compiledActions.set(action.id, {
           ...action,
           path: path.join(outputDir, chunk.fileName),
@@ -188,6 +196,7 @@ export class RSCRolldownBuilder extends Builder<
         });
       }
     }
+
     for (let [id, moduleActions] of actions) {
       if (!compiledEntries.has(id) && moduleActions.length) {
         throw new Error(`Missing server action entry for ${id}`);
@@ -229,22 +238,34 @@ export class RSCRolldownOutput {
   }
 
   readonly #routes = new LazyValue(() => this.#buildRoutes());
+
   readonly #tree = new LazyValue(() => {
     let { layouts, pages, templates, boundaries, wrapper } = this.#routes.value;
+
     let root = layouts.find((layout) => layout.path === "/");
-    if (!root) throw new Error("No root layout");
-    for (let layout of layouts) if (layout !== root) root.addChild(layout);
-    for (let node of [...boundaries, ...pages, ...templates])
+
+    if (!root) {
+      throw new Error("No root layout");
+    }
+
+    for (let layout of layouts) {
+      if (layout !== root) {
+        root.addChild(layout);
+      }
+    }
+
+    for (let node of [...boundaries, ...pages, ...templates]) {
       root.addChild(node);
+    }
+
     root.addWrapper(wrapper);
+
     return root.tree;
   });
 
   readonly #css = new LazyValue(() => [
     ...new Set(
-      Object.values(this.#data.entries).flatMap((entry) =>
-        entry.css ? [entry.css] : [],
-      ),
+      Object.values(this.#data.entries).flatMap((entry) => (entry.css ? [entry.css] : [])),
     ),
   ]);
 
@@ -273,35 +294,37 @@ export class RSCRolldownOutput {
   get apiEndpoints() {
     return this.#routes.value.apis;
   }
+
   get css() {
     return this.#css.value;
   }
+
   get serverManifest() {
     return this.#serverManifest.value;
   }
-  get serverActionModuleMap(): Readonly<
-    Record<string, { readonly path: string } | undefined>
-  > {
+
+  get serverActionModuleMap(): Readonly<Record<string, { readonly path: string } | undefined>> {
     return this.#serverActionModuleMap.value;
   }
 
   #entryPath(source: string) {
     let entry = this.#data.entries[source];
-    if (!entry)
+
+    if (!entry) {
       throw new Error(`Failed to get compiled entry point: ${source}`);
+    }
+
     return path.join(this.#outputDir, entry.file);
   }
 
   hasMiddleware() {
-    return Object.hasOwn(
-      this.#data.entries,
-      path.join(this.#root, "app/middleware.ts"),
-    );
+    return Object.hasOwn(this.#data.entries, path.join(this.#root, "app/middleware.ts"));
   }
 
   get middlewarePath() {
     return this.#entryPath(path.join(this.#root, "app/middleware.ts"));
   }
+
   get routeStackPlaceholderPath() {
     return this.#entryPath(frameworkEntries.routeStackPlaceholder);
   }
@@ -315,25 +338,19 @@ export class RSCRolldownOutput {
   }
 
   async warm() {
-    let { layouts, pages, templates, boundaries, apis, wrapper } =
-      this.#routes.value;
+    let { layouts, pages, templates, boundaries, apis, wrapper } = this.#routes.value;
+
     await Promise.all([
-      ...[
-        ...layouts,
-        ...pages,
-        ...templates,
-        ...boundaries,
-        ...apis,
-        wrapper,
-      ].map((node) => node.preload()),
-      ...[
-        ...new Set(
-          Array.from(this.serverActionMap.values(), (action) => action.path),
-        ),
-      ].map((file) => import(pathToFileURL(file).href)),
-      this.hasMiddleware()
-        ? import(pathToFileURL(this.middlewarePath).href)
-        : undefined,
+      ...[...layouts, ...pages, ...templates, ...boundaries, ...apis, wrapper].map((node) =>
+        node.preload(),
+      ),
+
+      ...[...new Set(Array.from(this.serverActionMap.values(), (action) => action.path))].map(
+        (file) => import(pathToFileURL(file).href),
+      ),
+
+      this.hasMiddleware() ? import(pathToFileURL(this.middlewarePath).href) : undefined,
+
       import(pathToFileURL(this.routeStackPlaceholderPath).href),
     ]);
   }
@@ -350,9 +367,13 @@ export class RSCRolldownOutput {
     });
 
     for (let [source, entry] of Object.entries(this.#data.entries)) {
-      if (!source.startsWith(`${pagesDir}${path.sep}`)) continue;
+      if (!source.startsWith(`${pagesDir}${path.sep}`)) {
+        continue;
+      }
+
       let relative = path.relative(pagesDir, source).split(path.sep).join("/");
       let fileUrl = pathToFileURL(path.join(this.#outputDir, entry.file));
+
       if (relative.endsWith(".page.tsx")) {
         pages.push(
           new Page({
@@ -361,10 +382,7 @@ export class RSCRolldownOutput {
             fileUrl,
           }),
         );
-      } else if (
-        relative === "layout.tsx" ||
-        relative.endsWith("/layout.tsx")
-      ) {
+      } else if (relative === "layout.tsx" || relative.endsWith("/layout.tsx")) {
         let directory = path.posix.dirname(relative);
         layouts.push(
           new Layout({
@@ -384,8 +402,8 @@ export class RSCRolldownOutput {
       } else if (relative.endsWith(".error.tsx")) {
         let template = relative.slice(0, -".error.tsx".length);
         let tag = path.posix.basename(template);
-        let isRootOverride =
-          template === "not-found" || template === "unauthorized";
+        let isRootOverride = template === "not-found" || template === "unauthorized";
+
         templates.push(
           new ErrorTemplate({
             tag,
@@ -394,27 +412,17 @@ export class RSCRolldownOutput {
           }),
         );
         let parent = path.posix.dirname(template);
-        if (parent !== ".") boundaryPaths.add(`/${parent}`);
+        if (parent !== ".") {
+          boundaryPaths.add(`/${parent}`);
+        }
       }
     }
 
     for (let [tag, fallback, page] of [
-      [
-        "not-found",
-        frameworkEntries.notFoundTemplate,
-        frameworkEntries.notFound,
-      ],
-      [
-        "unauthorized",
-        frameworkEntries.unauthorizedTemplate,
-        frameworkEntries.unauthorized,
-      ],
+      ["not-found", frameworkEntries.notFoundTemplate, frameworkEntries.notFound],
+      ["unauthorized", frameworkEntries.unauthorizedTemplate, frameworkEntries.unauthorized],
     ] as const) {
-      if (
-        !templates.some(
-          (template) => template.tag === tag && template.path === "/",
-        )
-      ) {
+      if (!templates.some((template) => template.tag === tag && template.path === "/")) {
         templates.push(
           new ErrorTemplate({
             tag,
@@ -423,6 +431,7 @@ export class RSCRolldownOutput {
           }),
         );
       }
+
       pages.push(
         new Page({
           path: `/__tf/errors/${tag}`,
@@ -431,9 +440,7 @@ export class RSCRolldownOutput {
       );
     }
 
-    let boundaryUrl = pathToFileURL(
-      this.#entryPath(frameworkEntries.catchBoundary),
-    );
+    let boundaryUrl = pathToFileURL(this.#entryPath(frameworkEntries.catchBoundary));
     let boundaries = [...boundaryPaths].map(
       (path) =>
         new CatchBoundary({
@@ -442,13 +449,20 @@ export class RSCRolldownOutput {
           routeStackPlaceholder,
         }),
     );
+
     let wrapper = new Wrapper({
       path: "/",
-      fileUrl: pathToFileURL(
-        this.#entryPath(frameworkEntries.outerRootWrapper),
-      ),
+      fileUrl: pathToFileURL(this.#entryPath(frameworkEntries.outerRootWrapper)),
     });
-    return { pages, layouts, apis, templates, boundaries, wrapper };
+
+    return {
+      pages,
+      layouts,
+      apis,
+      templates,
+      boundaries,
+      wrapper,
+    };
   }
 }
 
@@ -472,21 +486,36 @@ function directivesPlugin(
         }
       }
     },
+
     transform: {
-      filter: { id: /\.(ts|tsx|js|jsx|mjs)$/, code: /use (client|server)/ },
+      filter: {
+        id: /\.(ts|tsx|js|jsx|mjs)$/,
+        code: /use (client|server)/,
+      },
+
       async handler(code, id) {
         let moduleId = getModuleId(id);
+
         let options = {
-          input: { code, language: pathToLanguage(id) },
+          input: {
+            code,
+            language: pathToLanguage(id),
+          },
           moduleId,
         };
+
         if (code.includes("use client") && !shouldIgnoreUseClient(id)) {
           let result = await clientComponentTransform({
             ...options,
             rscClientPath: "react-server-dom-webpack/server.edge",
           });
-          return { code: result.code, moduleType: "js" };
+
+          return {
+            code: result.code,
+            moduleType: "js",
+          };
         }
+
         if (code.includes("use server") && !shouldIgnoreUseServer(id)) {
           let result = await serverFunctionTransform({
             ...options,
@@ -495,6 +524,7 @@ function directivesPlugin(
               module: "@twofold/framework/encryption",
             },
           });
+
           actions.set(
             id,
             result.serverFunctions.map((name) => ({
@@ -503,7 +533,11 @@ function directivesPlugin(
               export: name,
             })),
           );
-          return { code: result.code, moduleType: "js" };
+
+          return {
+            code: result.code,
+            moduleType: "js",
+          };
         }
       },
     },
@@ -514,12 +548,14 @@ function rscStorePlugin(): Plugin {
   return {
     name: "rsc-store-singleton",
     resolveId: {
-      filter: { id: /\/stores\/rsc-store/ },
+      filter: {
+        id: /\/stores\/rsc-store/,
+      },
+
       handler(_id, importer) {
         if (importer?.startsWith(frameworkRoot)) {
           return {
-            id: new URL("./backend/stores/rsc-store.js", frameworkCompiledDir)
-              .href,
+            id: new URL("./backend/stores/rsc-store.js", frameworkCompiledDir).href,
             external: true,
           };
         }
@@ -528,36 +564,36 @@ function rscStorePlugin(): Plugin {
   };
 }
 
-async function recordAsset(
-  file: string,
-  assets: Map<string, Asset>,
-  kind: "fonts" | "images",
-) {
+async function recordAsset(file: string, assets: Map<string, Asset>, kind: "fonts" | "images") {
   let asset = assets.get(file);
+
   if (!asset) {
     let ext = path.extname(file);
+
     asset = {
       id: `${path.basename(file, ext)}-${await hashFile(file)}${ext}`,
       type: mime.contentType(ext) || "",
       path: file,
     };
+
     assets.set(file, asset);
   }
+
   return `/__tf/assets/${kind}/${asset.id}`;
 }
 
-function assetsPlugin(
-  images: Map<string, Asset>,
-  fonts: Map<string, Asset>,
-): Plugin {
+function assetsPlugin(images: Map<string, Asset>, fonts: Map<string, Asset>): Plugin {
   return {
     name: "rsc-assets",
     load: {
-      filter: { id: /\.(png|jpe?g|gif|webp|avif|svg|woff2)$/ },
+      filter: {
+        id: /\.(png|jpe?g|gif|webp|avif|svg|woff2)$/,
+      },
       async handler(id) {
         let url = id.endsWith(".woff2")
           ? await recordAsset(id, fonts, "fonts")
           : await recordAsset(id, images, "images");
+
         return {
           code: `export default ${JSON.stringify(url)};`,
           moduleType: "js",
@@ -585,24 +621,38 @@ function routeCssPlugin({
 
   async function compileStylesheet(file: string) {
     let base = path.dirname(file);
+
     let compiler = await compile(await readFile(file, "utf8"), {
       base,
       from: file,
       shouldRewriteUrls: true,
       onDependency() {},
     });
+
     let sources = [...compiler.sources];
+
     if (compiler.root === null) {
-      sources.push({ base: appDir, pattern: "**/*", negated: false });
+      sources.push({
+        base: appDir,
+        pattern: "**/*",
+        negated: false,
+      });
     } else if (compiler.root !== "none") {
-      sources.push({ ...compiler.root, negated: false });
+      sources.push({
+        ...compiler.root,
+        negated: false,
+      });
     }
-    let css = compiler.build(
-      compiler.features > 0 ? new Scanner({ sources }).scan() : [],
-    );
+
+    let css = compiler.build(compiler.features > 0 ? new Scanner({ sources }).scan() : []);
     let urls = new Set<string>();
     let buffer = Buffer.from(css);
-    let options = { filename: file, code: buffer, errorRecovery: true };
+    let options = {
+      filename: file,
+      code: buffer,
+      errorRecovery: true,
+    };
+
     transformCss({
       ...options,
       visitor: {
@@ -611,24 +661,42 @@ function routeCssPlugin({
         },
       },
     });
+
     let replacements = new Map<string, string>();
+
     await Promise.all(
       [...urls].map(async (url) => {
-        if (!url.endsWith(".woff2") || /^(?:[\w+.-]+:|\/\/)/.test(url)) return;
+        if (!url.endsWith(".woff2") || /^(?:[\w+.-]+:|\/\/)/.test(url)) {
+          return;
+        }
+
         let font = url.startsWith("/")
           ? path.resolve(appDir, "../public", `.${url}`)
           : path.resolve(base, url);
-        if (url.startsWith("/") && !(await fileExists(font))) font = url;
+
+        if (url.startsWith("/") && !(await fileExists(font))) {
+          font = url;
+        }
+
         replacements.set(url, await recordAsset(font, fonts, "fonts"));
       }),
     );
-    if (!replacements.size) return css;
+
+    if (!replacements.size) {
+      return css;
+    }
+
     return transformCss({
       ...options,
       visitor: {
         Url(value) {
           let replacement = replacements.get(value.url);
-          if (replacement) return { ...value, url: replacement };
+          if (replacement) {
+            return {
+              ...value,
+              url: replacement,
+            };
+          }
         },
       },
     }).code.toString();
@@ -636,45 +704,68 @@ function routeCssPlugin({
 
   return {
     name: "rsc-route-css",
-    // Rolldown handles the JS graph; CSS imports need a JS placeholder because
-    // this version of Rolldown does not have a CSS bundler.
     load: {
-      filter: { id: /\.css$/ },
+      filter: {
+        id: /\.css$/,
+      },
+
       handler(id) {
         stylesheets.add(id);
-        return { code: "", moduleType: "js" };
+        return {
+          code: "",
+          moduleType: "js",
+        };
       },
     },
+
     async generateBundle() {
       let assets = new Set<string>();
+
       for (let route of [...routes].sort()) {
-        if (
-          !route.endsWith(".page.tsx") &&
-          path.basename(route) !== "layout.tsx"
-        )
+        if (!route.endsWith(".page.tsx") && path.basename(route) !== "layout.tsx") {
           continue;
+        }
+
         let visited = new Set<string>();
         let dynamicImports = new Set<string>();
         let sheets: string[] = [];
+
         let visit = (id: string) => {
-          if (visited.has(id)) return;
+          if (visited.has(id)) {
+            return;
+          }
+
           visited.add(id);
+
           if (stylesheets.has(id)) {
             sheets.push(id);
             return;
           }
+
           let module = this.getModuleInfo(id);
-          if (!module) return;
-          for (let dependency of module.importedIds) visit(dependency);
+          if (!module) {
+            return;
+          }
+
+          for (let dependency of module.importedIds) {
+            visit(dependency);
+          }
+
           for (let dependency of module.dynamicallyImportedIds) {
             dynamicImports.add(dependency);
           }
         };
+
         visit(route);
-        // The route stylesheet includes lazy dependencies too: the browser
-        // gets their CSS with the route, not when the server loads a JS chunk.
-        for (let dependency of dynamicImports) visit(dependency);
-        if (!sheets.length) continue;
+
+        for (let dependency of dynamicImports) {
+          visit(dependency);
+        }
+
+        if (!sheets.length) {
+          continue;
+        }
+
         let parts = await Promise.all(
           sheets.map((file) => {
             let result = compiled.get(file);
@@ -682,13 +773,17 @@ function routeCssPlugin({
               result = compileStylesheet(file);
               compiled.set(file, result);
             }
+
             return result;
           }),
         );
+
         let { code } = optimize(parts.join("\n"), { minify });
         let hash = createHash("sha256").update(code).digest("hex").slice(0, 16);
         let filename = `styles-${hash}.css`;
+
         routeCss.set(route, filename);
+
         if (!assets.has(filename)) {
           assets.add(filename);
           this.emitFile({
