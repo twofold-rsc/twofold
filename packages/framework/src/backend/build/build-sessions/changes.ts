@@ -1,10 +1,10 @@
 import { basename } from "node:path";
 import type { ClientOutput } from "../builders/client-builder.js";
-import type { RSCOutput } from "../builders/rsc-builder.js";
+import type { RSCRolldownOutput } from "../builders/rsc-rolldown-builder.js";
 
 type ChangeOutputs = {
   readonly client: ClientOutput;
-  readonly rsc: RSCOutput;
+  readonly rsc: RSCRolldownOutput;
 };
 
 export type BuildChanges = {

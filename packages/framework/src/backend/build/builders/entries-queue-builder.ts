@@ -1,8 +1,5 @@
 import { transform as transformClientComponent } from "@twofold/client-component-transforms";
-import {
-  check as checkServerModule,
-  transform as transformServerFunction,
-} from "@twofold/server-function-transforms";
+import { transform as transformServerFunction } from "@twofold/server-function-transforms";
 import { glob } from "fs/promises";
 import { createRequire } from "module";
 import path from "path";
@@ -16,10 +13,11 @@ import {
   bundlePackages as predefinedBundlePackages,
   excludePackages,
 } from "../externals/predefined-externals.js";
-import { shouldIgnoreUseClient, shouldIgnoreUseServer } from "../helpers/excluded.js";
+import { shouldIgnoreUseServer } from "../helpers/excluded.js";
 import { fileExists } from "../helpers/file.js";
 import { pathToLanguage } from "../helpers/languages.js";
 import { getModuleId } from "../helpers/module.js";
+import { getRscDirective } from "../helpers/rsc-directives.js";
 import { Builder, type SerializedOutput } from "./builder.js";
 
 export type EntriesQueueBuilderInput = {
@@ -201,7 +199,8 @@ function rscDiscoveryPlugin({
           input: { code, language: pathToLanguage(id) },
           moduleId: entry.moduleId,
         };
-        if (code.includes("use client") && !shouldIgnoreUseClient(id)) {
+        let directive = await getRscDirective(id, options);
+        if (directive === "client") {
           let result = await transformClientComponent({
             ...options,
             rscClientPath: "react-server-dom-webpack/server.edge",
@@ -209,14 +208,9 @@ function rscDiscoveryPlugin({
           if (result.clientExports.length > 0) {
             onClientComponent(entry);
           }
-          // Match RSCBuilder's client transform taking precedence.
           return { code: result.code, moduleType: "js" };
         }
-        if (
-          code.includes("use server") &&
-          !shouldIgnoreUseServer(id) &&
-          (await checkServerModule(options))
-        ) {
+        if (directive === "server") {
           onServerAction(entry);
         }
       },

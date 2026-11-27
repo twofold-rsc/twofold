@@ -54,15 +54,37 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["increment"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       function increment() {
         count = count + 1;
       }
       export { increment };
       registerServerReference(increment, "test", "increment");"
+    `);
+  });
+
+  test("it should remove the module marker even when there are no actions", async () => {
+    let result = await transform({
+      input: {
+        code: dedent`
+          "use server";
+          "custom directive";
+
+          let message = "use server";
+          console.log(message);
+        `,
+        language: "ts",
+      },
+      moduleId: "test",
+    });
+
+    expect(result.serverFunctions).toEqual([]);
+    expect(result.code).toMatchInlineSnapshot(`
+      ""custom directive";
+
+      let message = "use server";
+      console.log(message);"
     `);
   });
 
@@ -91,9 +113,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["increment"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       function increment() {
         count = count + 1;
@@ -128,9 +148,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["increment"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       function increment() {
         "use server";
@@ -169,9 +187,7 @@ describe("module transform", () => {
     expect(result.serverFunctions).toContain("increment");
     expect(result.serverFunctions).toContain("decrement");
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       function increment() {
         count = count + 1;
@@ -208,9 +224,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["increment"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       function increment() {
         count = count + 1;
@@ -243,9 +257,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["addOne"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       function increment() {
         count = count + 1;
@@ -276,9 +288,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["default"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       function increment() {
         count = count + 1;
@@ -332,9 +342,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["add1"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       const add1 = function () {
         count = count + 1;
@@ -392,9 +400,7 @@ describe("module transform", () => {
     expect(result.serverFunctions).toContain("default");
 
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       const add1 = function () {
         count = count + 1;
@@ -444,9 +450,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["add1"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       const add1 = function () {
         "use server";
@@ -479,9 +483,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["add1"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       const add1 = () => {
         count = count + 1;
@@ -539,9 +541,7 @@ describe("module transform", () => {
     expect(result.serverFunctions).toContain("default");
 
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       const add1 = () => {
         count = count + 1;
@@ -591,9 +591,7 @@ describe("module transform", () => {
 
     expect(result.serverFunctions).toEqual(["add1"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       const add1 = () => {
         "use server";
@@ -633,9 +631,7 @@ describe("factory functions", () => {
 
     expect(result.serverFunctions).toHaveLength(2);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       function tf$serverFunction$0$anonymous(tf$bound$vars) {
         "use server";
@@ -680,9 +676,7 @@ describe("JS tests", () => {
 
     expect(result.serverFunctions).toEqual(["increment"]);
     expect(result.code).toMatchInlineSnapshot(`
-      ""use server";
-
-      import { registerServerReference } from "react-server-dom-webpack/server.edge";
+      "import { registerServerReference } from "react-server-dom-webpack/server.edge";
       let count = 0;
       function increment() {
         count = count + 1;

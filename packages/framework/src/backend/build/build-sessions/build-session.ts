@@ -10,7 +10,7 @@ import type { AssetsBuilder } from "../builders/assets-builder.js";
 import type { ClientBuilder } from "../builders/client-builder.js";
 import type { DevErrorPageBuilder } from "../builders/dev-error-page-builder.js";
 import type { EntriesQueueBuilder } from "../builders/entries-queue-builder.js";
-import type { RSCBuilder } from "../builders/rsc-builder.js";
+import type { RSCRolldownBuilder } from "../builders/rsc-rolldown-builder.js";
 import type { ServerFilesBuilder } from "../builders/server-files-builder.js";
 import type { StaticFilesBuilder } from "../builders/static-files-builder.js";
 import { getBuildChanges, type BuildChanges } from "./changes.js";
@@ -32,7 +32,7 @@ export type BuilderRegistry = {
   readonly devErrorPage: DevErrorPageBuilder;
   readonly serverFiles: ServerFilesBuilder;
   readonly staticFiles: StaticFilesBuilder;
-  readonly rsc: RSCBuilder;
+  readonly rsc: RSCRolldownBuilder;
   readonly client: ClientBuilder;
   readonly assets: AssetsBuilder;
 };
@@ -120,7 +120,7 @@ export class BuildSuccess<Kind extends BuildKind = BuildKind> {
     );
 
     let data: SerializedBuild = {
-      version: 2,
+      version: 3,
       kind: this.kind,
       key: this.key,
       config: this.config,
@@ -162,7 +162,7 @@ type BuildEvents<Kind extends BuildKind> = {
 };
 
 type SerializedBuild = {
-  readonly version: 2;
+  readonly version: 3;
   readonly kind: BuildKind;
   readonly key: string;
   readonly config: Required<Config>;
@@ -306,8 +306,10 @@ export abstract class BuildSession<Kind extends BuildKind> {
     let json = await readFile(jsonUrl, "utf-8");
     let data: SerializedBuild = JSON.parse(json);
 
-    if (data.version !== 2) {
-      throw new Error(`Unsupported build version: ${String(data.version)}`);
+    if (data.version !== 3) {
+      throw new Error(
+        `Unsupported build version: ${String(data.version)}. Rebuild the application before serving it.`,
+      );
     }
 
     if (data.kind !== this.kind) {

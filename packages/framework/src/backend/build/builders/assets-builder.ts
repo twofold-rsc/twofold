@@ -7,11 +7,11 @@ import { createBrotliCompress } from "zlib";
 import { appCompiledDir } from "../../files.js";
 import { Builder } from "./builder.js";
 import type { ClientOutput } from "./client-builder.js";
-import type { RSCOutput } from "./rsc-builder.js";
+import type { RSCRolldownOutput } from "./rsc-rolldown-builder.js";
 
 export type AssetsBuilderInput = {
   readonly environment: "development" | "production";
-  readonly rsc: RSCOutput;
+  readonly rsc: RSCRolldownOutput;
   readonly client: ClientOutput;
 };
 
