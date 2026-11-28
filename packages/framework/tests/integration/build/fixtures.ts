@@ -7,7 +7,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 let require = createRequire(import.meta.url);
-let fixtures = new URL("../../fixtures/entries-queue/", import.meta.url);
+let fixtures = new URL("../../fixtures/apps/", import.meta.url);
 
 export async function withFixture(
   name: string,
