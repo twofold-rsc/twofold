@@ -7,7 +7,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 let require = createRequire(import.meta.url);
-let fixtures = new URL("../../fixtures/entries-queue/", import.meta.url);
+let fixtures = new URL("../../fixtures/apps/", import.meta.url);
 
 export async function withFixture(
   name: string,
@@ -22,11 +22,13 @@ export async function withFixture(
     await cp(new URL("package.json", fixture), path.join(dir, "package.json"));
     let modules = path.join(dir, "node_modules");
     await mkdir(modules);
-    await symlink(
-      path.dirname(require.resolve("react-server-dom-webpack/package.json")),
-      path.join(modules, "react-server-dom-webpack"),
-      "junction",
-    );
+    for (let pkg of ["react", "react-server-dom-webpack"]) {
+      await symlink(
+        path.dirname(require.resolve(`${pkg}/package.json`)),
+        path.join(modules, pkg),
+        "junction",
+      );
+    }
     if (name === "conditional-exports") {
       await cp(
         new URL("entry-variants/", fixture),
