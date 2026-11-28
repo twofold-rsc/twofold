@@ -1,7 +1,14 @@
 import { compile, optimize } from "@tailwindcss/node";
 import { Scanner } from "@tailwindcss/oxide";
-import { transform as clientComponentTransform } from "@twofold/client-component-transforms";
-import { envKey, transform as serverFunctionTransform } from "@twofold/server-function-transforms";
+import {
+  check as checkClientModule,
+  transform as clientComponentTransform,
+} from "@twofold/client-component-transforms";
+import {
+  check as checkServerModule,
+  envKey,
+  transform as serverFunctionTransform,
+} from "@twofold/server-function-transforms";
 import { createHash } from "node:crypto";
 import { glob, readFile } from "node:fs/promises";
 import path from "node:path";
@@ -10,11 +17,11 @@ import { transform as transformCss } from "lightningcss";
 import * as mime from "mime-types";
 import { build as rolldownBuild, type Plugin } from "rolldown";
 import { frameworkCompiledDir, frameworkSrcDir } from "../../files.js";
+import { shouldIgnoreUseClient, shouldIgnoreUseServer } from "../helpers/excluded.js";
 import { fileExists, hashFile } from "../helpers/file.js";
 import { pathToLanguage } from "../helpers/languages.js";
 import { LazyValue } from "../helpers/lazy-value.js";
 import { getModuleId } from "../helpers/module.js";
-import { getRscDirective } from "../helpers/rsc-directives.js";
 import { API } from "../rsc/api.js";
 import { CatchBoundary } from "../rsc/catch-boundary.js";
 import { ErrorTemplate } from "../rsc/error-template.js";
@@ -40,6 +47,11 @@ type Action = {
   readonly id: string;
   readonly moduleId: string;
   readonly export: string;
+};
+
+type ActionModule = {
+  readonly source: string;
+  readonly actions: Action[];
 };
 
 type CompiledAction = Action & {
@@ -116,7 +128,7 @@ export class RSCRolldownBuilder extends Builder<BuilderInput, RSCRolldownOutput>
 
     let images = new Map<string, Asset>();
     let fonts = new Map<string, Asset>();
-    let actions = new Map<string, Action[]>();
+    let actionModules = new Map<string, ActionModule>();
     let routeCss = new Map<string, string>();
 
     let result = await rolldownBuild({
@@ -149,7 +161,8 @@ export class RSCRolldownBuilder extends Builder<BuilderInput, RSCRolldownOutput>
       },
 
       plugins: [
-        directivesPlugin(actions, entries.clientComponentEntryMap, routes),
+        clientReferencesPlugin(entries.clientComponentEntryMap, routes),
+        serverActionsPlugin(actionModules),
         rscStorePlugin(),
         assetsPlugin(images, fonts),
         routeCssPlugin({
@@ -177,31 +190,37 @@ export class RSCRolldownBuilder extends Builder<BuilderInput, RSCRolldownOutput>
       if (chunk.type !== "chunk" || !chunk.isEntry || !chunk.facadeModuleId) continue;
 
       let id = chunk.facadeModuleId;
-      let css = routeCss.get(id);
+      let actionModule = actionModules.get(id);
+      if (actionModule) {
+        let { actions, source } = actionModule;
+        if (
+          chunk.exports.length !== actions.length ||
+          actions.some((action) => !chunk.exports.includes(action.export))
+        ) {
+          throw new Error(`Unexpected exports in server action module for ${source}`);
+        }
 
+        let hash = path.basename(chunk.fileName, ".js").split("-").at(-1)!;
+        for (let action of actions) {
+          compiledActions.set(action.id, {
+            ...action,
+            path: path.join(outputDir, chunk.fileName),
+            hash,
+          });
+        }
+        continue;
+      }
+
+      let css = routeCss.get(id);
       compiledEntries.set(id, {
         file: chunk.fileName,
         ...(css ? { css } : {}),
       });
-
-      for (let action of actions.get(id) ?? []) {
-        if (!chunk.exports.includes(action.export)) {
-          throw new Error(`Missing server action export ${action.export} in ${id}`);
-        }
-
-        let hash = path.basename(chunk.fileName, ".js").split("-").at(-1)!;
-
-        compiledActions.set(action.id, {
-          ...action,
-          path: path.join(outputDir, chunk.fileName),
-          hash,
-        });
-      }
     }
 
-    for (let [id, moduleActions] of actions) {
-      if (!compiledEntries.has(id) && moduleActions.length) {
-        throw new Error(`Missing server action entry for ${id}`);
+    for (let { source, actions } of actionModules.values()) {
+      if (actions.some((action) => !compiledActions.has(action.id))) {
+        throw new Error(`Missing server action entry for ${source}`);
       }
     }
 
@@ -472,13 +491,13 @@ function indexRoute(relative: string) {
   return `/${relative.replace(/(^|\/)index$/, "")}`;
 }
 
-function directivesPlugin(
-  actions: Map<string, Action[]>,
+function clientReferencesPlugin(
   clientEntries: EntriesOutput["clientComponentEntryMap"],
   routes: ReadonlySet<string>,
 ): Plugin {
   return {
-    name: "rsc-directives",
+    name: "rsc-client-references",
+
     buildStart() {
       for (let file of routes) {
         if (file.endsWith(".error.tsx") && !clientEntries.has(file)) {
@@ -492,12 +511,67 @@ function directivesPlugin(
     transform: {
       filter: {
         id: /\.(ts|tsx|js|jsx|mjs)$/,
-        code: /use (client|server)/,
+        code: /use client/,
       },
 
       async handler(code, id) {
-        let moduleId = getModuleId(id);
+        if (shouldIgnoreUseClient(id)) return;
 
+        let options = {
+          input: {
+            code,
+            language: pathToLanguage(id),
+          },
+          moduleId: getModuleId(id),
+        };
+
+        if (!(await checkClientModule(options))) return;
+
+        let result = await clientComponentTransform({
+          ...options,
+          rscClientPath: "react-server-dom-webpack/server.edge",
+        });
+
+        return {
+          code: result.code,
+          moduleType: "js",
+        };
+      },
+    },
+  };
+}
+
+function serverActionsPlugin(actionModules: Map<string, ActionModule>): Plugin {
+  return {
+    name: "rsc-server-actions",
+
+    resolveId(id) {
+      if (actionModules.has(id)) {
+        return id;
+      }
+    },
+
+    load(id) {
+      let actionModule = actionModules.get(id);
+      if (actionModule) {
+        let reexports = actionModule.actions.map((action) => {
+          let name = JSON.stringify(action.export);
+          return `${name} as ${name}`;
+        });
+        return `export { ${reexports.join(", ")} } from ${JSON.stringify(actionModule.source)};`;
+      }
+    },
+
+    transform: {
+      filter: {
+        id: /\.(ts|tsx|js|jsx|mjs)$/,
+        code: /use server/,
+      },
+
+      async handler(code, id) {
+        if (shouldIgnoreUseServer(id)) return;
+
+        let moduleId = getModuleId(id);
         let options = {
           input: {
             code,
@@ -506,43 +580,40 @@ function directivesPlugin(
           moduleId,
         };
 
-        let directive = await getRscDirective(id, options);
+        if (!(await checkServerModule(options))) return;
 
-        if (directive === "client") {
-          let result = await clientComponentTransform({
-            ...options,
-            rscClientPath: "react-server-dom-webpack/server.edge",
-          });
+        let result = await serverFunctionTransform({
+          ...options,
+          encryption: {
+            key: envKey("TWOFOLD_SECRET_KEY"),
+            module: "@twofold/framework/encryption",
+          },
+        });
 
-          return {
-            code: result.code,
-            moduleType: "js",
-          };
-        }
+        if (result.serverFunctions.length > 0) {
+          let actionModuleId = `\0twofold:action-module:${moduleId}`;
 
-        if (directive === "server") {
-          let result = await serverFunctionTransform({
-            ...options,
-            encryption: {
-              key: envKey("TWOFOLD_SECRET_KEY"),
-              module: "@twofold/framework/encryption",
-            },
-          });
-
-          actions.set(
-            id,
-            result.serverFunctions.map((name) => ({
+          actionModules.set(actionModuleId, {
+            source: id,
+            actions: result.serverFunctions.map((name) => ({
               id: `${moduleId}#${name}`,
               moduleId,
               export: name,
             })),
-          );
+          });
 
-          return {
-            code: result.code,
-            moduleType: "js",
-          };
+          this.emitFile({
+            type: "chunk",
+            id: actionModuleId,
+            name: "actions",
+            preserveSignature: "strict",
+          });
         }
+
+        return {
+          code: result.code,
+          moduleType: "js",
+        };
       },
     },
   };

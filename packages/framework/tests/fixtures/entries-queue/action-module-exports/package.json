@@ -1,0 +1,5 @@
+{
+  "name": "action-module-exports-fixture",
+  "private": true,
+  "type": "module"
+}
